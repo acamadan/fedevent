@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: fedevent
+    env: docker
+    plan: standard
+    healthCheckPath: /api/health
+    autoDeploy: true
+    domains:
+      - fedevent.com
+      - www.fedevent.com
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DEV_AUTH
+        value: "false"
+    disk:
+      name: hotel-uploads
+      mountPath: /app/uploads
+      sizeGB: 10
+    additionalDisks:
+      - name: hotel-data
+        mountPath: /app/data
+        sizeGB: 2
+
