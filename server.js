@@ -9,7 +9,7 @@ import Database from 'better-sqlite3';
 import nodemailer from 'nodemailer';
 import mammoth from 'mammoth';
 import unzipper from 'unzipper';
-import { guessFields } from "./scripts/guess-fields.js";
+// guessFields will be imported dynamically in the autofill endpoint
 import { spawnSync } from 'child_process';
 
 // ---------- shell helpers / OCR pipeline ----------
@@ -401,14 +401,19 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, 'data'),    { recursive: true });
+// Render persistent disk path
+fs.mkdirSync('/opt/uploads', { recursive: true });
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use('/', express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Also serve from Render persistent disk
+app.use('/uploads', express.static('/opt/uploads'));
 
 // ---------- database ----------
+// Use local data directory (persists in Render's container filesystem)
 const db = new Database(path.join(__dirname, 'data', 'creata.db'));
 
 db.exec(`
@@ -447,7 +452,13 @@ function sanitizeFilename(name) {
   return `${safeName}${ext}`;
 }
 const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => cb(null, path.join(__dirname, 'uploads')),
+  destination: (_req, _file, cb) => {
+    // Use Render persistent disk if available, fallback to local
+    const uploadDir = fs.existsSync('/opt/uploads') 
+      ? '/opt/uploads' 
+      : path.join(__dirname, 'uploads');
+    cb(null, uploadDir);
+  },
   filename: (_req, file, cb) => cb(null, `${Date.now()}-${sanitizeFilename(file.originalname)}`)
 });
 const upload = multer({
@@ -517,11 +528,20 @@ app.post('/api/autofill', upload.single('info_sheet'), async (req, res) => {
 
     const raw   = normalizeText(text);
     const facts = extractHotelFacts(raw);
-fixRoomHeuristics(facts);
-fixRoomHeuristics(facts);
-const fieldsKV = kvParse(raw);
-const fieldsGuess = guessFields(raw);
-const fields = { ...fieldsGuess, ...fieldsKV };
+    fixRoomHeuristics(facts);
+    fixRoomHeuristics(facts);
+    const fieldsKV = kvParse(raw);
+    
+    // Dynamic import of guessFields with fallback
+    let fieldsGuess = {};
+    try {
+      const guessModule = await import("./scripts/guess-fields.js");
+      fieldsGuess = guessModule.guessFields(raw);
+    } catch (e) {
+      console.warn('guess-fields.js not found, skipping guess fields');
+    }
+    
+    const fields = { ...fieldsGuess, ...fieldsKV };
 if (facts.total_guestrooms) fields.total_guestrooms = String(facts.total_guestrooms);
 if (facts.total_meeting_space_sqft) fields.total_meeting_space_sqft = String(facts.total_meeting_space_sqft);
 if (!Object.keys(fieldsKV).length) {
