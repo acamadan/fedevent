@@ -412,7 +412,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Serve landing page as main page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Serve hotel registration page
