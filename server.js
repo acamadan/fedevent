@@ -407,7 +407,18 @@ fs.mkdirSync('/opt/uploads', { recursive: true });
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use('/', express.static(path.join(__dirname, 'public')));
+// Serve static files from public directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Serve landing page as main page
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// Serve hotel registration page
+app.get('/hotel-registration.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'hotel-registration.html'));
+});
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // Also serve from Render persistent disk
 app.use('/uploads', express.static('/opt/uploads'));
