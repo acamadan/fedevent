@@ -1,0 +1,16 @@
+CREATA — SAM Opportunities
+Keyword & NAICS
+›
+Keyword
+
+NAICS
+
+Default search window: last 60 days.
+Dates
+›
+Organization
+›
+Search Demo data
+Tip: start with a small date window (1–2 days) or NAICS prefix (e.g. 7211) to avoid rate limits while testing.
+
+Criteria: (none yet)

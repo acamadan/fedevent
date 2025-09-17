@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAM.gov Lodging Search</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input[type="email"], input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+        .error {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+        .info {
+            background-color: #e2e3e5;
+            border: 1px solid #d6d8db;
+            color: #383d41;
+            margin-top: 30px;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .keywords {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .keyword-tag {
+            background-color: #e9ecef;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 14px;
+            color: #495057;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>SAM.gov Lodging & Hotel Search</h1>
+        
+        <form id="searchForm">
+            <div class="form-group">
+                <label for="email">Email Address (to receive results):</label>
+                <input type="email" id="email" name="email" required 
+                       placeholder="your.email@example.com">
+            </div>
+            
+            <div class="form-group">
+                <label for="keywords">Search Keywords:</label>
+                <input type="text" id="keywords" name="keywords" 
+                       value="lodging,conference,hotel" 
+                       placeholder="Enter keywords separated by commas">
+                <div class="keywords">
+                    <span class="keyword-tag">lodging</span>
+                    <span class="keyword-tag">conference</span>
+                    <span class="keyword-tag">hotel</span>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="naics">NAICS Code:</label>
+                <input type="text" id="naics" name="naics" 
+                       value="721110" readonly
+                       placeholder="721110">
+            </div>
+            
+            <button type="submit" id="searchBtn">Search and Email Results</button>
+            <button type="button" id="testBtn">Test Search (No Email)</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <div class="info">
+            <h3>About This Search</h3>
+            <p><strong>NAICS Code 721110:</strong> Hotels (except Casino Hotels) and Motels</p>
+            <p><strong>Keywords:</strong> The system searches for government opportunities related to lodging, conferences, and hotel services.</p>
+            <p><strong>Automated Search:</strong> If enabled, the system automatically searches daily at 9:00 AM and emails results to the configured address.</p>
+            <p><strong>Configuration:</strong> Make sure to set your SAM.gov API key and email credentials in the .env file.</p>
+        </div>
+    </div>
+
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const searchBtn = document.getElementById('searchBtn');
+        const testBtn = document.getElementById('testBtn');
+        const resultDiv = document.getElementById('result');
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            await performSearch(true);
+        });
+
+        testBtn.addEventListener('click', async () => {
+            await performSearch(false);
+        });
+
+        async function performSearch(sendEmail) {
+            const email = document.getElementById('email').value;
+            const keywords = document.getElementById('keywords').value.split(',').map(k => k.trim());
+            const naics = document.getElementById('naics').value;
+
+            if (sendEmail && !email) {
+                showResult('Please enter an email address.', 'error');
+                return;
+            }
+
+            searchBtn.disabled = true;
+            testBtn.disabled = true;
+            
+            try {
+                if (sendEmail) {
+                    showResult('Searching SAM.gov and sending email...', 'info');
+                    
+                    const response = await fetch('/api/sam/search-and-email', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            email: email,
+                            keywords: keywords,
+                            naics: naics
+                        })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        showResult(`✅ ${data.message}`, 'success');
+                    } else {
+                        showResult(`❌ Error: ${data.error}`, 'error');
+                    }
+                } else {
+                    showResult('Testing search (results will be displayed here)...', 'info');
+                    
+                    const params = new URLSearchParams({
+                        q: keywords.join(' OR '),
+                        naics: naics,
+                        limit: '10'
+                    });
+                    
+                    const response = await fetch(`/api/sam/search?${params}`);
+                    const data = await response.json();
+                    
+                    if (data.ok) {
+                        const message = `✅ Test search completed. Found ${data.total} total results (showing first ${data.results.length}).`;
+                        let details = '';
+                        
+                        if (data.results.length > 0) {
+                            details = '<br><br><strong>Sample Results:</strong><ul>';
+                            data.results.slice(0, 3).forEach(result => {
+                                details += `<li><strong>${result.title || 'No Title'}</strong> - ${result.agency || 'Unknown Agency'} (${result.solicitation_number || 'N/A'})</li>`;
+                            });
+                            details += '</ul>';
+                            
+                            if (data.stub) {
+                                details += '<br><em>Note: These are demo results. Configure SAM_API_KEY for live data.</em>';
+                            }
+                        }
+                        
+                        showResult(message + details, 'success');
+                    } else {
+                        showResult

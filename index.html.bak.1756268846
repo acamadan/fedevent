@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>CREATA — SAM Dashboard</title>
+<style>
+  :root{--bg:#0b1b2b;--card:#0f2237;--muted:#7192b0;--acc:#2da8ff;--warn:#ffbf00;--err:#ff4d4d;--ok:#1cc88a}
+  *{box-sizing:border-box} body{margin:0;background:#06121e;color:#eaf4ff;font-family:system-ui,Segoe UI,Roboto,Arial}
+  header{padding:18px 20px;background:linear-gradient(180deg,#0c2035,#0a1b2d)}
+  h1{margin:0;font-size:20px;letter-spacing:.5px}
+  main{max-width:1100px;margin:20px auto;padding:0 16px}
+  .bar{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+  .card{background:var(--card);border:1px solid #143350;border-radius:12px;padding:12px 12px 10px 12px;box-shadow:0 2px 10px #00000040}
+  input,select,button{border-radius:10px;border:1px solid #214461;background:#0b1b2b;color:#eaf4ff;padding:10px}
+  button{cursor:pointer}
+  button.primary{background:var(--acc);border:1px solid #127bd1;color:#00111f;font-weight:700}
+  .hint{color:var(--muted);font-size:12px}
+  .results{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+  .row{display:grid;grid-template-columns:1.2fr 0.7fr 0.9fr 0.6fr 0.6fr;gap:10px;padding:12px;border:1px solid #143350;background:#0b1b2b;border-radius:12px}
+  .title{font-weight:700}
+  .agency{color:#b9d4ea}
+  .desc{color:#cfe6ff}
+  .badge{padding:2px 8px;border-radius:999px;font-size:12px;display:inline-block}
+  .due{justify-self:end}
+  .b-red{background:#3b0e10;border:1px solid #801d22;color:#ffb4b8}
+  .b-orange{background:#3b2a0e;border:1px solid #9a6a1a;color:#ffdb99}
+  .b-yellow{background:#33310b;border:1px solid #7f7b19;color:#f7f39a}
+  .b-green{background:#0f2d1d;border:1px solid #1f6b47;color:#a7eccd}
+  .b-blue{background:#0f2133;border:1px solid #1c4d7e;color:#badaff}
+  .err{color:var(--err)}
+  .muted{color:var(--muted)}
+</style>
+</head>
+<body>
+<header><h1>CREATA — SAM Opportunities</h1><div class="hint">Use a small date range to avoid SAM rate limits while testing.</div></header>
+<main class="card">
+  <div class="bar">
+    <label>Keyword <input id="q" placeholder="e.g. lodging, conference"/></label>
+    <label>NAICS <input id="naics" placeholder="e.g. 721110"/></label>
+    <label>From <input id="from" type="date"/></label>
+    <label>To <input id="to" type="date"/></label>
+    <button id="search" class="primary">Search</button>
+    <button id="demo">Demo data</button>
+  </div>
+  <div class="hint">Tip: Start with 1–2 days and one NAICS prefix (e.g. 7211) to reduce rate-limit errors.</div>
+  <div id="status" class="muted" style="margin-top:8px;"></div>
+  <div id="results" class="results"></div>
+</main>
+
+<script>
+const S = (sel,el=document)=>el.querySelector(sel);
+const statusEl = S('#status');
+const resEl = S('#results');
+const btn = S('#search');
+const demoBtn = S('#demo');
+
+function setDefaultDates(){
+  // default to last 2 days (local)
+  const now = new Date();
+  const to = new Date(now.getTime()); // today
+  const from = new Date(now.getTime()-2*86400000);
+  S('#from').value = toISODate(from);
+  S('#to').value = toISODate(to);
+}
+function toISODate(d){ return d.toISOString().slice(0,10); }
+function toMDY(d){ return `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`; }
+
+function badgeForDaysLeft(days){
+  if (days<=1) return 'b-red';
+  if (days<=2) return 'b-orange';
+  if (days<=3) return 'b-yellow';
+  if (days<=7) return 'b-green';
+  return 'b-blue';
+}
+
+async function fetchJSON(url, ms=12000){
+  const ctrl = new AbortController();
+  const t = setTimeout(()=>ctrl.abort(new Error('timeout')), ms);
+  try{
+    const r = await fetch(url, { signal: ctrl.signal });
+    const text = await r.text();
+    try{ return JSON.parse(text); } catch{ return { ok:false, error:'Bad JSON', raw:text }; }
+  } catch(e){
+    return { ok:false, error: String(e.message||e) };
+  } finally{
+    clearTimeout(t);
+  }
+}
+
+function render(items){
+  resEl.innerHTML = '';
+  items.forEach(it=>{
+    const daysLeft = (()=>{ 
+      if (!it.deadline) return null;
+      const parts = it.deadline.split('/'); 
+      if (parts.length!==3) return null;
+      const d = new Date(`${parts[2]}-${parts[0]}-${parts[1]}T00:00:00Z`);
+      if (isNaN(d)) return null;
+      return Math.ceil( (d - new Date()) / 86400000 );
+    })();
+    const dueClass = daysLeft==null ? 'b-blue' : badgeForDaysLeft(daysLeft);
+    const row = document.createElement('div');
+    row.className = 'row';
+    row.innerHTML = `
+      <div>
+        <div class="title"><a href="${it.url||'#'}" target="_blank" rel="noopener">${it.title||'(no title)'}</a></div>
+        <div class="muted">Solicitation: <b>${it.solicitation_number||'—'}</b> • NAICS: <b>${it.naics||'—'}</b></div>
+        <div class="desc">${(it.description||'').slice(0,280)}</div>
+      </div>
+      <div class="agency">${it.agency||''}</div>
+      <div class="muted">Posted: ${it.posted_date||''}</div>
+      <div class="muted">Deadline: ${it.deadline||''}</div>
+      <div class="due"><span class="badge ${dueClass}">${daysLeft==null?'N/A':(daysLeft+'d')}</span></div>
+    `;
+    resEl.appendChild(row);
+  });
+}
+
+async function run(demo=false){
+  statusEl.textContent = demo ? 'Loading demo…' : 'Searching…';
+  btn.disabled = true;
+  try {
+    if (demo){
+      // hit health to ensure server, then fake list
+      const h = await fetchJSON('/api/health');
+      if (!h.ok) throw new Error('Server not healthy');
+      const demoRows = [
+        { title:'Demo — Lodging and Meeting Space', solicitation_number:'DEMO-001', naics:'721110', agency:'DoD', posted_date:'08/26/2025', deadline:'09/02/2025', description:'(Demo) Example opportunity. Replace SAM_API_KEY to enable live mode.', url:'#' },
+        { title:'Demo — Hotel Rooms', solicitation_number:'DEMO-002', naics:'721110', agency:'USDA', posted_date:'08/25/2025', deadline:'08/30/2025', description:'(Demo) Example opportunity.', url:'#' },
+      ];
+      render(demoRows);
+      statusEl.textContent = 'Showing demo results (no SAM calls).';
+      return;
+    }
+
+    // build query
+    const q = encodeURIComponent(S('#q').value.trim());
+    const naics = encodeURIComponent(S('#naics').value.trim());
+    const fromD = new Date(S('#from').value+'T00:00:00');
+    const toD = new Date(S('#to').value+'T00:00:00');
+    const url = `/api/sam/search?limit=10&postedFrom=${encodeURIComponent(toMDY(fromD))}&postedTo=${encodeURIComponent(toMDY(toD))}`
+      + (q?`&q=${q}`:'') + (naics?`&naics=${naics}`:'');
+
+    const data = await fetchJSON(url, 12000);
+    if (!data.ok){
+      statusEl.innerHTML = `<span class="err">Search failed:</span> ${data.error||data.detail||'Unknown error'}`;
+      return;
+    }
+    if (!Array.isArray(data.results) || data.results.length===0){
+      statusEl.textContent = 'No results returned.';
+      resEl.innerHTML = '';
+      return;
+    }
+    render(data.results);
+    statusEl.textContent = `Showing ${data.results.length} of ${data.total} result(s).`;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+btn.addEventListener('click', ()=>run(false));
+demoBtn.addEventListener('click', ()=>run(true));
+setDefaultDates(); // don’t auto-query live to avoid rate limits
+</script>
+</body>
+</html>

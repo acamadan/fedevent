@@ -1,0 +1,74 @@
+<!doctype html><meta charset="utf-8">
+<title>CREATA – Outreach</title><meta name="viewport" content="width=device-width,initial-scale=1">
+<style>body{font-family:system-ui;margin:24px}input,textarea{width:100%;padding:10px;margin:6px 0;border:1px solid #ddd;border-radius:10px}table{border-collapse:collapse;width:100%}th,td{border:1px solid #eee;padding:8px;text-align:left}</style>
+<h2>Hotel Outreach</h2>
+<label>Admin token <input id="token" placeholder="Bearer token"></label>
+<section>
+  <h3>Add Hotel</h3>
+  <div>
+    <input id="hname" placeholder="Hotel Name">
+    <input id="hemail" placeholder="Email">
+    <input id="hcity" placeholder="City"><input id="hstate" placeholder="State"><input id="hcountry" placeholder="Country">
+    <input id="htags" placeholder="Tags (comma-separated)">
+    <button id="add-hotel">Add Hotel</button>
+  </div>
+  <button id="load">Load Hotels</button>
+  <table id="hotels"><thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Tags</th></tr></thead><tbody></tbody></table>
+</section>
+<section>
+  <h3>Compose Outreach</h3>
+  <input id="subject" placeholder="Subject">
+  <textarea id="body" rows="8" placeholder="HTML body (NET30 language, instructions, etc.)"></textarea>
+  <div>
+    <label>Attachments</label>
+    <input id="files" type="file" multiple>
+    <button id="upload">Upload Attachments</button>
+    <div id="filesOut"></div>
+  </div>
+  <div>
+    <label>Recipient Hotel IDs (comma separated)</label>
+    <input id="recipients" placeholder="e.g., 1,2,5">
+  </div>
+  <button id="send">Send Outreach</button>
+  <div id="out"></div>
+</section>
+<script>
+function auth(){ const t=document.getElementById('token').value.trim(); return t?{'Authorization':'Bearer '+t}:{ } }
+
+document.getElementById('add-hotel').onclick = async ()=>{
+  const body = { name:hname.value, email:hemail.value, city:hcity.value, state:hstate.value, country:hcountry.value, tags:htags.value };
+  const r = await fetch('/api/hotels', { method:'POST', headers:{'Content-Type':'application/json', ...auth()}, body: JSON.stringify(body)});
+  alert('Added: '+await r.text());
+};
+
+document.getElementById('load').onclick = async ()=>{
+  const r = await fetch('/api/hotels', { headers: auth() });
+  const j = await r.json();
+  const tb = document.querySelector('#hotels tbody'); tb.innerHTML='';
+  (j.hotels||[]).forEach(h=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${h.id}</td><td>${h.name}</td><td>${h.email||''}</td><td>${h.tags||''}</td>`;
+    tb.appendChild(tr);
+  });
+};
+
+let uploaded = [];
+document.getElementById('upload').onclick = async ()=>{
+  const fd = new FormData();
+  [...files.files].forEach(f => fd.append('files', f));
+  const r = await fetch('/api/outreach/upload', { method:'POST', headers: auth(), body: fd });
+  const j = await r.json();
+  uploaded = j.files.map(f=>f.path);
+  filesOut.innerHTML = uploaded.map(p=>`<div>${p}</div>`).join('');
+};
+
+document.getElementById('send').onclick = async ()=>{
+  const ids = recipients.value.split(',').map(s=>parseInt(s.trim(),10)).filter(Boolean);
+  const body = { subject: subject.value, body_html: document.getElementById('body').value, hotelIds: ids, attachmentPaths: uploaded };
+  const r = await fetch('/api/outreach/send', { method:'POST', headers:{'Content-Type':'application/json', ...auth()}, body: JSON.stringify(body)});
+  out.innerHTML = '<pre>'+escapeHtml(JSON.stringify(await r.json(),null,2))+'</pre>';
+};
+
+function escapeHtml(s){return String(s).replace(/[&<>\"']/g,m=>({'&':'&amp;','<':'&lt;','&gt;':'&gt;','"':'&quot;','\\'':'&#39;'}[m]));}
+</script>
+

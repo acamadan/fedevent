@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CREATA - Government Opportunities Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            text-align: center;
+            color: white;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            font-weight: 300;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 20px;
+        }
+
+        .search-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .search-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .search-btn {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #3498db;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #7f8c8d;
+            font-weight: 500;
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+
+        .results-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            font-weight: 600;
+        }
+
+        .status-indicator {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .status-idle {
+            background: #ecf0f1;
+            color: #7f8c8d;
+        }
+
+        .status-loading {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .opportunities-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .opportunities-table th {
+            background: #f8f9fa;
+            color: #2c3e50;
+            font-weight: 600;
+            padding: 15px 12px;
+            text-align: left;
+            border-bottom: 2px solid #dee2e6;
+        }
+
+        .opportunities-table td {
+            padding: 15px 12px;
+            border-bottom: 1px solid #dee2e6;
+            vertical-align: top;
+        }
+
+        .opportunities-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .solicitation-number {
+            font-weight: 600;
+            color: #3498db;
+        }
+
+        .agency-name {
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        .deadline {
+            font-weight: 600;
+            color: #e74c3c;
+        }
+
+        .opportunity-title {
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+        .description-cell {
+            max-width: 400px;
+            line-height: 1.4;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+        }
+
+        .action-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            margin-right: 5px;
+            transition: all 0.2s;
+        }
+
+        .ai-btn {
+            background: #9b59b6;
+            color: white;
+        }
+
+        .ai-btn:hover {
+            background: #8e44ad;
+        }
+
+        .view-btn {
+            background: #3498db;
+            color: white;
+        }
+
+        .view-btn:hover {
+            background: #2980b9;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            color: #7f8c8d;
+            font-size: 1.2em;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>CREATA GLOBAL</h1>
+        <p>Government Opportunities Dashboard</p>
+    </div>
+
+    <div class="container">
+        <!-- Search Section -->
+        <div class="search-section">
+            <div class="search-title">Search Government Opportunities</div>
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="keywords">Keywords</label>
+                    <input type="text" id="keywords" placeholder="e.g., lodging, conference, hotel">
+                </div>
+                <div class="form-group">
+                    <label for="naics">NAICS Code</label>
+                    <input type="text" id="naics" placeholder="e.g., 721110" value="721110">
+                </div>
+                <div class="form-group">
+                    <label for="dateFrom">Posted From</label>
+                    <input type="date" id="dateFrom">
+                </div>
+                <div class="form-group">
+                    <label for="dateTo">Posted To</label>
+                    <input type="date" id="dateTo">
+                </div>
+            </div>
+            <div class="checkbox-group">
+                <input type="checkbox" id="activeOnly" checked>
+                <label for="activeOnly">Active opportunities only</label>
+            </div>
+            <button class="search-btn" id="searchBtn">Search Opportunities</button>
+        </div>
+
+        <!-- Statistics Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalResults">0</div>
+                <div class="stat-label">Total Results</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeCount">0</div>
+                <div class="stat-label">Active Opportunities</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="averageValue">$0</div>
+                <div class="stat-label">Average Value</div>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="results-section">
+            <div class="results-header">
+                <div class="results-title">Government Opportunities</div>
+                <div class="status-indicator status-idle" id="statusIndicator">Ready to Search</div>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="loading-spinner" id="loadingSpinner">
+                <div class="spinner"></div>
+                <p>Searching government databases...</p>
+            </div>
+
+            <div id="resultsContainer">
+                <div class="no-results">
+                    <p>Use the search form above to find government opportunities</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize date inputs with default values
+        function initializeDates() {
+            const today = new Date();
+            const thirtyDaysAgo = new Date(today.getTime() - (30 * 24 * 60 * 60 * 1000));
+            
+            document.getElementById('dateFrom').value = thirtyDaysAgo.toISOString().split('T')[0];
+            document.getElementById('dateTo').value = today.toISOString().split('T')[0];
+        }
+
+        // Update status indicator
+        function updateStatus(status, message) {
+            const indicator = document.getElementById('statusIndicator');
+            indicator.className = `status-indicator status-${status}`;
+            indicator.textContent = message;
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+        }
+
+        // Hide error message
+        function hideError() {
+            document.getElementById('errorMessage').style.display = 'none';
+        }
+
+        // Update statistics
+        function updateStats(results) {
+            document.getElementById('totalResults').textContent = results.length;
+            document.getElementById('activeCount').textContent = results.filter(r => r.active !== false).length;
+            // Add more stats calculations as needed
+        }
+
+        // Render search results
+        function renderResults(results) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="no-results"><p>No opportunities found matching your criteria</p></div>';
+                return;
+            }
+
+            const tableHTML = `
+                <table class="opportunities-table">
+                    <thead>
+                        <tr>
+                            <th>Solicitation #</th>
+                            <th>Agency</th>
+                            <th>Deadline</th>
+                            <th>Title</th>
+                            <th>Description</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${results.map((opportunity, index) => `
+                            <tr data-index="${index}">
+                                <td class="solicitation-number">${opportunity.solicitation_number || 'N/A'}</td>
+                                <td class="agency-name">${opportunity.agency || 'N/A'}</td>
+                                <td class="deadline">${opportunity.deadline || 'N/A'}</td>
+                                <td class="opportunity-title">${opportunity.title || 'No title'}</td>
+                                <td class="description-cell">${(opportunity.description || 'No description').substring(0, 200)}${opportunity.description && opportunity.description.length > 200 ? '...' : ''}</td>
+                                <td class="actions-cell">
+                                    <button class="action-btn ai-btn" onclick="summarizeOpportunity(${index})">AI Summary</button>
+                                    ${opportunity.url ? `<a href="${opportunity.url}" target="_blank" class="action-btn view-btn">View</a>` : '<span style="opacity:0.5">No link</span>'}
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+
+        // Store current results for AI processing
+        let currentResults = [];
+
+        // Search opportunities
+        async function searchOpportunities() {
+            hideError();
+            updateStatus('loading', 'Searching...');
+            
+            const loadingSpinner = document.getElementById('loadingSpinner');
+            const resultsContainer = document.getElementById('resultsContainer');
+            
+            loadingSpinner.style.display = 'block';
+            resultsContainer.style.display = 'none';
+
+            try {
+                const params = new URLSearchParams({
+                    q: document.getElementById('keywords').value || 'lodging',
+                    naics: document.getElementById('naics').value || '721110',
+                    postedFrom: document.getElementById('dateFrom').value,
+                    postedTo: document.getElementById('dateTo').value,
+                    active: document.getElementById('activeOnly').checked,
+                    limit: 50
+                });
+
+                const response = await fetch(`/api/sam/search?${params}`);
+                const data = await response.json();
+
+                if (!data.ok) {
+                    throw new Error(data.error || 'Search failed');
+                }
+
+                currentResults = data.results || [];
+                updateStats(currentResults);
+                renderResults(currentResults);
+                updateStatus('success', `Found ${currentResults.length} opportunities`);
+
+                if (data.stub) {
+                    showError('Demo results only. Add SAM_API_KEY in .env for live data.');
+                }
+
+            } catch (error) {
+                console.error('Search error:', error);
+                showError(`Search failed: ${error.message}`);
+                updateStatus('error', 'Search failed');
+                renderResults([]);
+            } finally {
+                loadingSpinner.style.display = 'none';
+                resultsContainer.style.display = 'block';
+            }
+        }
+
+        // AI Summarize opportunity
+        async function summarizeOpportunity(index) {
+            if (!currentResults[index]) return;
+
+            const row = document.querySelector(`tr[data-index="${index}"]`);
+            const descCell = row.querySelector('.description-cell');
+            const originalText = descCell.textContent;
+
+            try {
+                descCell.textContent = 'Generating AI summary...';
+                
+                const response = await fetch('/api/ai/summarize', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(currentResults[index])
+                });
+
+                const data = await response.json();
+                
+                if (data.summary) {
+                    descCell.textContent = data.summary;
+                } else {
+                    descCell.textContent = originalText;
+                    alert('AI summary not available');
+                }
+
+            } catch (error) {
+                descCell.textContent = originalText;
+                alert('AI summary failed');
+            }
+        }
+
+        // Event listeners
+        document.getElementById('searchBtn').addEventListener('click', searchOpportunities);
+
+        // Allow Enter key to trigger search
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.matches('input')) {
+                searchOpportunities();
+            }
+        });
+
+        // Initialize on page load
+        initializeDates();
+    </script>
+</body>
+</html>

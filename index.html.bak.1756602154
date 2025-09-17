@@ -1,0 +1,12 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>CREATA — Test UI</title>
+<body style="font-family:system-ui;padding:24px">
+  <h1>CREATA Static is Working ✅</h1>
+  <p>If you see this, <code>/public/index.html</code> is being served.</p>
+  <ul>
+    <li>Root health: <a href="/api/health">/api/health</a></li>
+    <li>Local health: <a href="/local/api/health">/local/api/health</a></li>
+  </ul>
+  <p>Next step: replace this file with your full Hotel Registration HTML (we’ll use heredoc once this is confirmed).</p>
+</body>
