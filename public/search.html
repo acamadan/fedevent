@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Search Hotels – FEDEVENT</title>
+  
+  <!-- Google Analytics 4 (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+  <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX', {
+          // Enhanced ecommerce and event tracking
+          send_page_view: true,
+          custom_map: {
+              'custom_parameter_1': 'fedevent_website'
+          }
+      });
+      
+      // Custom event tracking functions
+      function trackNavigationClick(section) {
+          gtag('event', 'navigation_click', {
+              'event_category': 'Website Navigation',
+              'event_label': section,
+              'custom_parameter_1': 'fedevent_website'
+          });
+      }
+      
+      function trackButtonClick(buttonName) {
+          gtag('event', 'button_click', {
+              'event_category': 'Website Interaction',
+              'event_label': buttonName,
+              'custom_parameter_1': 'fedevent_website'
+          });
+      }
+      
+      function trackFormSubmission(formName) {
+          gtag('event', 'form_submission', {
+              'event_category': 'Website Forms',
+              'event_label': formName,
+              'custom_parameter_1': 'fedevent_website'
+          });
+      }
+      
+      function trackPageView(pageName) {
+          gtag('event', 'page_view', {
+              'event_category': 'Page Views',
+              'event_label': pageName,
+              'custom_parameter_1': 'fedevent_website'
+          });
+      }
+  </script>
+  
+  <style>
+    body{font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;margin:0;background:#f8fafc;color:#111827}
+    .wrap{max-width:1100px;margin:32px auto;padding:0 16px}
+    .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 6px 20px rgba(0,0,0,.06);padding:18px}
+    .grid{display:grid;grid-template-columns:280px 1fr;gap:16px}
+    .filters label{display:block;margin:8px 0 4px;font-weight:600}
+    .filters input,.filters select{width:100%;height:40px;border:1px solid #d1d5db;border-radius:10px;padding:8px 10px}
+    .tags{display:flex;gap:6px;flex-wrap:wrap}
+    .tag{padding:2px 8px;border-radius:999px;font-weight:700;font-size:.78rem}
+    .tag--ok{background:#e6f6ec;color:#0f5132;border:1px solid #badbcc}
+    .tag--bad{background:#fde9ec;color:#842029;border:1px solid #f5c2c7}
+    .card-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+  </style>
+  <script>
+    async function runSearch(){
+      const q = document.getElementById('q').value.trim();
+      const resp = await fetch('/api/search?q='+encodeURIComponent(q));
+      const j = await resp.json().catch(()=>({ok:false}));
+      const out = document.getElementById('out');
+      if (!j.ok){ out.innerHTML = 'No results'; return; }
+      out.innerHTML = (j.results||[]).map(h=>{
+        const ok = (cls, on)=>`<span class=\"tag ${on? 'tag--ok':'tag--bad'}\">${cls}</span>`;
+        const t = h.tags || {};
+        return `<div class=\"card\"><h3>${h.name||'Hotel'}</h3>
+          <div class=\"tags\">${ok('NET30', !!t.net30)}${ok('Directbill', !!t.directbill)}${ok('Perdiem Discount', !!t.perdiem_discount)}${t.preferred?'<span class=\"tag tag--ok\">Preferred</span>':''}</div>
+          <div style=\"color:#6b7280\">${[h.city,h.state,h.country].filter(Boolean).join(', ')}</div>
+        </div>`;
+      }).join('');
+    }
+    window.addEventListener('DOMContentLoaded', runSearch);
+  </script>
+  <script src="/chat.js"></script>
+  <link rel="stylesheet" href="/site.css">
+</head>
+<body>
+  <div class="wrap">
+    <h1>Search Hotels</h1>
+    <div class="grid">
+      <div class="card filters">
+        <label>Keywords</label>
+        <input id="q" placeholder="city, brand, amenities">
+        <button style="margin-top:8px" onclick="runSearch()">Search</button>
+      </div>
+      <div id="out" class="card-list"></div>
+    </div>
+  </div>
+    <script src="/nav.js"></script>
+</body>
+</html>
+
+

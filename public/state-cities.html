@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>State Cities - Per Diem Lookup – FEDEVENT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .loading { animation: spin 1s linear infinite; }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6">
+    <!-- Header -->
+    <section class="bg-white rounded-2xl shadow p-5">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-2xl font-semibold mb-1" id="stateTitle">Loading...</h2>
+          <p class="text-sm text-gray-600" id="stateSubtitle">Fetching per diem rates for all cities in this state</p>
+        </div>
+        <a href="/resources.html" class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors">
+          ← Back to Map
+        </a>
+      </div>
+      
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <div>
+          <label class="block text-sm font-medium mb-1">Fiscal Year</label>
+          <input id="yearInput" type="number" class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-black/10 p-2" />
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Month (1–12)</label>
+          <input id="monthInput" type="number" min="1" max="12" class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-black/10 p-2" />
+        </div>
+        <div class="flex items-end">
+          <button id="refreshBtn" class="w-full inline-flex items-center justify-center rounded-lg bg-black text-white px-4 py-2 font-medium hover:bg-gray-800">
+            Refresh Data
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Loading State -->
+    <section id="loadingCard" class="bg-white rounded-2xl shadow p-8 text-center">
+      <div class="loading w-8 h-8 border-4 border-gray-300 border-t-black rounded-full mx-auto mb-4"></div>
+      <p class="text-gray-600">Loading per diem data for all cities...</p>
+    </section>
+
+    <!-- Cities Grid -->
+    <section id="citiesGrid" class="hidden">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="citiesContainer">
+        <!-- Cities will be populated here -->
+      </div>
+    </section>
+
+    <!-- No Data State -->
+    <section id="noDataCard" class="bg-white rounded-2xl shadow p-8 text-center hidden">
+      <div class="text-gray-400 text-4xl mb-4">🏙️</div>
+      <h3 class="text-lg font-semibold mb-2">No Cities Found</h3>
+      <p class="text-gray-600">No per diem data available for this state. Try a different year or month.</p>
+    </section>
+
+    <!-- Error State -->
+    <section id="errorCard" class="bg-white rounded-2xl shadow p-8 text-center hidden">
+      <div class="text-red-400 text-4xl mb-4">⚠️</div>
+      <h3 class="text-lg font-semibold mb-2">Error Loading Data</h3>
+      <p class="text-gray-600" id="errorMessage">There was an error loading the per diem data.</p>
+    </section>
+  </main>
+
+  <script>
+    // Get URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const stateCode = urlParams.get('state');
+    const year = urlParams.get('year') || '2025';
+    const month = urlParams.get('month') || '';
+
+    // State name mapping
+    const STATE_NAMES = {
+      'AL': 'Alabama', 'AK': 'Alaska', 'AZ': 'Arizona', 'AR': 'Arkansas', 'CA': 'California',
+      'CO': 'Colorado', 'CT': 'Connecticut', 'DE': 'Delaware', 'DC': 'Washington DC', 'FL': 'Florida',
+      'GA': 'Georgia', 'HI': 'Hawaii', 'ID': 'Idaho', 'IL': 'Illinois', 'IN': 'Indiana',
+      'IA': 'Iowa', 'KS': 'Kansas', 'KY': 'Kentucky', 'LA': 'Louisiana', 'ME': 'Maine',
+      'MD': 'Maryland', 'MA': 'Massachusetts', 'MI': 'Michigan', 'MN': 'Minnesota', 'MS': 'Mississippi',
+      'MO': 'Missouri', 'MT': 'Montana', 'NE': 'Nebraska', 'NV': 'Nevada', 'NH': 'New Hampshire',
+      'NJ': 'New Jersey', 'NM': 'New Mexico', 'NY': 'New York', 'NC': 'North Carolina', 'ND': 'North Dakota',
+      'OH': 'Ohio', 'OK': 'Oklahoma', 'OR': 'Oregon', 'PA': 'Pennsylvania', 'RI': 'Rhode Island',
+      'SC': 'South Carolina', 'SD': 'South Dakota', 'TN': 'Tennessee', 'TX': 'Texas', 'UT': 'Utah',
+      'VT': 'Vermont', 'VA': 'Virginia', 'WA': 'Washington', 'WV': 'West Virginia', 'WI': 'Wisconsin',
+      'WY': 'Wyoming', 'PR': 'Puerto Rico'
+    };
+
+    // Elements
+    const stateTitle = document.getElementById('stateTitle');
+    const stateSubtitle = document.getElementById('stateSubtitle');
+    const yearInput = document.getElementById('yearInput');
+    const monthInput = document.getElementById('monthInput');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const loadingCard = document.getElementById('loadingCard');
+    const citiesGrid = document.getElementById('citiesGrid');
+    const citiesContainer = document.getElementById('citiesContainer');
+    const noDataCard = document.getElementById('noDataCard');
+    const errorCard = document.getElementById('errorCard');
+    const errorMessage = document.getElementById('errorMessage');
+
+    // Initialize
+    function initialize() {
+      if (!stateCode) {
+        showError('No state specified');
+        return;
+      }
+
+      const stateName = STATE_NAMES[stateCode] || stateCode;
+      stateTitle.textContent = `${stateName} Cities`;
+      stateSubtitle.textContent = `Per diem rates for all cities in ${stateName}`;
+      
+      yearInput.value = year;
+      monthInput.value = month;
+
+      loadCitiesData();
+    }
+
+    // Load cities data
+    async function loadCitiesData() {
+      showLoading();
+      
+      try {
+        const params = new URLSearchParams({
+          country: 'United States',
+          state: stateCode,
+          year: yearInput.value
+        });
+        
+        if (monthInput.value) {
+          params.set('month', monthInput.value);
+        }
+
+        const response = await fetch(`/api/perdiem?${params.toString()}`);
+        
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        
+        if (!data.ok) {
+          throw new Error(data.error || 'API returned error');
+        }
+
+        // Check if we have rates data
+        if (data.rates && Array.isArray(data.rates) && data.rates.length > 0) {
+          displayCities(data.rates);
+        } else {
+          showNoData();
+        }
+      } catch (error) {
+        showError(error.message);
+      }
+    }
+
+    // Display cities
+    function displayCities(rates) {
+      // Group rates by city
+      const cityMap = new Map();
+      
+      rates.forEach(rate => {
+        const city = rate.city || 'Unknown City';
+        if (!cityMap.has(city)) {
+          cityMap.set(city, []);
+        }
+        cityMap.get(city).push(rate);
+      });
+
+      // Create city cards
+      citiesContainer.innerHTML = '';
+      
+      Array.from(cityMap.entries()).sort(([a], [b]) => a.localeCompare(b)).forEach(([cityName, cityRates]) => {
+        const card = createCityCard(cityName, cityRates);
+        citiesContainer.appendChild(card);
+      });
+
+      showCities();
+    }
+
+    // Create city card
+    function createCityCard(cityName, rates) {
+      const card = document.createElement('div');
+      card.className = 'bg-white rounded-xl shadow p-4 hover:shadow-lg transition-shadow';
+      
+      // Get the first rate for display (they should all be similar for the same city)
+      const firstRate = rates[0];
+      const lodging = firstRate.lodging || 0;
+      const mie = firstRate.meals || 0;
+      
+      card.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-semibold text-lg">${cityName}</h3>
+          <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+            ${rates.length} location${rates.length > 1 ? 's' : ''}
+          </span>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3 mb-3">
+          <div class="text-center p-2 bg-blue-50 rounded-lg">
+            <div class="text-xl font-bold text-blue-600">$${lodging}</div>
+            <div class="text-xs text-gray-600">Lodging</div>
+          </div>
+          <div class="text-center p-2 bg-green-50 rounded-lg">
+            <div class="text-xl font-bold text-green-600">$${mie}</div>
+            <div class="text-xs text-gray-600">M&IE</div>
+          </div>
+        </div>
+        
+        <div class="text-xs text-gray-500">
+          <div>State: ${firstRate.state || stateCode}</div>
+          ${firstRate.county ? `<div>County: ${firstRate.county}</div>` : ''}
+        </div>
+      `;
+      
+      return card;
+    }
+
+    // Show different states
+    function showLoading() {
+      loadingCard.classList.remove('hidden');
+      citiesGrid.classList.add('hidden');
+      noDataCard.classList.add('hidden');
+      errorCard.classList.add('hidden');
+    }
+
+    function showCities() {
+      loadingCard.classList.add('hidden');
+      citiesGrid.classList.remove('hidden');
+      noDataCard.classList.add('hidden');
+      errorCard.classList.add('hidden');
+    }
+
+    function showNoData() {
+      loadingCard.classList.add('hidden');
+      citiesGrid.classList.add('hidden');
+      noDataCard.classList.remove('hidden');
+      errorCard.classList.add('hidden');
+    }
+
+    function showError(message) {
+      loadingCard.classList.add('hidden');
+      citiesGrid.classList.add('hidden');
+      noDataCard.classList.add('hidden');
+      errorCard.classList.remove('hidden');
+      errorMessage.textContent = message;
+    }
+
+    // Event listeners
+    refreshBtn.addEventListener('click', loadCitiesData);
+
+    // Initialize on load
+    initialize();
+  </script>
+</body>
+</html>

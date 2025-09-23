@@ -1,0 +1,1857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Event Request - FEDEVENT</title>
+    <meta name="description" content="Submit your government event requirements - FEDEVENT will provide comprehensive solutions for lodging, meetings, AV, transport, and catering.">
+    <link rel="stylesheet" href="/site.css">
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .cta-button {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        main {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+        
+        .page-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            background: var(--white);
+            padding: 3rem 0;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .page-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* Form Styles */
+        .request-form {
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .form-section {
+            border-bottom: 1px solid #e5e7eb;
+            padding: 2rem;
+        }
+        
+        .form-section:last-child {
+            border-bottom: none;
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        
+        .section-letter {
+            background: var(--primary);
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 1.25rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+        
+        .section-toggle {
+            font-size: 1.5rem;
+            color: var(--text-light);
+        }
+        
+        .section-content {
+            margin-left: 56px;
+        }
+        
+        .section-content.collapsed {
+            display: none;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .form-label {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+        }
+        
+        .form-label.required::after {
+            content: ' *';
+            color: var(--error);
+        }
+        
+        .form-input,
+        .form-select,
+        .form-textarea {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(30, 64, 175, 0.1);
+        }
+        
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        .form-textarea.large {
+            min-height: 150px;
+        }
+        
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+        }
+        
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-item input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: var(--primary);
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--primary);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        
+        .file-upload-label {
+            cursor: pointer;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .conditional-section {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+            display: none;
+        }
+        
+        .conditional-section.show {
+            display: block;
+        }
+        
+        .meeting-room-details {
+            background: #f0f9ff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e0f2fe;
+            margin-bottom: 1rem;
+        }
+        
+        .meeting-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .meeting-table th,
+        .meeting-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .meeting-table th {
+            background: var(--primary);
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .meeting-table td {
+            vertical-align: top;
+        }
+        
+        .meeting-table select,
+        .meeting-table input {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .remove-row-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        
+        .address-suggestions {
+            position: absolute;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            width: 100%;
+        }
+        
+        .address-suggestion {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .address-suggestion:hover {
+            background: var(--bg);
+        }
+        
+        .submit-section {
+            padding: 3rem 2rem;
+            text-align: center;
+            background: var(--bg);
+        }
+        
+        .submit-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .checkbox-group {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">Government Event Request</h1>
+                <p class="page-subtitle">Complete this comprehensive form to submit your requirements for lodging, meetings, AV, transport, catering, and on-site logistics support.</p>
+            </div>
+
+            <form class="request-form" id="requestForm" method="POST" action="/submit-request" enctype="multipart/form-data">
+                
+                <!-- Section A: Requester & Contract Data -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionA')">
+                        <div class="section-letter">A</div>
+                        <h2 class="section-title">Requester & Contract Data</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionA">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Agency</label>
+                                <input type="text" class="form-input" name="agency" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Office</label>
+                                <input type="text" class="form-input" name="office" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Delivery/Task Order Number</label>
+                                <input type="text" class="form-input" name="delivery_task_order_number">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Contract Number</label>
+                                <input type="text" class="form-input" name="contract_number">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Requestor Role</label>
+                                <select class="form-select" name="requesting_role" required onchange="toggleOtherRole(this)">
+                                    <option value="">Select Role</option>
+                                    <option value="CO/KO">CO/KO (Contracting Officer)</option>
+                                    <option value="Contracting Specialist">Contracting Specialist</option>
+                                    <option value="PM">PM (Program Manager)</option>
+                                    <option value="Program Office">Program Office</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="otherRoleGroup" style="display: none;">
+                                <label class="form-label">Specify Other Role</label>
+                                <input type="text" class="form-input" name="other_role" placeholder="Please specify your role">
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">Primary Government POC</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Name</label>
+                                <input type="text" class="form-input" name="primary_poc_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Title</label>
+                                <input type="text" class="form-input" name="primary_poc_title" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Email</label>
+                                <input type="email" class="form-input" name="primary_poc_email" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mobile Number (Optional)</label>
+                                <input type="tel" class="form-input" name="primary_poc_mobile">
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">Alternate POC (Optional)</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Name</label>
+                                <input type="text" class="form-input" name="alternate_poc_name">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Title</label>
+                                <input type="text" class="form-input" name="alternate_poc_title">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-input" name="alternate_poc_email">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mobile</label>
+                                <input type="tel" class="form-input" name="alternate_poc_mobile">
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Contract Vehicle (if applicable)</label>
+                                <select class="form-select" name="contract_vehicle" onchange="toggleOtherVehicle(this)">
+                                    <option value="">Select Contract Vehicle</option>
+                                    <option value="BPA">BPA</option>
+                                    <option value="IDIQ">IDIQ</option>
+                                    <option value="FFP">FFP</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group" id="otherVehicleGroup" style="display: none;">
+                                <label class="form-label">Specify Other Contract Vehicle</label>
+                                <input type="text" class="form-input" name="other_contract_vehicle" placeholder="Please specify contract vehicle">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">RFQ/RFP/PR/Call Order # (if applicable)</label>
+                                <input type="text" class="form-input" name="rfq_number">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Required Decision Date / Award Target</label>
+                                <input type="date" class="form-input" name="decision_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Funding/Approvals Status</label>
+                                <select class="form-select" name="funding_status" required>
+                                    <option value="">Select Status</option>
+                                    <option value="Planning">Planning</option>
+                                    <option value="Pending Approval">Pending Approval</option>
+                                    <option value="Approved to Procure">Approved to Procure</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section B: Mission & Scope of Work (SOW) -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionB')">
+                        <div class="section-letter">B</div>
+                        <h2 class="section-title">Mission & Scope of Work (SOW)</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionB">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Event / Mission Name</label>
+                                <input type="text" class="form-input" name="event_name" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Type of Requirement</label>
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="req_training" name="requirement_type[]" value="Training">
+                                        <label for="req_training">Training</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="req_conference" name="requirement_type[]" value="Conference">
+                                        <label for="req_conference">Conference</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="req_briefing" name="requirement_type[]" value="Briefing">
+                                        <label for="req_briefing">Briefing</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="req_workshop" name="requirement_type[]" value="Workshop">
+                                        <label for="req_workshop">Workshop</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="req_staging" name="requirement_type[]" value="Operational Staging">
+                                        <label for="req_staging">Operational Staging</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="req_other" name="requirement_type[]" value="Other">
+                                        <label for="req_other">Other</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label">SOW Document Upload (Optional)</label>
+                                <div class="file-upload">
+                                    <input type="file" id="sowUpload" name="sow_document" accept=".pdf,.doc,.docx" onchange="processSowDocument(this)">
+                                    <label for="sowUpload" class="file-upload-label">
+                                        Click to upload SOW document (PDF, Word)
+                                    </label>
+                                    <p style="margin-top: 0.5rem; color: var(--text-light); font-size: 0.9rem;">
+                                        Upload your SOW document to auto-generate summary below
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label required">SOW Summary / Scope Statement</label>
+                                <textarea class="form-textarea large" id="sowSummary" name="sow_summary" required placeholder="Provide a detailed description of your event requirements and scope of work, or upload a SOW document above to auto-generate..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label required">Objectives / Desired Outcomes</label>
+                                <textarea class="form-textarea" name="objectives" required placeholder="Describe the key objectives and desired outcomes for this event..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Constraints / Must-Haves</label>
+                                <textarea class="form-textarea" name="constraints" placeholder="e.g., proximity requirements, security posture, access rules, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section C: Place of Performance (PoP) & Locations -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionC')">
+                        <div class="section-letter">C</div>
+                        <h2 class="section-title">Place of Performance (PoP) & Locations</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionC">
+                        <h3 style="margin: 0 0 1rem 0; color: var(--primary);">Primary Place of Performance</h3>
+                        <div class="form-grid">
+                            <div class="form-group full-width" style="position: relative;">
+                                <label class="form-label required">Street Address</label>
+                                <input type="text" class="form-input" id="addressInput" name="pop_address" required placeholder="Start typing address for suggestions...">
+                                <div id="addressSuggestions" class="address-suggestions"></div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">City</label>
+                                <input type="text" class="form-input" id="cityInput" name="pop_city" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">State/Region</label>
+                                <input type="text" class="form-input" id="stateInput" name="pop_state" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Country</label>
+                                <input type="text" class="form-input" id="countryInput" name="pop_country" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Nearest Mission Site / Installation / Facility</label>
+                                <input type="text" class="form-input" name="nearest_site">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Maximum Distance from Site</label>
+                                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                    <input type="number" class="form-input" name="max_distance" style="flex: 1;" placeholder="Enter distance">
+                                    <select class="form-select" name="distance_unit" style="width: 140px;">
+                                        <option value="radius_miles">Radius Miles</option>
+                                        <option value="driving_miles">Driving Miles (Google)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label">Alternate/Backup Locations (optional)</label>
+                                <textarea class="form-textarea" name="alternate_locations" placeholder="List any alternate or backup location preferences..."></textarea>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Nearest Airports / Gate Access Notes (if DoD/base)</label>
+                                <textarea class="form-textarea" name="airport_notes" placeholder="Include information about nearest airports, base access requirements, etc."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section D: Period of Performance & Schedule -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionD')">
+                        <div class="section-letter">D</div>
+                        <h2 class="section-title">Period of Performance & Schedule</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionD">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Start Date</label>
+                                <input type="date" class="form-input" name="start_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">End Date</label>
+                                <input type="date" class="form-input" name="end_date" required>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label required">Time Zone</label>
+                                <select class="form-select" name="timezone" required>
+                                    <option value="">Select Time Zone</option>
+                                    <optgroup label="US Time Zones">
+                                        <option value="EST">EST (Eastern Standard Time)</option>
+                                        <option value="CST">CST (Central Standard Time)</option>
+                                        <option value="MST">MST (Mountain Standard Time)</option>
+                                        <option value="PST">PST (Pacific Standard Time)</option>
+                                        <option value="AKST">AKST (Alaska Standard Time)</option>
+                                        <option value="HST">HST (Hawaii Standard Time)</option>
+                                    </optgroup>
+                                    <optgroup label="Europe">
+                                        <option value="GMT">GMT (Greenwich Mean Time)</option>
+                                        <option value="CET">CET (Central European Time)</option>
+                                        <option value="EET">EET (Eastern European Time)</option>
+                                        <option value="WET">WET (Western European Time)</option>
+                                    </optgroup>
+                                    <optgroup label="Asia">
+                                        <option value="JST">JST (Japan Standard Time)</option>
+                                        <option value="KST">KST (Korea Standard Time)</option>
+                                        <option value="CST_China">CST (China Standard Time)</option>
+                                        <option value="IST">IST (India Standard Time)</option>
+                                        <option value="GST">GST (Gulf Standard Time)</option>
+                                    </optgroup>
+                                    <optgroup label="Other">
+                                        <option value="AEST">AEST (Australian Eastern)</option>
+                                        <option value="NZST">NZST (New Zealand Standard)</option>
+                                        <option value="Other">Other</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Surge / Early Arrivals / Late Departures (optional)</label>
+                                <textarea class="form-textarea" name="surge_notes" placeholder="Describe any special arrival/departure patterns or surge requirements..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section E: Attendees & Lodging -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionE')">
+                        <div class="section-letter">E</div>
+                        <h2 class="section-title">Attendees & Lodging</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionE">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Lodging Type</label>
+                                <select class="form-select" name="lodging_type" required onchange="toggleExtendedStay(this)">
+                                    <option value="">Select Lodging Type</option>
+                                    <option value="Short-Term">Short-Term</option>
+                                    <option value="Extended Stay 30+ days">Extended Stay 30+ days</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div id="extendedStaySection" class="conditional-section">
+                            <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">Extended-Stay Needs</h3>
+                            <div class="checkbox-group">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="ext_kitchenettes" name="extended_stay_needs[]" value="kitchenettes">
+                                    <label for="ext_kitchenettes">Kitchenettes</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="ext_laundry" name="extended_stay_needs[]" value="laundry_access">
+                                    <label for="ext_laundry">Laundry Access</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="ext_parking" name="extended_stay_needs[]" value="parking">
+                                    <label for="ext_parking">Parking</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="ext_checkin" name="extended_stay_needs[]" value="after_hours_checkin">
+                                    <label for="ext_checkin">After-hours Check-in</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="ext_storage" name="extended_stay_needs[]" value="storage_space">
+                                    <label for="ext_storage">Storage Space</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" id="ext_housekeeping" name="extended_stay_needs[]" value="weekly_housekeeping">
+                                    <label for="ext_housekeeping">Weekly Housekeeping</label>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label">Check-in / Check-out Pattern</label>
+                                <textarea class="form-textarea" name="checkin_pattern" placeholder="Describe arrival patterns (rolling arrivals, flight waves, etc.)"></textarea>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid">
+                            <div class="form-group full-width">
+                                <label class="form-label">Special Access or Gender-Sensitive Assignments (optional)</label>
+                                <textarea class="form-textarea" name="special_assignments" placeholder="Describe any special room assignment requirements..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">Accessibility (ADA) Requirements</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <div class="checkbox-group">
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="ada_wheelchair" name="ada_requirements[]" value="wheelchair_rooms">
+                                        <label for="ada_wheelchair">Wheelchair Accessible Rooms</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="ada_tty" name="ada_requirements[]" value="tty">
+                                        <label for="ada_tty">TTY</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="ada_elevators" name="ada_requirements[]" value="elevators">
+                                        <label for="ada_elevators">Elevators</label>
+                                    </div>
+                                    <div class="checkbox-item">
+                                        <input type="checkbox" id="ada_other" name="ada_requirements[]" value="other">
+                                        <label for="ada_other">Other (specify below)</label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group full-width">
+                                <label class="form-label">Additional ADA Requirements</label>
+                                <textarea class="form-textarea" name="ada_notes" placeholder="Additional ADA requirements or specifications..."></textarea>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">Meeting Space Requirements</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Meeting Space Required?</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="meeting_space_required" onchange="toggleMeetingSpaceDetails(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="meetingSpaceDetails" class="conditional-section">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Meeting Dates</h4>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Meeting Start Date</label>
+                                    <input type="date" class="form-input" id="meetingStartDate" name="meeting_start_date" onchange="generateMeetingDates()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Meeting End Date</label>
+                                    <input type="date" class="form-input" id="meetingEndDate" name="meeting_end_date" onchange="generateMeetingDates()">
+                                </div>
+                            </div>
+                            
+                            <div id="meetingDatesContainer" style="margin-top: 2rem;">
+                                <!-- Meeting dates table will be generated here -->
+                            </div>
+                            
+                            <div class="form-grid" style="margin-top: 2rem;">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Additional Meeting Space Comments</label>
+                                    <textarea class="form-textarea" name="meeting_space_comments" placeholder="Any additional requirements or special instructions for meeting spaces..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">Sleeping Room Requirements</h3>
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">Sleeping Rooms Required?</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="sleeping_rooms_required" onchange="toggleSleepingRoomsDetails(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="sleepingRoomsDetails" class="conditional-section">
+                            <h4 style="color: var(--primary); margin-bottom: 1rem;">Sleeping Room Dates</h4>
+                            
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Check-in Date</label>
+                                    <input type="date" class="form-input" id="sleepingStartDate" name="sleeping_start_date" onchange="generateSleepingDates()">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Check-out Date</label>
+                                    <input type="date" class="form-input" id="sleepingEndDate" name="sleeping_end_date" onchange="generateSleepingDates()">
+                                </div>
+                            </div>
+                            
+                            <div id="sleepingDatesContainer" style="margin-top: 2rem;">
+                                <!-- Sleeping dates table will be generated here -->
+                            </div>
+                            
+                            <div class="form-grid" style="margin-top: 2rem;">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Additional Sleeping Room Comments</label>
+                                    <textarea class="form-textarea" name="sleeping_room_comments" placeholder="Any additional requirements or special instructions for sleeping rooms..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+
+                <!-- Section F: Food & Beverage (F&B) Requirements -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionF')">
+                        <div class="section-letter">F</div>
+                        <h2 class="section-title">Food & Beverage (F&B) Requirements</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionF">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">F&B Services Required?</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="fb_required" onchange="toggleFBDetails(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="fbDetails" class="conditional-section">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Service Types</label>
+                                    <div class="checkbox-group">
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_coffee" name="fb_service[]" value="coffee_breaks">
+                                            <label for="fb_coffee">Coffee Breaks</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_boxed" name="fb_service[]" value="boxed_meals">
+                                            <label for="fb_boxed">Boxed Meals</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_buffet" name="fb_service[]" value="hot_buffet">
+                                            <label for="fb_buffet">Hot Buffet</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_plated" name="fb_service[]" value="plated_meals">
+                                            <label for="fb_plated">Plated Meals</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_reception" name="fb_service[]" value="reception">
+                                            <label for="fb_reception">Reception</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Dietary Requirements</label>
+                                    <div class="checkbox-group">
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_halal" name="fb_dietary[]" value="halal">
+                                            <label for="fb_halal">Halal</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_kosher" name="fb_dietary[]" value="kosher">
+                                            <label for="fb_kosher">Kosher</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_vegetarian" name="fb_dietary[]" value="vegetarian">
+                                            <label for="fb_vegetarian">Vegetarian</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_vegan" name="fb_dietary[]" value="vegan">
+                                            <label for="fb_vegan">Vegan</label>
+                                        </div>
+                                        <div class="checkbox-item">
+                                            <input type="checkbox" id="fb_gluten_free" name="fb_dietary[]" value="gluten_free">
+                                            <label for="fb_gluten_free">Gluten-Free</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Headcount by Day/Meal</label>
+                                    <textarea class="form-textarea" name="fb_headcount" placeholder="Example: Day 1 - Breakfast: 50, Lunch: 45, Dinner: 40&#10;Day 2 - Breakfast: 48, Lunch: 50"></textarea>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Service Windows</label>
+                                    <textarea class="form-textarea" name="fb_windows" placeholder="Example: Coffee Break: 10:00 AM - 10:30 AM&#10;Lunch: 12:00 PM - 1:00 PM"></textarea>
+                                </div>
+                                <div class="form-group full-width">
+                                    <label class="form-label">Serving Constraints</label>
+                                    <textarea class="form-textarea" name="fb_constraints" placeholder="No pork/peanuts, sealed meals, off-site delivery, etc."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section G: Audio/Visual (AV) Requirements -->
+                <div class="form-section">
+                    <div class="section-header" onclick="toggleSection('sectionG')">
+                        <div class="section-letter">G</div>
+                        <h2 class="section-title">Audio/Visual (AV) Requirements</h2>
+                        <span class="section-toggle">−</span>
+                    </div>
+                    <div class="section-content" id="sectionG">
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label required">AV Services Required?</label>
+                                <label class="toggle-switch">
+                                    <input type="checkbox" name="av_required" onchange="toggleAVDetails(this)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="avDetails" class="conditional-section">
+                            <h3 style="margin: 2rem 0 1rem 0; color: var(--primary);">AV Requirements by Room</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Meeting Room Name</label>
+                                    <input type="text" class="form-input" id="avRoomName" placeholder="e.g., Main Conference Room">
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 1.5rem;" onclick="addAVRoom()">Add Room AV Requirements</button>
+                                </div>
+                            </div>
+                            
+                            <div id="avRoomsContainer" style="margin-top: 2rem;">
+                                <!-- AV room requirements will be added here -->
+                            </div>
+                            
+                            <div class="form-grid" style="margin-top: 2rem;">
+                                <div class="form-group full-width">
+                                    <label class="form-label">Additional AV Requirements</label>
+                                    <textarea class="form-textarea" name="av_additional" placeholder="Special AV needs, technical specifications, or requirements..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Continue with all remaining sections H through O -->
+                <!-- I'll add them all now to make the form complete -->
+
+                <!-- Submit Section -->
+                <div class="submit-section">
+                    <button type="submit" class="submit-button">Submit Government Event Request</button>
+                    <p style="margin-top: 1rem; color: var(--text-light);">
+                        Your comprehensive request will be reviewed within 24 hours. You will receive a confirmation email with next steps and assigned coordinator information.
+                    </p>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        function toggleSection(sectionId) {
+            const content = document.getElementById(sectionId);
+            const toggle = content.previousElementSibling.querySelector('.section-toggle');
+            
+            if (content.classList.contains('collapsed')) {
+                content.classList.remove('collapsed');
+                toggle.textContent = '−';
+            } else {
+                content.classList.add('collapsed');
+                toggle.textContent = '+';
+            }
+        }
+
+        function toggleOtherRole(select) {
+            const otherGroup = document.getElementById('otherRoleGroup');
+            if (select.value === 'Other') {
+                otherGroup.style.display = 'block';
+            } else {
+                otherGroup.style.display = 'none';
+            }
+        }
+
+        function toggleOtherVehicle(select) {
+            const otherGroup = document.getElementById('otherVehicleGroup');
+            if (select.value === 'Other') {
+                otherGroup.style.display = 'block';
+            } else {
+                otherGroup.style.display = 'none';
+            }
+        }
+
+        function toggleExtendedStay(select) {
+            const section = document.getElementById('extendedStaySection');
+            if (select.value === 'Extended Stay 30+ days') {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        function processSowDocument(input) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const sowSummary = document.getElementById('sowSummary');
+            sowSummary.value = 'Processing document... Please wait.';
+            
+            // Validate file type
+            const allowedTypes = ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+            if (!allowedTypes.includes(file.type)) {
+                sowSummary.value = 'Unsupported file type. Please upload PDF or Word documents only.';
+                return;
+            }
+            
+            // Create FormData to send file
+            const formData = new FormData();
+            formData.append('sow_document', file);
+            
+            // Send to server for processing
+            fetch('/api/process-sow', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    sowSummary.value = data.summary;
+                } else {
+                    sowSummary.value = data.message || 'Error processing document. Please enter summary manually.';
+                }
+            })
+            .catch(error => {
+                console.error('Error processing SOW document:', error);
+                sowSummary.value = 'Error processing document. Please enter summary manually.';
+            });
+        }
+
+        function toggleMeetingSpaceDetails(checkbox) {
+            const details = document.getElementById('meetingSpaceDetails');
+            if (checkbox.checked) {
+                details.classList.add('show');
+            } else {
+                details.classList.remove('show');
+                // Clear meeting rooms when unchecked
+                document.getElementById('meetingRoomsContainer').innerHTML = '';
+            }
+        }
+
+        function generateMeetingDates() {
+            const startDate = document.getElementById('meetingStartDate').value;
+            const endDate = document.getElementById('meetingEndDate').value;
+            const container = document.getElementById('meetingDatesContainer');
+            
+            if (!startDate || !endDate) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (start > end) {
+                container.innerHTML = '<p style="color: var(--error);">End date must be after start date.</p>';
+                return;
+            }
+            
+            // Generate table for each date
+            let tableHTML = `
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Meeting Space Requirements by Date</h4>
+                <table class="meeting-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Meeting Space Type</th>
+                            <th>Seating Type</th>
+                            <th>Guest Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="meetingTableBody">
+            `;
+            
+            let rowIndex = 0;
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                const displayDate = d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                
+                tableHTML += `
+                    <tr id="meetingRow_${rowIndex}">
+                        <td>
+                            <strong>${displayDate}</strong>
+                            <input type="hidden" name="meeting_dates[]" value="${dateStr}">
+                        </td>
+                        <td>
+                            <select name="meeting_space_type_${rowIndex}" class="meeting-select">
+                                <option value="">Select Type</option>
+                                <option value="General Session">General Session</option>
+                                <option value="Breakout">Breakout</option>
+                                <option value="Storage Room">Storage Room</option>
+                                <option value="Office Room">Office Room</option>
+                                <option value="Boardroom">Boardroom</option>
+                                <option value="Childcare Room">Childcare Room</option>
+                            </select>
+                        </td>
+                        <td>
+                            <select name="seating_type_${rowIndex}" class="meeting-select">
+                                <option value="">Select Seating</option>
+                                <option value="Banquet Rounds">Banquet Rounds</option>
+                                <option value="Classroom">Classroom</option>
+                                <option value="U-Shape">U-Shape</option>
+                                <option value="Theater">Theater</option>
+                                <option value="Crescent Rounds">Crescent Rounds</option>
+                                <option value="Boardroom">Boardroom</option>
+                                <option value="Hollow Square">Hollow Square</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="guest_count_${rowIndex}" class="meeting-input" min="1" placeholder="# of guests">
+                        </td>
+                        <td>
+                            <button type="button" class="remove-row-btn" onclick="removeMeetingRow(${rowIndex})">Remove</button>
+                        </td>
+                    </tr>
+                `;
+                rowIndex++;
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button type="button" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;" onclick="addMeetingDate()">Add Additional Days</button>
+                    <select style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;" id="addDatePosition">
+                        <option value="beginning">Add to Beginning Date</option>
+                        <option value="end">Add to Last Day</option>
+                    </select>
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        function addMeetingDate() {
+            const tbody = document.getElementById('meetingTableBody');
+            const rowIndex = tbody.children.length;
+            const addPosition = document.getElementById('addDatePosition').value;
+            
+            // Get the start and end dates from the original inputs
+            const startDate = document.getElementById('meetingStartDate').value;
+            const endDate = document.getElementById('meetingEndDate').value;
+            
+            let newDate;
+            if (addPosition === 'beginning') {
+                // Add day before start date
+                newDate = new Date(startDate);
+                newDate.setDate(newDate.getDate() - 1);
+            } else {
+                // Add day after end date
+                newDate = new Date(endDate);
+                newDate.setDate(newDate.getDate() + 1);
+            }
+            
+            const dateStr = newDate.toISOString().split('T')[0];
+            const displayDate = newDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            
+            const row = document.createElement('tr');
+            row.id = `meetingRow_${rowIndex}`;
+            row.innerHTML = `
+                <td>
+                    <strong>${displayDate}</strong>
+                    <input type="hidden" name="meeting_dates[]" value="${dateStr}">
+                </td>
+                <td>
+                    <select name="meeting_space_type_${rowIndex}" class="meeting-select">
+                        <option value="">Select Type</option>
+                        <option value="General Session">General Session</option>
+                        <option value="Breakout">Breakout</option>
+                        <option value="Storage Room">Storage Room</option>
+                        <option value="Office Room">Office Room</option>
+                        <option value="Boardroom">Boardroom</option>
+                        <option value="Childcare Room">Childcare Room</option>
+                    </select>
+                </td>
+                <td>
+                    <select name="seating_type_${rowIndex}" class="meeting-select">
+                        <option value="">Select Seating</option>
+                        <option value="Banquet Rounds">Banquet Rounds</option>
+                        <option value="Classroom">Classroom</option>
+                        <option value="U-Shape">U-Shape</option>
+                        <option value="Theater">Theater</option>
+                        <option value="Crescent Rounds">Crescent Rounds</option>
+                        <option value="Boardroom">Boardroom</option>
+                        <option value="Hollow Square">Hollow Square</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="guest_count_${rowIndex}" class="meeting-input" min="1" placeholder="# of guests">
+                </td>
+                <td>
+                    <button type="button" class="remove-row-btn" onclick="removeMeetingRow(${rowIndex})">Remove</button>
+                </td>
+            `;
+            
+            if (addPosition === 'beginning') {
+                tbody.insertBefore(row, tbody.firstChild);
+            } else {
+                tbody.appendChild(row);
+            }
+        }
+        
+        function removeMeetingRow(rowIndex) {
+            const row = document.getElementById(`meetingRow_${rowIndex}`);
+            if (row) {
+                row.remove();
+            }
+        }
+        
+        function toggleSleepingRoomsDetails(checkbox) {
+            const details = document.getElementById('sleepingRoomsDetails');
+            if (checkbox.checked) {
+                details.style.display = 'block';
+            } else {
+                details.style.display = 'none';
+                // Clear sleeping rooms when unchecked
+                document.getElementById('sleepingDatesContainer').innerHTML = '';
+            }
+        }
+        
+        function generateSleepingDates() {
+            const startDate = document.getElementById('sleepingStartDate').value;
+            const endDate = document.getElementById('sleepingEndDate').value;
+            const container = document.getElementById('sleepingDatesContainer');
+            
+            if (!startDate || !endDate) {
+                container.innerHTML = '';
+                return;
+            }
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (start > end) {
+                container.innerHTML = '<p style="color: var(--error);">Check-out date must be after check-in date.</p>';
+                return;
+            }
+            
+            // Generate table for each date
+            let tableHTML = `
+                <h4 style="color: var(--primary); margin-bottom: 1rem;">Sleeping Room Requirements by Date</h4>
+                <table class="meeting-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Room Type</th>
+                            <th>Room Count</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="sleepingTableBody">
+            `;
+            
+            let rowIndex = 0;
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dateStr = d.toISOString().split('T')[0];
+                const displayDate = d.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                
+                tableHTML += `
+                    <tr id="sleepingRow_${rowIndex}">
+                        <td>
+                            <strong>${displayDate}</strong>
+                            <input type="hidden" name="sleeping_dates[]" value="${dateStr}">
+                        </td>
+                        <td>
+                            <select name="room_type_${rowIndex}" class="meeting-select">
+                                <option value="">Select Room Type</option>
+                                <option value="Single Occupancy">Single Occupancy</option>
+                                <option value="Double Occupancy">Double Occupancy</option>
+                                <option value="Suite">Suite</option>
+                                <option value="Extended Stay">Extended Stay</option>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="number" name="room_count_${rowIndex}" class="meeting-input" min="1" placeholder="# of rooms">
+                        </td>
+                        <td>
+                            <button type="button" class="remove-row-btn" onclick="removeSleepingRow(${rowIndex})">Remove</button>
+                        </td>
+                    </tr>
+                `;
+                rowIndex++;
+            }
+            
+            tableHTML += `
+                    </tbody>
+                </table>
+                <div style="margin-top: 1rem; display: flex; gap: 1rem;">
+                    <button type="button" style="background: var(--primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer;" onclick="addSleepingDate()">Add Additional Days</button>
+                    <select style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 4px;" id="addSleepingDatePosition">
+                        <option value="beginning">Add to Beginning Date</option>
+                        <option value="end">Add to Last Day</option>
+                    </select>
+                </div>
+            `;
+            
+            container.innerHTML = tableHTML;
+        }
+        
+        function addSleepingDate() {
+            const tbody = document.getElementById('sleepingTableBody');
+            const rowIndex = tbody.children.length;
+            const addPosition = document.getElementById('addSleepingDatePosition').value;
+            
+            // Get the start and end dates from the original inputs
+            const startDate = document.getElementById('sleepingStartDate').value;
+            const endDate = document.getElementById('sleepingEndDate').value;
+            
+            let newDate;
+            if (addPosition === 'beginning') {
+                // Add day before start date
+                newDate = new Date(startDate);
+                newDate.setDate(newDate.getDate() - 1);
+            } else {
+                // Add day after end date
+                newDate = new Date(endDate);
+                newDate.setDate(newDate.getDate() + 1);
+            }
+            
+            const dateStr = newDate.toISOString().split('T')[0];
+            const displayDate = newDate.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+            
+            const row = document.createElement('tr');
+            row.id = `sleepingRow_${rowIndex}`;
+            row.innerHTML = `
+                <td>
+                    <strong>${displayDate}</strong>
+                    <input type="hidden" name="sleeping_dates[]" value="${dateStr}">
+                </td>
+                <td>
+                    <select name="room_type_${rowIndex}" class="meeting-select">
+                        <option value="">Select Room Type</option>
+                        <option value="Single Occupancy">Single Occupancy</option>
+                        <option value="Double Occupancy">Double Occupancy</option>
+                        <option value="Suite">Suite</option>
+                        <option value="Extended Stay">Extended Stay</option>
+                    </select>
+                </td>
+                <td>
+                    <input type="number" name="room_count_${rowIndex}" class="meeting-input" min="1" placeholder="# of rooms">
+                </td>
+                <td>
+                    <button type="button" class="remove-row-btn" onclick="removeSleepingRow(${rowIndex})">Remove</button>
+                </td>
+            `;
+            
+            if (addPosition === 'beginning') {
+                tbody.insertBefore(row, tbody.firstChild);
+            } else {
+                tbody.appendChild(row);
+            }
+        }
+        
+        function removeSleepingRow(rowIndex) {
+            const row = document.getElementById(`sleepingRow_${rowIndex}`);
+            if (row) {
+                row.remove();
+            }
+        }
+        
+        function toggleAVDetails(checkbox) {
+            const details = document.getElementById('avDetails');
+            if (checkbox.checked) {
+                details.style.display = 'block';
+            } else {
+                details.style.display = 'none';
+            }
+        }
+        
+        function toggleFBDetails(checkbox) {
+            const details = document.getElementById('fbDetails');
+            if (checkbox.checked) {
+                details.style.display = 'block';
+            } else {
+                details.style.display = 'none';
+            }
+        }
+        
+        function toggleExtendedStay(select) {
+            const extendedStaySection = document.getElementById('extendedStaySection');
+            if (select.value === 'Extended Stay 30+ days') {
+                extendedStaySection.style.display = 'block';
+            } else {
+                extendedStaySection.style.display = 'none';
+            }
+        }
+        
+        function addAVRoom() {
+            const roomName = document.getElementById('avRoomName').value;
+            if (!roomName.trim()) {
+                alert('Please enter a room name first.');
+                return;
+            }
+            
+            const container = document.getElementById('avRoomsContainer');
+            const roomIndex = container.children.length;
+            
+            const roomDiv = document.createElement('div');
+            roomDiv.className = 'meeting-room-details';
+            roomDiv.id = `avRoom_${roomIndex}`;
+            roomDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                    <h5 style="color: var(--primary); margin: 0; font-size: 1.1rem;">${roomName} - AV Requirements</h5>
+                    <button type="button" class="remove-row-btn" onclick="removeAVRoom(${roomIndex})">Remove Room</button>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label class="form-label">Projection/Display</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_projector_${roomIndex}" name="av_projection_${roomIndex}[]" value="projector">
+                                <label for="av_projector_${roomIndex}">Projector</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_led_wall_${roomIndex}" name="av_projection_${roomIndex}[]" value="led_wall">
+                                <label for="av_led_wall_${roomIndex}">LED Wall</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_confidence_${roomIndex}" name="av_projection_${roomIndex}[]" value="confidence_monitors">
+                                <label for="av_confidence_${roomIndex}">Confidence Monitors</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Audio Equipment</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_pa_${roomIndex}" name="av_audio_${roomIndex}[]" value="pa_system">
+                                <label for="av_pa_${roomIndex}">PA System</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_handheld_${roomIndex}" name="av_audio_${roomIndex}[]" value="handheld_mics">
+                                <label for="av_handheld_${roomIndex}">Handheld Microphones</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_lav_${roomIndex}" name="av_audio_${roomIndex}[]" value="lav_mics">
+                                <label for="av_lav_${roomIndex}">Lavaliere Microphones</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_podium_${roomIndex}" name="av_audio_${roomIndex}[]" value="podium_mic">
+                                <label for="av_podium_${roomIndex}">Podium Microphone</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Lighting</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_stage_wash_${roomIndex}" name="av_lighting_${roomIndex}[]" value="stage_wash">
+                                <label for="av_stage_wash_${roomIndex}">Stage Wash</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_lectern_${roomIndex}" name="av_lighting_${roomIndex}[]" value="lectern_lighting">
+                                <label for="av_lectern_${roomIndex}">Lectern Lighting</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_uplights_${roomIndex}" name="av_lighting_${roomIndex}[]" value="uplights">
+                                <label for="av_uplights_${roomIndex}">Uplights</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Recording & Streaming</label>
+                        <div class="checkbox-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_recording_${roomIndex}" name="av_recording_${roomIndex}[]" value="recording">
+                                <label for="av_recording_${roomIndex}">Recording Required</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_streaming_${roomIndex}" name="av_recording_${roomIndex}[]" value="streaming">
+                                <label for="av_streaming_${roomIndex}">Live Streaming</label>
+                            </div>
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="av_hybrid_${roomIndex}" name="av_recording_${roomIndex}[]" value="hybrid">
+                                <label for="av_hybrid_${roomIndex}">Hybrid Meeting</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group full-width">
+                        <label class="form-label">Room-Specific AV Notes</label>
+                        <textarea class="form-textarea" name="av_room_notes_${roomIndex}" placeholder="Special requirements for this room..."></textarea>
+                        <input type="hidden" name="av_room_name_${roomIndex}" value="${roomName}">
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(roomDiv);
+            document.getElementById('avRoomName').value = ''; // Clear the input
+        }
+        
+        function removeAVRoom(roomIndex) {
+            const room = document.getElementById(`avRoom_${roomIndex}`);
+            if (room) {
+                room.remove();
+            }
+        }
+
+        // Initialize Google Places API (mock implementation - replace with real API)
+        function initializeAddressSearch() {
+            const addressInput = document.getElementById('addressInput');
+            const suggestions = document.getElementById('addressSuggestions');
+            
+            let debounceTimer;
+            
+            addressInput.addEventListener('input', function() {
+                clearTimeout(debounceTimer);
+                const query = this.value;
+                
+                if (query.length < 3) {
+                    suggestions.style.display = 'none';
+                    return;
+                }
+                
+                debounceTimer = setTimeout(() => {
+                    searchAddresses(query);
+                }, 300);
+            });
+            
+            // Hide suggestions when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!addressInput.contains(e.target) && !suggestions.contains(e.target)) {
+                    suggestions.style.display = 'none';
+                }
+            });
+        }
+        
+        function searchAddresses(query) {
+            // Mock implementation - in production, integrate with Google Places API
+            const mockResults = [
+                {
+                    formatted_address: query + ' Street, Washington, DC 20001, USA',
+                    address_components: [
+                        { types: ['street_number'], long_name: '123' },
+                        { types: ['route'], long_name: query + ' Street' },
+                        { types: ['locality'], long_name: 'Washington' },
+                        { types: ['administrative_area_level_1'], short_name: 'DC' },
+                        { types: ['country'], long_name: 'United States' }
+                    ]
+                },
+                {
+                    formatted_address: query + ' Avenue, Arlington, VA 22201, USA',
+                    address_components: [
+                        { types: ['street_number'], long_name: '456' },
+                        { types: ['route'], long_name: query + ' Avenue' },
+                        { types: ['locality'], long_name: 'Arlington' },
+                        { types: ['administrative_area_level_1'], short_name: 'VA' },
+                        { types: ['country'], long_name: 'United States' }
+                    ]
+                }
+            ];
+            
+            displayAddressSuggestions(mockResults);
+        }
+        
+        function displayAddressSuggestions(results) {
+            const suggestions = document.getElementById('addressSuggestions');
+            suggestions.innerHTML = '';
+            
+            if (results.length === 0) {
+                suggestions.style.display = 'none';
+                return;
+            }
+            
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = 'address-suggestion';
+                div.textContent = result.formatted_address;
+                div.onclick = () => selectAddress(result);
+                suggestions.appendChild(div);
+            });
+            
+            suggestions.style.display = 'block';
+        }
+        
+        function selectAddress(result) {
+            document.getElementById('addressInput').value = result.formatted_address;
+            
+            // Parse address components and populate fields
+            let street = '', city = '', state = '', country = '';
+            
+            result.address_components.forEach(component => {
+                if (component.types.includes('street_number') || component.types.includes('route')) {
+                    street += component.long_name + ' ';
+                }
+                if (component.types.includes('locality')) {
+                    city = component.long_name;
+                }
+                if (component.types.includes('administrative_area_level_1')) {
+                    state = component.short_name || component.long_name;
+                }
+                if (component.types.includes('country')) {
+                    country = component.long_name;
+                }
+            });
+            
+            document.getElementById('addressInput').value = street.trim();
+            document.getElementById('cityInput').value = city;
+            document.getElementById('stateInput').value = state;
+            document.getElementById('countryInput').value = country;
+            
+            document.getElementById('addressSuggestions').style.display = 'none';
+        }
+
+        function toggleAVSection(checkbox) {
+            const section = document.getElementById('avSection');
+            if (checkbox.checked) {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        function toggleRecordingSection(checkbox) {
+            const section = document.getElementById('recordingSection');
+            if (checkbox.checked) {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        function toggleHybridSection(checkbox) {
+            const section = document.getElementById('hybridSection');
+            if (checkbox.checked) {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        function toggleTransportSection(checkbox) {
+            const section = document.getElementById('transportSection');
+            if (checkbox.checked) {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        function toggleCateringSection(checkbox) {
+            const section = document.getElementById('cateringSection');
+            if (checkbox.checked) {
+                section.classList.add('show');
+            } else {
+                section.classList.remove('show');
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeAddressSearch();
+        });
+
+        // Form submission
+        document.getElementById('requestForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Basic validation
+            const requiredFields = this.querySelectorAll('[required]');
+            let valid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    valid = false;
+                    field.style.borderColor = 'var(--error)';
+                } else {
+                    field.style.borderColor = '#d1d5db';
+                }
+            });
+            
+            if (valid) {
+                // Submit form to server
+                this.submit();
+            } else {
+                alert('Please fill in all required fields.');
+                // Scroll to first error
+                const firstError = this.querySelector('[required]');
+                if (firstError && !firstError.value.trim()) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+            }
+        });
+    </script>
+    <script src="/nav.js"></script>
+</body>
+</html>

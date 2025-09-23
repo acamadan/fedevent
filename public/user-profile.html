@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile - FEDEVENT</title>
+  <link rel="stylesheet" href="/site.css">
+  <style>
+    .profile-wrap{max-width:900px;margin:100px auto 40px;background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+    .profile-head{padding:20px 24px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between}
+    .profile-body{padding:24px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .form-row{display:flex;flex-direction:column}
+    .form-row label{font-weight:600;margin-bottom:6px;color:#111827}
+    .form-row input{border:1px solid #d1d5db;border-radius:8px;padding:10px 12px;font:inherit}
+    .actions{display:flex;gap:12px;margin-top:16px}
+    .note{font-size:.9rem;color:#6b7280;margin-top:8px}
+    @media(max-width:768px){.form-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <main class="container">
+    <div class="profile-wrap">
+      <div class="profile-head">
+        <h1 style="margin:0;font-size:1.25rem">User Profile</h1>
+        <button id="logoutBtn" class="btn" style="background:#6b7280">Logout</button>
+      </div>
+      <div class="profile-body">
+        <div id="statusMsg" style="display:none;margin-bottom:12px"></div>
+        <form id="profileForm">
+          <div class="form-grid">
+            <div class="form-row">
+              <label for="firstName">First name</label>
+              <input id="firstName" name="firstName" type="text" autocomplete="given-name">
+            </div>
+            <div class="form-row">
+              <label for="lastName">Last name</label>
+              <input id="lastName" name="lastName" type="text" autocomplete="family-name">
+            </div>
+            <div class="form-row">
+              <label for="username">Username</label>
+              <input id="username" name="username" type="text" autocomplete="username">
+            </div>
+            <div class="form-row">
+              <label for="email">Email</label>
+              <input id="email" name="email" type="email" autocomplete="email">
+            </div>
+            <div class="form-row">
+              <label for="propertyCode">Property Code (optional)</label>
+              <input id="propertyCode" name="propertyCode" type="text">
+            </div>
+          </div>
+
+          <div class="note">Leave password fields empty if you don't want to change your password.</div>
+          <div class="form-grid" style="margin-top:8px">
+            <div class="form-row">
+              <label for="password">New Password</label>
+              <input id="password" name="password" type="password" autocomplete="new-password">
+            </div>
+            <div class="form-row">
+              <label for="confirmPassword">Confirm New Password</label>
+              <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password">
+            </div>
+          </div>
+
+          <div class="actions">
+            <button type="submit" id="saveBtn" class="btn">Save Changes</button>
+            <a href="/hotel-dashboard.html" class="btn ghost" style="border:1px solid #d1d5db;color:#111827;background:#fff">Cancel</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const statusMsg = document.getElementById('statusMsg');
+    const form = document.getElementById('profileForm');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function showMessage(html, isError){
+      statusMsg.style.display = 'block';
+      statusMsg.innerHTML = html;
+      statusMsg.className = isError ? 'error' : 'success';
+    }
+
+    async function loadMe(){
+      try {
+        const res = await fetch('/api/auth/me');
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Failed to load user');
+        const user = data.user || {};
+        document.getElementById('firstName').value = user.first_name || '';
+        document.getElementById('lastName').value = user.last_name || '';
+        document.getElementById('username').value = user.username || '';
+        document.getElementById('email').value = user.email || '';
+        document.getElementById('propertyCode').value = user.property_code || '';
+      } catch (e){
+        showMessage('Failed to load profile. Please refresh.', true);
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusMsg.style.display = 'none';
+      const saveBtn = document.getElementById('saveBtn');
+      saveBtn.disabled = true; saveBtn.textContent = 'Saving...';
+      try {
+        const body = {
+          firstName: document.getElementById('firstName').value.trim(),
+          lastName: document.getElementById('lastName').value.trim(),
+          username: document.getElementById('username').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          propertyCode: document.getElementById('propertyCode').value.trim(),
+        };
+        const pwd = document.getElementById('password').value;
+        const cpw = document.getElementById('confirmPassword').value;
+        if (pwd || cpw){
+          if (pwd !== cpw) throw new Error('Passwords do not match');
+          body.password = pwd;
+        }
+
+        const res = await fetch('/api/profile/update', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        if (!data.ok) throw new Error(data.error || 'Update failed');
+        showMessage('Profile updated successfully.', false);
+        // Update local storage name if present
+        try {
+          const raw = localStorage.getItem('fedevent_user');
+          if (raw){
+            const u = JSON.parse(raw);
+            u.first_name = body.firstName || u.first_name;
+            u.last_name = body.lastName || u.last_name;
+            u.username = body.username || u.username;
+            u.email = body.email || u.email;
+            localStorage.setItem('fedevent_user', JSON.stringify(u));
+          }
+        } catch(_){}
+      } catch (err){
+        showMessage(err.message, true);
+      } finally {
+        saveBtn.disabled = false; saveBtn.textContent = 'Save Changes';
+      }
+    });
+
+    logoutBtn.addEventListener('click', () => {
+      localStorage.removeItem('fedevent_session');
+      localStorage.removeItem('fedevent_user');
+      window.location.href = '/hotel-login.html';
+    });
+
+    document.addEventListener('DOMContentLoaded', loadMe);
+  </script>
+  <script src="/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Per Diem – Full Year Results</title>
+  <link rel="stylesheet" href="/site.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+  <header>
+    <nav class="container">
+      <div class="logo-menu" style="position: relative;">
+        <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+        <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+          <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+          <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+          <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+          <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+          <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+          <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li id="userMenu" class="user-menu" style="display:none;">
+          <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+            <span class="user-avatar" id="userInitial">U</span>
+            <span id="userNameLabel">User</span>
+            <span aria-hidden>▾</span>
+          </a>
+          <div class="user-dropdown" id="userDropdown">
+            <a href="/hotel-dashboard.html">Hotel Portal</a>
+            <a href="/user-profile.html">User Settings</a>
+            <button type="button" onclick="logoutUser()">Logout</button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6" style="margin-top: 80px;">
+    <section class="bg-white rounded-2xl shadow p-5">
+      <h2 class="text-xl font-semibold mb-2">Search Summary</h2>
+      <div id="summary" class="text-base text-gray-700"></div>
+    </section>
+
+    <!-- Loading Indicator -->
+    <section id="loadingSection" class="bg-white rounded-2xl shadow p-8 text-center">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        <div class="text-lg font-medium text-gray-700">Loading Rates...</div>
+        <div class="text-sm text-gray-500">Please wait while we process your request</div>
+        <div class="w-full bg-gray-200 rounded-full h-2 max-w-md">
+          <div id="progressBar" class="bg-black h-2 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+        <div id="progressText" class="text-xs text-gray-600">Starting...</div>
+      </div>
+    </section>
+
+    <section id="lodgingSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 id="lodgingTitle" class="text-xl font-semibold mb-3">Lodging Rates</h3>
+      <div id="lodgingWrap" class="overflow-x-auto"></div>
+      <div id="lodgingPagination" class="mt-4 flex justify-center"></div>
+    </section>
+
+    <section id="mieSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 id="mieTitle" class="text-xl font-semibold mb-3">Meals & Incidental Expenses (M&IE)</h3>
+      <div id="mieWrap" class="overflow-x-auto"></div>
+      <div id="miePagination" class="mt-4 flex justify-center"></div>
+    </section>
+  </main>
+
+  <script>
+    function getParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        state: p.get('state') || '',
+        city: p.get('city') || '',
+        zip: p.get('zip') || '',
+        year: p.get('year') || String(new Date().getFullYear())
+      };
+    }
+
+    async function fetchPerDiemOnce(params) {
+      const url = new URL('/api/perdiem', window.location.origin);
+      if (params.state) url.searchParams.set('state', params.state);
+      if (params.city) url.searchParams.set('city', params.city);
+      if (params.zip) url.searchParams.set('zip', params.zip);
+      if (params.year) url.searchParams.set('year', params.year);
+      if (params.month) url.searchParams.set('month', params.month);
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('API error');
+      return res.json();
+    }
+
+    function monthLabel(m) {
+      const i = parseInt(m, 10) - 1;
+      return new Date(2000, i, 1).toLocaleString(undefined, { month: 'short' });
+    }
+
+    function renderTable(monthToRowsMap, header, valueField, mountId, paginationId) {
+      const months = Object.keys(monthToRowsMap);
+      // Collect all unique locations across months
+      const locationSet = new Set();
+      months.forEach(m => (monthToRowsMap[m]||[]).forEach(r => locationSet.add(r.location || '—')));
+      const allLocations = Array.from(locationSet).sort((a,b)=>a.localeCompare(b));
+      
+      const itemsPerPage = 4;
+      const totalPages = Math.ceil(allLocations.length / itemsPerPage);
+      
+      // Get current page from URL or default to 1
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentPage = parseInt(urlParams.get('page') || '1');
+      
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const locations = allLocations.slice(startIndex, endIndex);
+
+      let html = '';
+      if (allLocations.length > itemsPerPage) {
+        html += '<div class="mb-3 text-sm text-gray-600">';
+        html += `Showing ${startIndex + 1}-${Math.min(endIndex, allLocations.length)} of ${allLocations.length} locations`;
+        html += '</div>';
+      }
+      
+      html += '<table class="min-w-full text-sm md:text-base border-collapse">';
+      html += '<thead><tr class="bg-gray-50">';
+      html += '<th class="text-left p-2 border">Location</th>';
+      months.forEach(m => { html += `<th class="text-left p-2 border">${monthLabel(m)}</th>`; });
+      html += '</tr></thead><tbody>';
+      locations.forEach(loc => {
+        html += '<tr>';
+        html += `<td class="p-2 border font-medium">${loc}</td>`;
+        months.forEach(m => {
+          const row = (monthToRowsMap[m] || []).find(r => (r.location || '—') === loc) || null;
+          const val = row ? Number(row[valueField] || 0) : '';
+          html += `<td class="p-2 border">${val!==''?`$${val}`:''}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      document.getElementById(mountId).innerHTML = html;
+      
+      // Render pagination if needed
+      if (totalPages > 1) {
+        let paginationHtml = '<div class="flex items-center space-x-2">';
+        
+        // Previous button
+        if (currentPage > 1) {
+          const prevUrl = new URL(window.location);
+          prevUrl.searchParams.set('page', currentPage - 1);
+          paginationHtml += `<a href="${prevUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">← Previous</a>`;
+        }
+        
+        // Page numbers
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        
+        if (startPage > 1) {
+          const firstUrl = new URL(window.location);
+          firstUrl.searchParams.set('page', '1');
+          paginationHtml += `<a href="${firstUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">1</a>`;
+          if (startPage > 2) {
+            paginationHtml += '<span class="px-2 text-gray-500">...</span>';
+          }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          if (i === currentPage) {
+            paginationHtml += `<span class="px-3 py-2 rounded-lg bg-black text-white font-semibold">${i}</span>`;
+          } else {
+            const pageUrl = new URL(window.location);
+            pageUrl.searchParams.set('page', i);
+            paginationHtml += `<a href="${pageUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">${i}</a>`;
+          }
+        }
+        
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            paginationHtml += '<span class="px-2 text-gray-500">...</span>';
+          }
+          const lastUrl = new URL(window.location);
+          lastUrl.searchParams.set('page', totalPages);
+          paginationHtml += `<a href="${lastUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">${totalPages}</a>`;
+        }
+        
+        // Next button
+        if (currentPage < totalPages) {
+          const nextUrl = new URL(window.location);
+          nextUrl.searchParams.set('page', currentPage + 1);
+          paginationHtml += `<a href="${nextUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">Next →</a>`;
+        }
+        
+        paginationHtml += '</div>';
+        document.getElementById(paginationId).innerHTML = paginationHtml;
+      } else {
+        document.getElementById(paginationId).innerHTML = '';
+      }
+    }
+
+    // Loading state management
+    function updateProgress(month, total, message) {
+      const progress = (month / total) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+      document.getElementById('progressText').textContent = message;
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingSection').classList.add('hidden');
+      document.getElementById('lodgingSection').classList.remove('hidden');
+      document.getElementById('mieSection').classList.remove('hidden');
+    }
+
+    (async function init(){
+      const q = getParams();
+      const summary = [];
+      if (q.state) summary.push(`State: <span class="font-semibold">${q.state}</span>`);
+      if (q.city) summary.push(`City: <span class="font-semibold">${q.city}</span>`);
+      if (q.zip) summary.push(`ZIP: <span class="font-semibold">${q.zip}</span>`);
+      summary.push(`Year: <span class="font-semibold">${q.year}</span>`);
+      document.getElementById('summary').innerHTML = summary.join(' • ');
+
+      const months = Array.from({length:12}, (_,i)=>String(i+1).padStart(2,'0'));
+      const monthToRowsMap = {};
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+
+      updateProgress(0, 12, 'Initializing...');
+
+      for (let i = 0; i < months.length; i++) {
+        const m = months[i];
+        
+        try {
+          updateProgress(i + 1, 12, `Loading rates...`);
+          const data = await fetchPerDiemOnce({ state: q.state, city: q.city, zip: q.zip, year: q.year, month: m });
+          const rows = Array.isArray(data?.rows) ? data.rows : (data ? [data] : []);
+          monthToRowsMap[m] = rows;
+          
+          // Add small delay for better UX
+          await new Promise(resolve => setTimeout(resolve, 100));
+        } catch (e) {
+          updateProgress(i + 1, 12, `Loading rates...`);
+          monthToRowsMap[m] = [];
+        }
+      }
+
+      updateProgress(12, 12, 'Finalizing...');
+      
+      // Small delay to show completion
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Set section titles based on search parameters
+      const stateName = q.state || 'Selected Location';
+      document.getElementById('lodgingTitle').textContent = `Lodging Rates for ${stateName}`;
+      document.getElementById('mieTitle').textContent = `Meals & Incidental Expenses (M&IE) for ${stateName}`;
+      
+      const baseHeader = q.city ? `Full-year for ${q.city}${q.state?`, ${q.state}`:''}`
+                        : q.zip ? `Full-year for ZIP ${q.zip}`
+                        : q.state ? `Full-year for ${q.state}`
+                        : 'Full-year per diem';
+      
+      renderTable(monthToRowsMap, baseHeader, 'lodging', 'lodgingWrap', 'lodgingPagination');
+      renderTable(monthToRowsMap, baseHeader, 'mie', 'mieWrap', 'miePagination');
+      
+      hideLoading();
+    })();
+  </script>
+  <script>
+    function toggleUserDropdown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dd = document.getElementById('userDropdown');
+      if (dd) dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+    }
+    function toggleLogoDropdown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dd = document.getElementById('logoDropdown');
+      if (dd) dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+    }
+    function logoutUser() {
+      localStorage.removeItem('fedevent_session');
+      localStorage.removeItem('fedevent_user');
+      window.location.href = '/hotel-login.html';
+    }
+    function loadUserMenu() {
+      try {
+        const sessionId = localStorage.getItem('fedevent_session');
+        const userRaw = localStorage.getItem('fedevent_user');
+        if (!sessionId || !userRaw) return;
+        const user = JSON.parse(userRaw);
+        let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+        name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+        const initial = (name || 'U').trim().charAt(0).toUpperCase();
+        const label = document.getElementById('userNameLabel');
+        const avatar = document.getElementById('userInitial');
+        const menu = document.getElementById('userMenu');
+        if (label) label.textContent = name;
+        if (avatar) avatar.textContent = initial;
+        if (menu) menu.style.display = 'list-item';
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', loadUserMenu);
+    document.addEventListener('click', function(evt){
+      const userDd = document.getElementById('userDropdown');
+      const logoDd = document.getElementById('logoDropdown');
+      const um = document.getElementById('userMenu');
+      const logoMenu = document.querySelector('.logo-menu');
+      if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
+      if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
+    });
+  </script>
+  <script src="/nav.js"></script>
+</body>
+</html>
+
+

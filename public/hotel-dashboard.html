@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Dashboard - FEDEVENT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+        .logout-btn {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        nav .container {
+            padding: 0 1rem;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 1rem 0;
+            gap: 24px;
+        }
+        
+        .logo {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        .logo:hover {
+            color: var(--primary-dark);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.25rem;
+            margin-left: 16px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu { 
+            position: relative; 
+        }
+        
+        .user-trigger { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            color: var(--text); 
+            text-decoration: none; 
+        }
+        
+        .user-avatar { 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            background: #e5e7eb; 
+            display: grid; 
+            place-items: center; 
+            font-size: 0.85rem; 
+            color: #374151; 
+        }
+        
+        .user-dropdown { 
+            position: absolute; 
+            right: 0; 
+            top: calc(100% + 8px); 
+            background: #fff; 
+            border: 1px solid #e5e7eb; 
+            box-shadow: 0 8px 24px rgba(0,0,0,.08); 
+            border-radius: 10px; 
+            min-width: 200px; 
+            padding: 6px; 
+            display: none; 
+            z-index: 1002; 
+        }
+        
+        .user-dropdown a, .user-dropdown button { 
+            display: block; 
+            width: 100%; 
+            text-align: left; 
+            padding: 10px 12px; 
+            border-radius: 8px; 
+            background: transparent; 
+            border: 0; 
+            font: inherit; 
+            color: #111827; 
+            cursor: pointer; 
+            text-decoration: none; 
+        }
+        
+        .user-dropdown a:hover, .user-dropdown button:hover { 
+            background: #f3f4f6; 
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .card-content {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+        .btn {
+            background: #4f46e5;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            margin-top: 1rem;
+        }
+
+        .btn:hover {
+            background: #4338ca;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .quick-action-btn {
+            background: #f3f4f6;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .quick-action-btn:hover {
+            background: #e5e7eb;
+            border-color: #d1d5db;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #fecaca;
+            margin-top: 1rem;
+        }
+
+        .success {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid #a7f3d0;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <nav class="container">
+        <div class="logo-menu" style="position: relative;">
+          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+          </div>
+        </div>
+        <ul class="nav-links">
+          <li id="userMenu" class="user-menu" style="display:none;">
+            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+              <span class="user-avatar" id="userInitial">U</span>
+              <span id="userNameLabel">User</span>
+              <span aria-hidden>▾</span>
+            </a>
+            <div class="user-dropdown" id="userDropdown">
+              <a href="/hotel-dashboard.html">Hotel Portal</a>
+              <a href="/user-profile.html">User Settings</a>
+              <button type="button" onclick="logoutUser()">Logout</button>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+    <div class="container">
+        <div class="dashboard-grid">
+            <!-- Hotel Profile Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #dbeafe; color: #1e40af;">🏨</div>
+                    <div class="card-title">Hotel Profile</div>
+                </div>
+                <div class="card-content">
+                    <p>Manage your hotel registration and profile information.</p>
+                    <div id="profileStatus" class="status-badge status-pending">Loading...</div>
+                    <div class="quick-actions">
+                        <a href="/hotel-registration.html?continue=true&signedIn=true" class="quick-action-btn">
+                            ✏️ Complete Registration
+                        </a>
+                        <button class="quick-action-btn" onclick="viewProfile()">
+                            👁️ View Profile
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Members Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #fef3c7; color: #92400e;">👥</div>
+                    <div class="card-title">Team Members</div>
+                </div>
+                <div class="card-content">
+                    <p>Manage your hotel team members and their access.</p>
+                    <div id="teamStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="teamCount">-</div>
+                            <div class="stat-label">Total Members</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="activeCount">-</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="addTeamMember()">
+                            ➕ Add Member
+                        </button>
+                        <button class="quick-action-btn" onclick="viewTeamMembers()">
+                            📋 View All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contracts & Bidding Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #d1fae5; color: #065f46;">📋</div>
+                    <div class="card-title">Contracts & Bidding</div>
+                </div>
+                <div class="card-content">
+                    <p>View and manage your government contracts and bidding opportunities.</p>
+                    <div id="contractStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="activeContracts">-</div>
+                            <div class="stat-label">Active Contracts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="biddingOpportunities">-</div>
+                            <div class="stat-label">Bidding Open</div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <a href="/hotel-contracts.html" class="quick-action-btn">
+                            📄 View Contracts
+                        </a>
+                        <a href="/hotel-bid.html" class="quick-action-btn">
+                            🎯 Contracts & Bidding
+                        </a>
+                        <button class="quick-action-btn" onclick="viewBidding()">
+                            📈 Open Bidding Page
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support & Resources Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #f3e8ff; color: #7c3aed;">🆘</div>
+                    <div class="card-title">Support & Resources</div>
+                </div>
+                <div class="card-content">
+                    <p>Get help, access resources, and contact support.</p>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="contactSupport()">
+                            💬 Contact Support
+                        </button>
+                        <a href="/resources.html" class="quick-action-btn">
+                            📚 Resources
+                        </a>
+                        <button class="quick-action-btn" onclick="viewHelp()">
+                            ❓ Help Center
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Dropdown functionality
+        function toggleLogoDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('logoDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (userDropdown) userDropdown.style.display = 'none';
+        }
+        
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            const logoDropdown = document.getElementById('logoDropdown');
+            
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (logoDropdown) logoDropdown.style.display = 'none';
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const logoDropdown = document.getElementById('logoDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            const logoMenu = document.querySelector('.logo-menu');
+            const userMenu = document.getElementById('userMenu');
+            
+            if (logoDropdown && logoMenu && !logoMenu.contains(event.target)) {
+                logoDropdown.style.display = 'none';
+            }
+            
+            if (userDropdown && userMenu && !userMenu.contains(event.target)) {
+                userDropdown.style.display = 'none';
+            }
+        });
+
+        // Global variables
+        let currentUser = null;
+        let currentHotel = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard initializing...');
+            initializeDashboard();
+        });
+
+        // Initialize dashboard
+        async function initializeDashboard() {
+            try {
+                // Check authentication
+                if (!checkAuth()) {
+                    redirectToLogin();
+                    return;
+                }
+
+                // Load user data
+                await loadUserData();
+                
+                // Load dashboard data
+                await loadDashboardData();
+                
+                console.log('✅ Dashboard initialized successfully');
+                
+            } catch (error) {
+                console.error('❌ Dashboard initialization error:', error);
+                showError('Failed to initialize dashboard. Please refresh the page.');
+            }
+        }
+
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('fedevent_session');
+            if (!sessionId) {
+                console.log('❌ No session found');
+                return false;
+            }
+            return true;
+        }
+
+        // Redirect to login
+        function redirectToLogin() {
+            localStorage.clear();
+            window.location.href = '/hotel-login.html';
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const userData = localStorage.getItem('fedevent_user');
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                    const name = (currentUser.first_name && currentUser.last_name)
+                      ? `${currentUser.first_name} ${currentUser.last_name}`
+                      : (currentUser.first_name || currentUser.username || currentUser.email || '');
+                    document.getElementById('userInfo').textContent = name;
+                } else {
+                    document.getElementById('userInfo').textContent = '';
+                }
+
+                const hotelData = localStorage.getItem('fedevent_hotel');
+                if (hotelData) {
+                    currentHotel = JSON.parse(hotelData);
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load profile status
+                await loadProfileStatus();
+                
+                // Load team stats
+                await loadTeamStats();
+                
+                // Load contract stats
+                await loadContractStats();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load profile status
+        async function loadProfileStatus() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.ok && result.hotel) {
+                        document.getElementById('profileStatus').textContent = 'Profile Complete';
+                        document.getElementById('profileStatus').className = 'status-badge status-completed';
+                    } else {
+                        document.getElementById('profileStatus').textContent = 'Registration Pending';
+                        document.getElementById('profileStatus').className = 'status-badge status-pending';
+                    }
+                } else {
+                    document.getElementById('profileStatus').textContent = 'Registration Pending';
+                    document.getElementById('profileStatus').className = 'status-badge status-pending';
+                }
+            } catch (error) {
+                console.error('Error loading profile status:', error);
+                document.getElementById('profileStatus').textContent = 'Registration Pending';
+                document.getElementById('profileStatus').className = 'status-badge status-pending';
+            }
+        }
+
+        // Load team stats
+        async function loadTeamStats() {
+            try {
+                // Simulate team data for now
+                document.getElementById('teamCount').textContent = '3';
+                document.getElementById('activeCount').textContent = '2';
+            } catch (error) {
+                console.error('Error loading team stats:', error);
+                document.getElementById('teamCount').textContent = '0';
+                document.getElementById('activeCount').textContent = '0';
+            }
+        }
+
+        // Load contract stats
+        async function loadContractStats() {
+            try {
+                // Simulate contract data for now
+                document.getElementById('activeContracts').textContent = '2';
+                document.getElementById('biddingOpportunities').textContent = '5';
+            } catch (error) {
+                console.error('Error loading contract stats:', error);
+                document.getElementById('activeContracts').textContent = '0';
+                document.getElementById('biddingOpportunities').textContent = '0';
+            }
+        }
+
+        // Handle logout
+        function handleLogout() {
+            console.log('🚪 Logout initiated');
+            
+            // Show confirmation
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect to login
+                window.location.href = '/hotel-login.html';
+            }
+        }
+
+        // View profile
+        function viewProfile() {
+            window.location.href = '/hotel-profile.html';
+        }
+
+        // Add team member
+        function addTeamMember() {
+            const email = prompt('Enter team member email address:');
+            if (email && email.trim()) {
+                const role = prompt('Select role:\n1. Manager\n2. Sales\n3. Admin\n4. View Only\n\nEnter number (1-4):');
+                const roles = ['Manager', 'Sales', 'Admin', 'View Only'];
+                const selectedRole = roles[parseInt(role) - 1] || 'View Only';
+                
+                if (confirm(`Add ${email} as ${selectedRole}?`)) {
+                    showMessage(`Team member invitation sent to ${email}`, 'success');
+                    // In a real implementation, this would send an invitation
+                }
+            }
+        }
+
+        // View team members
+        function viewTeamMembers() {
+            // Create a modal or redirect to team management page
+            const teamMembers = [
+                { name: 'John Smith', email: 'john@hotel.com', role: 'Manager', status: 'Active' },
+                { name: 'Jane Doe', email: 'jane@hotel.com', role: 'Sales', status: 'Active' },
+                { name: 'Mike Johnson', email: 'mike@hotel.com', role: 'Admin', status: 'Pending' }
+            ];
+            
+            let message = 'Current Team Members:\n\n';
+            teamMembers.forEach((member, index) => {
+                message += `${index + 1}. ${member.name} (${member.email})\n`;
+                message += `   Role: ${member.role} | Status: ${member.status}\n\n`;
+            });
+            message += 'Full team management interface coming soon!';
+            
+            alert(message);
+        }
+
+        // View bidding
+        function viewBidding() {
+            // Navigate to contracts & bidding page
+            window.location.href = '/hotel-contracts.html';
+        }
+
+        // Contact support
+        function contactSupport() {
+            const message = prompt('Please describe your issue:');
+            if (message) {
+                showMessage('Support request sent! We\'ll respond within 24 hours.', 'success');
+            }
+        }
+
+        // View help
+        function viewHelp() {
+            window.location.href = '/help-center.html';
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('statusMessage');
+            messageDiv.textContent = text;
+            messageDiv.className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'status-badge status-pending';
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show error
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        // Emergency logout function
+        window.emergencyLogout = function() {
+            console.log('🚨 EMERGENCY LOGOUT');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/hotel-login.html';
+        };
+
+        // Console help
+        console.log('🏨 FEDEVENT Hotel Dashboard');
+        console.log('Available functions:');
+        console.log('• handleLogout() - Normal logout');
+        console.log('• window.emergencyLogout() - Emergency logout');
+        console.log('• showMessage(text, type) - Show status message');
+    </script>
+    
+    <!-- Universal Logout System -->
+    <script src="/logout-universal.js"></script>
+    <script src="/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - FEDEVENT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .back-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #2563eb;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .help-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .help-card h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .help-card p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .process-steps {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 40px;
+        }
+
+        .process-steps h2 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 30px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .step-content p {
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .step-content ul {
+            color: #6b7280;
+            margin-left: 20px;
+        }
+
+        .step-content li {
+            margin-bottom: 5px;
+        }
+
+        .contact-section {
+            background: #f0f9ff;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #bae6fd;
+        }
+
+        .contact-section h2 {
+            color: #0369a1;
+            margin-bottom: 20px;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #bae6fd;
+        }
+
+        .contact-item h4 {
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+
+        .contact-item p {
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .contact-item a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        .faq-section {
+            margin-top: 40px;
+        }
+
+        .faq-item {
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #f9fafb;
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .faq-answer {
+            padding: 20px;
+            color: #6b7280;
+            display: none;
+        }
+
+        .faq-answer.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .help-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-number {
+                margin: 0 auto 15px auto;
+            }
+        }
+
+        /* Footer Styles */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-content">
+            <div class="logo">FEDEVENT</div>
+            <a href="/hotel-dashboard.html" class="back-btn">← Back to Dashboard</a>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="hero">
+            <h1>Help Center</h1>
+            <p>Everything you need to know about FEDEVENT's processes and services</p>
+        </div>
+
+        <div class="help-grid">
+            <div class="help-card">
+                <h3>🏨 Hotel Registration</h3>
+                <p>Complete your hotel profile to become eligible for government contracts. Learn about our requirements and registration process.</p>
+                <a href="/hotel-signup.html" class="back-btn">Start Registration</a>
+            </div>
+
+            <div class="help-card">
+                <h3>📋 Contract Management</h3>
+                <p>View and manage your government contracts, track bidding opportunities, and monitor your contract status.</p>
+                <a href="/hotel-contracts.html" class="back-btn">View Contracts</a>
+            </div>
+
+            <div class="help-card">
+                <h3>👥 Team Management</h3>
+                <p>Add and manage your hotel team members, assign roles, and control access to your FEDEVENT account.</p>
+                <button onclick="alert('Team management coming soon!')" class="back-btn">Manage Team</button>
+            </div>
+
+            <div class="help-card">
+                <h3>📞 Support</h3>
+                <p>Get help from our support team. We're here to assist you with any questions or issues.</p>
+                <button onclick="contactSupport()" class="back-btn">Contact Support</button>
+            </div>
+        </div>
+
+        <div class="process-steps">
+            <h2>How FEDEVENT Works</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Hotel Registration & Approval</h4>
+                    <p>Complete your hotel profile with all required information:</p>
+                    <ul>
+                        <li>Hotel details and amenities</li>
+                        <li>Meeting spaces and capacities</li>
+                        <li>Banking information for payments</li>
+                        <li>NET30 payment terms acceptance</li>
+                        <li>Purchase Order acceptance</li>
+                    </ul>
+                    <p><strong>Timeline:</strong> 2-5 business days for approval</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Contract Matching</h4>
+                    <p>Our system matches your hotel with government events based on:</p>
+                    <ul>
+                        <li>Location and proximity to event</li>
+                        <li>Room capacity and meeting space availability</li>
+                        <li>Per diem rate compliance</li>
+                        <li>Hotel amenities and services</li>
+                        <li>Past performance and ratings</li>
+                    </ul>
+                    <p><strong>Result:</strong> You receive notifications for relevant opportunities</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Bidding Process</h4>
+                    <p>When a matching opportunity arises:</p>
+                    <ul>
+                        <li>Review the event requirements and dates</li>
+                        <li>Submit your competitive bid</li>
+                        <li>Include room rates, meeting space fees, and terms</li>
+                        <li>Highlight your hotel's unique advantages</li>
+                    </ul>
+                    <p><strong>Timeline:</strong> Typically 3-7 days for bid submission</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Contract Award & Execution</h4>
+                    <p>If your bid is successful:</p>
+                    <ul>
+                        <li>Receive official contract award notification</li>
+                        <li>Review and sign contract terms</li>
+                        <li>Coordinate with government event planners</li>
+                        <li>Execute the event with excellence</li>
+                        <li>Submit invoices for payment</li>
+                    </ul>
+                    <p><strong>Payment:</strong> NET30 terms with government-backed Purchase Orders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-section">
+            <h2>Need More Help?</h2>
+            <p>Our support team is here to assist you every step of the way.</p>
+            
+            <div class="contact-info">
+                <div class="contact-item">
+                    <h4>📞 Phone Support</h4>
+                    <p><strong>(305) 850-7848</strong></p>
+                    <p>Mon-Fri: 9AM-6PM EST</p>
+                    <p>Emergency: 24/7 available</p>
+                </div>
+                
+                <div class="contact-item">
+                    <h4>📧 Email Support</h4>
+                    <p><strong>support@fedevent.com</strong></p>
+                    <p>Response within 24 hours</p>
+                    <p>For non-urgent inquiries</p>
+                </div>
+                
+                <div class="contact-item">
+                    <h4>💬 Live Chat</h4>
+                    <p>Available on dashboard</p>
+                    <p>Real-time assistance</p>
+                    <p>Business hours only</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #1f2937;">Frequently Asked Questions</h2>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What are the requirements to join FEDEVENT?
+                </div>
+                <div class="faq-answer">
+                    <p>To join FEDEVENT, your hotel must:</p>
+                    <ul>
+                        <li>Accept NET30 payment terms</li>
+                        <li>Accept government Purchase Orders</li>
+                        <li>Have indoor facilities (not outdoor properties)</li>
+                        <li>Meet minimum room and meeting space requirements</li>
+                        <li>Be AAA rated (optional but preferred)</li>
+                        <li>Provide proper banking information</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    How long does the approval process take?
+                </div>
+                <div class="faq-answer">
+                    <p>Hotel registration approval typically takes 2-5 business days. We review your profile, verify information, and ensure you meet all requirements before approval.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What payment terms do you offer?
+                </div>
+                <div class="faq-answer">
+                    <p>FEDEVENT operates with NET30 payment terms. Government contracts come with Purchase Orders that guarantee payment within 30 days of invoice submission.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    How are contracts awarded?
+                </div>
+                <div class="faq-answer">
+                    <p>Contracts are awarded based on competitive bidding. Factors include room rates, meeting space availability, location, amenities, and past performance. We encourage competitive but realistic pricing.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Can I update my hotel profile after approval?
+                </div>
+                <div class="faq-answer">
+                    <p>Yes, you can update your hotel profile at any time through the dashboard. Changes to rates, amenities, or capacity will be reflected in future contract matching.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const isActive = answer.classList.contains('active');
+            
+            // Close all other FAQ answers
+            document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+            
+            // Toggle current answer
+            if (!isActive) {
+                answer.classList.add('active');
+            }
+        }
+
+        function contactSupport() {
+            const message = prompt('Please describe your issue or question:');
+            if (message) {
+                alert('Thank you for your message. Our support team will contact you within 24 hours.');
+                // In a real implementation, this would send the message to the support system
+            }
+        }
+    </script>
+
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FEDEVENT</h3>
+                    <p>Professional event planning services for U.S. Government agencies.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="/hotel-signup.html">Hotel Registration</a>
+                    <a href="/request.html">Event Planning</a>
+                    <a href="/government-portal.html">Venue Matching</a>
+                </div>
+                <div class="footer-section footer-contact">
+                    <h3>Contact</h3>
+                    <p>Email: info@fedevent.com</p>
+                    <p>Phone: 3058507848</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+                <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/nav.js"></script>
+</body>
+</html>

@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Details - FEDEVENT Admin</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: #d97706;
+        }
+        
+        .hotel-details {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .details-header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+        }
+        
+        .hotel-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-location {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .details-content {
+            padding: 2rem;
+        }
+        
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .detail-section {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .detail-section.full-width {
+            margin-bottom: 2rem;
+        }
+        
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .detail-value {
+            color: var(--text);
+            text-align: right;
+            max-width: 60%;
+        }
+        
+        .capability-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin: 0.25rem;
+        }
+        
+        .capability-yes {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .capability-no {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        
+        .capability-optional {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .team-members {
+            margin-top: 1rem;
+        }
+        
+        .member-card {
+            background: var(--white);
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+        }
+        
+        .member-name {
+            font-weight: 600;
+            color: var(--primary);
+            margin-bottom: 0.25rem;
+        }
+        
+        .member-details {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+        
+        .back-btn {
+            background: var(--text-light);
+            color: white;
+        }
+        
+        .back-btn:hover {
+            background: var(--text);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">FEDEVENT Admin</div>
+            <div class="nav-links">
+                <a href="/admin-dashboard.html">Hotels</a>
+                <a href="/admin-contracts.html">Contracts</a>
+                <a href="/sam-search-admin.html">SAM Search</a>
+            </div>
+            <div class="user-menu">
+                <div class="user-info" id="userInfo">Loading...</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">Hotel Details</h1>
+            <a href="/admin-dashboard.html" class="btn back-btn">← Back to Hotels</a>
+        </div>
+        
+        <div id="hotelDetailsContent">
+            <div class="loading">Loading hotel details...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+        
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            document.getElementById('userInfo').textContent = `${user.first_name} ${user.last_name}`;
+            return true;
+        }
+        
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('sessionId');
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok && response.status === 401) {
+                localStorage.removeItem('sessionId');
+                localStorage.removeItem('user');
+                window.location.href = '/admin-login.html';
+                return null;
+            }
+            
+            return result;
+        }
+        
+        // Load hotel details
+        async function loadHotelDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const hotelId = urlParams.get('id');
+            
+            if (!hotelId) {
+                document.getElementById('hotelDetailsContent').innerHTML = 
+                    '<div class="error">No hotel ID provided</div>';
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`/api/admin/hotels/${hotelId}`);
+                
+                if (result && result.ok) {
+                    const { hotel, users, profiles } = result;
+                    renderHotelDetails(hotel, users, profiles);
+                } else {
+                    document.getElementById('hotelDetailsContent').innerHTML = 
+                        '<div class="error">Failed to load hotel details</div>';
+                }
+            } catch (error) {
+                console.error('Load hotel details error:', error);
+                document.getElementById('hotelDetailsContent').innerHTML = 
+                    '<div class="error">Failed to load hotel details</div>';
+            }
+        }
+        
+        // Render hotel details
+        function renderHotelDetails(hotel, users, profiles) {
+            const content = document.getElementById('hotelDetailsContent');
+            
+            content.innerHTML = `
+                <div class="hotel-details">
+                    <div class="details-header">
+                        <h1 class="hotel-name">${hotel.name || 'Unnamed Hotel'}</h1>
+                        <div class="hotel-location">
+                            ${[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ') || 'Location not specified'}
+                        </div>
+                    </div>
+                    
+                    <div class="details-content">
+                        <!-- First Row: Property Details (Full Width) -->
+                        <div class="detail-section full-width">
+                            <h3 class="section-title">Property Details</h3>
+                            <div class="detail-item">
+                                <span class="detail-label">Total Guest Rooms</span>
+                                <span class="detail-value">${hotel.total_rooms || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">AAA Rating</span>
+                                <span class="detail-value">${hotel.aaa_rating || 'Not rated'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Meeting Spaces</span>
+                                <span class="detail-value">${hotel.meeting_spaces || hotel.meeting_space_count || '-'}</span>
+                            </div>
+                            ${hotel.meeting_space_details ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Meeting Space Details</span>
+                                <span class="detail-value" style="white-space: pre-line; text-align: left;">${hotel.meeting_space_details}</span>
+                            </div>
+                            ` : ''}
+                            ${hotel.largest_meeting_room ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Largest Meeting Room</span>
+                                <span class="detail-value">${hotel.largest_meeting_room}</span>
+                            </div>
+                            ` : ''}
+                            ${hotel.total_meeting_sqft ? `
+                            <div class="detail-item">
+                                <span class="detail-label">Total Meeting Square Feet</span>
+                                <span class="detail-value">${hotel.total_meeting_sqft} sq ft</span>
+                            </div>
+                            ` : ''}
+                            <div class="detail-item">
+                                <span class="detail-label">Accepts Gov Per Diem</span>
+                                <span class="detail-value">${hotel.accepts_gov_per_diem ? '✅ Yes' : '❌ No'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Extended Stay Available</span>
+                                <span class="detail-value">${hotel.extended_stay ? '✅ Yes' : '❌ No'}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Second Row: Property Information (Full Width) -->
+                        <div class="detail-section full-width">
+                            <h3 class="section-title">Property Information</h3>
+                            <div class="detail-item">
+                                <span class="detail-label">Hotel Name</span>
+                                <span class="detail-value">${hotel.name || hotel.property_name || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Property Code</span>
+                                <span class="detail-value">${hotel.property_code || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Brand</span>
+                                <span class="detail-value">${hotel.brand || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Chain</span>
+                                <span class="detail-value">${hotel.chain || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">City</span>
+                                <span class="detail-value">${hotel.city || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">State/Province</span>
+                                <span class="detail-value">${hotel.state || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Country</span>
+                                <span class="detail-value">${hotel.country || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Contact Email</span>
+                                <span class="detail-value">${hotel.email || '-'}</span>
+                            </div>
+                            <div class="detail-item">
+                                <span class="detail-label">Registered</span>
+                                <span class="detail-value">${formatDate(hotel.created_at)}</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Third Row: Payment Policies, Primary Contacts, Activity Summary (Shared Line) -->
+                        <div class="details-grid">
+                            <!-- Payment & Policies -->
+                            <div class="detail-section">
+                                <h3 class="section-title">Payment & Policies</h3>
+                                <div class="detail-item">
+                                    <span class="detail-label">NET30 Payment Terms</span>
+                                    <span class="detail-value">
+                                        <span class="capability-badge capability-${hotel.accepts_net30 ? 'yes' : 'no'}">
+                                            ${hotel.accepts_net30 ? 'Accepted' : 'Not Accepted'}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">30% Per Diem Discount</span>
+                                    <span class="detail-value">
+                                        <span class="capability-badge capability-${hotel.accepts_per_diem_discount ? 'yes' : 'optional'}">
+                                            ${hotel.accepts_per_diem_discount ? 'Accepted' : 'Optional'}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">No Direct Bill Policy</span>
+                                    <span class="detail-value">
+                                        <span class="capability-badge capability-${hotel.accepts_no_direct_bill ? 'yes' : 'no'}">
+                                            ${hotel.accepts_no_direct_bill ? 'Accepted' : 'Not Accepted'}
+                                        </span>
+                                    </span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Government PO Acceptance</span>
+                                    <span class="detail-value">
+                                        <span class="capability-badge capability-yes">Accepted</span>
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <!-- Primary Contacts -->
+                            <div class="detail-section">
+                                <h3 class="section-title">Primary Contacts</h3>
+                                <div class="detail-item">
+                                    <span class="detail-label">Primary Contact Name</span>
+                                    <span class="detail-value">${hotel.primary_contact_name || '-'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Primary Contact Title</span>
+                                    <span class="detail-value">${hotel.primary_contact_title || '-'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Primary Phone</span>
+                                    <span class="detail-value">${hotel.primary_phone || '-'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Secondary Contact</span>
+                                    <span class="detail-value">${hotel.secondary_contact_name || '-'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Secondary Phone</span>
+                                    <span class="detail-value">${hotel.secondary_phone || '-'}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Activity Summary -->
+                            <div class="detail-section">
+                                <h3 class="section-title">Activity Summary</h3>
+                                <div class="detail-item">
+                                    <span class="detail-label">Team Members</span>
+                                    <span class="detail-value">${users.length}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Profile Submissions</span>
+                                    <span class="detail-value">${profiles.length}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Last Activity</span>
+                                    <span class="detail-value">${hotel.last_user_login ? formatDate(hotel.last_user_login) : 'Never'}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-label">Status</span>
+                                    <span class="detail-value">
+                                        <span class="capability-badge capability-${hotel.is_active ? 'yes' : 'no'}">
+                                            ${hotel.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Team Members -->
+                        <div class="detail-section">
+                            <h3 class="section-title">Team Members (${users.length})</h3>
+                            <div class="team-members">
+                                ${users.length > 0 ? users.map(user => `
+                                    <div class="member-card">
+                                        <div class="member-name">${user.first_name} ${user.last_name}</div>
+                                        <div class="member-details">
+                                            <div>Email: ${user.email}</div>
+                                            <div>Job Title: ${user.job_title || 'Not specified'}</div>
+                                            <div>Phone: ${user.phone || 'Not provided'}</div>
+                                            <div>Last Login: ${user.last_login ? formatDate(user.last_login) : 'Never'}</div>
+                                        </div>
+                                    </div>
+                                `).join('') : '<p style="color: var(--text-light); text-align: center; padding: 2rem;">No team members registered</p>'}
+                            </div>
+                        </div>
+                        
+                        <!-- Profile Submissions -->
+                        <div class="detail-section">
+                            <h3 class="section-title">Profile Submissions (${profiles.length})</h3>
+                            ${profiles.length > 0 ? `
+                                <div style="margin-top: 1rem;">
+                                    ${profiles.map(profile => `
+                                        <div class="member-card">
+                                            <div class="member-name">Profile Submission</div>
+                                            <div class="member-details">
+                                                <div>Status: <span class="capability-badge capability-${profile.status === 'approved' ? 'yes' : profile.status === 'pending' ? 'optional' : 'no'}">${profile.status}</span></div>
+                                                <div>Submitted: ${formatDate(profile.submitted_at)}</div>
+                                                <div>Last Updated: ${formatDate(profile.updated_at)}</div>
+                                            </div>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            ` : '<p style="color: var(--text-light); text-align: center; padding: 2rem;">No profile submissions yet</p>'}
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await apiCall('/api/auth/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Initialize
+        if (checkAuth()) {
+            loadHotelDetails();
+        }
+    </script>
+    
+    <!-- Universal Logout System -->
+    <script src="/logout-universal.js"></script>
+    <script src="/nav.js"></script>
+</body>
+</html>

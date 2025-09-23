@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Portal Login - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* Fix header placement so dropdown anchors under logo */
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 1rem 0;
+            gap: 24px;
+        }
+        
+        .logo {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        .logo:hover {
+            color: var(--primary-dark);
+        }
+        
+        .login-container {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        
+        .logo {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .logo h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .logo p {
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+        
+        .forgot-password {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .forgot-password a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            margin: 15% auto;
+            padding: 2rem;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        input[type="email"],
+        input[type="password"],
+        input[type="text"],
+        input[type="tel"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .error {
+            color: var(--error);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .success {
+            color: var(--success);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+        
+        .back-link {
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--text-light);
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <nav class="container">
+        <div class="logo-menu" style="position: relative;">
+          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+          </div>
+        </div>
+        <ul class="nav-links">
+          <li id="userMenu" class="user-menu" style="display:none;">
+            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+              <span class="user-avatar" id="userInitial">U</span>
+              <span id="userNameLabel">User</span>
+              <span aria-hidden>▾</span>
+            </a>
+            <div class="user-dropdown" id="userDropdown">
+              <a href="/hotel-dashboard.html">Hotel Portal</a>
+              <a href="/hotel-profile.html">User Settings</a>
+              <button type="button" onclick="logoutUser()">Logout</button>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    
+    <div class="login-container" style="margin-top: 80px;">
+        <div class="logo">
+            <h1>FEDEVENT</h1>
+            <p>Hotel Portal</p>
+        </div>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="loginEmail">Email or Username</label>
+                <input type="text" id="loginEmail" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="loginPassword">Password</label>
+                <input type="password" id="loginPassword" required>
+            </div>
+            
+            <button type="submit" class="btn" id="loginBtn">Login</button>
+            
+            <div class="forgot-password">
+                <a href="#" onclick="showForgotPasswordModal()">Forgot Password?</a>
+            </div>
+            
+            <div id="loginMessage"></div>
+        </form>
+        
+        <div class="back-link">
+            <a href="/">← Back to Home</a>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div id="forgotPasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Reset Password</h3>
+                <button class="close-btn" onclick="closeForgotPasswordModal()">&times;</button>
+            </div>
+            <form id="forgotPasswordForm">
+                <div class="form-group">
+                    <label for="resetEmail">Email or Username</label>
+                    <input type="text" id="resetEmail" required>
+                    <div class="help-text">Enter your email address or username to receive a password reset link.</div>
+                </div>
+                
+                <button type="submit" class="btn" id="resetBtn">Send Reset Link</button>
+                
+                <div id="resetMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        
+        function showForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'block';
+        }
+        
+        function closeForgotPasswordModal() {
+            document.getElementById('forgotPasswordModal').style.display = 'none';
+            document.getElementById('forgotPasswordForm').reset();
+            document.getElementById('resetMessage').innerHTML = '';
+        }
+        
+        // Login form handler
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const emailOrUsername = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const loginBtn = document.getElementById('loginBtn');
+            const message = document.getElementById('loginMessage');
+            
+            loginBtn.disabled = true;
+            loginBtn.textContent = 'Logging in...';
+            message.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email: emailOrUsername, // Backend will handle email or username
+                        password 
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    if (result.user.role !== 'hotel') {
+                        message.innerHTML = '<div class="error">Hotel access required</div>';
+                        return;
+                    }
+                    
+                    // Store session
+                    localStorage.setItem('fedevent_session', result.sessionId);
+                    localStorage.setItem('fedevent_user', JSON.stringify(result.user));
+                    localStorage.setItem('fedevent_hotel', JSON.stringify(result.hotel));
+                    
+                    message.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
+                    
+                    // Redirect to hotel dashboard
+                    setTimeout(() => {
+                        window.location.href = '/hotel-dashboard.html';
+                    }, 1000);
+                } else {
+                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                message.innerHTML = '<div class="error">Login failed. Please try again.</div>';
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.textContent = 'Login';
+            }
+        });
+        
+        // Forgot Password form handler
+        document.getElementById('forgotPasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const emailOrUsername = document.getElementById('resetEmail').value;
+            const resetBtn = document.getElementById('resetBtn');
+            const message = document.getElementById('resetMessage');
+            
+            resetBtn.disabled = true;
+            resetBtn.textContent = 'Sending...';
+            message.innerHTML = '';
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/auth/forgot-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ 
+                        email: emailOrUsername // Backend will handle email or username lookup
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    message.innerHTML = '<div class="success">Password reset link sent to your email address.</div>';
+                    setTimeout(() => {
+                        closeForgotPasswordModal();
+                    }, 3000);
+                } else {
+                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Password reset error:', error);
+                message.innerHTML = '<div class="error">Failed to send reset link. Please try again.</div>';
+            } finally {
+                resetBtn.disabled = false;
+                resetBtn.textContent = 'Send Reset Link';
+            }
+        });
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('forgotPasswordModal');
+            if (event.target === modal) {
+                closeForgotPasswordModal();
+            }
+        }
+
+        function toggleUserDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('userDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLogoDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('logoDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('fedevent_session');
+            localStorage.removeItem('fedevent_user');
+            window.location.href = '/hotel-login.html';
+        }
+
+        function loadUserMenu() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const userRaw = localStorage.getItem('fedevent_user');
+                if (!sessionId || !userRaw) return;
+                const user = JSON.parse(userRaw);
+                let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+                name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+                const initial = (name || 'U').trim().charAt(0).toUpperCase();
+                document.getElementById('userNameLabel').textContent = name;
+                document.getElementById('userInitial').textContent = initial;
+                document.getElementById('userMenu').style.display = 'list-item';
+            } catch (e) { /* noop */ }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserMenu);
+
+        document.addEventListener('click', function(evt){
+            const userDd = document.getElementById('userDropdown');
+            const logoDd = document.getElementById('logoDropdown');
+            const um = document.getElementById('userMenu');
+            const logoMenu = document.querySelector('.logo-menu');
+            
+            if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
+            if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

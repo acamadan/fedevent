@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Dashboard | FEDEVENT</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1f2937;
+            --secondary: #3b82f6;
+            --text: #374151;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --error: #dc2626;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--bg);
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+        }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        
+        .section h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        .upload-area {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 3rem;
+            text-align: center;
+            background: var(--bg);
+            transition: border-color 0.2s;
+        }
+        
+        .upload-area:hover {
+            border-color: var(--secondary);
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--secondary);
+            background: #eff6ff;
+        }
+        
+        .upload-icon {
+            font-size: 3rem;
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        
+        .upload-text {
+            color: var(--text-light);
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            background: #2563eb;
+        }
+        
+        .security-notice {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .security-notice h3 {
+            color: #92400e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .security-notice p {
+            color: #92400e;
+            line-height: 1.5;
+        }
+        
+        .file-list {
+            display: grid;
+            gap: 1rem;
+        }
+        
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+        }
+        
+        .file-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .file-icon {
+            font-size: 1.5rem;
+        }
+        
+        .file-details h4 {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .file-details p {
+            font-size: 0.875rem;
+            color: var(--text-light);
+        }
+        
+        .file-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-small {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+        
+        .btn-danger {
+            background: var(--error);
+        }
+        
+        .btn-danger:hover {
+            background: #b91c1c;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1 class="page-title">Government Dashboard</h1>
+        
+        <div class="security-notice">
+            <h3>🔒 Security Reminder</h3>
+            <p>This system is for <strong>UNCLASSIFIED</strong> information only. Do not upload classified, confidential, or sensitive materials.</p>
+        </div>
+        
+        <div class="dashboard-grid">
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-title">Active Projects</div>
+                <div class="stat-value" id="activeProjects">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">📋</div>
+                <div class="stat-title">Documents Uploaded</div>
+                <div class="stat-value" id="documentsCount">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">⏱️</div>
+                <div class="stat-title">Pending Reviews</div>
+                <div class="stat-value" id="pendingReviews">0</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📤 Upload Documents</h2>
+            <div class="upload-area" id="uploadArea">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">
+                    <p><strong>Drop files here or click to browse</strong></p>
+                    <p>Supported: SOW, PWS, Salient Features (PDF, DOC, DOCX)</p>
+                    <p style="color: var(--error); font-weight: 600;">UNCLASSIFIED DOCUMENTS ONLY</p>
+                </div>
+                <input type="file" id="fileInput" style="display: none;" multiple accept=".pdf,.doc,.docx">
+                <button class="btn" onclick="document.getElementById('fileInput').click()">Select Files</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📁 Recent Documents</h2>
+            <div id="fileList" class="file-list">
+                <p style="text-align: center; color: var(--text-light); padding: 2rem;">No documents uploaded yet</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check authentication
+        const sessionToken = localStorage.getItem('gov_session');
+        if (!sessionToken) {
+            window.location.href = '/government-login.html';
+        }
+        
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/government/me', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    let userDisplay = `${data.user.first_name} ${data.user.last_name} - ${data.user.agency}`;
+                    
+                    // Add admin indicator if this is the admin user
+                    if (data.user.email === 'admin@fedevent.com' || data.user.is_admin) {
+                        userDisplay = `🔧 ${userDisplay} (ADMIN)`;
+                        document.getElementById('userInfo').style.color = '#dc2626';
+                        document.getElementById('userInfo').style.fontWeight = 'bold';
+                    }
+                    
+                    document.getElementById('userInfo').textContent = userDisplay;
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+                logout();
+            }
+        }
+        
+        // Load dashboard stats
+        async function loadStats() {
+            try {
+                const response = await fetch('/api/government/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const stats = await response.json();
+                    document.getElementById('activeProjects').textContent = stats.activeProjects || 0;
+                    document.getElementById('documentsCount').textContent = stats.documentsCount || 0;
+                    document.getElementById('pendingReviews').textContent = stats.pendingReviews || 0;
+                }
+            } catch (error) {
+                console.error('Failed to load stats:', error);
+            }
+        }
+        
+        // File upload handling
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+        
+        async function handleFiles(files) {
+            for (const file of files) {
+                await uploadFile(file);
+            }
+            loadDocuments();
+        }
+        
+        async function uploadFile(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('document_type', 'OTHER'); // Default type
+            
+            try {
+                const response = await fetch('/api/government/upload', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    },
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    console.log(`File ${file.name} uploaded successfully`);
+                } else {
+                    console.error(`Failed to upload ${file.name}`);
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+            }
+        }
+        
+        // Load documents
+        async function loadDocuments() {
+            try {
+                const response = await fetch('/api/government/documents', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const documents = await response.json();
+                    displayDocuments(documents);
+                }
+            } catch (error) {
+                console.error('Failed to load documents:', error);
+            }
+        }
+        
+        function displayDocuments(documents) {
+            const fileList = document.getElementById('fileList');
+            
+            if (documents.length === 0) {
+                fileList.innerHTML = '<p style="text-align: center; color: var(--text-light); padding: 2rem;">No documents uploaded yet</p>';
+                return;
+            }
+            
+            fileList.innerHTML = documents.map(doc => `
+                <div class="file-item">
+                    <div class="file-info">
+                        <div class="file-icon">📄</div>
+                        <div class="file-details">
+                            <h4>${doc.file_name}</h4>
+                            <p>${doc.document_type} • ${formatDate(doc.uploaded_at)} • ${doc.classification_level}</p>
+                        </div>
+                    </div>
+                    <div class="file-actions">
+                        <button class="btn btn-small" onclick="downloadFile(${doc.id})">Download</button>
+                        <button class="btn btn-small btn-danger" onclick="deleteFile(${doc.id})">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function formatDate(dateString) {
+            return new Date(dateString).toLocaleDateString();
+        }
+        
+        async function downloadFile(fileId) {
+            window.open(`/api/government/documents/${fileId}/download`, '_blank');
+        }
+        
+        async function deleteFile(fileId) {
+            if (confirm('Are you sure you want to delete this file?')) {
+                try {
+                    const response = await fetch(`/api/government/documents/${fileId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${sessionToken}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        loadDocuments();
+                        loadStats();
+                    }
+                } catch (error) {
+                    console.error('Delete error:', error);
+                }
+            }
+        }
+        
+        async function logout() {
+            try {
+                // Clear session from server
+                const sessionId = localStorage.getItem('gov_session');
+                if (sessionId) {
+                    await fetch('/api/government/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${sessionId}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Logout API error:', error);
+                // Continue with logout even if API call fails
+            }
+            
+            // Always clear local storage and redirect
+            localStorage.removeItem('gov_session');
+            localStorage.removeItem('gov_user');
+            
+            // Force redirect to login page
+            window.location.replace('/government-login.html');
+        }
+        
+        // Initialize dashboard
+        loadUserInfo();
+        loadStats();
+        loadDocuments();
+    </script>
+    
+    <!-- Universal Logout System -->
+    <script src="/logout-universal.js"></script>
+    <script src="/nav.js"></script>
+</body>
+</html>

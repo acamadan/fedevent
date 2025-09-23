@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Portal | FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1f2937;
+            --secondary: #3b82f6;
+            --text: #374151;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --white: #ffffff;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--secondary);
+        }
+        
+        .hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #111827 100%);
+            color: white;
+            padding: 6rem 0;
+            text-align: center;
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+            color: white !important;
+            text-align: center;
+        }
+        
+        .cta-buttons {
+            display: flex;
+            gap: 1.5rem;
+            justify-content: center;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-secondary:hover {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .features {
+            padding: 6rem 0;
+            background: var(--white);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .features h2 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 4rem;
+            color: var(--primary);
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 3rem;
+        }
+        
+        .feature-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            transition: transform 0.2s;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .feature-card p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        .security-section {
+            background: #fef3c7;
+            padding: 4rem 0;
+        }
+        
+        .security-content {
+            text-align: center;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .security-section h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #92400e;
+            margin-bottom: 2rem;
+        }
+        
+        .security-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+        
+        .security-item {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #f59e0b;
+        }
+        
+        .security-item h3 {
+            color: #92400e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .footer {
+            background: var(--primary);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 2rem;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-links {
+                display: none;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <nav class="container">
+        <div class="logo-menu" style="position: relative;">
+          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+          </div>
+        </div>
+        <ul class="nav-links">
+          <li id="userMenu" class="user-menu" style="display:none;">
+            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+              <span class="user-avatar" id="userInitial">U</span>
+              <span id="userNameLabel">User</span>
+              <span aria-hidden>▾</span>
+            </a>
+            <div class="user-dropdown" id="userDropdown">
+              <a href="/hotel-dashboard.html">Hotel Portal</a>
+              <a href="/hotel-profile.html">User Settings</a>
+              <button type="button" onclick="logoutUser()">Logout</button>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    
+    <section class="hero" style="margin-top: 80px;">
+        <div class="container">
+            <h1>🏛️ Government Portal</h1>
+            <p>Secure event planning and procurement platform for U.S. Government agencies</p>
+            <div class="cta-buttons">
+                <a href="/government-login.html" class="btn btn-primary">Access Portal</a>
+                <a href="/government-registration.html" class="btn btn-secondary">Request Account</a>
+            </div>
+        </div>
+    </section>
+    
+    <section class="features">
+        <div class="container">
+            <h2>Government Event Solutions</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">📋</div>
+                    <h3>Document Management</h3>
+                    <p>Upload SOW, PWS, and salient features securely. All documents remain unclassified and are handled with appropriate security measures.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🤝</div>
+                    <h3>Vendor Coordination</h3>
+                    <p>Connect with verified hotel partners and service providers. Streamlined procurement process with competitive bidding.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>Project Tracking</h3>
+                    <p>Monitor event planning progress, budget status, and deliverables. Real-time updates and comprehensive reporting.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🔒</div>
+                    <h3>Secure Platform</h3>
+                    <p>Government-grade security for unclassified information. Compliant with federal procurement regulations and data protection standards.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Rapid Response</h3>
+                    <p>Fast-track urgent requests and emergency events. 24/7 support for critical government operations and time-sensitive missions.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>Cost Optimization</h3>
+                    <p>Per diem compliant rates and competitive pricing. Transparent cost structures with detailed financial reporting and budget tracking.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🏨</div>
+                    <h3>Hotel Network Search</h3>
+                    <p>Search and browse our network of qualified hotels and venues. Find properties that meet government requirements with NET30 terms and PO acceptance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section class="security-section">
+        <div class="container">
+            <div class="security-content">
+                <h2>🔒 Security & Compliance Notice</h2>
+                <p style="font-size: 1.1rem; color: #92400e; line-height: 1.6;">
+                    This platform is designed for <strong>UNCLASSIFIED</strong> information only. 
+                    FEDEVENT does not hold any government security clearances and is not authorized 
+                    to handle classified, confidential, or sensitive materials.
+                </p>
+                
+                <div class="security-list">
+                    <div class="security-item">
+                        <h3>✅ Authorized Use</h3>
+                        <p>Unclassified SOW, PWS, and procurement documents</p>
+                    </div>
+                    <div class="security-item">
+                        <h3>❌ Prohibited Content</h3>
+                        <p>Classified, confidential, or sensitive information</p>
+                    </div>
+                    <div class="security-item">
+                        <h3>🏛️ Access Control</h3>
+                        <p>Verified government personnel only</p>
+                    </div>
+                    <div class="security-item">
+                        <h3>📋 Compliance</h3>
+                        <p>Federal procurement regulations adherence</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FEDEVENT</h3>
+                    <p>Professional event planning services for U.S. Government agencies.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="/hotel-signup.html">Hotel Registration</a>
+                    <a href="/request.html">Government Requests</a>
+                    <a href="/government-portal.html">Government Portal</a>
+                </div>
+                <div class="footer-section footer-contact">
+                    <h3>Contact</h3>
+                    <p>Email: info@fedevent.com</p>
+                    <p>Phone: (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 FEDEVENT - A service of CREATA Global Event Agency LLC</p>
+                <p style="margin-top: 0.5rem; opacity: 0.8;">Professional event planning services for U.S. Government agencies</p>
+            </div>
+        </div>
+    </footer>
+    
+    <script>
+        function toggleUserDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('userDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLogoDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('logoDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+
+        function logoutUser() {
+            localStorage.removeItem('fedevent_session');
+            localStorage.removeItem('fedevent_user');
+            window.location.href = '/hotel-login.html';
+        }
+
+        function loadUserMenu() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const userRaw = localStorage.getItem('fedevent_user');
+                if (!sessionId || !userRaw) return;
+                const user = JSON.parse(userRaw);
+                let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+                name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+                const initial = (name || 'U').trim().charAt(0).toUpperCase();
+                document.getElementById('userNameLabel').textContent = name;
+                document.getElementById('userInitial').textContent = initial;
+                document.getElementById('userMenu').style.display = 'list-item';
+            } catch (e) { /* noop */ }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserMenu);
+
+        document.addEventListener('click', function(evt){
+            const userDd = document.getElementById('userDropdown');
+            const logoDd = document.getElementById('logoDropdown');
+            const um = document.getElementById('userMenu');
+            const logoMenu = document.querySelector('.logo-menu');
+            
+            if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
+            if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

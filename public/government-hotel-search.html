@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Search - Government Portal | FEDEVENT</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'government_portal'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackSearch(searchData) {
+            gtag('event', 'hotel_search', {
+                'event_category': 'Government Portal',
+                'event_label': 'Hotel Search',
+                'custom_parameter_1': 'government_portal',
+                'search_term': searchData.keywords || '',
+                'search_city': searchData.city || '',
+                'search_state': searchData.state || '',
+                'search_country': searchData.country || '',
+                'filters_applied': JSON.stringify(searchData.filters || {})
+            });
+        }
+        
+        function trackQuoteRequest(hotelId) {
+            gtag('event', 'quote_request', {
+                'event_category': 'Government Portal',
+                'event_label': 'Hotel Quote Request',
+                'custom_parameter_1': 'government_portal',
+                'hotel_id': hotelId,
+                'value': 1
+            });
+        }
+        
+        function trackHotelView(hotelId) {
+            gtag('event', 'hotel_view', {
+                'event_category': 'Government Portal',
+                'event_label': 'Hotel Details View',
+                'custom_parameter_1': 'government_portal',
+                'hotel_id': hotelId
+            });
+        }
+        
+        function trackFilterChange(filterName, filterValue) {
+            gtag('event', 'filter_change', {
+                'event_category': 'Government Portal',
+                'event_label': 'Search Filter Changed',
+                'custom_parameter_1': 'government_portal',
+                'filter_name': filterName,
+                'filter_value': filterValue
+            });
+        }
+    </script>
+    <style>
+        :root {
+            --primary: #1f2937;
+            --secondary: #3b82f6;
+            --text: #374151;
+            --text-light: #6b7280;
+            --bg: #f9fafb;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --success: #16a34a;
+            --warning: #f59e0b;
+            --error: #dc2626;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: background-color 0.2s;
+        }
+        
+        .nav-links a:hover,
+        .nav-links a.active {
+            background: var(--bg);
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            font-weight: 500;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 2rem;
+        }
+        
+        .search-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+        
+        .search-form {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 0.75rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        
+        .search-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .search-btn:hover {
+            background: #2563eb;
+        }
+        
+        .results-section {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+        }
+        
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .results-count {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .hotel-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .hotel-card {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            background: var(--bg);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .hotel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hotel-header {
+            margin-bottom: 1rem;
+        }
+        
+        .hotel-name {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-location {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .hotel-details {
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .detail-label {
+            color: var(--text-light);
+        }
+        
+        .detail-value {
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        .hotel-tags {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .tag {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .tag-government {
+            background: #dcfce7;
+            color: #15803d;
+        }
+        
+        .tag-net30 {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .tag-perdiem {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .hotel-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+            font-size: 0.875rem;
+            transition: background-color 0.2s;
+        }
+        
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--secondary);
+            border: 1px solid var(--secondary);
+        }
+        
+        .btn-outline:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+        
+        .error-message {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+        
+        .filters-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .filters-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        
+        .filter-checkboxes {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+        
+        .checkbox-group label {
+            font-weight: normal;
+            margin: 0;
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .search-form {
+                grid-template-columns: 1fr;
+            }
+            
+            .hotel-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hotel-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <h1 class="page-title">🔍 Hotel Network Search</h1>
+        
+        <div class="search-section">
+            <h2 style="margin-bottom: 1.5rem; color: var(--primary);">Search Government-Qualified Hotels</h2>
+            
+            <div id="errorMessage" class="error-message"></div>
+            
+            <form class="search-form" id="searchForm">
+                <div class="form-group">
+                    <label for="city">City</label>
+                    <input type="text" id="city" name="city" placeholder="Enter city name">
+                </div>
+                
+                <div class="form-group">
+                    <label for="state">State</label>
+                    <select id="state" name="state">
+                        <option value="">All States</option>
+                        <option value="AL">Alabama</option>
+                        <option value="AK">Alaska</option>
+                        <option value="AZ">Arizona</option>
+                        <option value="AR">Arkansas</option>
+                        <option value="CA">California</option>
+                        <option value="CO">Colorado</option>
+                        <option value="CT">Connecticut</option>
+                        <option value="DE">Delaware</option>
+                        <option value="DC">District of Columbia</option>
+                        <option value="FL">Florida</option>
+                        <option value="GA">Georgia</option>
+                        <option value="HI">Hawaii</option>
+                        <option value="ID">Idaho</option>
+                        <option value="IL">Illinois</option>
+                        <option value="IN">Indiana</option>
+                        <option value="IA">Iowa</option>
+                        <option value="KS">Kansas</option>
+                        <option value="KY">Kentucky</option>
+                        <option value="LA">Louisiana</option>
+                        <option value="ME">Maine</option>
+                        <option value="MD">Maryland</option>
+                        <option value="MA">Massachusetts</option>
+                        <option value="MI">Michigan</option>
+                        <option value="MN">Minnesota</option>
+                        <option value="MS">Mississippi</option>
+                        <option value="MO">Missouri</option>
+                        <option value="MT">Montana</option>
+                        <option value="NE">Nebraska</option>
+                        <option value="NV">Nevada</option>
+                        <option value="NH">New Hampshire</option>
+                        <option value="NJ">New Jersey</option>
+                        <option value="NM">New Mexico</option>
+                        <option value="NY">New York</option>
+                        <option value="NC">North Carolina</option>
+                        <option value="ND">North Dakota</option>
+                        <option value="OH">Ohio</option>
+                        <option value="OK">Oklahoma</option>
+                        <option value="OR">Oregon</option>
+                        <option value="PA">Pennsylvania</option>
+                        <option value="RI">Rhode Island</option>
+                        <option value="SC">South Carolina</option>
+                        <option value="SD">South Dakota</option>
+                        <option value="TN">Tennessee</option>
+                        <option value="TX">Texas</option>
+                        <option value="UT">Utah</option>
+                        <option value="VT">Vermont</option>
+                        <option value="VA">Virginia</option>
+                        <option value="WA">Washington</option>
+                        <option value="WV">West Virginia</option>
+                        <option value="WI">Wisconsin</option>
+                        <option value="WY">Wyoming</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="country">Country</label>
+                    <select id="country" name="country">
+                        <option value="">All Countries</option>
+                        <option value="US" selected>United States</option>
+                        <option value="CA">Canada</option>
+                        <option value="MX">Mexico</option>
+                        <option value="UK">United Kingdom</option>
+                        <option value="DE">Germany</option>
+                        <option value="FR">France</option>
+                        <option value="JP">Japan</option>
+                        <option value="KR">South Korea</option>
+                        <option value="AU">Australia</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="keywords">Keywords</label>
+                    <input type="text" id="keywords" name="keywords" placeholder="Hotel name, brand, amenities">
+                </div>
+            </form>
+            
+            <div class="filters-section">
+                <div class="filters-title">Government Requirements</div>
+                <div class="filter-checkboxes">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="net30" name="net30" checked>
+                        <label for="net30">NET30 Payment Terms</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="po_acceptance" name="po_acceptance" checked>
+                        <label for="po_acceptance">PO Acceptance</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="per_diem" name="per_diem">
+                        <label for="per_diem">Per Diem Rates Available</label>
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="government_rate" name="government_rate">
+                        <label for="government_rate">Government Rates</label>
+                    </div>
+                </div>
+            </div>
+            
+            <button type="submit" class="search-btn" onclick="searchHotels()">🔍 Search Hotels</button>
+        </div>
+        
+        <div class="results-section">
+            <div class="results-header">
+                <h2 style="color: var(--primary);">Search Results</h2>
+                <div class="results-count" id="resultsCount">Ready to search</div>
+            </div>
+            
+            <div id="hotelResults" class="hotel-grid">
+                <div class="loading">
+                    <p>Enter search criteria above to find government-qualified hotels in our network.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Check authentication
+        const sessionToken = localStorage.getItem('gov_session');
+        if (!sessionToken) {
+            window.location.href = '/government-login.html';
+        }
+        
+        // Load user info
+        async function loadUserInfo() {
+            try {
+                const response = await fetch('/api/government/me', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('userInfo').textContent = 
+                        `${data.user.first_name} ${data.user.last_name} - ${data.user.agency}`;
+                } else {
+                    logout();
+                }
+            } catch (error) {
+                console.error('Failed to load user info:', error);
+                logout();
+            }
+        }
+        
+        // Search hotels function
+        async function searchHotels() {
+            const errorDiv = document.getElementById('errorMessage');
+            const resultsDiv = document.getElementById('hotelResults');
+            const countDiv = document.getElementById('resultsCount');
+            
+            // Get form data
+            const city = document.getElementById('city').value.trim();
+            const state = document.getElementById('state').value;
+            const country = document.getElementById('country').value;
+            const keywords = document.getElementById('keywords').value.trim();
+            
+            // Get filter checkboxes
+            const net30 = document.getElementById('net30').checked;
+            const poAcceptance = document.getElementById('po_acceptance').checked;
+            const perDiem = document.getElementById('per_diem').checked;
+            const governmentRate = document.getElementById('government_rate').checked;
+            
+            // Track search event
+            const searchData = {
+                city: city,
+                state: state,
+                country: country,
+                keywords: keywords,
+                filters: {
+                    net30: net30,
+                    po_acceptance: poAcceptance,
+                    per_diem: perDiem,
+                    government_rate: governmentRate
+                }
+            };
+            
+            // Send analytics event
+            if (typeof trackSearch === 'function') {
+                trackSearch(searchData);
+            }
+            
+            errorDiv.style.display = 'none';
+            resultsDiv.innerHTML = '<div class="loading">Searching hotels...</div>';
+            countDiv.textContent = 'Searching...';
+            
+            try {
+                // Build search query
+                const params = new URLSearchParams();
+                if (city) params.append('city', city);
+                if (state) params.append('state', state);
+                if (country) params.append('country', country);
+                if (keywords) params.append('q', keywords);
+                if (net30) params.append('net30', 'true');
+                if (poAcceptance) params.append('po_acceptance', 'true');
+                if (perDiem) params.append('per_diem', 'true');
+                if (governmentRate) params.append('government_rate', 'true');
+                
+                const response = await fetch(`/api/government/hotels/search?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displayHotels(data.hotels || []);
+                    countDiv.textContent = `Found ${data.hotels?.length || 0} hotels`;
+                    
+                    // Track search results
+                    gtag('event', 'search_results', {
+                        'event_category': 'Government Portal',
+                        'event_label': 'Hotel Search Results',
+                        'custom_parameter_1': 'government_portal',
+                        'results_count': data.hotels?.length || 0,
+                        'search_successful': true
+                    });
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Search failed');
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+                resultsDiv.innerHTML = '<div class="loading">Search failed. Please try again.</div>';
+                countDiv.textContent = 'Search failed';
+                
+                // Track search error
+                gtag('event', 'search_error', {
+                    'event_category': 'Government Portal',
+                    'event_label': 'Hotel Search Error',
+                    'custom_parameter_1': 'government_portal',
+                    'error_message': error.message
+                });
+            }
+        }
+        
+        // Display hotels function
+        function displayHotels(hotels) {
+            const resultsDiv = document.getElementById('hotelResults');
+            
+            if (hotels.length === 0) {
+                resultsDiv.innerHTML = `
+                    <div class="loading">
+                        <p>No hotels found matching your search criteria.</p>
+                        <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--text-light);">
+                            Try adjusting your filters or search terms.
+                        </p>
+                    </div>
+                `;
+                return;
+            }
+            
+            resultsDiv.innerHTML = hotels.map(hotel => `
+                <div class="hotel-card">
+                    <div class="hotel-header">
+                        <div class="hotel-name">${hotel.name || 'Unnamed Hotel'}</div>
+                        <div class="hotel-location">
+                            📍 ${[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ') || 'Location not specified'}
+                        </div>
+                    </div>
+                    
+                    <div class="hotel-details">
+                        ${hotel.email ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Contact Email:</span>
+                                <span class="detail-value">${hotel.email}</span>
+                            </div>
+                        ` : ''}
+                        ${hotel.phone ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Phone:</span>
+                                <span class="detail-value">${hotel.phone}</span>
+                            </div>
+                        ` : ''}
+                        ${hotel.total_rooms ? `
+                            <div class="detail-row">
+                                <span class="detail-label">Total Rooms:</span>
+                                <span class="detail-value">${hotel.total_rooms}</span>
+                            </div>
+                        ` : ''}
+                        <div class="detail-row">
+                            <span class="detail-label">Registered:</span>
+                            <span class="detail-value">${formatDate(hotel.created_at)}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="hotel-tags">
+                        <span class="tag tag-government">✅ Government Qualified</span>
+                        <span class="tag tag-net30">💳 NET30 Terms</span>
+                        ${hotel.per_diem_rates ? '<span class="tag tag-perdiem">🏛️ Per Diem Available</span>' : ''}
+                    </div>
+                    
+                    <div class="hotel-actions">
+                        <button class="btn btn-primary" onclick="requestQuote(${hotel.id})">
+                            📋 Request Quote
+                        </button>
+                        <button class="btn btn-outline" onclick="viewDetails(${hotel.id})">
+                            ℹ️ View Details
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        // Format date helper
+        function formatDate(dateString) {
+            if (!dateString) return 'N/A';
+            return new Date(dateString).toLocaleDateString();
+        }
+        
+        // Request quote function
+        async function requestQuote(hotelId) {
+            try {
+                // Track quote request event
+                if (typeof trackQuoteRequest === 'function') {
+                    trackQuoteRequest(hotelId);
+                }
+                
+                const response = await fetch('/api/government/hotels/request-quote', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ hotel_id: hotelId })
+                });
+                
+                if (response.ok) {
+                    alert('Quote request sent successfully! You will receive a response via email.');
+                    
+                    // Track successful quote request
+                    gtag('event', 'quote_request_success', {
+                        'event_category': 'Government Portal',
+                        'event_label': 'Hotel Quote Request Success',
+                        'custom_parameter_1': 'government_portal',
+                        'hotel_id': hotelId
+                    });
+                } else {
+                    const error = await response.json();
+                    alert(`Failed to send quote request: ${error.error}`);
+                    
+                    // Track failed quote request
+                    gtag('event', 'quote_request_error', {
+                        'event_category': 'Government Portal',
+                        'event_label': 'Hotel Quote Request Error',
+                        'custom_parameter_1': 'government_portal',
+                        'hotel_id': hotelId,
+                        'error_message': error.error
+                    });
+                }
+            } catch (error) {
+                console.error('Quote request error:', error);
+                alert('Failed to send quote request. Please try again.');
+                
+                // Track quote request exception
+                gtag('event', 'quote_request_exception', {
+                    'event_category': 'Government Portal',
+                    'event_label': 'Hotel Quote Request Exception',
+                    'custom_parameter_1': 'government_portal',
+                    'hotel_id': hotelId,
+                    'error_message': error.message
+                });
+            }
+        }
+        
+        // View details function
+        function viewDetails(hotelId) {
+            // Track hotel view event
+            if (typeof trackHotelView === 'function') {
+                trackHotelView(hotelId);
+            }
+            
+            // Track page view for hotel details
+            gtag('event', 'page_view', {
+                'event_category': 'Government Portal',
+                'event_label': 'Hotel Details Page View',
+                'custom_parameter_1': 'government_portal',
+                'page_title': 'Hotel Details',
+                'page_location': `/hotel-details.html?id=${hotelId}`
+            });
+            
+            window.open(`/hotel-details.html?id=${hotelId}`, '_blank');
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('gov_session');
+            window.location.href = '/government-login.html';
+        }
+        
+        // Auto-search on form changes
+        document.getElementById('city').addEventListener('input', debounce(searchHotels, 500));
+        document.getElementById('state').addEventListener('change', searchHotels);
+        document.getElementById('country').addEventListener('change', searchHotels);
+        document.getElementById('keywords').addEventListener('input', debounce(searchHotels, 500));
+        
+        // Checkbox listeners with analytics tracking
+        ['net30', 'po_acceptance', 'per_diem', 'government_rate'].forEach(id => {
+            document.getElementById(id).addEventListener('change', function() {
+                // Track filter change
+                if (typeof trackFilterChange === 'function') {
+                    trackFilterChange(id, this.checked);
+                }
+                searchHotels();
+            });
+        });
+        
+        // Debounce utility
+        function debounce(func, wait) {
+            let timeout;
+            return function executedFunction(...args) {
+                const later = () => {
+                    clearTimeout(timeout);
+                    func(...args);
+                };
+                clearTimeout(timeout);
+                timeout = setTimeout(later, wait);
+            };
+        }
+        
+        // Initialize
+        loadUserInfo();
+        
+        // Track page view
+        gtag('event', 'page_view', {
+            'event_category': 'Government Portal',
+            'event_label': 'Hotel Search Page',
+            'custom_parameter_1': 'government_portal',
+            'page_title': 'Government Hotel Search',
+            'page_location': window.location.href
+        });
+        
+        // Initial search with default filters
+        setTimeout(searchHotels, 500);
+    </script>
+</body>
+</html>

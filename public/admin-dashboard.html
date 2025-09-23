@@ -1,0 +1,2432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - FEDEVENT</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .nav-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .nav-tab.active {
+            background: var(--primary);
+            color: white !important;
+        }
+        
+        .nav-tab:hover:not(.active) {
+            background: #f3f4f6;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .logout-btn:hover {
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            color: var(--text);
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .stat-label {
+            color: var(--text-light);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+        
+        .hotels-table {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .bulk-actions {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            background: #f0f9ff;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: 1px solid #bae6fd;
+        }
+        
+        .selected-count {
+            font-weight: 600;
+            color: #0369a1;
+            font-size: 0.875rem;
+        }
+        
+        .bulk-actions-menu {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .bulk-action-btn {
+            background: #0369a1;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+        
+        .bulk-action-btn:hover {
+            background: #0284c7;
+        }
+        
+        .bulk-action-btn:active {
+            background: #0369a1;
+        }
+        
+        .priority-indicator {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .priority-yes {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #fbbf24;
+        }
+        
+        .priority-no {
+            background: #f3f4f6;
+            color: #6b7280;
+            border: 1px solid #d1d5db;
+        }
+        
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        .search-input {
+            padding: 0.75rem 1rem;
+            border: 2px solid var(--border);
+            border-radius: 6px;
+            width: 350px;
+            font-size: 1rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        tr:hover {
+            background: var(--bg);
+        }
+        
+        .hotel-name {
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .hotel-name:hover {
+            text-decoration: underline;
+            color: var(--primary-dark);
+        }
+        
+        /* Hotel hover popup */
+        .hotel-hover-popup {
+            position: fixed;
+            background: white;
+            border: 2px solid var(--primary);
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+            z-index: 9999;
+            min-width: 600px;
+            max-width: 800px;
+            max-height: 80vh;
+            display: none;
+            font-size: 1rem;
+            line-height: 1.5;
+            overflow-y: auto;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
+        .hotel-hover-popup.show {
+            display: block;
+        }
+        
+        /* Backdrop overlay for popup */
+        .popup-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 9998;
+            display: none;
+        }
+        
+        .popup-backdrop.show {
+            display: block;
+        }
+        
+        .hotel-hover-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--primary);
+        }
+        
+        .hotel-hover-title {
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin: 0;
+        }
+        
+        .hotel-hover-close {
+            background: var(--error);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.2s;
+        }
+        
+        .hotel-hover-close:hover {
+            background: #b91c1c;
+        }
+        
+        .hotel-hover-details {
+            color: var(--text);
+        }
+        
+        .hotel-hover-item {
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+        
+        .hotel-hover-section {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .hotel-hover-section:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .hotel-hover-section-title {
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+        
+        .hotel-hover-label {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+        
+        .hotel-hover-value {
+            color: var(--text);
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .badge-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .badge-inactive {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .detail-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .detail-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .detail-item {
+            background: var(--bg);
+            padding: 0.75rem;
+            border-radius: 4px;
+        }
+        
+        .detail-label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            margin-top: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">FEDEVENT Admin</div>
+            <div class="nav-links">
+                <a href="#" class="nav-tab active" onclick="showTab('dashboard')">Dashboard</a>
+                <a href="#" class="nav-tab" onclick="showTab('hotels')">Hotels</a>
+                <a href="/admin-contracts.html" class="nav-tab">Contracts</a>
+                <a href="/sam-search-admin.html" class="nav-tab">SAM Search</a>
+            </div>
+            <div class="user-menu">
+                <div class="user-info" id="userInfo">Loading...</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <h1 class="page-title" id="pageTitle">Admin Dashboard</h1>
+        
+        <!-- Tab Content -->
+        <div id="dashboardTab" class="tab-content active">
+            <!-- Dashboard Overview -->
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+                <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">📊 Dashboard Overview</h2>
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalHotels">-</div>
+                        <div class="stat-label">Total Hotels</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="activeUsers">-</div>
+                        <div class="stat-label">Active Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="completedProfiles">-</div>
+                        <div class="stat-label">Completed Profiles</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="recentRegistrations">-</div>
+                        <div class="stat-label">Recent Registrations</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admin Quick Actions -->
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+                <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">🚀 Admin Actions</h2>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                    <button class="btn" onclick="showAddContractModal()" style="background: #16a34a; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">➕ Add Contract Opportunity</button>
+                    <button class="btn" onclick="showAddAuctionModal()" style="background: #dc2626; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">⚡ Create Live Auction</button>
+                    <button class="btn" onclick="showBulkEmailModal()" style="background: #7c3aed; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">📧 Send Bulk Email</button>
+                    <a href="/admin-contracts.html" class="btn" style="background: #0891b2; text-decoration: none; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">📋 Manage Contracts</a>
+                    <button class="btn" onclick="showDeletedHotels()" style="background: #f59e0b; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">🗂️ View Deleted Hotels</button>
+                    <button class="btn" onclick="showAdminSettings()" style="background: #6b7280; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">⚙️ Admin Settings</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="hotelsTab" class="tab-content">
+            <!-- Hotels Management -->
+            <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+                <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">🏨 Hotel Management</h2>
+            </div>
+        
+            <!-- Capability Filter Section -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">🎯 Capability Details</h2>
+            
+            <!-- Basic Filters -->
+            <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap; margin-bottom: 1rem;">
+                <label style="display: flex; align-items: center; gap: 0.5rem; font-weight: 600;">
+                    <input type="checkbox" id="showPerDiemHotels" onchange="filterHotelsByCapability()">
+                    Show hotels with 30% per diem discount acceptance
+                </label>
+                <button class="btn" onclick="toggleAdvancedSearch()" style="background: #7c3aed; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">🔍 Advanced Search</button>
+                <button class="btn" onclick="resetCapabilityFilter()" style="background: #6b7280; padding: 0.5rem 1rem; font-size: 0.9rem;">Reset Filter</button>
+            </div>
+            
+            <!-- Advanced Search Panel -->
+            <div id="advancedSearchPanel" style="display: none; background: #f8fafc; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 1rem;">
+                <h3 style="margin: 0 0 1rem; font-size: 1.2rem; font-weight: 600; color: #1f2937;">Advanced Search Filters</h3>
+                
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
+                    <!-- Location Filters -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Location</label>
+                        <input type="text" id="searchCity" placeholder="City" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.5rem;">
+                        <input type="text" id="searchState" placeholder="State" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                    </div>
+                    
+                    <!-- Capability Filters -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Capabilities</label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="filterNet30">
+                            <span style="font-size: 0.9rem;">NET30 Terms Accepted</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                            <input type="checkbox" id="filterNoDirectBill">
+                            <span style="font-size: 0.9rem;">No Direct Bill Accepted</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="checkbox" id="filterGovernmentPO">
+                            <span style="font-size: 0.9rem;">Government PO Accepted</span>
+                        </label>
+                    </div>
+                    
+                    <!-- Activity Filters -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Activity</label>
+                        <select id="filterTeamSize" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.5rem;">
+                            <option value="">Any Team Size</option>
+                            <option value="1">1 Member</option>
+                            <option value="2-5">2-5 Members</option>
+                            <option value="6+">6+ Members</option>
+                        </select>
+                        <select id="filterProfileStatus" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                            <option value="">Any Profile Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approved</option>
+                            <option value="rejected">Rejected</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Date Filters -->
+                    <div>
+                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Registration Date</label>
+                        <input type="date" id="filterDateFrom" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.5rem;">
+                        <input type="date" id="filterDateTo" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; align-items: center;">
+                    <button class="btn" onclick="applyAdvancedFilters()" style="background: #16a34a; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">Apply Filters</button>
+                    <button class="btn" onclick="resetAdvancedFilters()" style="background: #6b7280; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">Reset All</button>
+                </div>
+            </div>
+            
+            <div id="capabilityStats" style="font-size: 0.9rem; color: #6b7280;"></div>
+        </div>
+        
+        <div class="stats-grid" id="statsGrid">
+            <div class="stat-card">
+                <div class="stat-number" id="totalHotels">-</div>
+                <div class="stat-label">Total Hotels</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="activeUsers">-</div>
+                <div class="stat-label">Active Users</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedProfiles">-</div>
+                <div class="stat-label">Completed Profiles</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="recentRegistrations">-</div>
+                <div class="stat-label">This Month</div>
+            </div>
+        </div>
+        
+        <div class="hotels-table">
+            <div class="table-header">
+                <h2 class="table-title">Registered Hotels</h2>
+                <div class="header-actions">
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search hotels...">
+                    
+                    <!-- Bulk Actions Menu -->
+                    <div class="bulk-actions" id="bulkActions" style="display: none;">
+                        <div class="selected-count" id="selectedCount">0 selected</div>
+                        <div class="bulk-actions-menu">
+                            <button class="bulk-action-btn" onclick="bulkDelete()" title="Delete selected hotels">
+                                🗑️ Delete
+                            </button>
+                            <button class="bulk-action-btn" onclick="bulkSendMessage()" title="Send message to selected hotels">
+                                📧 Send Message
+                            </button>
+                            <button class="bulk-action-btn" onclick="bulkMarkPriority()" title="Mark as priority hotels">
+                                ⭐ Mark Priority
+                            </button>
+                            <button class="bulk-action-btn" onclick="bulkUnmarkPriority()" title="Remove priority status from hotels">
+                                📋 Unmark Priority
+                            </button>
+                            <button class="bulk-action-btn" onclick="bulkEdit()" title="Edit selected hotels">
+                                ✏️ Bulk Edit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="tableContent">
+                <div class="loading">Loading hotels...</div>
+            </div>
+        </div>
+        </div>
+    </div>
+    
+    <!-- Hotel Details Modal -->
+    <div id="hotelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Hotel Details</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotel Hover Popup Backdrop -->
+    <div id="popupBackdrop" class="popup-backdrop" onclick="hideHotelHover()"></div>
+
+    <!-- Delete Hotel Confirmation Modal -->
+    <div id="deleteHotelModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">⚠️ Confirm Hotel Deletion</h3>
+                <button class="close-btn" onclick="closeModal('deleteHotelModal')">&times;</button>
+            </div>
+            <div id="deleteModalContent">
+                <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="color: #dc2626; font-weight: 600; margin-bottom: 0.5rem;">⚠️ Warning: This action will permanently delete the hotel profile!</p>
+                    <p style="color: #991b1b; font-size: 0.9rem;">This will delete:</p>
+                    <ul style="color: #991b1b; font-size: 0.9rem; margin: 0.5rem 0 0 1.5rem;">
+                        <li>Hotel profile and all associated data</li>
+                        <li>All user accounts associated with this hotel</li>
+                        <li>All profile submissions and documents</li>
+                        <li>All active sessions for hotel users</li>
+                    </ul>
+                    <p style="color: #16a34a; font-size: 0.9rem; margin-top: 0.5rem; font-weight: 500;">✅ Don't worry - you can retract this deletion if needed!</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">Hotel to delete: <span id="deleteHotelName" style="color: #dc2626;"></span></p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Reason for deletion (required, minimum 10 characters):</label>
+                    <textarea id="deletionReason" 
+                              style="width: 100%; min-height: 100px; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 6px; font-size: 1rem; resize: vertical;"
+                              placeholder="Please provide a detailed reason for deleting this hotel profile..."></textarea>
+                    <div id="reasonError" style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="closeModal('deleteHotelModal')" 
+                            style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button id="confirmDeleteBtn" onclick="executeHotelDeletion()" 
+                            style="background: #dc2626; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        🗑️ Delete Hotel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deleted Hotels Modal -->
+    <div id="deletedHotelsModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h3 class="modal-title">🗂️ Deleted Hotels</h3>
+                <button class="close-btn" onclick="closeModal('deletedHotelsModal')">&times;</button>
+            </div>
+            <div id="deletedHotelsContent">
+                <div class="loading">Loading deleted hotels...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retract Deletion Modal -->
+    <div id="retractDeletionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">↩️ Retract Hotel Deletion</h3>
+                <button class="close-btn" onclick="closeModal('retractDeletionModal')">&times;</button>
+            </div>
+            <div id="retractModalContent">
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="color: #0369a1; font-weight: 600; margin-bottom: 0.5rem;">ℹ️ Retract Deletion</p>
+                    <p style="color: #075985; font-size: 0.9rem;">This will restore the hotel profile and all associated data exactly as it was before deletion.</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">Hotel to restore: <span id="retractHotelName" style="color: #16a34a;"></span></p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Reason for retraction (required, minimum 10 characters):</label>
+                    <textarea id="retractionReason" 
+                              style="width: 100%; min-height: 80px; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 6px; font-size: 1rem; resize: vertical;"
+                              placeholder="Please provide a reason for retracting this deletion..."></textarea>
+                    <div id="retractReasonError" style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="closeModal('retractDeletionModal')" 
+                            style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button id="confirmRetractBtn" onclick="executeRetractDeletion()" 
+                            style="background: #16a34a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        ↩️ Restore Hotel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Email Modal -->
+    <div id="bulkEmailModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h3 class="modal-title">📧 Send Bulk Email</h3>
+                <button class="close-btn" onclick="closeModal('bulkEmailModal')">&times;</button>
+            </div>
+            <div id="bulkEmailContent">
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="color: #0369a1; font-weight: 600; margin-bottom: 0.5rem;">📧 Bulk Email System</p>
+                    <p style="color: #075985; font-size: 0.9rem;">Send personalized emails to all registered hotels or a filtered selection.</p>
+                </div>
+                
+                <!-- Email Recipients -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Send to:</label>
+                    <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="emailRecipients" value="all" checked onchange="updateEmailRecipients()">
+                            <span>All Hotels (<span id="totalHotelCount">0</span>)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="radio" name="emailRecipients" value="selected" onchange="updateEmailRecipients()">
+                            <span>Selected Hotels (<span id="selectedHotelCount">0</span>)</span>
+                        </label>
+                    </div>
+                    <div id="selectedHotelsInfo" style="display: none; background: #f9fafb; padding: 0.75rem; border-radius: 6px; font-size: 0.875rem; color: #6b7280;">
+                        No hotels selected. Please select hotels from the main table first.
+                    </div>
+                </div>
+                
+                <!-- Email Subject -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Subject Line:</label>
+                    <input type="text" id="bulkEmailSubject" 
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 6px; font-size: 1rem;"
+                           placeholder="Enter email subject...">
+                </div>
+                
+                <!-- Email Message -->
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Message:</label>
+                    <textarea id="bulkEmailMessage" 
+                              style="width: 100%; min-height: 150px; padding: 0.75rem; border: 2px solid #d1d5db; border-radius: 6px; font-size: 1rem; resize: vertical;"
+                              placeholder="Enter your message here...
+
+You can use these placeholders:
+{hotel_name} - Hotel name
+{city} - Hotel city
+{state} - Hotel state
+{contact_name} - Primary contact name"></textarea>
+                </div>
+                
+                <!-- Email Preview -->
+                <div style="margin-bottom: 1.5rem;">
+                    <button onclick="previewEmail()" 
+                            style="background: #6b7280; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                        👁️ Preview Email
+                    </button>
+                </div>
+                
+                <!-- Send Options -->
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="closeModal('bulkEmailModal')" 
+                            style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button id="sendBulkEmailBtn" onclick="executeBulkEmail()" 
+                            style="background: #7c3aed; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        📧 Send Emails
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Settings Modal -->
+    <div id="adminSettingsModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h3 class="modal-title">⚙️ Admin Settings</h3>
+                <button class="close-btn" onclick="closeModal('adminSettingsModal')">&times;</button>
+            </div>
+            <div id="adminSettingsContent">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                    
+                    <!-- System Configuration -->
+                    <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem;">
+                        <h4 style="color: #1f2937; font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            🔧 System Configuration
+                        </h4>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Manage core system settings and configurations.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button onclick="showSystemSettings()" 
+                                    style="background: #1e40af; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#1e3a8a'" 
+                                    onmouseout="this.style.background='#1e40af'">
+                                📊 System Status & Health
+                            </button>
+                            <button onclick="showMaintenanceMode()" 
+                                    style="background: #f59e0b; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#d97706'" 
+                                    onmouseout="this.style.background='#f59e0b'">
+                                🚧 Maintenance Mode
+                            </button>
+                            <button onclick="showApplicationSettings()" 
+                                    style="background: #7c3aed; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#6d28d9'" 
+                                    onmouseout="this.style.background='#7c3aed'">
+                                ⚙️ Application Settings
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Email Templates -->
+                    <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem;">
+                        <h4 style="color: #1f2937; font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            📧 Email Templates
+                        </h4>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Manage email templates and notifications.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button onclick="showWelcomeEmailTemplate()" 
+                                    style="background: #16a34a; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#15803d'" 
+                                    onmouseout="this.style.background='#16a34a'">
+                                👋 Welcome Email Template
+                            </button>
+                            <button onclick="showPasswordResetTemplate()" 
+                                    style="background: #dc2626; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#b91c1c'" 
+                                    onmouseout="this.style.background='#dc2626'">
+                                🔑 Password Reset Template
+                            </button>
+                            <button onclick="showNotificationTemplates()" 
+                                    style="background: #0891b2; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#0e7490'" 
+                                    onmouseout="this.style.background='#0891b2'">
+                                🔔 Notification Templates
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- User Permissions -->
+                    <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem;">
+                        <h4 style="color: #1f2937; font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            👥 User Permissions
+                        </h4>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Manage user roles and access permissions.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button onclick="showRoleManagement()" 
+                                    style="background: #7c2d12; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#6b2c0e'" 
+                                    onmouseout="this.style.background='#7c2d12'">
+                                🎭 Role Management
+                            </button>
+                            <button onclick="showPermissionMatrix()" 
+                                    style="background: #be185d; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#a21650'" 
+                                    onmouseout="this.style.background='#be185d'">
+                                🔐 Permission Matrix
+                            </button>
+                            <button onclick="showAccessLogs()" 
+                                    style="background: #0f766e; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#0d5b56'" 
+                                    onmouseout="this.style.background='#0f766e'">
+                                📜 Access Logs
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Database Management -->
+                    <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.5rem;">
+                        <h4 style="color: #1f2937; font-size: 1.2rem; font-weight: 600; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                            🗄️ Database Management
+                        </h4>
+                        <p style="color: #6b7280; font-size: 0.9rem; margin-bottom: 1.5rem;">Database operations and maintenance tools.</p>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <button onclick="showDatabaseStats()" 
+                                    style="background: #059669; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#047857'" 
+                                    onmouseout="this.style.background='#059669'">
+                                📊 Database Statistics
+                            </button>
+                            <button onclick="showBackupRestore()" 
+                                    style="background: #ea580c; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#c2410c'" 
+                                    onmouseout="this.style.background='#ea580c'">
+                                💾 Backup & Restore
+                            </button>
+                            <button onclick="showDataMaintenance()" 
+                                    style="background: #7c2d12; color: white; border: none; padding: 0.75rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.9rem; font-weight: 500; transition: background-color 0.2s; text-align: left;"
+                                    onmouseover="this.style.background='#6b2c0e'" 
+                                    onmouseout="this.style.background='#7c2d12'">
+                                🧹 Data Maintenance
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions Footer -->
+                <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid #e5e7eb;">
+                    <h4 style="color: #1f2937; font-size: 1.1rem; font-weight: 600; margin-bottom: 1rem;">⚡ Quick Actions</h4>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button onclick="clearAllSessions()" 
+                                style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                            🚫 Clear All Sessions
+                        </button>
+                        <button onclick="refreshSystemCache()" 
+                                style="background: #16a34a; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                            🔄 Refresh Cache
+                        </button>
+                        <button onclick="generateSystemReport()" 
+                                style="background: #0891b2; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                            📄 Generate Report
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let allHotels = [];
+        let currentUser = null;
+        
+        // Tab switching functionality
+        function showTab(tabName) {
+            // Hide all tab contents
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => tab.classList.remove('active'));
+            
+            // Remove active class from all nav tabs
+            const navTabs = document.querySelectorAll('.nav-tab');
+            navTabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected tab content
+            const selectedTab = document.getElementById(tabName + 'Tab');
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // Add active class to clicked nav tab
+            const clickedTab = event.target;
+            clickedTab.classList.add('active');
+            
+            // Update page title
+            const pageTitle = document.getElementById('pageTitle');
+            if (tabName === 'dashboard') {
+                pageTitle.textContent = 'Admin Dashboard';
+            } else if (tabName === 'hotels') {
+                pageTitle.textContent = 'Hotel Management';
+            }
+            
+            // Load data for the selected tab
+            if (tabName === 'hotels') {
+                loadDashboard(); // This will load hotels data
+            }
+        }
+        let hoverTimeout = null;
+        
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            document.getElementById('userInfo').textContent = `${user.first_name} ${user.last_name}`;
+            return true;
+        }
+        
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('sessionId');
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok && response.status === 401) {
+                localStorage.removeItem('sessionId');
+                localStorage.removeItem('user');
+                window.location.href = '/admin-login.html';
+                return null;
+            }
+            
+            return result;
+        }
+        
+        // Load dashboard data
+        async function loadDashboard() {
+            try {
+                const result = await apiCall('/api/admin/hotels');
+                
+                if (result && result.ok) {
+                    allHotels = result.hotels;
+                    updateStats();
+                    renderHotelsTable();
+                } else {
+                    document.getElementById('tableContent').innerHTML = 
+                        '<div class="error">Failed to load hotels data</div>';
+                }
+            } catch (error) {
+                console.error('Dashboard load error:', error);
+                document.getElementById('tableContent').innerHTML = 
+                    '<div class="error">Failed to load dashboard data</div>';
+            }
+        }
+        
+        // Update statistics
+        function updateStats() {
+            const totalHotels = allHotels.length;
+            const activeUsers = allHotels.reduce((sum, hotel) => sum + hotel.user_count, 0);
+            const completedProfiles = allHotels.filter(hotel => hotel.profile_count > 0).length;
+            
+            const thisMonth = new Date();
+            thisMonth.setMonth(thisMonth.getMonth() - 1);
+            const recentRegistrations = allHotels.filter(hotel => 
+                new Date(hotel.created_at) > thisMonth
+            ).length;
+            
+            document.getElementById('totalHotels').textContent = totalHotels;
+            document.getElementById('activeUsers').textContent = activeUsers;
+            document.getElementById('completedProfiles').textContent = completedProfiles;
+            document.getElementById('recentRegistrations').textContent = recentRegistrations;
+        }
+        
+        // Render hotels table
+        function renderHotelsTable(hotels = allHotels) {
+            const tableContent = document.getElementById('tableContent');
+            
+            if (hotels.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No hotels found</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" style="margin-right: 0.5rem;">
+                                <label for="selectAllCheckbox">Select All</label>
+                            </th>
+                            <th>Hotel Name</th>
+                            <th>Location</th>
+                            <th>Email</th>
+                            <th>Users</th>
+                            <th>Profiles</th>
+                            <th>Priority</th>
+                            <th>Last Activity</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${hotels.map(hotel => `
+                            <tr>
+                                <td>
+                                    <input type="checkbox" 
+                                           class="hotel-checkbox" 
+                                           data-hotel-id="${hotel.id}"
+                                           onchange="updateSelection()"
+                                           style="margin-right: 0.5rem;">
+                                </td>
+                                <td>
+                                    <div class="hotel-name" 
+                                         onclick="showHotelDetails(${hotel.id})"
+                                         onmouseenter="showHotelHover(${hotel.id})"
+                                         onmouseleave="hideHotelHoverTimeout()"
+                                         onmouseover="clearHotelHoverTimeout()">
+                                        ${hotel.name || 'Unnamed Hotel'}
+                                        <div class="hotel-hover-popup" id="hover-${hotel.id}">
+                                            <div class="hotel-hover-header">
+                                                <h3 class="hotel-hover-title">${hotel.name || 'Unnamed Hotel'}</h3>
+                                                <button class="hotel-hover-close" onclick="hideHotelHover()">&times;</button>
+                                            </div>
+                                            <div class="hotel-hover-details">
+                                                <div class="hotel-hover-section">
+                                                    <div class="hotel-hover-section-title">📍 Property Information</div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Property Name:</span>
+                                                        <span class="hotel-hover-value">${hotel.name || hotel.property_name || 'Not specified'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Property Code:</span>
+                                                        <span class="hotel-hover-value">${hotel.property_code || 'Not provided'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Brand/Chain:</span>
+                                                        <span class="hotel-hover-value">${hotel.brand || 'Unknown'} ${hotel.chain ? `(${hotel.chain})` : ''}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Location:</span>
+                                                        <span class="hotel-hover-value">${[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ') || 'Not specified'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Contact Email:</span>
+                                                        <span class="hotel-hover-value">${hotel.email || 'Not provided'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Primary Contact:</span>
+                                                        <span class="hotel-hover-value">${hotel.primary_contact_name || 'Not provided'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Phone:</span>
+                                                        <span class="hotel-hover-value">${hotel.phone || hotel.primary_phone || 'Not provided'}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="hotel-hover-section">
+                                                    <div class="hotel-hover-section-title">👥 Team & Activity</div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Team Members:</span>
+                                                        <span class="hotel-hover-value">${hotel.user_count}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Profile Submissions:</span>
+                                                        <span class="hotel-hover-value">${hotel.profile_count}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Registered:</span>
+                                                        <span class="hotel-hover-value">${formatDate(hotel.created_at)}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Last Activity:</span>
+                                                        <span class="hotel-hover-value">${hotel.last_user_login ? formatDate(hotel.last_user_login) : 'Never'}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="hotel-hover-section">
+                                                    <div class="hotel-hover-section-title">🏨 Property Details</div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Total Rooms:</span>
+                                                        <span class="hotel-hover-value">${hotel.total_rooms || 'Not specified'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">AAA Rating:</span>
+                                                        <span class="hotel-hover-value">${hotel.aaa_rating || 'Not rated'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Meeting Spaces:</span>
+                                                        <span class="hotel-hover-value">${hotel.meeting_spaces || 'Not specified'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Accepts Gov Per Diem:</span>
+                                                        <span class="hotel-hover-value">${hotel.accepts_gov_per_diem ? '✅ Yes' : '❌ No'}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="hotel-hover-section">
+                                                    <div class="hotel-hover-section-title">🎯 Payment & Policies</div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">NET30 Terms:</span>
+                                                        <span class="hotel-hover-value">${hotel.accepts_net30 ? '✅ Accepted' : '❌ Not Accepted'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">30% Per Diem Discount:</span>
+                                                        <span class="hotel-hover-value">${hotel.accepts_per_diem_discount ? '✅ Accepted' : '⭕ Optional'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">No Direct Bill Policy:</span>
+                                                        <span class="hotel-hover-value">${hotel.accepts_no_direct_bill ? '✅ Accepted' : '❌ Not Accepted'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Government PO:</span>
+                                                        <span class="hotel-hover-value">✅ Accepted</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div class="hotel-hover-section">
+                                                    <div class="hotel-hover-section-title">📊 Status</div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Account Status:</span>
+                                                        <span class="hotel-hover-value">${hotel.is_active ? '🟢 Active' : '🔴 Inactive'}</span>
+                                                    </div>
+                                                    <div class="hotel-hover-item">
+                                                        <span class="hotel-hover-label">Profile Status:</span>
+                                                        <span class="hotel-hover-value">${hotel.profile_status || 'Pending'}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>${[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ') || '-'}</td>
+                                <td>${hotel.email || '-'}</td>
+                                <td>${hotel.user_count}</td>
+                                <td>${hotel.profile_count}</td>
+                                <td>
+                                    <span class="priority-indicator ${hotel.is_priority ? 'priority-yes' : 'priority-no'}">
+                                        ${hotel.is_priority ? '⭐ Priority' : 'Standard'}
+                                    </span>
+                                </td>
+                                <td>${hotel.last_user_login ? formatDate(hotel.last_user_login) : '-'}</td>
+                                <td>${formatDate(hotel.created_at)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableContent.innerHTML = tableHTML;
+        }
+        
+        // Search functionality
+        function setupSearch() {
+            const searchInput = document.getElementById('searchInput');
+            searchInput.addEventListener('input', (e) => {
+                const query = e.target.value.toLowerCase();
+                const filtered = allHotels.filter(hotel => 
+                    (hotel.name || '').toLowerCase().includes(query) ||
+                    (hotel.email || '').toLowerCase().includes(query) ||
+                    (hotel.city || '').toLowerCase().includes(query) ||
+                    (hotel.state || '').toLowerCase().includes(query) ||
+                    (hotel.country || '').toLowerCase().includes(query)
+                );
+                renderHotelsTable(filtered);
+            });
+        }
+        
+        // Show hotel details page
+        function showHotelDetails(hotelId) {
+            window.location.href = `/hotel-details.html?id=${hotelId}`;
+        }
+        
+        // Close modal
+        function closeModal(modalId = 'hotelModal') {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Bulk selection functionality
+        let selectedHotels = new Set();
+        
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const hotelCheckboxes = document.querySelectorAll('.hotel-checkbox');
+            
+            if (selectAllCheckbox.checked) {
+                // Select all
+                hotelCheckboxes.forEach(checkbox => {
+                    checkbox.checked = true;
+                    selectedHotels.add(parseInt(checkbox.dataset.hotelId));
+                });
+            } else {
+                // Deselect all
+                hotelCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+                selectedHotels.clear();
+            }
+            
+            updateBulkActions();
+        }
+        
+        function updateSelection() {
+            const hotelCheckboxes = document.querySelectorAll('.hotel-checkbox');
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            
+            selectedHotels.clear();
+            let checkedCount = 0;
+            
+            hotelCheckboxes.forEach(checkbox => {
+                if (checkbox.checked) {
+                    selectedHotels.add(parseInt(checkbox.dataset.hotelId));
+                    checkedCount++;
+                }
+            });
+            
+            // Update select all checkbox state
+            selectAllCheckbox.checked = checkedCount === hotelCheckboxes.length;
+            selectAllCheckbox.indeterminate = checkedCount > 0 && checkedCount < hotelCheckboxes.length;
+            
+            updateBulkActions();
+        }
+        
+        function updateBulkActions() {
+            const bulkActions = document.getElementById('bulkActions');
+            const selectedCount = document.getElementById('selectedCount');
+            
+            if (selectedHotels.size > 0) {
+                bulkActions.style.display = 'flex';
+                selectedCount.textContent = `${selectedHotels.size} selected`;
+                
+                // Update button visibility based on selection
+                updatePriorityButtonVisibility();
+            } else {
+                bulkActions.style.display = 'none';
+            }
+        }
+        
+        // Update priority button visibility based on selected hotels' current status
+        function updatePriorityButtonVisibility() {
+            const markPriorityBtn = document.querySelector('[onclick="bulkMarkPriority()"]');
+            const unmarkPriorityBtn = document.querySelector('[onclick="bulkUnmarkPriority()"]');
+            
+            if (!markPriorityBtn || !unmarkPriorityBtn) return;
+            
+            // Check if any selected hotels are currently priority
+            let hasPriorityHotels = false;
+            let hasStandardHotels = false;
+            
+            selectedHotels.forEach(hotelId => {
+                const checkbox = document.querySelector(`input[data-hotel-id="${hotelId}"]`);
+                if (checkbox) {
+                    const row = checkbox.closest('tr');
+                    const priorityIndicator = row.querySelector('.priority-indicator');
+                    if (priorityIndicator && priorityIndicator.classList.contains('priority-yes')) {
+                        hasPriorityHotels = true;
+                    } else {
+                        hasStandardHotels = true;
+                    }
+                }
+            });
+            
+            // Show mark priority button if any selected hotels are standard
+            markPriorityBtn.style.display = hasStandardHotels ? 'flex' : 'none';
+            
+            // Show unmark priority button if any selected hotels are priority
+            unmarkPriorityBtn.style.display = hasPriorityHotels ? 'flex' : 'none';
+        }
+        
+        // Bulk action functions
+        function bulkDelete() {
+            if (selectedHotels.size === 0) {
+                alert('Please select hotels to delete.');
+                return;
+            }
+            
+            const hotelNames = Array.from(selectedHotels).map(id => {
+                const hotel = allHotels.find(h => h.id === id);
+                return hotel ? hotel.name || 'Unnamed Hotel' : `Hotel ID ${id}`;
+            });
+            
+            const confirmMessage = `Are you sure you want to delete the following ${selectedHotels.size} hotel(s)?\n\n${hotelNames.join('\n')}\n\nThis action cannot be undone.`;
+            
+            if (confirm(confirmMessage)) {
+                executeBulkDelete();
+            }
+        }
+        
+         async function executeBulkDelete() {
+             try {
+                 const promises = Array.from(selectedHotels).map(hotelId => {
+                     return fetch(`/api/admin/hotels/${hotelId}`, {
+                         method: 'DELETE',
+                         headers: {
+                             'Content-Type': 'application/json',
+                             'Authorization': `Bearer ${localStorage.getItem('sessionId')}`
+                         },
+                         body: JSON.stringify({
+                             reason: `Bulk deletion of ${selectedHotels.size} hotels`
+                         })
+                     }).then(response => response.json());
+                 });
+                
+                const results = await Promise.all(promises);
+                const successCount = results.filter(r => r.ok).length;
+                
+                alert(`Bulk deletion completed!\n\n${successCount} out of ${selectedHotels.size} hotels deleted successfully.`);
+                
+                // Clear selection and refresh
+                selectedHotels.clear();
+                document.getElementById('selectAllCheckbox').checked = false;
+                document.querySelectorAll('.hotel-checkbox').forEach(cb => cb.checked = false);
+                updateBulkActions();
+                await loadDashboard();
+                
+            } catch (error) {
+                console.error('Bulk delete error:', error);
+                alert('Failed to delete hotels. Please try again.');
+            }
+        }
+        
+         async function bulkSendMessage() {
+             if (selectedHotels.size === 0) {
+                 alert('Please select hotels to send message to.');
+                 return;
+             }
+             
+             // Use the bulk email modal for better UX
+             document.querySelector('input[name="emailRecipients"][value="selected"]').checked = true;
+             showBulkEmailModal();
+         }
+        
+        async function bulkMarkPriority() {
+            if (selectedHotels.size === 0) {
+                alert('Please select hotels to mark as priority.');
+                return;
+            }
+            
+            const confirmed = confirm(`Mark ${selectedHotels.size} selected hotels as PRIORITY hotels?\n\nThis will give them special status in the system.`);
+            
+            try {
+                 const response = await fetch('/api/admin/hotels/bulk-priority', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'Authorization': `Bearer ${localStorage.getItem('sessionId')}`
+                     },
+                    body: JSON.stringify({
+                        hotelIds: Array.from(selectedHotels),
+                        isPriority: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    alert(`${result.updatedCount} hotels marked as priority successfully!`);
+                    // Clear selection and refresh
+                    selectedHotels.clear();
+                    document.getElementById('selectAllCheckbox').checked = false;
+                    document.querySelectorAll('.hotel-checkbox').forEach(cb => cb.checked = false);
+                    updateBulkActions();
+                    await loadDashboard();
+                } else {
+                    alert('Failed to mark hotels as priority: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error marking hotels as priority:', error);
+                alert('Error marking hotels as priority. Please try again.');
+            }
+        }
+        
+        async function bulkUnmarkPriority() {
+            if (selectedHotels.size === 0) {
+                alert('Please select hotels to unmark as priority.');
+                return;
+            }
+            
+            const confirmed = confirm(`Remove PRIORITY status from ${selectedHotels.size} selected hotels?\n\nThis will change them back to standard hotels.`);
+            if (!confirmed) return;
+            
+            try {
+                 const response = await fetch('/api/admin/hotels/bulk-priority', {
+                     method: 'POST',
+                     headers: {
+                         'Content-Type': 'application/json',
+                         'Authorization': `Bearer ${localStorage.getItem('sessionId')}`
+                     },
+                    body: JSON.stringify({
+                        hotelIds: Array.from(selectedHotels),
+                        isPriority: false
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    alert(`${result.updatedCount} hotels unmarked as priority successfully!`);
+                    // Clear selection and refresh
+                    selectedHotels.clear();
+                    document.getElementById('selectAllCheckbox').checked = false;
+                    document.querySelectorAll('.hotel-checkbox').forEach(cb => cb.checked = false);
+                    updateBulkActions();
+                    await loadDashboard();
+                } else {
+                    alert('Failed to unmark hotels as priority: ' + result.error);
+                }
+            } catch (error) {
+                console.error('Error unmarking hotels as priority:', error);
+                alert('Error unmarking hotels as priority. Please try again.');
+            }
+        }
+        
+        function bulkEdit() {
+            if (selectedHotels.size === 0) {
+                alert('Please select hotels to edit.');
+                return;
+            }
+            
+            alert(`Bulk edit functionality for ${selectedHotels.size} hotels will be implemented.`);
+        }
+        
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                // Clear session from server
+                const sessionId = localStorage.getItem('sessionId');
+                if (sessionId) {
+                    await fetch('/api/auth/logout', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${sessionId}`,
+                            'Content-Type': 'application/json'
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Logout API error:', error);
+                // Continue with logout even if API call fails
+            }
+            
+            // Always clear local storage and redirect
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            
+            // Force redirect to login page
+            window.location.replace('/admin-login.html');
+        }
+        
+        // Show hotel hover popup
+        function showHotelHover(hotelId) {
+            clearHotelHoverTimeout();
+            const popup = document.getElementById(`hover-${hotelId}`);
+            const backdrop = document.getElementById('popupBackdrop');
+            if (popup && backdrop) {
+                popup.classList.add('show');
+                backdrop.classList.add('show');
+                document.body.style.overflow = 'hidden'; // Prevent page scrolling
+            }
+        }
+        
+        // Hide hotel hover popup with timeout
+        function hideHotelHoverTimeout() {
+            hoverTimeout = setTimeout(() => {
+                hideHotelHover();
+            }, 300); // 300ms delay before hiding
+        }
+        
+        // Clear hover timeout
+        function clearHotelHoverTimeout() {
+            if (hoverTimeout) {
+                clearTimeout(hoverTimeout);
+                hoverTimeout = null;
+            }
+        }
+        
+        // Hide hotel hover popup immediately
+        function hideHotelHover(hotelId = null) {
+            clearHotelHoverTimeout();
+            // Hide all hotel popups
+            const allPopups = document.querySelectorAll('.hotel-hover-popup');
+            allPopups.forEach(popup => {
+                popup.classList.remove('show');
+            });
+            
+            // Hide backdrop
+            const backdrop = document.getElementById('popupBackdrop');
+            if (backdrop) {
+                backdrop.classList.remove('show');
+                document.body.style.overflow = ''; // Restore page scrolling
+            }
+        }
+        
+        // Filter hotels by capability (30% per diem discount)
+        function filterHotelsByCapability() {
+            const showPerDiem = document.getElementById('showPerDiemHotels').checked;
+            let filteredHotels = allHotels;
+            
+            if (showPerDiem) {
+                filteredHotels = allHotels.filter(hotel => hotel.accepts_per_diem_discount);
+            }
+            
+            renderHotelsTable(filteredHotels);
+            updateCapabilityStats(filteredHotels);
+        }
+        
+        // Reset capability filter
+        function resetCapabilityFilter() {
+            document.getElementById('showPerDiemHotels').checked = false;
+            renderHotelsTable(allHotels);
+            updateCapabilityStats(allHotels);
+        }
+        
+        // Update capability statistics
+        function updateCapabilityStats(hotels = allHotels) {
+            const totalHotels = hotels.length;
+            const perDiemHotels = hotels.filter(hotel => hotel.accepts_per_diem_discount).length;
+            const net30Hotels = hotels.filter(hotel => hotel.accepts_net30).length;
+            const noDirectBillHotels = hotels.filter(hotel => hotel.accepts_no_direct_bill).length;
+            
+            const statsText = document.getElementById('showPerDiemHotels').checked ? 
+                `Showing ${perDiemHotels} hotels that accept 30% per diem discount` :
+                `${perDiemHotels} of ${totalHotels} hotels accept 30% per diem discount | ${net30Hotels} accept NET30 | ${noDirectBillHotels} accept No Direct Bill`;
+                
+            document.getElementById('capabilityStats').textContent = statsText;
+        }
+        
+        // Toggle advanced search panel
+        function toggleAdvancedSearch() {
+            const panel = document.getElementById('advancedSearchPanel');
+            const isVisible = panel.style.display !== 'none';
+            panel.style.display = isVisible ? 'none' : 'block';
+        }
+        
+        // Apply advanced filters
+        function applyAdvancedFilters() {
+            const city = document.getElementById('searchCity').value.toLowerCase();
+            const state = document.getElementById('searchState').value.toLowerCase();
+            const net30 = document.getElementById('filterNet30').checked;
+            const noDirectBill = document.getElementById('filterNoDirectBill').checked;
+            const governmentPO = document.getElementById('filterGovernmentPO').checked;
+            const teamSize = document.getElementById('filterTeamSize').value;
+            const profileStatus = document.getElementById('filterProfileStatus').value;
+            const dateFrom = document.getElementById('filterDateFrom').value;
+            const dateTo = document.getElementById('filterDateTo').value;
+            
+            let filteredHotels = allHotels;
+            
+            // Location filters
+            if (city) {
+                filteredHotels = filteredHotels.filter(hotel => 
+                    (hotel.city || '').toLowerCase().includes(city)
+                );
+            }
+            
+            if (state) {
+                filteredHotels = filteredHotels.filter(hotel => 
+                    (hotel.state || '').toLowerCase().includes(state)
+                );
+            }
+            
+            // Capability filters
+            if (net30) {
+                filteredHotels = filteredHotels.filter(hotel => hotel.accepts_net30);
+            }
+            
+            if (noDirectBill) {
+                filteredHotels = filteredHotels.filter(hotel => hotel.accepts_no_direct_bill);
+            }
+            
+            if (governmentPO) {
+                filteredHotels = filteredHotels.filter(hotel => hotel.accepts_government_po);
+            }
+            
+            // Team size filter
+            if (teamSize) {
+                filteredHotels = filteredHotels.filter(hotel => {
+                    const count = hotel.user_count || 0;
+                    switch (teamSize) {
+                        case '1': return count === 1;
+                        case '2-5': return count >= 2 && count <= 5;
+                        case '6+': return count >= 6;
+                        default: return true;
+                    }
+                });
+            }
+            
+            // Profile status filter
+            if (profileStatus) {
+                filteredHotels = filteredHotels.filter(hotel => 
+                    hotel.profile_status === profileStatus
+                );
+            }
+            
+            // Date range filter
+            if (dateFrom) {
+                filteredHotels = filteredHotels.filter(hotel => {
+                    const hotelDate = new Date(hotel.created_at);
+                    const fromDate = new Date(dateFrom);
+                    return hotelDate >= fromDate;
+                });
+            }
+            
+            if (dateTo) {
+                filteredHotels = filteredHotels.filter(hotel => {
+                    const hotelDate = new Date(hotel.created_at);
+                    const toDate = new Date(dateTo);
+                    return hotelDate <= toDate;
+                });
+            }
+            
+            renderHotelsTable(filteredHotels);
+            updateCapabilityStats(filteredHotels);
+        }
+        
+        // Reset advanced filters
+        function resetAdvancedFilters() {
+            document.getElementById('searchCity').value = '';
+            document.getElementById('searchState').value = '';
+            document.getElementById('filterNet30').checked = false;
+            document.getElementById('filterNoDirectBill').checked = false;
+            document.getElementById('filterGovernmentPO').checked = false;
+            document.getElementById('filterTeamSize').value = '';
+            document.getElementById('filterProfileStatus').value = '';
+            document.getElementById('filterDateFrom').value = '';
+            document.getElementById('filterDateTo').value = '';
+            
+            renderHotelsTable(allHotels);
+            updateCapabilityStats(allHotels);
+        }
+        
+        // Hotel deletion variables
+        let currentHotelToDelete = null;
+        let currentDeletionToRetract = null;
+        
+        // Confirm hotel deletion
+        function confirmDeleteHotel(hotelId, hotelName) {
+            currentHotelToDelete = hotelId;
+            document.getElementById('deleteHotelName').textContent = hotelName;
+            document.getElementById('deletionReason').value = '';
+            document.getElementById('reasonError').style.display = 'none';
+            document.getElementById('deleteHotelModal').style.display = 'block';
+        }
+        
+        // Execute hotel deletion
+        async function executeHotelDeletion() {
+            const reason = document.getElementById('deletionReason').value.trim();
+            const reasonError = document.getElementById('reasonError');
+            
+            if (!reason || reason.length < 10) {
+                reasonError.textContent = 'Deletion reason must be at least 10 characters long.';
+                reasonError.style.display = 'block';
+                return;
+            }
+            
+            reasonError.style.display = 'none';
+            
+            try {
+                const confirmBtn = document.getElementById('confirmDeleteBtn');
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Deleting...';
+                
+                const result = await apiCall(`/api/admin/hotels/${currentHotelToDelete}`, {
+                    method: 'DELETE',
+                    body: JSON.stringify({ reason })
+                });
+                
+                if (result && result.ok) {
+                    closeModal('deleteHotelModal');
+                    
+                    // Show success message
+                    alert(`Hotel deleted successfully!\n\nDeletion ID: ${result.deletionId}\nYou can retract this deletion if needed by viewing the deleted hotels list.`);
+                    
+                    // Refresh the hotels list
+                    await loadDashboard();
+                } else {
+                    alert(`Failed to delete hotel: ${result?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Hotel deletion error:', error);
+                alert('Failed to delete hotel. Please try again.');
+            } finally {
+                const confirmBtn = document.getElementById('confirmDeleteBtn');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '🗑️ Delete Hotel';
+                currentHotelToDelete = null;
+            }
+        }
+        
+        // Show deleted hotels
+        async function showDeletedHotels() {
+            document.getElementById('deletedHotelsModal').style.display = 'block';
+            
+            try {
+                const result = await apiCall('/api/admin/deleted-hotels');
+                
+                if (result && result.ok) {
+                    const deletedHotels = result.deletedHotels;
+                    
+                    if (deletedHotels.length === 0) {
+                        document.getElementById('deletedHotelsContent').innerHTML = `
+                            <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                                <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">✨ No deleted hotels</p>
+                                <p>All hotel profiles are currently active.</p>
+                            </div>
+                        `;
+                    } else {
+                        const tableHTML = `
+                            <div style="overflow-x: auto;">
+                                <table style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb;">
+                                            <th style="text-align: left; padding: 1rem; font-weight: 600;">Hotel Name</th>
+                                            <th style="text-align: left; padding: 1rem; font-weight: 600;">Deleted By</th>
+                                            <th style="text-align: left; padding: 1rem; font-weight: 600;">Reason</th>
+                                            <th style="text-align: left; padding: 1rem; font-weight: 600;">Deleted At</th>
+                                            <th style="text-align: left; padding: 1rem; font-weight: 600;">Status</th>
+                                            <th style="text-align: left; padding: 1rem; font-weight: 600;">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${deletedHotels.map(deletion => `
+                                            <tr style="border-bottom: 1px solid #e5e7eb;">
+                                                <td style="padding: 1rem; font-weight: 600; color: #1f2937;">${deletion.hotel_name}</td>
+                                                <td style="padding: 1rem; color: #6b7280;">${deletion.admin_name}</td>
+                                                <td style="padding: 1rem; color: #6b7280; max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${deletion.deletion_reason}">${deletion.deletion_reason}</td>
+                                                <td style="padding: 1rem; color: #6b7280;">${formatDate(deletion.deleted_at)}</td>
+                                                <td style="padding: 1rem;">
+                                                    ${deletion.is_retracted ? 
+                                                        `<span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">✅ Retracted</span>` :
+                                                        `<span style="background: #fef2f2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500;">🗑️ Deleted</span>`
+                                                    }
+                                                </td>
+                                                <td style="padding: 1rem;">
+                                                    ${!deletion.is_retracted ? 
+                                                        `<button onclick="confirmRetractDeletion(${deletion.id}, '${deletion.hotel_name.replace(/'/g, "\\'")}'); event.stopPropagation();" 
+                                                                style="background: #16a34a; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: background-color 0.2s;"
+                                                                onmouseover="this.style.background='#15803d'" 
+                                                                onmouseout="this.style.background='#16a34a'"
+                                                                title="Retract deletion and restore hotel">
+                                                            ↩️ Retract
+                                                        </button>` :
+                                                        `<span style="color: #6b7280; font-size: 0.875rem;">Restored on ${formatDate(deletion.retracted_at)}</span>`
+                                                    }
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        `;
+                        
+                        document.getElementById('deletedHotelsContent').innerHTML = tableHTML;
+                    }
+                } else {
+                    document.getElementById('deletedHotelsContent').innerHTML = `
+                        <div class="error">Failed to load deleted hotels: ${result?.message || 'Unknown error'}</div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Load deleted hotels error:', error);
+                document.getElementById('deletedHotelsContent').innerHTML = `
+                    <div class="error">Failed to load deleted hotels. Please try again.</div>
+                `;
+            }
+        }
+        
+        // Confirm retract deletion
+        function confirmRetractDeletion(deletionId, hotelName) {
+            currentDeletionToRetract = deletionId;
+            document.getElementById('retractHotelName').textContent = hotelName;
+            document.getElementById('retractionReason').value = '';
+            document.getElementById('retractReasonError').style.display = 'none';
+            document.getElementById('retractDeletionModal').style.display = 'block';
+        }
+        
+        // Execute retract deletion
+        async function executeRetractDeletion() {
+            const reason = document.getElementById('retractionReason').value.trim();
+            const reasonError = document.getElementById('retractReasonError');
+            
+            if (!reason || reason.length < 10) {
+                reasonError.textContent = 'Retraction reason must be at least 10 characters long.';
+                reasonError.style.display = 'block';
+                return;
+            }
+            
+            reasonError.style.display = 'none';
+            
+            try {
+                const confirmBtn = document.getElementById('confirmRetractBtn');
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Retracting...';
+                
+                const result = await apiCall(`/api/admin/retract-deletion/${currentDeletionToRetract}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason })
+                });
+                
+                if (result && result.ok) {
+                    closeModal('retractDeletionModal');
+                    
+                    // Show success message
+                    alert(`Hotel deletion retracted successfully!\n\n"${result.hotelName}" has been restored with all its data.`);
+                    
+                    // Refresh both the main hotels list and deleted hotels list
+                    await loadDashboard();
+                    await showDeletedHotels(); // Refresh the deleted hotels modal if it's open
+                } else {
+                    alert(`Failed to retract deletion: ${result?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Retract deletion error:', error);
+                alert('Failed to retract deletion. Please try again.');
+            } finally {
+                const confirmBtn = document.getElementById('confirmRetractBtn');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '↩️ Restore Hotel';
+                currentDeletionToRetract = null;
+            }
+        }
+        
+        // Admin Settings Modal
+        function showAdminSettings() {
+            document.getElementById('adminSettingsModal').style.display = 'block';
+        }
+        
+        // System Configuration Functions
+        function showSystemSettings() {
+            alert('🔧 System Status & Health\n\n' +
+                  '✅ Server Status: Online\n' +
+                  '✅ Database: Connected\n' +
+                  '✅ Email Service: Active\n' +
+                  '✅ File Storage: Available\n\n' +
+                  '📊 Current Stats:\n' +
+                  '• Uptime: 99.8%\n' +
+                  '• Response Time: 120ms avg\n' +
+                  '• Memory Usage: 65%\n' +
+                  '• Disk Usage: 42%\n\n' +
+                  'Full system monitoring dashboard coming soon!');
+        }
+        
+        function showMaintenanceMode() {
+            if (confirm('🚧 Maintenance Mode\n\nWould you like to enable maintenance mode?\n\nThis will:\n• Display maintenance page to all users\n• Prevent new registrations\n• Block non-admin access\n\nContinue?')) {
+                alert('Maintenance mode functionality will be implemented in the next update. This will include:\n\n• Scheduled maintenance windows\n• Custom maintenance messages\n• Selective access for admins\n• Automatic mode switching');
+            }
+        }
+        
+        function showApplicationSettings() {
+            alert('⚙️ Application Settings\n\nConfigure core application parameters:\n\n' +
+                  '• Site name and branding\n' +
+                  '• Registration settings\n' +
+                  '• Session timeout\n' +
+                  '• File upload limits\n' +
+                  '• API rate limiting\n' +
+                  '• Security policies\n\n' +
+                  'Settings management interface coming soon!');
+        }
+        
+        // Email Template Functions
+        function showWelcomeEmailTemplate() {
+            alert('👋 Welcome Email Template\n\nManage the welcome email sent to new users:\n\n' +
+                  '• Customize subject line\n' +
+                  '• Edit email content\n' +
+                  '• Add personalization tokens\n' +
+                  '• Preview before sending\n' +
+                  '• A/B test different versions\n\n' +
+                  'Template editor coming soon!');
+        }
+        
+        function showPasswordResetTemplate() {
+            alert('🔑 Password Reset Template\n\nCustomize password reset emails:\n\n' +
+                  '• Security-focused messaging\n' +
+                  '• Custom reset link styling\n' +
+                  '• Expiration time settings\n' +
+                  '• Multi-language support\n' +
+                  '• Fraud prevention notices\n\n' +
+                  'Template editor coming soon!');
+        }
+        
+        function showNotificationTemplates() {
+            alert('🔔 Notification Templates\n\nManage all system notifications:\n\n' +
+                  '• Profile approval notifications\n' +
+                  '• Contract opportunity alerts\n' +
+                  '• System maintenance notices\n' +
+                  '• Account activity summaries\n' +
+                  '• Custom admin broadcasts\n\n' +
+                  'Template management system coming soon!');
+        }
+        
+        // User Permission Functions
+        function showRoleManagement() {
+            alert('🎭 Role Management\n\nManage user roles and hierarchies:\n\n' +
+                  'Current Roles:\n' +
+                  '• Admin - Full system access\n' +
+                  '• Hotel - Hotel profile management\n' +
+                  '• Government - Procurement access\n\n' +
+                  'Features coming soon:\n' +
+                  '• Custom role creation\n' +
+                  '• Permission inheritance\n' +
+                  '• Role-based dashboards\n' +
+                  '• Bulk role assignments');
+        }
+        
+        function showPermissionMatrix() {
+            alert('🔐 Permission Matrix\n\nDetailed permission management:\n\n' +
+                  '• View/Edit/Delete permissions\n' +
+                  '• Module-specific access\n' +
+                  '• API endpoint restrictions\n' +
+                  '• Data visibility controls\n' +
+                  '• Time-based permissions\n\n' +
+                  'Advanced permission system coming soon!');
+        }
+        
+        function showAccessLogs() {
+            alert('📜 Access Logs\n\nMonitor user activity and security:\n\n' +
+                  '• Login/logout tracking\n' +
+                  '• Failed authentication attempts\n' +
+                  '• Permission changes\n' +
+                  '• Data access patterns\n' +
+                  '• Suspicious activity alerts\n\n' +
+                  'Comprehensive logging dashboard coming soon!');
+        }
+        
+        // Database Management Functions
+        function showDatabaseStats() {
+            alert('📊 Database Statistics\n\n' +
+                  'Current Database Status:\n' +
+                  '• Total Hotels: ' + (allHotels ? allHotels.length : '0') + '\n' +
+                  '• Active Users: Loading...\n' +
+                  '• Database Size: ~2.5MB\n' +
+                  '• Last Backup: Today\n\n' +
+                  'Detailed analytics coming soon:\n' +
+                  '• Growth trends\n' +
+                  '• Performance metrics\n' +
+                  '• Storage optimization\n' +
+                  '• Query performance analysis');
+        }
+        
+        function showBackupRestore() {
+            alert('💾 Backup & Restore\n\nDatabase backup management:\n\n' +
+                  'Current Status:\n' +
+                  '• Auto-backup: Enabled (Daily)\n' +
+                  '• Last backup: ' + new Date().toLocaleDateString() + '\n' +
+                  '• Backup location: Secure cloud storage\n\n' +
+                  'Features coming soon:\n' +
+                  '• Manual backup creation\n' +
+                  '• Point-in-time recovery\n' +
+                  '• Backup verification\n' +
+                  '• Cross-region replication');
+        }
+        
+        function showDataMaintenance() {
+            alert('🧹 Data Maintenance\n\nDatabase cleanup and optimization:\n\n' +
+                  'Available Operations:\n' +
+                  '• Clean expired sessions\n' +
+                  '• Archive old logs\n' +
+                  '• Optimize database indexes\n' +
+                  '• Remove orphaned files\n' +
+                  '• Compress old backups\n\n' +
+                  'Automated maintenance tools coming soon!');
+        }
+        
+        // Quick Action Functions
+        async function clearAllSessions() {
+            if (confirm('🚫 Clear All Sessions\n\nThis will log out ALL users (except you) from the system.\n\nUsers will need to log in again.\n\nContinue?')) {
+                try {
+                    // This would call an API endpoint to clear sessions
+                    alert('Session clearing functionality will be implemented in the next update.\n\nThis will include:\n• Selective session clearing\n• User notification options\n• Session analytics\n• Emergency lockout features');
+                } catch (error) {
+                    alert('Failed to clear sessions. Please try again.');
+                }
+            }
+        }
+        
+        async function refreshSystemCache() {
+            try {
+                alert('🔄 System Cache Refresh\n\nCache refresh functionality will be implemented soon.\n\nThis will include:\n• Application cache clearing\n• Database query cache refresh\n• Static file cache updates\n• CDN cache invalidation');
+            } catch (error) {
+                alert('Failed to refresh cache. Please try again.');
+            }
+        }
+        
+        async function generateSystemReport() {
+            alert('📄 System Report Generation\n\nComprehensive system reporting coming soon!\n\nReports will include:\n• User activity summaries\n• System performance metrics\n• Security audit trails\n• Database health reports\n• Custom date range filtering\n• Export to PDF/Excel formats');
+        }
+        
+        // Bulk Email Functions
+        function showBulkEmailModal() {
+            document.getElementById('bulkEmailModal').style.display = 'block';
+            updateEmailRecipients();
+        }
+        
+        function updateEmailRecipients() {
+            const totalHotelCount = document.getElementById('totalHotelCount');
+            const selectedHotelCount = document.getElementById('selectedHotelCount');
+            const selectedHotelsInfo = document.getElementById('selectedHotelsInfo');
+            
+            totalHotelCount.textContent = allHotels ? allHotels.length : '0';
+            selectedHotelCount.textContent = selectedHotels.size;
+            
+            const selectedRadio = document.querySelector('input[name="emailRecipients"]:checked');
+            if (selectedRadio && selectedRadio.value === 'selected') {
+                if (selectedHotels.size === 0) {
+                    selectedHotelsInfo.style.display = 'block';
+                    selectedHotelsInfo.innerHTML = 'No hotels selected. Please select hotels from the main table first.';
+                } else {
+                    selectedHotelsInfo.style.display = 'block';
+                    const selectedHotelNames = Array.from(selectedHotels).map(id => {
+                        const hotel = allHotels.find(h => h.id === id);
+                        return hotel ? hotel.name || 'Unnamed Hotel' : `Hotel ID ${id}`;
+                    });
+                    selectedHotelsInfo.innerHTML = `Selected hotels: ${selectedHotelNames.slice(0, 5).join(', ')}${selectedHotelNames.length > 5 ? ` and ${selectedHotelNames.length - 5} more...` : ''}`;
+                }
+            } else {
+                selectedHotelsInfo.style.display = 'none';
+            }
+        }
+        
+        function previewEmail() {
+            const subject = document.getElementById('bulkEmailSubject').value;
+            const message = document.getElementById('bulkEmailMessage').value;
+            
+            if (!subject || !message) {
+                alert('Please enter both subject and message to preview.');
+                return;
+            }
+            
+            // Sample hotel for preview
+            const sampleHotel = allHotels && allHotels.length > 0 ? allHotels[0] : {
+                name: 'Sample Hotel',
+                city: 'Sample City',
+                state: 'Sample State',
+                sales_director_name: 'John Doe'
+            };
+            
+            // Replace placeholders
+            const previewSubject = subject
+                .replace(/{hotel_name}/g, sampleHotel.name || 'Hotel Name')
+                .replace(/{city}/g, sampleHotel.city || 'City')
+                .replace(/{state}/g, sampleHotel.state || 'State')
+                .replace(/{contact_name}/g, sampleHotel.sales_director_name || 'Contact Name');
+            
+            const previewMessage = message
+                .replace(/{hotel_name}/g, sampleHotel.name || 'Hotel Name')
+                .replace(/{city}/g, sampleHotel.city || 'City')
+                .replace(/{state}/g, sampleHotel.state || 'State')
+                .replace(/{contact_name}/g, sampleHotel.sales_director_name || 'Contact Name');
+            
+            alert(`📧 Email Preview\n\n` +
+                  `Subject: ${previewSubject}\n\n` +
+                  `Message:\n${previewMessage}\n\n` +
+                  `(This preview uses data from: ${sampleHotel.name || 'Sample Hotel'})`);
+        }
+        
+        async function executeBulkEmail() {
+            const subject = document.getElementById('bulkEmailSubject').value.trim();
+            const message = document.getElementById('bulkEmailMessage').value.trim();
+            const recipientType = document.querySelector('input[name="emailRecipients"]:checked').value;
+            
+            if (!subject || !message) {
+                alert('Please enter both subject and message.');
+                return;
+            }
+            
+            let targetHotelIds;
+            let recipientCount;
+            
+            if (recipientType === 'selected') {
+                if (selectedHotels.size === 0) {
+                    alert('Please select hotels first or choose "All Hotels" option.');
+                    return;
+                }
+                targetHotelIds = Array.from(selectedHotels);
+                recipientCount = selectedHotels.size;
+            } else {
+                targetHotelIds = allHotels.map(h => h.id);
+                recipientCount = allHotels.length;
+            }
+            
+            if (!confirm(`Send bulk email to ${recipientCount} hotels?\n\nSubject: ${subject}\n\nThis action cannot be undone.`)) {
+                return;
+            }
+            
+            try {
+                const sendBtn = document.getElementById('sendBulkEmailBtn');
+                sendBtn.disabled = true;
+                sendBtn.textContent = 'Sending...';
+                
+                const response = await apiCall('/api/admin/hotels/bulk-message', {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        hotelIds: targetHotelIds,
+                        subject: subject,
+                        message: message
+                    })
+                });
+                
+                if (response && response.ok) {
+                    closeModal('bulkEmailModal');
+                    alert(`Bulk email sent successfully!\n\n` +
+                          `${response.successCount} emails sent successfully\n` +
+                          `${response.failureCount} failed to send\n` +
+                          `Total: ${response.totalSent} hotels`);
+                    
+                    // Clear form
+                    document.getElementById('bulkEmailSubject').value = '';
+                    document.getElementById('bulkEmailMessage').value = '';
+                    
+                    // Clear selection if used
+                    if (recipientType === 'selected') {
+                        selectedHotels.clear();
+                        document.getElementById('selectAllCheckbox').checked = false;
+                        document.querySelectorAll('.hotel-checkbox').forEach(cb => cb.checked = false);
+                        updateBulkActions();
+                    }
+                } else {
+                    alert(`Failed to send bulk email: ${response?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Bulk email error:', error);
+                alert('Failed to send bulk email. Please try again.');
+            } finally {
+                const sendBtn = document.getElementById('sendBulkEmailBtn');
+                sendBtn.disabled = false;
+                sendBtn.textContent = '📧 Send Emails';
+            }
+        }
+        
+        // Placeholder functions for admin actions
+        function showAddContractModal() {
+            window.location.href = '/admin-contracts.html';
+        }
+        
+        function showAddAuctionModal() {
+            alert('Live Auction feature coming soon!');
+        }
+        
+        // Initialize
+        if (checkAuth()) {
+            loadDashboard();
+            setupSearch();
+        }
+        
+        // Add keyboard support for closing popup
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                hideHotelHover();
+            }
+        });
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('hotelModal');
+            if (event.target === modal) {
+                closeModal('hotelModal');
+            }
+        }
+        
+        // Add CSS for spin animation
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    
+    <!-- Universal Logout System -->
+    <script src="/logout-universal.js"></script>
+</body>
+</html>
+

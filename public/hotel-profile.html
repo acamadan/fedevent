@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Profile - FEDEVENT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .card h3 {
+            color: #1f2937;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .info-item:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .info-value {
+            color: #6b7280;
+            text-align: right;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 8px;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            margin-top: 5px;
+        }
+
+        .meeting-rooms {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .room-item {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .room-name {
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 5px;
+        }
+
+        .room-details {
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #6b7280;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #dc2626;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="loadingState" class="loading">
+            <h2>Loading your hotel profile...</h2>
+            <p>Please wait while we fetch your information.</p>
+        </div>
+
+        <div id="errorState" class="error" style="display: none;">
+            <h2>Error Loading Profile</h2>
+            <p>Unable to load your hotel profile. Please try again or contact support.</p>
+            <button onclick="loadProfile()" class="btn" style="margin-top: 15px;">Retry</button>
+        </div>
+
+        <div id="profileContent" style="display: none;">
+            <!-- Incomplete Registration Message -->
+            <div id="incompleteRegistrationMessage" class="card" style="background: #fef3c7; border: 2px solid #f59e0b; margin-bottom: 20px; display: none;">
+                <h3 style="color: #92400e; margin-bottom: 10px;">⚠️ Incomplete Hotel Profile Registration</h3>
+                <p style="color: #92400e; margin-bottom: 15px;">
+                    Your hotel profile registration is incomplete. Please complete your hotel profile to access all features and services.
+                </p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <a href="/hotel-registration.html" class="btn" style="background: #f59e0b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                        Complete Registration
+                    </a>
+                    <a href="/user-profile.html" class="btn" style="background: #0a58ca; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                        Update Profile
+                    </a>
+                </div>
+            </div>
+            
+            <div class="profile-grid">
+                <!-- Basic Information -->
+                <div class="card">
+                    <h3>🏨 Basic Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Hotel Name</span>
+                        <span class="info-value" id="hotelName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Address</span>
+                        <span class="info-value" id="hotelAddress">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">City, State</span>
+                        <span class="info-value" id="hotelLocation">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Country</span>
+                        <span class="info-value" id="hotelCountry">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Phone</span>
+                        <span class="info-value" id="hotelPhone">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Email</span>
+                        <span class="info-value" id="hotelEmail">-</span>
+                    </div>
+                </div>
+
+                <!-- Status & Compliance -->
+                <div class="card">
+                    <h3>📋 Status & Compliance</h3>
+                    <div class="info-item">
+                        <span class="info-label">Profile Status</span>
+                        <span class="info-value">
+                            <span id="profileStatus" class="status-badge status-pending">Loading...</span>
+                        </span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">NET30 Terms</span>
+                        <span class="info-value" id="net30Status">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Purchase Orders</span>
+                        <span class="info-value" id="poStatus">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">AAA Rating</span>
+                        <span class="info-value" id="aaaRating">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Registration Date</span>
+                        <span class="info-value" id="registrationDate">-</span>
+                    </div>
+                </div>
+
+                <!-- Room Statistics -->
+                <div class="card">
+                    <h3>🛏️ Room Statistics</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="totalRooms">-</div>
+                            <div class="stat-label">Total Rooms</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="kingRooms">-</div>
+                            <div class="stat-label">King Rooms</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="doubleRooms">-</div>
+                            <div class="stat-label">Double/Queen</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="suites">-</div>
+                            <div class="stat-label">Suites</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meeting Spaces -->
+                <div class="card">
+                    <h3>🏢 Meeting Spaces</h3>
+                    <div class="info-item">
+                        <span class="info-label">Total Meeting Rooms</span>
+                        <span class="info-value" id="totalMeetingRooms">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Largest Capacity</span>
+                        <span class="info-value" id="largestCapacity">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Total Square Footage</span>
+                        <span class="info-value" id="totalSqft">-</span>
+                    </div>
+                </div>
+
+                <!-- Banking Information -->
+                <div class="card">
+                    <h3>🏦 Banking Information</h3>
+                    <div class="info-item">
+                        <span class="info-label">Bank Name</span>
+                        <span class="info-value" id="bankName">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Account Type</span>
+                        <span class="info-value" id="accountType">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Routing Number</span>
+                        <span class="info-value" id="routingNumber">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">AR Contact</span>
+                        <span class="info-value" id="arContact">-</span>
+                    </div>
+                </div>
+
+                <!-- Rates & Fees -->
+                <div class="card">
+                    <h3>💰 Rates & Fees</h3>
+                    <div class="info-item">
+                        <span class="info-label">Tax Rate</span>
+                        <span class="info-value" id="taxRate">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Resort Fee</span>
+                        <span class="info-value" id="resortFee">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Parking Fee</span>
+                        <span class="info-value" id="parkingFee">-</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Wi-Fi Fee</span>
+                        <span class="info-value" id="wifiFee">-</span>
+                    </div>
+                </div>
+
+                <!-- Meeting Room Details -->
+                <div class="card full-width">
+                    <h3>🏢 Meeting Room Details</h3>
+                    <div id="meetingRooms" class="meeting-rooms">
+                        <div class="loading">Loading meeting room details...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let hotelProfile = null;
+
+        async function loadProfile() {
+            try {
+                document.getElementById('loadingState').style.display = 'block';
+                document.getElementById('errorState').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'none';
+
+                // Get user session
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    throw new Error('No session found');
+                }
+
+                // Load hotel profile data
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to load profile');
+                }
+
+                const result = await response.json();
+                if (!result.ok) {
+                    throw new Error(result.error || 'Failed to load profile');
+                }
+
+                hotelProfile = result.profile;
+                displayProfile(hotelProfile);
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('profileContent').style.display = 'block';
+
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('errorState').style.display = 'block';
+            }
+        }
+
+        function displayProfile(profile) {
+            // Check if profile is incomplete
+            const incompleteMessage = document.getElementById('incompleteRegistrationMessage');
+            const isIncomplete = !profile.name || !profile.address || !profile.phone || !profile.email || 
+                                profile.status === 'pending' || profile.status === 'incomplete';
+            
+            if (isIncomplete) {
+                incompleteMessage.style.display = 'block';
+            } else {
+                incompleteMessage.style.display = 'none';
+            }
+
+            // Basic Information
+            document.getElementById('hotelName').textContent = profile.name || 'Not provided';
+            document.getElementById('hotelAddress').textContent = profile.address || 'Not provided';
+            document.getElementById('hotelLocation').textContent = 
+                `${profile.city || ''}, ${profile.state || ''}`.replace(/^,\s*|,\s*$/g, '') || 'Not provided';
+            document.getElementById('hotelCountry').textContent = profile.country || 'Not provided';
+            document.getElementById('hotelPhone').textContent = profile.phone || 'Not provided';
+            document.getElementById('hotelEmail').textContent = profile.email || 'Not provided';
+
+            // Status & Compliance
+            const statusElement = document.getElementById('profileStatus');
+            if (profile.status === 'approved') {
+                statusElement.textContent = 'Approved';
+                statusElement.className = 'status-badge status-approved';
+            } else if (profile.status === 'rejected') {
+                statusElement.textContent = 'Rejected';
+                statusElement.className = 'status-badge status-rejected';
+            } else {
+                statusElement.textContent = 'Pending Review';
+                statusElement.className = 'status-badge status-pending';
+            }
+
+            document.getElementById('net30Status').textContent = profile.accepts_net30 || 'Not specified';
+            document.getElementById('poStatus').textContent = profile.accepts_po || 'Not specified';
+            document.getElementById('aaaRating').textContent = profile.aaa_diamond_rating || 'Not rated';
+            document.getElementById('registrationDate').textContent = 
+                profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Not available';
+
+            // Room Statistics
+            document.getElementById('totalRooms').textContent = profile.total_rooms || '0';
+            document.getElementById('kingRooms').textContent = profile.king_rooms || '0';
+            document.getElementById('doubleRooms').textContent = profile.double_rooms || '0';
+            document.getElementById('suites').textContent = profile.suites || '0';
+
+            // Meeting Spaces
+            const meetingRooms = profile.meeting_rooms || [];
+            document.getElementById('totalMeetingRooms').textContent = meetingRooms.length || '0';
+            
+            let largestCapacity = 0;
+            let totalSqft = 0;
+            meetingRooms.forEach(room => {
+                const theater = parseInt(room.cap_theater) || 0;
+                const banquet = parseInt(room.cap_banquet) || 0;
+                const classroom = parseInt(room.cap_classroom) || 0;
+                const maxCapacity = Math.max(theater, banquet, classroom);
+                if (maxCapacity > largestCapacity) {
+                    largestCapacity = maxCapacity;
+                }
+                totalSqft += parseInt(room.room_area_sqft) || 0;
+            });
+            
+            document.getElementById('largestCapacity').textContent = largestCapacity || '0';
+            document.getElementById('totalSqft').textContent = totalSqft.toLocaleString() || '0';
+
+            // Banking Information
+            if (profile.hotel_location_type === 'US') {
+                document.getElementById('bankName').textContent = profile.ach_bank_name || 'Not provided';
+                document.getElementById('accountType').textContent = 'ACH (US)';
+                document.getElementById('routingNumber').textContent = 
+                    profile.ach_routing_number ? '****' + profile.ach_routing_number.slice(-4) : 'Not provided';
+                document.getElementById('arContact').textContent = profile.ach_ar_email || 'Not provided';
+            } else {
+                document.getElementById('bankName').textContent = profile.wire_bank_name || 'Not provided';
+                document.getElementById('accountType').textContent = 'Wire Transfer';
+                document.getElementById('routingNumber').textContent = profile.wire_swift_code || 'Not provided';
+                document.getElementById('arContact').textContent = profile.wire_ar_email || 'Not provided';
+            }
+
+            // Rates & Fees
+            document.getElementById('taxRate').textContent = profile.tax_percent || 'Not specified';
+            document.getElementById('resortFee').textContent = profile.resort_fee || 'None';
+            document.getElementById('parkingFee').textContent = 
+                profile.self_parking || profile.valet_parking || 'None';
+            document.getElementById('wifiFee').textContent = profile.wifi_fee || 'None';
+
+            // Meeting Room Details
+            displayMeetingRooms(meetingRooms);
+        }
+
+        function displayMeetingRooms(rooms) {
+            const container = document.getElementById('meetingRooms');
+            
+            if (!rooms || rooms.length === 0) {
+                container.innerHTML = '<div class="loading">No meeting rooms configured</div>';
+                return;
+            }
+
+            container.innerHTML = rooms.map(room => `
+                <div class="room-item">
+                    <div class="room-name">${room.room_name || 'Unnamed Room'}</div>
+                    <div class="room-details">
+                        <strong>Capacity:</strong> Theater: ${room.cap_theater || 'N/A'}, 
+                        Banquet: ${room.cap_banquet || 'N/A'}, 
+                        Classroom: ${room.cap_classroom || 'N/A'}<br>
+                        <strong>Size:</strong> ${room.room_area_sqft || 'N/A'} sq ft 
+                        (${room.room_dims_ft || 'N/A'})<br>
+                        <strong>Features:</strong> 
+                        ${room.room_pillar_free === 'Yes' ? 'Pillar-free' : 'Has pillars'}, 
+                        ${room.room_natural_light === 'Yes' ? 'Natural light' : 'No natural light'}, 
+                        ${room.room_divisible === 'Yes' ? 'Divisible' : 'Not divisible'}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function editProfile() {
+            window.location.href = '/hotel-registration.html?mode=edit';
+        }
+
+        // Load profile when page loads
+        document.addEventListener('DOMContentLoaded', loadProfile);
+    </script>
+</body>
+<script src="/nav.js"></script>
+</html>

@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About FEDEVENT - Government Event Planning & Logistics Solutions</title>
+    <meta name="description" content="Learn about FEDEVENT's mission, capabilities, and commitment to government event planning excellence.">
+    <link rel="stylesheet" href="/site.css">
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            text-decoration: none;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .cta-button {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Main Content */
+        main {
+            margin-top: 80px;
+            padding: 2rem 0;
+        }
+        
+        .page-header {
+            background: var(--white);
+            padding: 4rem 0;
+            text-align: center;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .page-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .page-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-light);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .section {
+            background: var(--white);
+            padding: 3rem 0;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .section-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        /* Company Info */
+        .company-info {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 2rem;
+        }
+        
+        .company-info h3 {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .company-info p {
+            font-size: 1.125rem;
+            line-height: 1.6;
+        }
+
+        /* SLA Card Section */
+        .sla-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 2px solid var(--primary);
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .sla-scope {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .sla-times {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .sla-time {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sla-time.emergency {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .sla-time h4 {
+            color: var(--primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sla-time.emergency h4 {
+            color: #dc2626;
+        }
+
+        .sla-disclaimer {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .sla-disclaimer p {
+            margin: 0;
+            color: #92400e;
+        }
+        
+        /* Why Work With Us Section */
+        .why-intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .intro-title {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .intro-description {
+            font-size: 1.25rem;
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .aggressive-truth {
+            margin-bottom: 4rem;
+        }
+
+        .truth-title {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .truth-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .truth-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .truth-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .truth-card h4 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .offerings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .offering-section {
+            background: var(--bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .offering-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .offering-list {
+            margin-bottom: 2rem;
+        }
+
+        .offering-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .offering-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .offering-content h4 {
+            color: var(--primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .offering-content p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .professional-benefits {
+            margin-bottom: 4rem;
+        }
+
+        .benefits-title {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .benefit-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .benefit-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .benefit-card h4 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-card p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .success-metrics {
+            background: var(--primary);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            color: white;
+        }
+
+        .metrics-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+        
+        /* Footer */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            .page-title {
+                font-size: 2rem;
+            }
+            
+            .offerings-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .metrics-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .sla-times {
+                grid-template-columns: 1fr;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
+
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+</head>
+<body>
+    <header>
+        <nav class="container">
+            <div class="logo-menu" style="position: relative;">
+              <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+              <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+                <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+                <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+                <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+                <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+                <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+                <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+              </div>
+            </div>
+            <ul class="nav-links">
+                <li id="userMenu" class="user-menu" style="display:none;">
+                  <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+                    <span class="user-avatar" id="userInitial">U</span>
+                    <span id="userNameLabel">User</span>
+                    <span aria-hidden>▾</span>
+                  </a>
+                  <div class="user-dropdown" id="userDropdown">
+                    <a href="/hotel-dashboard.html">Hotel Portal</a>
+                    <a href="/hotel-profile.html">User Settings</a>
+                    <button type="button" onclick="logoutUser()">Logout</button>
+                  </div>
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="page-header">
+                <h1 class="page-title">About FEDEVENT</h1>
+                <p class="page-subtitle">Professional event planning services for U.S. Government agencies and qualified hotel partners.</p>
+            </div>
+
+            <!-- Company Information -->
+            <section class="section">
+                <div class="container">
+                    <div class="company-info">
+                        <h3>About Our Company</h3>
+                        <p>FEDEVENT is a service of Creata Global Event Agency LLC. We connect U.S. Government departments with compliant hotels and venues for lodging and meetings, prioritizing properties that accept NET30 terms and government purchase orders.</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Communications Response Policy (SLA) -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title">Communications Response Policy (SLA) — 24/7/365</h2>
+                    <div class="sla-card">
+                        <div class="sla-content">
+                            <p class="sla-scope"><strong>Scope:</strong> This SLA covers responses to communications only (email, web form, phone, text). It does not guarantee same-day rooms, venues, vehicles, catering, or AV. All confirmations depend on third-party availability and approvals.</p>
+                            
+                            <div class="sla-times">
+                                <div class="sla-time">
+                                    <h4>Before 14:00 ET (any day)</h4>
+                                    <p>Acknowledgment + initial action brief by 17:00 ET the same calendar day.</p>
+                                </div>
+                                <div class="sla-time">
+                                    <h4>After 14:00 ET (any day)</h4>
+                                    <p>Acknowledgment + initial action brief by 10:00 ET next calendar day.</p>
+                                </div>
+                                <div class="sla-time emergency">
+                                    <h4>Emergency Desk (always-on)</h4>
+                                    <p>Acknowledgment within 15 minutes; follow-up within 1–2 hours outlining immediate actions and owners.</p>
+                                </div>
+                            </div>
+                            
+                            <div class="sla-disclaimer">
+                                <p><strong>This SLA governs communications only. It is not a promise of same-day availability checks, quotes, or confirmations.</strong></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Why Work With FEDEVENT -->
+            <section class="section">
+                <div class="container">
+                    <h2 class="section-title">Why Work With FEDEVENT</h2>
+                    
+                    <div class="why-intro">
+                        <h3 class="intro-title">We don't shop; we solve.</h3>
+                        <p class="intro-description">FedEvent unifies short-long term lodging, meeting/AV, ground transport, catering, and on-site logistics under one disciplined plan—built for government timelines and real-world constraints.</p>
+                    </div>
+
+                    <div class="aggressive-truth">
+                        <h3 class="truth-title">The Aggressive Truth (Our Edge)</h3>
+                        <div class="truth-grid">
+                            <div class="truth-card">
+                                <div class="truth-icon">🎯</div>
+                                <h4>We remove uncertainty.</h4>
+                                <p>Holds set, backups ready, vendors aligned.</p>
+                            </div>
+                            <div class="truth-card">
+                                <div class="truth-icon">⏰</div>
+                                <h4>We control the clock.</h4>
+                                <p>Partners operate to our run-of-show—no drift, no scramble.</p>
+                            </div>
+                            <div class="truth-card">
+                                <div class="truth-icon">🔍</div>
+                                <h4>We sweat the details.</h4>
+                                <p>Manifests, cue sheets, labeled meals, mic checks by segment.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="offerings-grid">
+                        <div class="offering-section">
+                            <h3 class="offering-title">Government & Public Sector — What We Have To Offer</h3>
+                            <div class="offering-list">
+                                <div class="offering-item">
+                                    <div class="offering-icon">⚡</div>
+                                    <div class="offering-content">
+                                        <h4>Speed to Options</h4>
+                                        <p>Side-by-side venue comparisons fast, aligned to your SOW.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">🎬</div>
+                                    <div class="offering-content">
+                                        <h4>One Run-of-Show</h4>
+                                        <p>Hotel ops, AV, transport, and catering synchronized with a named on-site lead.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">✅</div>
+                                    <div class="offering-content">
+                                        <h4>Compliance by Design</h4>
+                                        <p>Accessibility, labeled dietary service, disciplined documentation.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">🎛️</div>
+                                    <div class="offering-content">
+                                        <h4>Operational Control</h4>
+                                        <p>Manifests, cue sheets, staging plans, and daily status to your POCs.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">🏨</div>
+                                    <div class="offering-content">
+                                        <h4>Extended-Stay Ready</h4>
+                                        <p>Suites/kitchenettes, laundry access, late arrivals, surge capacity.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="offering-section">
+                            <h3 class="offering-title">Hotels & Venues — What You Gain</h3>
+                            <div class="offering-list">
+                                <div class="offering-item">
+                                    <div class="offering-icon">📈</div>
+                                    <div class="offering-content">
+                                        <h4>Consistent Group Demand</h4>
+                                        <p>Trainings, conferences, extended stays—organized and predictable.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">📋</div>
+                                    <div class="offering-content">
+                                        <h4>Complete Briefs</h4>
+                                        <p>Headcounts, rooming lists, meeting/AV specs, dietary notes, day-by-day schedule.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">📞</div>
+                                    <div class="offering-content">
+                                        <h4>Single Decision Channel</h4>
+                                        <p>Pre-con alignment, rapid answers, one coordinator on site.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">🎯</div>
+                                    <div class="offering-content">
+                                        <h4>Operational Discipline</h4>
+                                        <p>Timed load-ins, labeled F&B, mic checks by segment, clean turnovers.</p>
+                                    </div>
+                                </div>
+                                <div class="offering-item">
+                                    <div class="offering-icon">✨</div>
+                                    <div class="offering-content">
+                                        <h4>Clean Closeout</h4>
+                                        <p>Reconciliations, documentation, and repeat business for high-performers.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="/hotel-signup.html" class="cta-button" onclick="trackButtonClick('Join Our Hotel Network - Hotels')">Join Our Hotel Network</a>
+                        </div>
+                    </div>
+
+                    <!-- Additional Professional Content -->
+                    <div class="professional-benefits">
+                        <h3 class="benefits-title">Why Leading Organizations Choose FEDEVENT</h3>
+                        <div class="benefits-grid">
+                            <div class="benefit-card">
+                                <div class="benefit-icon">🏆</div>
+                                <h4>Proven Track Record</h4>
+                                <p>Successfully executed over 100 government contracts combined with delivery orders, with all contracts completed without drawbacks or performance issues.</p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">💼</div>
+                                <h4>Contracting Expertise</h4>
+                                <p>Deep understanding of FAR compliance, GSA schedules, and government procurement processes.</p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">🌐</div>
+                                <h4>Global Network</h4>
+                                <p>Access to over 100,000 hotels in our global network, providing comprehensive lodging and event solutions worldwide with government-compliant service standards.</p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">📊</div>
+                                <h4>Cost Optimization</h4>
+                                <p>Average 15-20% cost savings through strategic sourcing and volume discounts.</p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">🛡️</div>
+                                <h4>Risk Mitigation</h4>
+                                <p>Comprehensive backup plans, weather monitoring, and contingency protocols.</p>
+                            </div>
+                            <div class="benefit-card">
+                                <div class="benefit-icon">📈</div>
+                                <h4>Scalability</h4>
+                                <p>From 10-person training sessions to 2,000+ attendee conferences—seamless execution.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Success Metrics -->
+                    <div class="success-metrics">
+                        <h3 class="metrics-title">Our Performance Metrics</h3>
+                        <div class="metrics-grid">
+                            <div class="metric-item">
+                                <div class="metric-number">Always</div>
+                                <div class="metric-label">On-Time Delivery</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-number">Same Day</div>
+                                <div class="metric-label">Business Day Response</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-number">~$1M</div>
+                                <div class="metric-label">Client Savings Achieved</div>
+                            </div>
+                            <div class="metric-item">
+                                <div class="metric-number">2</div>
+                                <div class="metric-label">Continents Served</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FEDEVENT</h3>
+                    <p>Professional event planning services for U.S. Government agencies.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="/hotel-signup.html">Hotel Registration</a>
+                    <a href="/request.html">Government Requests</a>
+                    <a href="/government-portal.html">Government Portal</a>
+                </div>
+                <div class="footer-section footer-contact">
+                    <h3>Contact</h3>
+                    <p>Email: info@fedevent.com</p>
+                    <p>Phone: (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+                <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/chat.js"></script>
+    
+    <script>
+        function toggleUserDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('userDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLogoDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('logoDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('fedevent_session');
+            localStorage.removeItem('fedevent_user');
+            window.location.href = '/hotel-login.html';
+        }
+
+        function loadUserMenu() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const userRaw = localStorage.getItem('fedevent_user');
+                if (!sessionId || !userRaw) return;
+                const user = JSON.parse(userRaw);
+                let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+                name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+                const initial = (name || 'U').trim().charAt(0).toUpperCase();
+                document.getElementById('userNameLabel').textContent = name;
+                document.getElementById('userInitial').textContent = initial;
+                document.getElementById('userMenu').style.display = 'list-item';
+            } catch (e) { /* noop */ }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserMenu);
+
+        document.addEventListener('click', function(evt){
+            const userDd = document.getElementById('userDropdown');
+            const logoDd = document.getElementById('logoDropdown');
+            const um = document.getElementById('userMenu');
+            const logoMenu = document.querySelector('.logo-menu');
+            
+            if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
+            if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
+        });
+    </script>
+</body>
+</html>

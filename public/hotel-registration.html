@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hotel Profile Registration</title>
+<!-- BUILD: CREATA-SUITE 2025-08-11 v3 (localhost) -->
+<link rel="stylesheet" href="/site.css">
+<style>
+  :root { --bg:#f4f8fb; --card:#fff; --ink:#0b2545; --muted:#5b6b7b; --accent:#0a58ca; --danger:#dc3545; --ring:rgba(10,88,202,.25); }
+  *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
+  .wrap{max-width:1100px;margin:24px auto 64px;padding:0 16px} .card{background:var(--card);border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06);padding:20px}
+  h1{font-size:1.6rem;margin:0 0 6px} p.lead{margin:0 0 16px;color:var(--muted)}
+  fieldset{border:1px solid #e6ecf2;border-radius:12px;padding:14px;margin:16px 0} legend{padding:0 8px;color:var(--muted);font-size:.95rem}
+  label{font-weight:600;font-size:.92rem;display:block;margin:8px 0 4px}
+  .row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
+  .col-12{grid-column:span 12}.col-8{grid-column:span 8}.col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}.col-2{grid-column:span 2}
+  input:not([type=file]):not([type=checkbox]):not([type=radio]),select{width:100%;padding:10px 12px;border:1px solid #d7dee6;border-radius:10px;background:#fff;font-size:1rem;line-height:1.2;height:44px;outline:0;transition:box-shadow .15s,border-color .15s}
+  textarea{width:100%;padding:10px 12px;border:1px solid #d7dee6;border-radius:10px;background:#fff;font-size:1rem;outline:0;transition:box-shadow .15s,border-color .15s;min-height:96px;resize:vertical}
+  input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 4px var(--ring)}
+  .hint{color:var(--muted);font-size:.85rem;margin-top:2px} .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+  .btn{appearance:none;border:0;border-radius:10px;background:var(--accent);color:#fff;padding:10px 14px;font-weight:600;cursor:pointer}
+  .btn.subtle{background:#eef4ff;color:var(--accent)} .btn.danger{background:#dc3545} .btn:disabled{opacity:.55;cursor:not-allowed}
+  .hr{height:1px;background:#e6ecf2;margin:12px 0} .item{border:1px solid #e6ecf2;border-radius:12px;padding:12px;margin-top:8px;background:#fafcff}
+  .right{text-align:right} .required{color:var(--danger)}
+  .steps{display:flex;gap:10px;align-items:center;margin:8px 0 4px;flex-wrap:wrap}
+  .step{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:600;transition:all 0.3s ease}
+  .dot{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;background:#eef4ff;color:#0a58ca;font-weight:800;transition:all 0.3s ease}
+  .step.active{color:var(--ink)} .step.active .dot{background:#0a58ca;color:#fff}
+  .step.completed{color:#10b981} .step.completed .dot{background:#10b981;color:#fff}
+  .page{display:none} .page.active{display:block} .nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:8px}
+  .submitting{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(255,255,255,.85);backdrop-filter:saturate(180%) blur(2px);z-index:10000}
+  .submitting.show{display:flex}
+  .panel{background:#fff;border:1px solid #e6ecf2;border-radius:12px;padding:14px 16px;box-shadow:0 10px 24px rgba(0,0,0,.08);display:flex;gap:12px;align-items:center}
+  .loader{width:36px;height:36px;border-radius:50%;border:3px solid #c5d6f3;border-top-color:#0a58ca;animation:spin 1s linear infinite} @keyframes spin{to{transform:rotate(360deg)}}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:#0b2545;color:#fff;padding:10px 14px;border-radius:10px;display:none;z-index:10001}
+  .muted{color:var(--muted);font-size:.9rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media (max-width: 720px){ .grid2{grid-template-columns:1fr} }
+  
+  /* Navigation styles */
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+  }
+  
+  nav {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    padding: 1rem 0;
+    gap: 24px;
+  }
+  
+  .logo {
+    font-size: 1.75rem;
+    font-weight: bold;
+    color: var(--accent);
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+  }
+  
+  .logo:hover {
+    color: #084298;
+  }
+  
+  .nav-links {
+    display: flex;
+    list-style: none;
+    gap: 1.25rem;
+    margin-left: 16px;
+  }
+  
+  .nav-links a {
+    text-decoration: none;
+    color: var(--ink);
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+  
+  .nav-links a:hover {
+    color: var(--accent);
+  }
+  
+  .user-menu { 
+    position: relative; 
+  }
+  
+  .user-trigger { 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    cursor: pointer; 
+    font-weight: 600; 
+    color: var(--ink); 
+    text-decoration: none; 
+  }
+  
+  .user-avatar { 
+    width: 28px; 
+    height: 28px; 
+    border-radius: 50%; 
+    background: #e5e7eb; 
+    display: grid; 
+    place-items: center; 
+    font-size: 0.85rem; 
+    color: #374151; 
+  }
+  
+  .user-dropdown { 
+    position: absolute; 
+    right: 0; 
+    top: calc(100% + 8px); 
+    background: #fff; 
+    border: 1px solid #e5e7eb; 
+    box-shadow: 0 8px 24px rgba(0,0,0,.08); 
+    border-radius: 10px; 
+    min-width: 200px; 
+    padding: 6px; 
+    display: none; 
+    z-index: 1002; 
+  }
+  
+  .user-dropdown a, .user-dropdown button { 
+    display: block; 
+    width: 100%; 
+    text-align: left; 
+    padding: 10px 12px; 
+    border-radius: 8px; 
+    background: transparent; 
+    border: 0; 
+    font: inherit; 
+    color: #111827; 
+    cursor: pointer; 
+    text-decoration: none; 
+  }
+  
+  .user-dropdown a:hover, .user-dropdown button:hover { 
+    background: #f3f4f6; 
+  }
+  
+  /* User info styling */
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #374151;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .user-info span {
+    color: #059669;
+  }
+  
+  .logout-btn:hover {
+    background: #b91c1c !important;
+  }
+</style>
+
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        // Dropdown functionality
+        function toggleLogoDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('logoDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (userDropdown) userDropdown.style.display = 'none';
+        }
+        
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            const logoDropdown = document.getElementById('logoDropdown');
+            
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (logoDropdown) logoDropdown.style.display = 'none';
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('fedevent_session');
+            localStorage.removeItem('fedevent_user');
+            window.location.href = '/hotel-login.html';
+        }
+
+        function loadUserMenu() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const userRaw = localStorage.getItem('fedevent_user');
+                if (!sessionId || !userRaw) return;
+                const user = JSON.parse(userRaw);
+                let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+                name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+                const initial = (name || 'U').trim().charAt(0).toUpperCase();
+                document.getElementById('userNameLabel').textContent = name;
+                document.getElementById('userInitial').textContent = initial;
+                document.getElementById('userMenu').style.display = 'list-item';
+            } catch (e) { /* noop */ }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserMenu);
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const logoDropdown = document.getElementById('logoDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            const logoMenu = document.querySelector('.logo-menu');
+            const userMenu = document.getElementById('userMenu');
+            
+            if (logoDropdown && logoMenu && !logoMenu.contains(event.target)) {
+                logoDropdown.style.display = 'none';
+            }
+            
+            if (userDropdown && userMenu && !userMenu.contains(event.target)) {
+                userDropdown.style.display = 'none';
+            }
+        });
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+</head>
+<body>
+    <header>
+      <nav class="container">
+        <div class="logo-menu" style="position: relative;">
+          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+          </div>
+        </div>
+        <ul class="nav-links">
+          <li id="userMenu" class="user-menu" style="display:none;">
+            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+              <span class="user-avatar" id="userInitial">U</span>
+              <span id="userNameLabel">User</span>
+              <span aria-hidden>▾</span>
+            </a>
+            <div class="user-dropdown" id="userDropdown">
+              <a href="/hotel-dashboard.html">Hotel Portal</a>
+              <a href="/hotel-profile.html">User Settings</a>
+              <button type="button" onclick="logoutUser()">Logout</button>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+
+<div class="wrap">
+  <!-- Command Bar -->
+  <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin:12px 0 8px 0;">
+    <div style="display:flex; gap:12px; align-items:center;">
+      <button onclick="window.location.href='/hotel-dashboard.html'" class="btn" style="background:#065f46; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600; white-space:nowrap;">
+        ← Back to Profile
+      </button>
+      <button onclick="localLogout()" class="btn" style="background:#dc2626; color:#fff; padding:10px 20px; border:none; border-radius:8px; font-weight:600;">
+        Logout
+      </button>
+    </div>
+  </div>
+  <div class="card">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <div>
+        <h1 style="margin: 0;">Hotel Profile Registration</h1>
+        <p class="lead" style="margin: 6px 0 0 0;">Complete this profile so we can match your property to U.S. Government group events. <strong>NET30 payment terms and PO acceptance are required.</strong></p>
+      </div>
+      
+    </div>
+    
+    <!-- Draft Status -->
+    <div id="draftStatus" style="display: none; background: #eef4ff; border: 1px solid #c5d6f3; border-radius: 8px; padding: 12px; margin: 16px 0;">
+      <div style="display: flex; align-items: center; gap: 8px; color: #0a58ca;">
+        <span>💾</span>
+        <strong>Draft Saved</strong>
+        <span id="draftInfo" style="color: #5b6b7b; font-size: 0.9rem;"></span>
+      </div>
+    </div>
+    
+    <!-- Auto-save Status (only visible in continue mode) -->
+    <div id="autoSaveInfo" style="display: none; background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin: 16px 0; font-size: 0.85rem;">
+      <div style="color: #0369a1;">
+        <strong>💾 Auto-save enabled:</strong> 
+        <span id="autoSaveText">Your progress is automatically saved every 2 minutes</span>
+      </div>
+    </div>
+    
+
+    <div class="steps" id="steps">
+      <div class="step" data-step="1"><span class="dot">1</span> Company Information</div>
+      <div class="step" data-step="2"><span class="dot">2</span> Rooms & Meeting Space</div>
+      <div class="step" data-step="3"><span class="dot">3</span> Terms & Uploads</div>
+      <div class="step" data-step="4"><span class="dot">4</span> Completion</div>
+    </div>
+
+    <form id="hotel-form" method="POST" enctype="multipart/form-data">
+      <input type="hidden" name="form_type" value="hotel_profile_v2">
+
+      <!-- PAGE 0 removed: Start/Pre-Qualification & Account Options. Wizard begins at Company Information. -->
+      <div class="page" data-page="0" style="display:none"></div>
+
+      <!-- PAGE 1 -->
+      <div class="page" data-page="1">
+        <fieldset>
+          <legend>1) Property Identity</legend>
+          <div class="item">
+            <label>Upload facts sheet / presentation to autofill (PDF, DOCX, PPTX)</label>
+            <input type="file" id="autofillFile" accept=".pdf,.doc,.docx,.ppt,.pptx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.openxmlformats-officedocument.presentationml.presentation" />
+            <button type="button" class="btn subtle" id="btnAutofill">Autofill from file</button>
+            <div class="hint">Best with DOCX/PPTX or text-based PDFs. Scanned PDFs require OCR (optional).</div>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <div class="col-6"><label>Hotel Name <span class="required">*</span></label><input name="hotel_name" required /></div>
+            <div class="col-3"><label>Brand</label><input name="brand" /></div>
+            <div class="col-3"><label>Chain</label><input name="chain" /></div>
+            <div class="col-6"><label>Hotel Property Code</label><input name="hotel_property_code" /></div>
+            <div class="col-6"><label>Management Company</label><input name="management_company" /></div>
+            <div class="col-6"><label>Website</label><input type="url" name="website" placeholder="https://"/></div>
+            <div class="col-6"><label>Street Address <span class="required">*</span></label><input name="address" required /></div>
+            <div class="col-3"><label>City <span class="required">*</span></label><input name="city" required /></div>
+            <div class="col-3"><label>State / Province</label><input name="state" /></div>
+            <div class="col-3"><label>Postal Code</label><input name="zip" /></div>
+            <div class="col-3"><label>Country <span class="required">*</span></label><input name="country" required /></div>
+            <div class="col-3"><label>Year Built</label><input type="number" name="year_built" min="1900" max="2100" /></div>
+            <div class="col-3"><label>Last Renovation (Year)</label><input type="number" name="last_renovation" min="1900" max="2100" /></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>2) Primary Contacts</legend>
+          <div class="row">
+            <div class="col-4">
+              <label>Sales Director Name <span class="required">*</span></label><input name="sales_director_name" required />
+              <label>Email <span class="required">*</span></label><input type="email" name="sales_director_email" required />
+              <label>Phone</label><input type="tel" name="sales_director_phone" />
+            </div>
+            <div class="col-4">
+              <label>Conference Services (CSM) Name</label><input name="csm_name" />
+              <label>Email</label><input type="email" name="csm_email" />
+              <label>Phone</label><input type="tel" name="csm_phone" />
+            </div>
+            <div class="col-4">
+              <label>Billing / AR Contact <span class="required">*</span></label><input name="ar_name" required />
+              <label>AR Email <span class="required">*</span></label><input type="email" name="ar_email" required />
+              <label>AR Phone</label><input type="tel" name="ar_phone" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>3) AAA Rating</legend>
+          <div class="row">
+            <div class="col-6">
+              <label>Are you an AAA rated hotel? <span class="required">*</span></label>
+              <select name="is_aaa_rated" id="is_aaa_rated" required>
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="col-6" id="aaa_diamond_section" style="display:none;">
+              <label>How many diamond rating do you have? <span class="required">*</span></label>
+              <select name="aaa_diamond_rating" id="aaa_diamond_rating">
+                <option value="">Select…</option>
+                <option value="2 Diamond (APPROVED)">2 Diamond (APPROVED)</option>
+                <option value="3 Diamond">3 Diamond</option>
+                <option value="4 Diamond">4 Diamond</option>
+                <option value="5 Diamond">5 Diamond</option>
+              </select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>4) Bank Account Information</legend>
+          <p class="muted" style="margin-bottom:16px;">Please provide banking information for payment processing. Choose the appropriate section based on your hotel's location.</p>
+          
+          <div class="row">
+            <div class="col-12">
+              <label>Hotel Location</label>
+              <select name="hotel_location_type" id="hotel_location_type">
+                <option value="">Select hotel location (optional)…</option>
+                <option value="US">United States (US-based hotel)</option>
+                <option value="International">International hotel</option>
+              </select>
+              <div class="hint">Select based on your hotel's primary location to provide payment information. This section is optional but recommended.</div>
+            </div>
+          </div>
+
+          <!-- ACH Section for US Hotels -->
+          <div id="ach_section" style="display:none; margin-top:16px;">
+            <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px; padding:16px; margin-bottom:16px;">
+              <h4 style="margin:0 0 12px 0; color:var(--accent); font-size:1rem;">🏦 ACH Bank Account Information (US Hotels)</h4>
+              <div class="hint" style="margin-bottom:12px;">For US-based hotels - Electronic fund transfers via ACH</div>
+              
+              <div class="row">
+                <div class="col-12">
+                  <label>Bank Account Name <span class="required">*</span></label>
+                  <input name="ach_bank_account_name" id="ach_bank_account_name" placeholder="e.g., ABC Hotel Management LLC" />
+                  <button type="button" class="btn subtle" id="copyCompanyToAchName" style="margin-top:4px; font-size:0.85rem; padding:4px 8px;">Copy from Hotel Name</button>
+                </div>
+                <div class="col-4">
+                  <label>Bank Routing Number <span class="required">*</span></label>
+                  <input name="ach_routing_number" id="ach_routing_number" placeholder="9-digit routing number" maxlength="9" pattern="[0-9]{9}" />
+                  <div class="hint">9-digit ABA routing number • Bank name will auto-populate when you enter a valid routing number</div>
+                </div>
+                <div class="col-8">
+                  <label>Bank Account Number <span class="required">*</span></label>
+                  <div class="row" style="gap:12px; align-items:flex-start;">
+                    <div class="col-6" style="padding:0;">
+                      <input name="ach_account_number" id="ach_account_number" placeholder="Enter account number" />
+                    </div>
+                    <div class="col-6" style="padding:0;">
+                      <label for="ach_account_number_confirm" style="display:block; font-weight:600; margin-bottom:4px;">Confirm Bank Account Number <span class="required">*</span></label>
+                      <input name="ach_account_number_confirm" id="ach_account_number_confirm" placeholder="Re-enter account number" required />
+                    </div>
+                  </div>
+                  <div class="hint">Please enter the account number twice to confirm</div>
+                  <div id="ach_account_match" style="display:none; font-size:0.85rem; margin-top:4px;"></div>
+                </div>
+                <div class="col-6">
+                  <label>Bank Name <span class="required">*</span></label>
+                  <input name="ach_bank_name" id="ach_bank_name" placeholder="e.g., Bank of America, Wells Fargo" />
+                </div>
+                <div class="col-6">
+                  <label>Accounts Receivable Contact Email <span class="required">*</span></label>
+                  <input type="email" name="ach_ar_email" id="ach_ar_email" placeholder="ar@hotel.com" />
+                  <button type="button" class="btn subtle" id="copyArEmailToAch" style="margin-top:4px; font-size:0.85rem; padding:4px 8px;">Copy from A/R Email</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Wire Transfer Section for International Hotels -->
+          <div id="wire_section" style="display:none; margin-top:16px;">
+            <div style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:8px; padding:16px; margin-bottom:16px;">
+              <h4 style="margin:0 0 12px 0; color:var(--accent); font-size:1rem;">🌍 Wire Transfer Information (International Hotels)</h4>
+              <div class="hint" style="margin-bottom:12px;">For international hotels - International wire transfers</div>
+              
+              <div class="row">
+                <div class="col-12">
+                  <label>Bank Account Name <span class="required">*</span></label>
+                  <input name="wire_bank_account_name" id="wire_bank_account_name" placeholder="e.g., ABC Hotel Management LLC" />
+                  <button type="button" class="btn subtle" id="copyCompanyToWireName" style="margin-top:4px; font-size:0.85rem; padding:4px 8px;">Copy from Hotel Name</button>
+                </div>
+                <div class="col-6">
+                  <label>Bank Name <span class="required">*</span></label>
+                  <input name="wire_bank_name" id="wire_bank_name" placeholder="e.g., HSBC, Deutsche Bank" />
+                </div>
+                <div class="col-6">
+                  <label>SWIFT Code <span class="required">*</span></label>
+                  <input name="wire_swift_code" id="wire_swift_code" placeholder="e.g., HSBCGB2L" style="text-transform:uppercase;" />
+                  <div class="hint">8-11 character SWIFT/BIC code</div>
+                </div>
+                <div class="col-12">
+                  <label>Bank Account Number <span class="required">*</span></label>
+                  <div class="row" style="gap:12px; align-items:flex-start;">
+                    <div class="col-6" style="padding:0;">
+                      <input name="wire_account_number" id="wire_account_number" placeholder="Enter account number" />
+                    </div>
+                    <div class="col-6" style="padding:0;">
+                      <label for="wire_account_number_confirm" style="display:block; font-weight:600; margin-bottom:4px;">Confirm Bank Account Number <span class="required">*</span></label>
+                      <input name="wire_account_number_confirm" id="wire_account_number_confirm" placeholder="Re-enter account number" required />
+                    </div>
+                  </div>
+                  <div id="wire_account_match" style="display:none; font-size:0.85rem; margin-top:4px;"></div>
+                </div>
+                <div class="col-6">
+                  <label>Bank Address</label>
+                  <input name="wire_bank_address" id="wire_bank_address" placeholder="Bank street address" />
+                </div>
+                <div class="col-3">
+                  <label>Bank City</label>
+                  <input name="wire_bank_city" id="wire_bank_city" placeholder="City" />
+                </div>
+                <div class="col-3">
+                  <label>Bank Country</label>
+                  <input name="wire_bank_country" id="wire_bank_country" placeholder="Country" />
+                </div>
+                <div class="col-6">
+                  <label>Accounts Receivable Contact Email <span class="required">*</span></label>
+                  <input type="email" name="wire_ar_email" id="wire_ar_email" placeholder="ar@hotel.com" />
+                  <button type="button" class="btn subtle" id="copyArEmailToWire" style="margin-top:4px; font-size:0.85rem; padding:4px 8px;">Copy from A/R Email</button>
+                </div>
+                <div class="col-6">
+                  <label>Additional Wire Instructions</label>
+                  <textarea name="wire_instructions" id="wire_instructions" placeholder="Any special instructions for wire transfers" style="min-height:60px;"></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <!-- Payment & Compliance moved to Terms & Uploads step -->
+      </div>
+
+      <!-- PAGE 2 (Rooms & Meeting Space) -->
+      <div class="page" data-page="2">
+        <fieldset>
+          <legend>Sleeping Rooms Inventory</legend>
+          <div class="row">
+            <div class="col-3"><label>Total Guest Rooms</label><input type="number" name="total_rooms" min="0" /></div>
+            <div class="col-3"><label>Kings</label><input type="number" name="king_rooms" min="0" /></div>
+            <div class="col-3"><label>Doubles / Queens</label><input type="number" name="double_rooms" min="0" /></div>
+            <div class="col-3"><label>Suites</label><input type="number" name="suites" min="0" /></div>
+            <div class="col-3"><label>Accessible (ADA) Rooms</label><input type="number" name="ada_rooms" min="0" /></div>
+            <div class="col-3"><label>Max Group Block (rooms)</label><input type="number" name="max_group_block" min="0" /></div>
+            <div class="col-3"><label>Comp Room Ratio</label><input name="comp_ratio" placeholder="e.g., 1:40" /></div>
+            <div class="col-3"><label>Cutoff (days)</label><input type="number" name="cutoff_days" min="0" /></div>
+            <div class="col-12">
+              <label>Breakfast Included?</label>
+              <select name="breakfast_included"><option value="">Select…</option><option>Yes – Full</option><option>Yes – Continental</option><option>No</option></select>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Extended Stay</legend>
+          <div class="row">
+            <div class="col-12">
+              <label>Is your property an Extended Stay hotel? <span class="required">*</span></label>
+              <select name="is_extended_stay" id="is_extended_stay" required><option value="">Select…</option><option>Yes</option><option>No</option></select>
+              <div class="hint">If Yes, more questions appear below.</div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset id="extendedStaySection" style="display:none;">
+          <legend>Extended Stay Amenities</legend>
+          <div class="row">
+            <div class="col-4"><label>In-Room Kitchen <span class="required">*</span></label><select name="ext_kitchen" data-es-required="1"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Fully Equipped? <span class="required">*</span></label><select name="ext_kitchen_equipped" data-es-required="1"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Washer / Dryer <span class="required">*</span></label><select name="ext_washer_dryer" data-es-required="1"><option value="">Select…</option><option>In-room</option><option>On-site – self-service</option><option>On-site – valet</option><option>None</option></select></div>
+            <div class="col-4"><label>Stovetop</label><select name="ext_equipment_stovetop"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Oven</label><select name="ext_equipment_oven"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Microwave</label><select name="ext_equipment_microwave"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Refrigerator</label><select name="ext_equipment_fridge"><option value="">Select…</option><option>Full-size</option><option>Mid-size</option><option>Mini</option></select></div>
+            <div class="col-4"><label>Dishwasher</label><select name="ext_equipment_dishwasher"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Cookware & Utensils</label><select name="ext_equipment_cookware"><option value="">Select…</option><option>Yes – Full set</option><option>Yes – Basic</option><option>No</option></select></div>
+            <div class="col-6"><label>Laundry Details / Cost</label><input name="ext_laundry_cost_notes" /></div>
+            <div class="col-6"><label>Housekeeping Frequency</label><input name="ext_housekeeping_frequency" /></div>
+            <div class="col-6"><label>Long-Stay Rate Options</label><input name="ext_long_stay_rates" /></div>
+            <div class="col-3"><label>Pet Friendly</label><select name="ext_pet_friendly"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-9"><label>Pet Policy/Fees</label><input name="ext_pet_notes" placeholder="Pet policy and applicable fees" /></div>
+            <div class="col-4"><label>On-site Market/Pantry</label><select name="ext_market_pantry"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Grocery Delivery Partnership</label><select name="ext_grocery_delivery"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Grocery Partner</label><input name="ext_grocery_partner" /></div>
+            <div class="col-4"><label>Ventilated Range Hood</label><select name="ext_kitchen_ventilation"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Fire Suppression at Cooktop</label><select name="ext_fire_suppression"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Cooking Restrictions</label><input name="ext_cooking_restrictions" /></div>
+            <div class="col-12"><label>Notes (Extended Stay)</label><textarea name="ext_extended_stay_notes"></textarea></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Meeting Spaces</legend>
+          <div class="inline">
+            <button class="btn subtle" type="button" id="addRoomBtn">+ Add Meeting Space</button>
+            <span class="hint">Add each room with dimensions and capacities.</span>
+          </div>
+          <div id="rooms"></div>
+        </fieldset>
+
+        <fieldset>
+          <legend>A/V Services</legend>
+          <div class="row">
+            <div class="col-6">
+              <label>In-house A/V Services? <span class="required">*</span></label>
+              <select name="av_in_house" id="av_in_house" required>
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="col-6" id="av_provider_section" style="display:none;">
+              <label>Name of A/V Service Provider</label>
+              <input name="av_provider_name" placeholder="e.g., ABC Audio Visual Services" />
+            </div>
+            <div class="col-6">
+              <label>Allow Outside A/V Services? <span class="required">*</span></label>
+              <select name="av_outside_allowed" id="av_outside_allowed" required>
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="col-6" id="av_outside_fees_section" style="display:none;">
+              <label>Outside A/V Service Fees</label>
+              <input name="av_outside_fees" placeholder="e.g., $500 setup fee, $200/day" />
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Rates & Fees</legend>
+          <div class="row">
+            <div class="col-4"><label>Resort / Destination Fee</label><input name="resort_fee" /></div>
+            <div class="col-4"><label>Taxes (Total %) <span class="required">*</span></label><input name="tax_percent" placeholder="e.g., 14.5%" required /></div>
+            <div class="col-4"><label>Self-Parking Fee</label><input name="self_parking" /></div>
+            <div class="col-4"><label>Valet Parking Fee</label><input name="valet_parking" /></div>
+            <div class="col-4"><label>In-Room Wi-Fi Fee</label><input name="wifi_fee" /></div>
+          </div>
+        </fieldset>
+      </div>
+
+      <!-- PAGE 3 (Terms & Uploads) -->
+      <div class="page" data-page="3">
+        <fieldset>
+          <legend>Payment & Compliance</legend>
+          <div class="row">
+            <div class="col-4">
+              <label>Accepts NET30 (CREATA prime)? <span class="required">*</span></label>
+              <select name="accepts_net30" id="accepts_net30" required><option value="">Select…</option><option>Yes</option><option>No</option></select>
+            </div>
+            <div class="col-4">
+              <label>Accepts Purchase Orders (PO)? <span class="required">*</span></label>
+              <select name="accepts_po" required><option value="">Select…</option><option>Yes</option><option>No</option></select>
+            </div>
+            <div class="col-6"><label>Attrition Policy</label><input name="attrition_policy" /><div class="hint"><strong>Decision Note:</strong> No attrition is prioritized.</div></div>
+            <div class="col-6"><label>Cancellation Policy</label><input name="cancellation_policy" /><div class="hint"><strong>Decision Note:</strong> No cancellation penalties are favored.</div></div>
+            <div class="col-12">
+              <div class="inline"><input id="terms_ack" type="checkbox" required />
+                <label for="terms_ack" style="font-weight:500">I acknowledge that <strong>NET30</strong> is required and CREATA issues a Government-backed <strong>PO</strong>.</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Logistics, Security & Accessibility</legend>
+          <div class="row">
+            <div class="col-4"><label>On-Site Kitchen</label><select name="onsite_kitchen"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Outside Catering Allowed</label><select name="outside_catering"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Special Diets</label><input name="special_diets" placeholder="Halal, Kosher, Vegan, etc." /></div>
+            <div class="col-6"><label>F&amp;B Minimums</label><input name="fb_minimums" placeholder="e.g., $15,000/day in ballroom" /></div>
+            <div class="col-6"><label>Liquor License</label><select name="liquor_license"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Bus / Motorcoach Parking</label><input name="bus_parking" /></div>
+            <div class="col-4"><label>Loading Dock / Freight Elevator</label><input name="freight" /></div>
+            <div class="col-4"><label>Security</label><input name="security" /></div>
+            <div class="col-4"><label>ADA Features</label><input name="ada_features" /></div>
+            <div class="col-4"><label>EV Chargers (qty/type)</label><input name="ev_chargers" /></div>
+            <div class="col-4">
+              <label>Childcare via Third-Party? <span class="required">*</span></label>
+              <select name="childcare_third_party" required><option value="">Select…</option><option>Yes – Hotel arranges</option><option>Yes – Referral list only</option><option>No</option></select>
+            </div>
+            <div class="col-12"><label>Childcare Provider Details</label><input name="childcare_notes" placeholder="Providers, certifications, hours, ratios" /></div>
+            <div class="col-4"><label>Union Status</label><select name="union_status"><option value="">Select…</option><option>Union</option><option>Non-Union</option><option>Hybrid</option></select></div>
+            <div class="col-12"><label>Blackout Dates</label><textarea name="blackout_dates" placeholder="List known blackout dates or citywides. "></textarea></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Uploads</legend>
+          <div class="row">
+            <div class="col-6"><label>Hotel Fact Sheet (PDF)</label><input type="file" name="fact_sheet" accept="application/pdf" /></div>
+            <div class="col-6"><label>Floor Plans / Diagrams (PDF, multiple)</label><input type="file" name="floor_plans" accept="application/pdf" multiple /></div>
+            <div class="col-6"><label>AV Rate Card (PDF)</label><input type="file" name="av_rate_card" accept="application/pdf" /></div>
+            <div class="col-6"><label>Banquet Menus (PDF)</label><input type="file" name="banquet_menus" accept="application/pdf" /></div>
+            <div class="col-6"><label>Fire/Life Safety Certificate (PDF)</label><input type="file" name="fls_certificate" accept="application/pdf" /></div>
+            <div class="col-6"><label>Insurance COI (PDF)</label><input type="file" name="coi" accept="application/pdf" /></div>
+            <div class="col-12"><label>Photos (JPG/PNG, multiple)</label><input type="file" name="photos" accept="image/*" multiple /></div>
+          </div>
+        </fieldset>
+
+        <fieldset>
+          <legend>Notes (Optional)</legend>
+          <textarea name="notes" placeholder="Anything else we should know about your hotel. "></textarea>
+        </fieldset>
+      </div>
+
+      <!-- PAGE 4 (Completion) -->
+      <div class="page" data-page="4">
+        <fieldset>
+          <legend>Review & Submit</legend>
+          <p class="muted">Review your hotel profile information below. Click "Submit Profile" when ready.</p>
+          
+          <div id="completionSummary" style="background:#f8f9fa; border:1px solid #e9ecef; border-radius:12px; padding:20px; margin:20px 0;">
+            <h3 style="color:#1f2937; margin-top:0; margin-bottom:16px;">📋 Profile Summary</h3>
+            <div id="summaryContent">
+              <!-- Summary will be populated by JavaScript -->
+            </div>
+          </div>
+          
+          <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:12px; padding:16px; margin:20px 0;">
+            <h4 style="color:#0369a1; margin-top:0; margin-bottom:12px;">⚠️ Important Reminders</h4>
+            <ul style="color:#0369a1; margin:0; padding-left:20px;">
+              <li><strong>NET30 payment terms</strong> are required for all government contracts</li>
+              <li><strong>Purchase Order acceptance</strong> is mandatory</li>
+              <li>Your profile will be reviewed before approval</li>
+              <li>You'll receive email confirmation once submitted</li>
+            </ul>
+          </div>
+        </fieldset>
+      </div>
+
+      <!-- Room template -->
+      <template id="room-template">
+        <div class="item room">
+          <div class="row">
+            <div class="col-4"><label>Room Name <span class="required">*</span></label><input name="room_name[]" required /></div>
+            <div class="col-2"><label>Level</label><input name="room_level[]" /></div>
+            <div class="col-3"><label>Area (sq ft)</label><input type="number" name="room_area_sqft[]" min="0" /></div>
+            <div class="col-3"><label>Area (m²)</label><input type="number" step="0.1" name="room_area_sqm[]" min="0" /></div>
+            <div class="col-3"><label>Dimensions (ft)</label><input name="room_dims_ft[]" placeholder="L x W" /></div>
+            <div class="col-3"><label>Ceiling (ft)</label><input type="number" step="0.1" name="room_ceiling_ft[]" min="0" /></div>
+            <div class="col-2"><label>Pillar-Free</label><select name="room_pillar_free[]"><option></option><option>Yes</option><option>No</option></select></div>
+            <div class="col-2"><label>Natural Light</label><select name="room_natural_light[]"><option></option><option>Yes</option><option>No</option></select></div>
+            <div class="col-2"><label>Divisible</label><select name="room_divisible[]"><option></option><option>Yes</option><option>No</option></select></div>
+            <div class="col-12" style="margin-top: 12px;">
+              <h4 style="color: #374151; margin: 0 0 8px 0; font-size: 0.95rem; font-weight: 600;">Seating Capacity (Optional - Enter only what applies)</h4>
+            </div>
+            <div class="col-3"><label>Banquet Rounds</label><input type="number" name="cap_banquet_rounds[]" min="0" placeholder="e.g., 120" /></div>
+            <div class="col-3"><label>Theater</label><input type="number" name="cap_theater[]" min="0" placeholder="e.g., 200" /></div>
+            <div class="col-3"><label>Classroom</label><input type="number" name="cap_classroom[]" min="0" placeholder="e.g., 80" /></div>
+            <div class="col-3"><label>U-Shape</label><input type="number" name="cap_ushape[]" min="0" placeholder="e.g., 24" /></div>
+            <div class="col-3"><label>Cocktail Rounds</label><input type="number" name="cap_cocktail_rounds[]" min="0" placeholder="e.g., 150" /></div>
+            <div class="col-3"><label>Crescent Rounds</label><input type="number" name="cap_crescent_rounds[]" min="0" placeholder="e.g., 100" /></div>
+            <div class="col-3"><label>Hollow Square</label><input type="number" name="cap_hollow_square[]" min="0" placeholder="e.g., 32" /></div>
+            <div class="col-3"><label>Banquet (Traditional)</label><input type="number" name="cap_banquet[]" min="0" placeholder="e.g., 80" /></div>
+            <div class="col-4"><label>Built-in A/V</label><input name="room_built_in_av[]" /></div>
+            <div class="col-4"><label>Power (closest)</label><input name="room_power[]" /></div>
+            <div class="col-4"><label>Load-in Door</label><input name="room_loadin[]" /></div>
+            <div class="col-12 right"><button class="btn danger remove-room" type="button">Remove Room</button></div>
+          </div>
+        </div>
+      </template>
+
+      <!-- Wizard nav -->
+      <div class="hr"></div>
+      <div class="nav" id="wizardNav">
+        <button type="button" class="btn subtle" id="backBtn">← Back</button>
+        <div class="hint" id="navHint">Submit is enabled only when NET30 and PO acceptance are set to Yes.</div>
+        <div class="hint" id="guestHint" style="display:none; color:#059669; font-weight:500;">Guest Mode: You can navigate freely between pages without filling required fields.</div>
+        <div class="inline">
+          <button type="button" class="btn subtle" id="saveDraftBtn" style="display:none;">Save Draft</button>
+          <button type="button" class="btn" id="nextBtn">Next →</button>
+          <button class="btn" id="submitBtn" type="submit" disabled>
+            <span class="btn-label">Submit Profile</span>
+          </button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- overlays -->
+<div class="submitting" id="submitting"><div class="panel"><div class="loader"></div><div><div style="font-weight:700;color:#0b2545">Working…</div><div class="hint">Please wait. Don't close this page.</div></div></div></div>
+<div class="toast" id="toast"></div>
+<div class="submitting" id="thanks"><div class="panel" style="flex-direction:column;align-items:flex-start">
+  <div style="font-size:1.1rem;font-weight:700;color:#0b2545;margin-bottom:6px">Thank you — profile submitted!</div>
+  <div id="thanksId" class="hint" style="margin-bottom:10px"></div>
+  <div><button class="btn" id="submitAnother">Submit Another Hotel</button></div>
+</div></div>
+
+<script>
+  // Route prefix for your localRouter
+  const API_BASE = '';
+
+  const form = document.getElementById('hotel-form');
+  const pages = Array.from(document.querySelectorAll('.page'));
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const backBtn = document.getElementById('backBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const navHint = document.getElementById('navHint');
+
+  const addRoomBtn = document.getElementById('addRoomBtn');
+  const rooms = document.getElementById('rooms');
+  const isExtendedStay = document.getElementById('is_extended_stay');
+  const acceptsNet30 = document.getElementById('accepts_net30');
+  const hasOutdoorFacility = document.getElementById('has_outdoor_facility');
+  const isAaaRated = document.getElementById('is_aaa_rated');
+  const hotelLocationType = document.getElementById('hotel_location_type');
+  const saveDraftBtn = document.getElementById('saveDraftBtn');
+  const loadDraftBtn = document.getElementById('loadDraftBtn');
+  const discardDraftBtn = document.getElementById('discardDraftBtn');
+  const draftStatus = document.getElementById('draftStatus');
+  const draftInfo = document.getElementById('draftInfo');
+
+  const submitting = document.getElementById('submitting');
+  const thanks = document.getElementById('thanks');
+  const thanksId = document.getElementById('thanksId');
+  const submitAnother = document.getElementById('submitAnother');
+  const toast = document.getElementById('toast');
+
+  const btnAutofill = document.getElementById('btnAutofill');
+  const autofillFile = document.getElementById('autofillFile');
+
+  const startRadios = Array.from(document.querySelectorAll('input[name="start_mode"]'));
+  const signupBox = document.getElementById('signupBox');
+  const btnSignup = document.getElementById('btnSignup');
+
+  let current = 0, submittingFlag = false, signedIn = false, currentUserId = null, hasDraft = false, autoSaveTimeout = null;
+
+  // Check if user is continuing from dashboard (approved user) or editing
+  async function checkContinueMode() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const continueMode = urlParams.get('continue');
+    const editMode = urlParams.get('mode');
+    const signedInParam = urlParams.get('signedIn');
+    const sessionId = localStorage.getItem('fedevent_session');
+    
+    if ((continueMode === 'true' || editMode === 'edit' || signedInParam === 'true') && sessionId) {
+      // User is approved and continuing registration - skip to page 2
+      signedIn = true;
+      
+      // Get actual user ID from stored user data
+      const userData = localStorage.getItem('fedevent_user');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          currentUserId = user.id || user.userId || user.fedevent_account_number;
+          console.log('Found user ID for continue mode:', currentUserId);
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+          currentUserId = null;
+        }
+      } else {
+        currentUserId = null;
+      }
+      
+      // Don't set step here - let loadExistingDraft handle it
+      
+      // Pre-populate user info if available
+      const hotelData = localStorage.getItem('fedevent_hotel');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          let displayText = user.username || 'User';
+          if (user.fedevent_account_number) {
+            displayText += ` (${user.fedevent_account_number})`;
+          }
+          const userInfoDiv = document.getElementById('userInfo');
+          const userDisplayName = document.getElementById('userDisplayName');
+          if (userDisplayName) {
+            userDisplayName.textContent = displayText;
+          }
+          if (userInfoDiv) {
+            userInfoDiv.style.display = 'block';
+          }
+        } catch (e) {
+          console.error('Error parsing user data:', e);
+          const userInfoDiv = document.getElementById('userInfo');
+          const userDisplayName = document.getElementById('userDisplayName');
+          if (userDisplayName) userDisplayName.textContent = 'User';
+          if (userInfoDiv) userInfoDiv.style.display = 'block';
+        }
+      } else if (hotelData) {
+        try {
+          const hotel = JSON.parse(hotelData);
+          const userInfoDiv = document.getElementById('userInfo');
+          const userDisplayName = document.getElementById('userDisplayName');
+          if (userDisplayName) {
+            userDisplayName.textContent = `${hotel.name || ''} (${hotel.fedevent_account_number || 'TBD'})`;
+          }
+          if (userInfoDiv) {
+            userInfoDiv.style.display = 'block';
+          }
+        } catch (e) {
+          console.error('Error parsing hotel data:', e);
+          const userInfoDiv = document.getElementById('userInfo');
+          const userDisplayName = document.getElementById('userDisplayName');
+          if (userDisplayName) userDisplayName.textContent = '';
+          if (userInfoDiv) userInfoDiv.style.display = 'block';
+        }
+      } else {
+        const userInfoDiv = document.getElementById('userInfo');
+        const userDisplayName = document.getElementById('userDisplayName');
+        if (userDisplayName) userDisplayName.textContent = 'Continue Registration';
+        if (userInfoDiv) userInfoDiv.style.display = 'block';
+      }
+      
+      // Removed Start step UI (account/guest and policy acceptance)
+      const signupBox = document.getElementById('signupBox');
+      if (signupBox) signupBox.style.display = 'none';
+      const policyAcceptance = document.getElementById('policyAcceptance');
+      if (policyAcceptance) policyAcceptance.style.display = 'none';
+      
+      // Show auto-save info
+      const autoSaveInfo = document.getElementById('autoSaveInfo');
+      if (autoSaveInfo) autoSaveInfo.style.display = 'block';
+      
+      // Show loading message
+      showToast('🔄 Loading your saved progress...');
+      
+      // Load any existing draft for this user first
+      await loadExistingDraft();
+      
+      // If in edit mode, load existing hotel data
+      if (editMode === 'edit') {
+        await loadExistingHotelData();
+      }
+      
+      // Update navigation
+      updateWizardNav();
+      return true;
+    }
+    return false;
+  }
+  
+  // Load existing hotel data for edit mode
+  async function loadExistingHotelData() {
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) return;
+      
+      const response = await fetch('/api/hotel/profile', {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        if (result.ok && result.hotel) {
+          // Pre-populate form fields with existing hotel data
+          populateHotelForm(result.hotel);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading hotel data:', error);
+    }
+  }
+  
+  // Populate hotel form with existing data
+  function populateHotelForm(hotel) {
+    // Hotel basic information
+    if (hotel.name) document.getElementById('hotelName').value = hotel.name;
+    if (hotel.email) document.getElementById('hotelEmail').value = hotel.email;
+    if (hotel.phone) document.getElementById('hotelPhone').value = hotel.phone;
+    if (hotel.website) document.getElementById('hotelWebsite').value = hotel.website;
+    if (hotel.address) document.getElementById('hotelAddress').value = hotel.address;
+    if (hotel.city) document.getElementById('hotelCity').value = hotel.city;
+    if (hotel.state) document.getElementById('hotelState').value = hotel.state;
+    if (hotel.zip) document.getElementById('hotelZip').value = hotel.zip;
+    if (hotel.country) document.getElementById('hotelCountry').value = hotel.country;
+    
+    // Hotel details
+    if (hotel.rooms_total) document.getElementById('totalRooms').value = hotel.rooms_total;
+    if (hotel.rooms_suites) document.getElementById('suites').value = hotel.rooms_suites;
+    if (hotel.rooms_double) document.getElementById('doubleRooms').value = hotel.rooms_double;
+    if (hotel.rooms_single) document.getElementById('singleRooms').value = hotel.rooms_single;
+    if (hotel.rooms_accessible) document.getElementById('accessibleRooms').value = hotel.rooms_accessible;
+    
+    // Amenities
+    if (hotel.amenities) {
+      const amenities = JSON.parse(hotel.amenities);
+      amenities.forEach(amenity => {
+        const checkbox = document.getElementById(`amenity_${amenity}`);
+        if (checkbox) checkbox.checked = true;
+      });
+    }
+    
+    // Update the page title to indicate edit mode
+    const titleElement = document.querySelector('h1');
+    if (titleElement) {
+      titleElement.textContent = 'Update Hotel Registration';
+    }
+  }
+  
+  // Load existing draft for continuing users
+  async function loadExistingDraft() {
+    try {
+      // First try to load from server using session
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) {
+        console.log('No session available for draft loading');
+        // For continue mode without session, start at page 2
+        current = 2;
+        setActiveStep(2);
+        return;
+      }
+      
+      // Try to load draft with or without user ID
+      const url = currentUserId ? `/api/draft/load/${currentUserId}` : '/api/draft/load';
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      const result = await response.json();
+      
+      if (result.ok && result.draft) {
+        console.log('Loading server draft for user:', currentUserId);
+        setFormData(result.draft.formData);
+        if (result.draft.currentPage !== undefined) {
+          current = result.draft.currentPage;
+          setActiveStep(current);
+        }
+        hasDraft = true;
+        updateDraftStatus();
+        showToast('✅ Previous draft loaded successfully');
+        return;
+      } else {
+        console.log('No server draft found for user:', currentUserId);
+      }
+      
+      // Fallback to localStorage
+      const localDraft = localStorage.getItem('hotel_registration_draft');
+      if (localDraft) {
+        const draftData = JSON.parse(localDraft);
+        if (draftData.userId === currentUserId) {
+          console.log('Loading local draft for user:', currentUserId);
+          setFormData(draftData.formData);
+          if (draftData.currentStep !== undefined) {
+            current = draftData.currentStep;
+            setActiveStep(current);
+          }
+          hasDraft = true;
+          updateDraftStatus();
+          showToast('✅ Previous draft loaded from local storage');
+          return;
+        }
+      }
+      
+      // If no draft found, start at page 2 (Hotel Information) for continue mode
+      // since user has already signed up and is continuing their registration
+      console.log('No existing draft found, starting at page 2 for continue mode');
+      current = 2;
+      setActiveStep(2);
+    } catch (error) {
+      console.error('Error loading existing draft:', error);
+    }
+  }
+  
+  // Logout function
+  function logout() {
+    localStorage.removeItem('fedevent_session');
+    localStorage.removeItem('fedevent_user');
+    localStorage.removeItem('fedevent_hotel');
+    window.location.href = 'hotel-login.html';
+  }
+  
+  // Handle Hotel Portal navigation
+  function handleHotelPortalClick() {
+    const sessionId = localStorage.getItem('fedevent_session');
+    if (sessionId) {
+      // User is signed in, go to dashboard
+      window.location.href = '/hotel-dashboard.html';
+    } else {
+      // User is not signed in, go to login
+      window.location.href = '/hotel-login.html';
+    }
+    trackNavigationClick('Hotel Portal');
+  }
+  
+  // Enhanced save draft with auto-save
+  function saveDraft() {
+    if (!signedIn) {
+      console.log('Auto-save skipped: user not signed in');
+      return;
+    }
+    
+    try {
+      const formData = getFormData();
+      const draftData = {
+        formData: formData,
+        currentStep: current,
+        timestamp: new Date().toISOString(),
+        userId: currentUserId
+      };
+      
+      // Save to localStorage first (always works)
+      localStorage.setItem('hotel_registration_draft', JSON.stringify(draftData));
+      hasDraft = true;
+      updateDraftStatus();
+      
+      // Try to save to server if user is authenticated
+      if (signedIn) {
+        saveDraftToServer(formData, current);
+      }
+      
+      // Only show success toast for manual saves, not auto-saves
+      if (arguments[0] !== 'auto') {
+        showToast('✅ Draft saved successfully');
+      }
+      
+      console.log('Draft saved successfully at', new Date().toLocaleTimeString());
+    } catch (error) {
+      console.error('Draft save error:', error);
+      if (arguments[0] !== 'auto') {
+        showToast('❌ Failed to save draft: ' + error.message);
+      }
+    }
+  }
+  
+  // Save draft to server
+  async function saveDraftToServer(formData, currentPage) {
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) {
+        console.warn('No session ID available for draft save');
+        return;
+      }
+      
+      const response = await fetch('/api/draft/save', {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionId}`
+        },
+        body: JSON.stringify({
+          userId: currentUserId || null,
+          formData: formData,
+          currentPage: currentPage
+        })
+      });
+      
+      if (!response.ok) {
+        console.warn('Server draft save failed, but local save succeeded');
+      } else {
+        console.log('Draft saved to server successfully');
+      }
+    } catch (error) {
+      console.warn('Server draft save error:', error);
+    }
+  }
+  
+  // Auto-save every 2 minutes
+  function startAutoSave() {
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+    autoSaveTimeout = setTimeout(() => {
+      if (signedIn && current > 0) {
+        try {
+          saveDraft('auto');
+        } catch (error) {
+          console.error('Auto-save error:', error);
+          // Don't show toast for auto-save errors to avoid spam
+        }
+        startAutoSave(); // Schedule next auto-save
+      }
+    }, 120000); // 2 minutes (120 seconds)
+  }
+  
+  // Update draft status display
+  function updateDraftStatus() {
+    if (!draftStatus || !draftInfo) return;
+    
+    if (hasDraft) {
+      try {
+        const draftData = JSON.parse(localStorage.getItem('hotel_registration_draft') || '{}');
+        if (draftData.timestamp) {
+          const savedTime = new Date(draftData.timestamp).toLocaleString();
+          draftInfo.textContent = `Last saved: ${savedTime}`;
+          draftStatus.style.display = 'block';
+        }
+      } catch (e) {
+        console.error('Error reading draft data:', e);
+      }
+    } else {
+      draftStatus.style.display = 'none';
+    }
+  }
+  
+  // Load draft
+  function loadDraft() {
+    try {
+      const draftData = JSON.parse(localStorage.getItem('hotel_registration_draft') || '{}');
+      if (draftData.formData) {
+        setFormData(draftData.formData);
+        if (draftData.currentStep !== undefined) {
+          current = draftData.currentStep;
+          setActiveStep(current);
+        }
+        showToast('✅ Draft loaded successfully');
+        updateDraftStatus();
+      }
+    } catch (error) {
+      showToast('❌ Failed to load draft: ' + error.message);
+      console.error('Draft load error:', error);
+    }
+  }
+
+  function showToast(msg){ toast.textContent = msg; toast.style.display = 'block'; setTimeout(()=>toast.style.display='none', 2600); }
+  function localLogout(){
+    try{
+      localStorage.removeItem('fedevent_session');
+      localStorage.removeItem('fedevent_user');
+      localStorage.removeItem('fedevent_hotel');
+    }catch(e){}
+    window.location.href = '/hotel-login.html';
+  }
+  function updateWizardNav(){
+    const last = pages.length - 1;
+    nextBtn.style.display   = (current < last) ? 'inline-block' : 'none';
+    submitBtn.style.display = (current === last) ? 'inline-block' : 'none';
+    backBtn.disabled        = (current === 0);
+    navHint.style.visibility= (current === last) ? 'visible' : 'hidden';
+    
+    // Guest mode removed
+    const guestHint = document.getElementById('guestHint');
+    if (guestHint) guestHint.style.display = 'none';
+    
+    // Show save draft button for signed-in users (except on first page)
+    if (saveDraftBtn) {
+      saveDraftBtn.style.display = (signedIn && current > 0) ? 'inline-block' : 'none';
+    }
+    
+    nextBtn.disabled = false;
+    
+    // Update progress indicator
+    updateProgressIndicator();
+  }
+  
+  function updateProgressIndicator() {
+    const steps = document.querySelectorAll('.step');
+    steps.forEach((step, index) => {
+      const stepElement = step;
+      const isCompleted = index < current;
+      const isCurrent = index === current;
+      
+      if (isCompleted) {
+        stepElement.classList.add('completed');
+        stepElement.classList.remove('active');
+        const dot = stepElement.querySelector('.dot');
+        if (dot) {
+          dot.innerHTML = '✓';
+          dot.style.background = '#10b981';
+          dot.style.color = '#fff';
+        }
+      } else if (isCurrent) {
+        stepElement.classList.add('active');
+        stepElement.classList.remove('completed');
+        const dot = stepElement.querySelector('.dot');
+        if (dot) {
+          dot.innerHTML = index + 1;
+          dot.style.background = '#0a58ca';
+          dot.style.color = '#fff';
+        }
+      } else {
+        stepElement.classList.remove('active', 'completed');
+        const dot = stepElement.querySelector('.dot');
+        if (dot) {
+          dot.innerHTML = index + 1;
+          dot.style.background = '#eef4ff';
+          dot.style.color = '#0a58ca';
+        }
+      }
+    });
+  }
+  function setActiveStep(i){
+    current = i;
+    pages.forEach((p,idx)=>p.classList.toggle('active', idx===current));
+    steps.forEach((s,idx)=>s.classList.toggle('active', idx===current));
+    updateWizardNav(); 
+    
+    // Generate completion summary when reaching the final page
+    if (i === 4) {
+      generateCompletionSummary();
+    }
+    
+    window.scrollTo(0,0);
+  }
+  
+  function generateCompletionSummary() {
+    const summaryContent = document.getElementById('summaryContent');
+    if (!summaryContent) return;
+    
+    const data = getFormData();
+    
+    const summary = `
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:20px;">
+        <div>
+          <h4 style="color:#1f2937; margin:0 0 8px 0; font-size:1rem;">🏨 Hotel Information</h4>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Name:</strong> ${data.hotel_name || 'Not provided'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Location:</strong> ${data.city || ''}, ${data.state || ''} ${data.country || ''}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Brand:</strong> ${data.brand || 'Not specified'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Website:</strong> ${data.website || 'Not provided'}</p>
+        </div>
+        
+        <div>
+          <h4 style="color:#1f2937; margin:0 0 8px 0; font-size:1rem;">👥 Key Contacts</h4>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Sales Director:</strong> ${data.sales_director_name || 'Not provided'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>A/R Contact:</strong> ${data.ar_name || 'Not provided'}</p>
+          ${data.csm_name ? `<p style="margin:4px 0; color:#6b7280;"><strong>CSM:</strong> ${data.csm_name}</p>` : ''}
+        </div>
+        
+        <div>
+          <h4 style="color:#1f2937; margin:0 0 8px 0; font-size:1rem;">🏠 Room Inventory</h4>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Total Rooms:</strong> ${data.total_rooms || 'Not specified'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>King Rooms:</strong> ${data.king_rooms || 'Not specified'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Double/Queen:</strong> ${data.double_rooms || 'Not specified'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Suites:</strong> ${data.suites || 'Not specified'}</p>
+        </div>
+        
+        <div>
+          <h4 style="color:#1f2937; margin:0 0 8px 0; font-size:1rem;">✅ Compliance Status</h4>
+          <p style="margin:4px 0; color:#6b7280;"><strong>NET30:</strong> ${data.accepts_net30 || 'Not specified'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Purchase Orders:</strong> ${data.accepts_po || 'Not specified'}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>AAA Rated:</strong> ${data.is_aaa_rated || 'Not specified'}</p>
+          ${data.is_aaa_rated === 'Yes' ? `<p style="margin:4px 0; color:#6b7280;"><strong>AAA Rating:</strong> ${data.aaa_diamond_rating || 'Not specified'}</p>` : ''}
+        </div>
+        
+        <div>
+          <h4 style="color:#1f2937; margin:0 0 8px 0; font-size:1rem;">📊 Meeting Spaces</h4>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Meeting Rooms:</strong> ${document.querySelectorAll('.room').length}</p>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Extended Stay:</strong> ${data.is_extended_stay || 'Not specified'}</p>
+        </div>
+        
+        <div>
+          <h4 style="color:#1f2937; margin:0 0 8px 0; font-size:1rem;">📎 File Uploads</h4>
+          <p style="margin:4px 0; color:#6b7280;"><strong>Files Attached:</strong> ${getFileCount()} files</p>
+        </div>
+      </div>
+    `;
+    
+    summaryContent.innerHTML = summary;
+  }
+  
+  function getFileCount() {
+    let count = 0;
+    const fileInputs = document.querySelectorAll('input[type="file"]');
+    fileInputs.forEach(input => {
+      if (input.files && input.files.length > 0) {
+        count += input.files.length;
+      }
+    });
+    return count;
+  }
+  // Clickable roadmap
+  steps.forEach((stepEl, idx) => {
+    stepEl.style.cursor = 'pointer';
+    stepEl.addEventListener('click', () => {
+      if (idx > current && !validateCurrentPage()) return;
+      setActiveStep(idx);
+    });
+  });
+  function validateCurrentPage(){
+    
+    // Only validate visible required fields for signed-in users
+    const req = pages[current].querySelectorAll('[required]');
+    for (let i=0;i<req.length;i++){ 
+      const field = req[i];
+      // Skip validation for fields that are in hidden sections
+      const isHidden = field.closest('[style*="display: none"]') || field.closest('[style*="display:none"]');
+      if (!isHidden && !field.checkValidity()){ 
+        field.reportValidity(); 
+        return false; 
+      } 
+    }
+    
+    // Step 0 removed (pre-qualification/policies handled during signup)
+    
+    // Enhanced validation for page 1 (Company Information) - only for signed-in users
+    if (current === 1 && !isGuestMode) {
+      if (!validateCompanyInfo()) return false;
+    }
+    
+    // Enhanced validation for page 2 (Rooms & Meeting Space) - only for signed-in users
+    if (current === 2 && !isGuestMode) {
+      if (!validateRoomsAndSpaces()) return false;
+    }
+    
+    // Enhanced validation for page 3 (Terms & Uploads) - only for signed-in users
+    if (current === 3 && !isGuestMode) {
+      if (!validateTermsAndUploads()) return false;
+    }
+    
+    return true;
+  }
+  
+  function validateCompanyInfo() {
+    const hotelName = document.querySelector('[name="hotel_name"]');
+    const address = document.querySelector('[name="address"]');
+    const city = document.querySelector('[name="city"]');
+    const country = document.querySelector('[name="country"]');
+    const salesEmail = document.querySelector('[name="sales_director_email"]');
+    const arEmail = document.querySelector('[name="ar_email"]');
+    
+    // Check for valid email formats
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (salesEmail && salesEmail.value && !emailRegex.test(salesEmail.value)) {
+      alert('Please enter a valid sales director email address.');
+      salesEmail.focus();
+      return false;
+    }
+    
+    if (arEmail && arEmail.value && !emailRegex.test(arEmail.value)) {
+      alert('Please enter a valid A/R contact email address.');
+      arEmail.focus();
+      return false;
+    }
+    
+    // Check website format if provided
+    const website = document.querySelector('[name="website"]');
+    if (website && website.value && website.value.trim() !== '') {
+      const urlRegex = /^https?:\/\/.+/;
+      if (!urlRegex.test(website.value)) {
+        alert('Please enter a valid website URL starting with http:// or https://');
+        website.focus();
+        return false;
+      }
+    }
+    
+    return true;
+  }
+  
+  function validateRoomsAndSpaces() {
+    // Validate room numbers are positive integers
+    const roomFields = ['total_rooms', 'king_rooms', 'double_rooms', 'suites', 'ada_rooms', 'max_group_block'];
+    
+    for (const fieldName of roomFields) {
+      const field = document.querySelector(`[name="${fieldName}"]`);
+      if (field && field.value && (isNaN(field.value) || parseInt(field.value) < 0)) {
+        alert(`Please enter a valid number for ${fieldName.replace(/_/g, ' ')}.`);
+        field.focus();
+        return false;
+      }
+    }
+    
+    // Meeting room is optional during progression; encourage but do not block
+    
+    return true;
+  }
+  
+  function validateTermsAndUploads() {
+    // Check if terms are acknowledged
+    const termsAck = document.getElementById('terms_ack');
+    if (!termsAck.checked) {
+      alert('You must acknowledge the NET30 and PO requirements to proceed.');
+      termsAck.focus();
+      return false;
+    }
+    
+    // Bank account confirmation checks
+    const ach = document.getElementById('ach_section');
+    if (ach && ach.style.display !== 'none') {
+      const a1 = (document.getElementById('ach_account_number')||{}).value?.trim() || '';
+      const a2 = (document.getElementById('ach_account_number_confirm')||{}).value?.trim() || '';
+      const achMatchMsg = document.getElementById('ach_account_match');
+      if (a1 || a2) {
+        if (!a1 || !a2 || a1 !== a2) {
+          if (achMatchMsg) { achMatchMsg.style.display='block'; achMatchMsg.style.color='#b91c1c'; achMatchMsg.textContent='Account numbers do not match.'; }
+          alert('ACH account numbers do not match. Please re-enter both fields.');
+          return false;
+        } else {
+          if (achMatchMsg) { achMatchMsg.style.display='block'; achMatchMsg.style.color='#065f46'; achMatchMsg.textContent='Account numbers match.'; }
+        }
+      }
+    }
+    const wire = document.getElementById('wire_section');
+    if (wire && wire.style.display !== 'none') {
+      const w1 = (document.getElementById('wire_account_number')||{}).value?.trim() || '';
+      const w2 = (document.getElementById('wire_account_number_confirm')||{}).value?.trim() || '';
+      const wireMatchMsg = document.getElementById('wire_account_match');
+      if (w1 || w2) {
+        if (!w1 || !w2 || w1 !== w2) {
+          if (wireMatchMsg) { wireMatchMsg.style.display='block'; wireMatchMsg.style.color='#b91c1c'; wireMatchMsg.textContent='Account numbers do not match.'; }
+          alert('Wire account numbers do not match. Please re-enter both fields.');
+          return false;
+        } else {
+          if (wireMatchMsg) { wireMatchMsg.style.display='block'; wireMatchMsg.style.color='#065f46'; wireMatchMsg.textContent='Account numbers match.'; }
+        }
+      }
+    }
+    
+    // Validate file uploads (optional but check formats if provided)
+    const fileInputs = pages[current].querySelectorAll('input[type="file"]');
+    for (const input of fileInputs) {
+      if (input.files && input.files.length > 0) {
+        for (const file of input.files) {
+          // Check file size (max 10MB)
+          if (file.size > 10 * 1024 * 1024) {
+            alert(`File "${file.name}" is too large. Maximum file size is 10MB.`);
+            return false;
+          }
+        }
+      }
+    }
+    
+    return true;
+  }
+  function updateSubmitState(){
+    const poEl = document.querySelector('[name="accepts_po"]');
+    const net30Ok = !acceptsNet30 || acceptsNet30.value === 'Yes';
+    const poOk = !poEl || poEl.value === 'Yes';
+    submitBtn.disabled = !(net30Ok && poOk);
+  }
+  function toggleES(){
+    const sec = document.getElementById('extendedStaySection');
+    const on = (isExtendedStay && isExtendedStay.value === 'Yes');
+    if (sec) sec.style.display = on ? '' : 'none';
+    if (sec) sec.querySelectorAll('[data-es-required]').forEach(el => el.required = on);
+  }
+  function toggleAaaDiamond(){
+    const sec = document.getElementById('aaa_diamond_section');
+    const ratingSelect = document.getElementById('aaa_diamond_rating');
+    const on = (isAaaRated && isAaaRated.value === 'Yes');
+    if (sec) sec.style.display = on ? '' : 'none';
+    if (ratingSelect) ratingSelect.required = on;
+  }
+  
+  function toggleBankSections(){
+    const achSection = document.getElementById('ach_section');
+    const wireSection = document.getElementById('wire_section');
+    const locationType = hotelLocationType ? hotelLocationType.value : '';
+    
+    // Hide both sections initially
+    if (achSection) achSection.style.display = 'none';
+    if (wireSection) wireSection.style.display = 'none';
+    
+    // Show appropriate section based on selection
+    if (locationType === 'US') {
+      if (achSection) achSection.style.display = '';
+      // Set required fields for ACH
+      const achRequiredFields = ['ach_bank_account_name', 'ach_routing_number', 'ach_account_number', 'ach_bank_name', 'ach_ar_email'];
+      achRequiredFields.forEach(fieldName => {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) field.required = true;
+      });
+      // Remove required from wire transfer fields
+      const wireFields = ['wire_bank_account_name', 'wire_swift_code', 'wire_account_number', 'wire_bank_name', 'wire_ar_email'];
+      wireFields.forEach(fieldName => {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) field.required = false;
+      });
+    } else if (locationType === 'International') {
+      if (wireSection) wireSection.style.display = '';
+      // Set required fields for Wire Transfer
+      const wireRequiredFields = ['wire_bank_account_name', 'wire_swift_code', 'wire_account_number', 'wire_bank_name', 'wire_ar_email'];
+      wireRequiredFields.forEach(fieldName => {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) field.required = true;
+      });
+      // Remove required from ACH fields
+      const achFields = ['ach_bank_account_name', 'ach_routing_number', 'ach_account_number', 'ach_bank_name', 'ach_ar_email'];
+      achFields.forEach(fieldName => {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) field.required = false;
+      });
+    } else {
+      // No selection - remove required from all bank fields
+      const allBankFields = ['ach_bank_account_name', 'ach_routing_number', 'ach_account_number', 'ach_bank_name', 'ach_ar_email', 
+                            'wire_bank_account_name', 'wire_swift_code', 'wire_account_number', 'wire_bank_name', 'wire_ar_email'];
+      allBankFields.forEach(fieldName => {
+        const field = document.querySelector(`[name="${fieldName}"]`);
+        if (field) field.required = false;
+      });
+    }
+  }
+  function checkOutdoorFacility(){
+    if (hasOutdoorFacility && hasOutdoorFacility.value === 'Yes') {
+      const message = 'We are unable to accept your hotel if you have outdoor facilities without secure gates. If you would like us to review your location, please reach out to us directly.';
+      alert(message);
+      return false;
+    }
+    return true;
+  }
+  
+  function validatePolicies(){
+    // Removed - policy confirmations are handled on the dedicated signup page
+    return true;
+  }
+  
+  function getFormData() {
+    const formData = new FormData(form);
+    const data = {};
+    for (const [key, value] of formData.entries()) {
+      if (data[key]) {
+        if (Array.isArray(data[key])) {
+          data[key].push(value);
+        } else {
+          data[key] = [data[key], value];
+        }
+      } else {
+        data[key] = value;
+      }
+    }
+    return data;
+  }
+  
+  function setFormData(data) {
+    // Clear existing form data
+    form.reset();
+    
+    // Set form values
+    for (const [key, value] of Object.entries(data)) {
+      if (key === 'form_type') continue; // Skip hidden form type
+      
+      const elements = form.querySelectorAll(`[name="${key}"]`);
+      elements.forEach((el, index) => {
+        if (Array.isArray(value)) {
+          if (index < value.length) {
+            if (el.type === 'checkbox' || el.type === 'radio') {
+              el.checked = el.value === value[index];
+            } else {
+              el.value = value[index];
+            }
+          }
+        } else {
+          if (el.type === 'checkbox' || el.type === 'radio') {
+            el.checked = el.value === value;
+          } else {
+            el.value = value;
+          }
+        }
+      });
+    }
+    
+    // Rebuild meeting rooms if they exist
+    if (data.room_name && Array.isArray(data.room_name)) {
+      rooms.innerHTML = '';
+      data.room_name.forEach((_, index) => {
+        if (addRoomBtn) addRoomBtn.click();
+        const block = rooms.lastElementChild;
+        if (block) {
+          const setVal = (selector, value) => {
+            const el = block.querySelector(selector);
+            if (el && value != null && value !== '') el.value = String(value);
+          };
+          setVal('input[name="room_name[]"]', data.room_name[index]);
+          setVal('input[name="room_level[]"]', data.room_level && data.room_level[index]);
+          setVal('input[name="room_area_sqft[]"]', data.room_area_sqft && data.room_area_sqft[index]);
+          setVal('input[name="room_area_sqm[]"]', data.room_area_sqm && data.room_area_sqm[index]);
+          setVal('input[name="room_dims_ft[]"]', data.room_dims_ft && data.room_dims_ft[index]);
+          setVal('input[name="room_ceiling_ft[]"]', data.room_ceiling_ft && data.room_ceiling_ft[index]);
+          setVal('select[name="room_pillar_free[]"]', data.room_pillar_free && data.room_pillar_free[index]);
+          setVal('select[name="room_natural_light[]"]', data.room_natural_light && data.room_natural_light[index]);
+          setVal('select[name="room_divisible[]"]', data.room_divisible && data.room_divisible[index]);
+          setVal('input[name="cap_theater[]"]', data.cap_theater && data.cap_theater[index]);
+          setVal('input[name="cap_classroom[]"]', data.cap_classroom && data.cap_classroom[index]);
+          setVal('input[name="cap_banquet[]"]', data.cap_banquet && data.cap_banquet[index]);
+          setVal('input[name="cap_ushape[]"]', data.cap_ushape && data.cap_ushape[index]);
+          setVal('input[name="cap_banquet_rounds[]"]', data.cap_banquet_rounds && data.cap_banquet_rounds[index]);
+          setVal('input[name="cap_cocktail_rounds[]"]', data.cap_cocktail_rounds && data.cap_cocktail_rounds[index]);
+          setVal('input[name="cap_crescent_rounds[]"]', data.cap_crescent_rounds && data.cap_crescent_rounds[index]);
+          setVal('input[name="cap_hollow_square[]"]', data.cap_hollow_square && data.cap_hollow_square[index]);
+          setVal('input[name="room_built_in_av[]"]', data.room_built_in_av && data.room_built_in_av[index]);
+          setVal('input[name="room_power[]"]', data.room_power && data.room_power[index]);
+          setVal('input[name="room_loadin[]"]', data.room_loadin && data.room_loadin[index]);
+        }
+      });
+    }
+    
+    // Update form state
+    toggleES();
+    toggleAaaDiamond();
+    toggleBankSections();
+    updateSubmitState();
+  }
+  
+  // This function is handled by the enhanced saveDraft function above
+  
+  async function loadDraft() {
+    if (!currentUserId) return;
+    
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) {
+        console.warn('No session ID available for draft load');
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/api/draft/load/${currentUserId}`, {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      const result = await response.json();
+      
+      if (result.ok && result.draft) {
+        setFormData(result.draft.formData);
+        setActiveStep(result.draft.currentPage);
+        showToast('Draft loaded successfully');
+        hasDraft = false;
+        draftStatus.style.display = 'none';
+      } else {
+        showToast('No draft found');
+      }
+    } catch (error) {
+      console.error('Load draft error:', error);
+      showToast('Failed to load draft');
+    }
+  }
+  
+  async function deleteDraft() {
+    if (!currentUserId) return;
+    
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) {
+        console.warn('No session ID available for draft delete');
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/api/draft/delete/${currentUserId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      
+      const result = await response.json();
+      if (result.ok) {
+        showToast('Draft deleted');
+        hasDraft = false;
+        draftStatus.style.display = 'none';
+      } else {
+        showToast('Failed to delete draft');
+      }
+    } catch (error) {
+      console.error('Delete draft error:', error);
+      showToast('Failed to delete draft');
+    }
+  }
+  
+  async function checkForDraft() {
+    if (!currentUserId) return;
+    
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) {
+        console.warn('No session ID available for draft check');
+        return;
+      }
+      
+      const response = await fetch(`${API_BASE}/api/draft/load/${currentUserId}`, {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      const result = await response.json();
+      
+      if (result.ok && result.draft) {
+        hasDraft = true;
+        draftStatus.style.display = 'block';
+        const updatedAt = new Date(result.draft.updatedAt).toLocaleString();
+        draftInfo.textContent = `Last saved: ${updatedAt}`;
+      }
+    } catch (error) {
+      console.error('Check draft error:', error);
+    }
+  }
+  
+  function scheduleAutoSave() {
+    if (!currentUserId) return;
+    
+    if (autoSaveTimeout) {
+      clearTimeout(autoSaveTimeout);
+    }
+    
+    autoSaveTimeout = setTimeout(() => {
+      saveDraft();
+    }, 5000); // Auto-save after 5 seconds of inactivity
+  }
+
+  backBtn.addEventListener('click', ()=>{ if(current>0){ setActiveStep(current-1); } });
+  nextBtn.addEventListener('click', ()=>{ if (!validateCurrentPage()) return; if (current < pages.length-1){ setActiveStep(current+1); } });
+  if (addRoomBtn) addRoomBtn.addEventListener('click', ()=>{
+    const tpl = document.getElementById('room-template').content.cloneNode(true);
+    const block = tpl.querySelector('.room');
+    block.querySelector('.remove-room').addEventListener('click', ()=>block.remove());
+    rooms.appendChild(tpl);
+  });
+  if (isExtendedStay) isExtendedStay.addEventListener('change', toggleES);
+  if (acceptsNet30) acceptsNet30.addEventListener('change', updateSubmitState);
+  const acceptsPoEl = document.querySelector('[name="accepts_po"]');
+  if (acceptsPoEl) acceptsPoEl.addEventListener('change', updateSubmitState);
+  if (hasOutdoorFacility) hasOutdoorFacility.addEventListener('change', checkOutdoorFacility);
+  if (isAaaRated) isAaaRated.addEventListener('change', toggleAaaDiamond);
+  if (hotelLocationType) hotelLocationType.addEventListener('change', toggleBankSections);
+  if (saveDraftBtn) saveDraftBtn.addEventListener('click', saveDraft);
+
+  // A/V Services toggle functionality
+  const avInHouse = document.getElementById('av_in_house');
+  const avOutsideAllowed = document.getElementById('av_outside_allowed');
+  const avProviderSection = document.getElementById('av_provider_section');
+  const avOutsideFeesSection = document.getElementById('av_outside_fees_section');
+
+  function toggleAVSections() {
+    // Show/hide A/V provider name section
+    if (avInHouse && avProviderSection) {
+      avProviderSection.style.display = (avInHouse.value === 'Yes') ? 'block' : 'none';
+    }
+    
+    // Show/hide outside A/V fees section
+    if (avOutsideAllowed && avOutsideFeesSection) {
+      avOutsideFeesSection.style.display = (avOutsideAllowed.value === 'Yes') ? 'block' : 'none';
+    }
+  }
+
+  if (avInHouse) avInHouse.addEventListener('change', toggleAVSections);
+  if (avOutsideAllowed) avOutsideAllowed.addEventListener('change', toggleAVSections);
+  if (loadDraftBtn) loadDraftBtn.addEventListener('click', loadDraft);
+  if (discardDraftBtn) discardDraftBtn.addEventListener('click', deleteDraft);
+
+  // Copy company information to bank account sections
+  function copyHotelNameToBank(targetFieldId) {
+    const hotelNameField = document.querySelector('[name="hotel_name"]');
+    const targetField = document.getElementById(targetFieldId);
+    if (hotelNameField && targetField) {
+      targetField.value = hotelNameField.value;
+      showToast('Hotel name copied to bank account name');
+    }
+  }
+
+  function copyArEmailToBank(targetFieldId) {
+    const arEmailField = document.querySelector('[name="ar_email"]');
+    const targetField = document.getElementById(targetFieldId);
+    if (arEmailField && targetField) {
+      targetField.value = arEmailField.value;
+      showToast('A/R email copied to bank contact email');
+    }
+  }
+
+  // Add event listeners for copy buttons
+  const copyCompanyToAchName = document.getElementById('copyCompanyToAchName');
+  const copyArEmailToAch = document.getElementById('copyArEmailToAch');
+  const copyCompanyToWireName = document.getElementById('copyCompanyToWireName');
+  const copyArEmailToWire = document.getElementById('copyArEmailToWire');
+
+  if (copyCompanyToAchName) {
+    copyCompanyToAchName.addEventListener('click', () => copyHotelNameToBank('ach_bank_account_name'));
+  }
+  if (copyArEmailToAch) {
+    copyArEmailToAch.addEventListener('click', () => copyArEmailToBank('ach_ar_email'));
+  }
+  if (copyCompanyToWireName) {
+    copyCompanyToWireName.addEventListener('click', () => copyHotelNameToBank('wire_bank_account_name'));
+  }
+  if (copyArEmailToWire) {
+    copyArEmailToWire.addEventListener('click', () => copyArEmailToBank('wire_ar_email'));
+  }
+
+  // Bank routing number lookup functionality
+  const routingNumberField = document.getElementById('ach_routing_number');
+  const bankNameField = document.getElementById('ach_bank_name');
+  
+  if (routingNumberField && bankNameField) {
+    let lookupTimeout;
+    
+    routingNumberField.addEventListener('input', function() {
+      const routingNumber = this.value.trim();
+      
+      // Clear previous timeout
+      clearTimeout(lookupTimeout);
+      
+      // Only lookup if we have exactly 9 digits
+      if (routingNumber.length === 9 && /^\d{9}$/.test(routingNumber)) {
+        // Add loading indicator
+        bankNameField.placeholder = 'Looking up bank name...';
+        bankNameField.style.color = '#666';
+        
+        // Debounce the lookup to avoid too many API calls
+        lookupTimeout = setTimeout(async () => {
+          try {
+            console.log('Looking up routing number:', routingNumber);
+            const response = await fetch(`/api/routing/${routingNumber}`);
+            
+            if (response.ok) {
+              const data = await response.json();
+              if (data.bankName) {
+                bankNameField.value = data.bankName;
+                bankNameField.style.color = '#28a745'; // Green for success
+                bankNameField.placeholder = 'Bank name auto-populated';
+                showToast(`Bank name found: ${data.bankName}`, 'success');
+              } else {
+                bankNameField.style.color = '#dc3545'; // Red for not found
+                bankNameField.placeholder = 'Bank not found in database';
+                showToast('Bank name not found for this routing number', 'warning');
+              }
+            } else {
+              bankNameField.style.color = '#dc3545';
+              bankNameField.placeholder = 'Error looking up bank name';
+              showToast('Error looking up bank name', 'error');
+            }
+          } catch (error) {
+            console.error('Bank lookup error:', error);
+            bankNameField.style.color = '#dc3545';
+            bankNameField.placeholder = 'Error looking up bank name';
+            showToast('Error looking up bank name', 'error');
+          }
+        }, 500); // 500ms debounce
+      } else if (routingNumber.length > 0) {
+        // Reset styling if not 9 digits
+        bankNameField.style.color = '';
+        bankNameField.placeholder = 'e.g., Bank of America, Wells Fargo';
+      } else {
+        // Clear bank name if routing number is cleared
+        bankNameField.value = '';
+        bankNameField.style.color = '';
+        bankNameField.placeholder = 'e.g., Bank of America, Wells Fargo';
+      }
+    });
+    
+    // Also trigger on blur for immediate lookup
+    routingNumberField.addEventListener('blur', function() {
+      const routingNumber = this.value.trim();
+      if (routingNumber.length === 9 && /^\d{9}$/.test(routingNumber)) {
+        clearTimeout(lookupTimeout);
+        // Trigger immediate lookup
+        lookupTimeout = setTimeout(async () => {
+          try {
+            const response = await fetch(`/api/routing/${routingNumber}`);
+            if (response.ok) {
+              const data = await response.json();
+              if (data.bankName) {
+                bankNameField.value = data.bankName;
+                bankNameField.style.color = '#28a745';
+                showToast(`Bank name found: ${data.bankName}`, 'success');
+              }
+            }
+          } catch (error) {
+            console.error('Bank lookup error:', error);
+          }
+        }, 100);
+      }
+    });
+  }
+
+  function refreshStartMode(){
+    const val = (startRadios.find(r=>r.checked)||{}).value || 'guest';
+    signupBox.style.display = (val==='account') ? '' : 'none';
+    
+    // Show policy acceptance only when creating an account
+    const policyAcceptance = document.getElementById('policyAcceptance');
+    if (policyAcceptance) {
+      policyAcceptance.style.display = (val==='account') ? '' : 'none';
+    }
+    
+    if (current === 0) updateWizardNav();
+  }
+  // Start directly at Company Information
+  setActiveStep(1); toggleES(); updateSubmitState(); toggleAaaDiamond(); toggleBankSections(); toggleAVSections();
+  
+  // Add auto-save functionality to form inputs
+  const formInputs = form.querySelectorAll('input, select, textarea');
+  formInputs.forEach(input => {
+    input.addEventListener('input', scheduleAutoSave);
+    input.addEventListener('change', scheduleAutoSave);
+  });
+
+  // Sign up (to /local/api/signup)
+  if (btnSignup) btnSignup.addEventListener('click', async ()=>{
+    const email = document.getElementById('su_email').value.trim();
+    const user  = document.getElementById('su_user').value.trim();
+    const pass  = document.getElementById('su_pass').value;
+    if (!email || !user || !pass){ showToast('Enter email, username, and password.'); return; }
+    try{
+      submitting.classList.add('show');
+      const resp = await fetch(`${API_BASE}/api/signup`, {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({email, username:user, password:pass})
+      });
+      const j = await resp.json().catch(()=>({}));
+      if (!resp.ok || !j.ok){ showToast(j.error||'Sign up not available. Continue as guest.'); }
+      else { showToast('Confirmation email sent. Verify, then sign in.'); if (j.devVerifyUrl) console.log('DEV verify link:', j.devVerifyUrl); }
+    }catch(e){ showToast('Signup unavailable. Continue as guest.'); }
+    finally{ submitting.classList.remove('show'); }
+  });
+
+
+  // Autofill (to /local/api/autofill)
+  document.getElementById('btnAutofill').addEventListener('click', async ()=>{
+    const f = document.getElementById('autofillFile').files && document.getElementById('autofillFile').files[0];
+    if (!f) { showToast('Choose a file first.'); return; }
+    const fd = new FormData(); fd.append('info_sheet', f);
+    try{
+      submitting.classList.add('show');
+      const resp = await fetch(`${API_BASE}/api/autofill`, { method:'POST', body: fd });
+      let json;
+      try { json = await resp.json(); } catch(parseErr){
+        const text = await resp.text(); throw new Error('Autofill parse error: ' + text.slice(0,180));
+      }
+      if (!json.ok){ showToast(json.error || 'Could not extract data.'); return; }
+      const fields = json.fields || {};
+      const facts  = json.facts || {};
+      const map = {
+        hotel_name: ['hotel_name','hotel','property','property_name','name'],
+        brand: ['brand','hotel_brand'],
+        chain: ['chain','chain_brand','chain_name'],
+        management_company: ['management_company','management','operator','owner','ownership'],
+        website: ['website','url','web','site','web_site'],
+        address: ['address','street','street_address','addr'],
+        city: ['city','town'],
+        state: ['state','province','state_province','region'],
+        zip: ['zip','postal','postal_code','postcode','zip_code'],
+        country: ['country'],
+        year_built: ['year_built','built','opening_year'],
+        last_renovation: ['last_renovation','renovation','renovated','last_renovated','renovation_year']
+      };
+      const pick = (obj, keys)=>{
+        const entries = Object.entries(obj||{});
+        for (const k of keys){
+          const re = (k instanceof RegExp) ? k : new RegExp('^'+k+'$', 'i');
+          const hit = entries.find(([kk,v])=> re.test(kk) && v && String(v).trim());
+          if (hit) return String(hit[1]).trim();
+        }
+        for (const [kk,v] of entries){
+          if (!v) continue;
+          const low = kk.toLowerCase();
+          for (const k of keys){
+            if (typeof k==='string' && low.includes(k.toLowerCase())) return String(v).trim();
+          }
+        }
+        return '';
+      };
+      let filled = 0;
+      for (const target in map){
+        const el = form.querySelector('[name="'+target+'"]');
+        if (!el) continue;
+        const val = pick(fields, map[target]);
+        if (val && !el.value){ el.value = val; filled++; }
+      }
+      // totals
+      const totalRoomsEl = form.querySelector('[name="total_rooms"]');
+      if (facts.total_guestrooms && totalRoomsEl && !totalRoomsEl.value) {
+        totalRoomsEl.value = String(facts.total_guestrooms);
+      }
+
+      // meeting rooms
+      let roomsAdded = 0;
+      if (facts && Array.isArray(facts.meeting_rooms) && facts.meeting_rooms.length) {
+        for (const r of facts.meeting_rooms) {
+          if (!r || !r.name) continue;
+          if (addRoomBtn) addRoomBtn.click();
+          const block = rooms.lastElementChild;
+          if (!block) continue;
+          const setVal = (selector, value) => {
+            const el = block.querySelector(selector);
+            if (el && value != null && value !== '' && !el.value) el.value = String(value);
+          };
+          setVal('input[name="room_name[]"]', r.name);
+          setVal('input[name="room_area_sqft[]"]', r.sqft);
+          const len = r.dimensions && r.dimensions.length_ft;
+          const wid = r.dimensions && r.dimensions.width_ft;
+          if (len && wid) setVal('input[name="room_dims_ft[]"]', `${len} x ${wid}`);
+          setVal('input[name="room_ceiling_ft[]"]', r.ceiling_ft);
+          const caps = r.capacities || {};
+          setVal('input[name="cap_theater[]"]', caps.theater);
+          setVal('input[name="cap_classroom[]"]', caps.schoolroom);
+          setVal('input[name="cap_banquet[]"]', caps.banquet);
+          setVal('input[name="cap_ushape[]"]', caps.u_shape);
+          setVal('input[name="cap_banquet_rounds[]"]', caps.banquet_rounds);
+          setVal('input[name="cap_cocktail_rounds[]"]', caps.cocktail_rounds);
+          setVal('input[name="cap_crescent_rounds[]"]', caps.crescent_rounds);
+          setVal('input[name="cap_hollow_square[]"]', caps.hollow_square);
+          roomsAdded++;
+        }
+      }
+
+      const msgParts = [];
+      if (filled) msgParts.push(`Autofilled ${filled} field(s)`);
+      if (roomsAdded) msgParts.push(`added ${roomsAdded} meeting room(s)`);
+      showToast(msgParts.length ? msgParts.join(', ') + '.' : 'No obvious fields found.');
+    }catch(e){ showToast((e && e.message) ? e.message : ('Autofill error: ' + e)); }
+    finally{ submitting.classList.remove('show'); }
+  });
+
+  // Submit (to /local/api/submit)
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    if (!validateCurrentPage()) return;
+    if (submitBtn.disabled){ alert('NET30 acceptance is required to submit.'); return; }
+    if (submittingFlag) return;
+    
+    // Track form submission
+    trackFormSubmission('Hotel Registration');
+    
+    submittingFlag = true; submitting.classList.add('show');
+    try{
+      const urlParams = new URLSearchParams(window.location.search);
+      const editMode = urlParams.get('mode');
+      const fd = new FormData(form);
+      
+      // Determine the appropriate API endpoint based on mode
+      const endpoint = editMode === 'edit' ? '/api/hotel/profile' : '/api/submit';
+      const method = editMode === 'edit' ? 'PUT' : 'POST';
+      
+      const resp = await fetch(`${API_BASE}${endpoint}`, { method, body: fd });
+      let json;
+      try { json = await resp.json(); } catch(parseErr){
+        const text = await resp.text(); throw new Error('Submit parse error: ' + text.slice(0,200));
+      }
+      if (!json.ok){ showToast(json.error || 'Submit failed.'); return; }
+      
+      // Clear draft after successful submission
+      if (currentUserId) {
+        try {
+          await fetch(`/api/draft/delete/${currentUserId}`, { method: 'DELETE' });
+          localStorage.removeItem('hotel_registration_draft');
+        } catch (e) {
+          console.warn('Failed to clear draft after submission:', e);
+        }
+      }
+      
+      if (editMode === 'edit') {
+        thanksId.textContent = 'Hotel Profile Updated Successfully!';
+        // Redirect back to dashboard after 3 seconds
+        setTimeout(() => {
+          window.location.href = '/hotel-dashboard.html';
+        }, 3000);
+      } else {
+        thanksId.textContent = 'Hotel ID: ' + (json.hotelId || '');
+      }
+      submitting.classList.remove('show'); thanks.classList.add('show'); window.scrollTo(0,0);
+    }catch(e){ showToast((e && e.message) ? e.message : ('Submit error: ' + e)); }
+    finally{ submittingFlag = false; submitting.classList.remove('show'); }
+  });
+
+  submitAnother.addEventListener('click', ()=>{
+    form.reset(); rooms.innerHTML=''; if (isExtendedStay) isExtendedStay.value='';
+    if (hasOutdoorFacility) hasOutdoorFacility.value='';
+    if (isAaaRated) isAaaRated.value='';
+    document.getElementById('accept_net30').checked = false;
+    document.getElementById('accept_no_direct_bill').checked = false;
+    document.getElementById('accept_per_diem_discount').checked = false;
+    hasDraft = false; draftStatus.style.display = 'none';
+    if (autoSaveTimeout) clearTimeout(autoSaveTimeout);
+    
+    // Clear any existing drafts
+    localStorage.removeItem('hotel_registration_draft');
+    if (currentUserId) {
+      fetch(`/api/draft/delete/${currentUserId}`, { method: 'DELETE' }).catch(e => console.warn('Failed to clear draft:', e));
+    }
+    
+    toggleES(); updateSubmitState(); toggleAaaDiamond(); toggleBankSections(); setActiveStep(0); thanks.classList.remove('show');
+  });
+
+  // Initialize the form
+  document.addEventListener('DOMContentLoaded', async function() {
+    // Check authentication for signed-in users
+    const urlParams = new URLSearchParams(window.location.search);
+    const signedInParam = urlParams.get('signedIn');
+    
+    if (signedInParam === 'true') {
+      // User should be signed in - verify authentication
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (!sessionId) {
+        alert('You must be signed in to complete registration. Redirecting to login...');
+        window.location.href = '/hotel-login.html';
+        return;
+      }
+      
+      // Verify session is still valid and load user data
+      try {
+        const response = await fetch('/api/hotel/profile', {
+          headers: {
+            'Authorization': `Bearer ${sessionId}`
+          }
+        });
+        
+        if (!response.ok) {
+          alert('Your session has expired. Please log in again.');
+          localStorage.removeItem('fedevent_session');
+          localStorage.removeItem('fedevent_user');
+          localStorage.removeItem('fedevent_hotel');
+          window.location.href = '/hotel-login.html';
+          return;
+        }
+        
+        // Load user data if not already present
+        const userData = localStorage.getItem('fedevent_user');
+        if (!userData) {
+          const result = await response.json();
+          if (result.ok && result.user) {
+            localStorage.setItem('fedevent_user', JSON.stringify(result.user));
+          }
+        }
+        
+        // Display user info
+        const userInfoDiv = document.getElementById('userInfo');
+        const userDisplayName = document.getElementById('userDisplayName');
+        if (userInfoDiv && userDisplayName) {
+          try {
+            const user = userData ? JSON.parse(userData) : result.user;
+            if (user) {
+              let displayText = user.username || 'User';
+              if (user.fedevent_account_number) {
+                displayText += ` (${user.fedevent_account_number})`;
+              }
+              userDisplayName.textContent = displayText;
+              userInfoDiv.style.display = 'flex';
+              
+              // Show back to profile button
+              const backToProfileBtn = document.getElementById('backToProfileBtn');
+              if (backToProfileBtn) {
+                backToProfileBtn.style.display = 'inline-block';
+              }
+            }
+          } catch (e) {
+            console.error('Error displaying user info:', e);
+          }
+        }
+        
+      } catch (error) {
+        console.error('Authentication verification failed:', error);
+        alert('Unable to verify authentication. Please log in again.');
+        window.location.href = '/hotel-login.html';
+        return;
+      }
+    }
+    
+    // Check if user is continuing from dashboard
+    if (await checkContinueMode()) {
+      // User is approved and continuing - start auto-save
+      startAutoSave();
+      updateDraftStatus();
+    }
+    
+    // Add save draft buttons to all pages (except first page)
+    pages.forEach((page, index) => {
+      if (index > 0) { // Skip first page
+        const navSection = page.querySelector('.nav');
+        if (navSection && !page.querySelector('.save-draft-btn')) {
+          const saveDraftBtn = document.createElement('button');
+          saveDraftBtn.type = 'button';
+          saveDraftBtn.className = 'btn subtle save-draft-btn';
+          saveDraftBtn.textContent = '💾 Save Draft';
+          saveDraftBtn.style.marginLeft = 'auto';
+          saveDraftBtn.onclick = saveDraft;
+          navSection.insertBefore(saveDraftBtn, navSection.firstChild);
+        }
+      }
+    });
+    
+    // Set up event listeners for draft functionality
+    if (saveDraftBtn) saveDraftBtn.addEventListener('click', saveDraft);
+    if (loadDraftBtn) loadDraftBtn.addEventListener('click', loadDraft);
+    if (discardDraftBtn) discardDraftBtn.addEventListener('click', () => {
+      localStorage.removeItem('hotel_registration_draft');
+      hasDraft = false;
+      updateDraftStatus();
+      showToast('Draft discarded');
+    });
+    
+    // Auto-save on form changes (debounced)
+    let changeTimeout;
+    form.addEventListener('input', () => {
+      if (signedIn && current > 0) {
+        clearTimeout(changeTimeout);
+        changeTimeout = setTimeout(() => {
+          try {
+            saveDraft('auto');
+          } catch (error) {
+            console.error('Auto-save on input error:', error);
+          }
+        }, 30000); // Save 30 seconds after user stops typing
+      }
+    });
+  });
+</script>
+<script src="/chat.js"></script>
+    <script src="/nav.js"></script>
+</body>
+</html>

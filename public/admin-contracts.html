@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Management - FEDEVENT Admin</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: #d97706;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        .contracts-table {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+        
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        tr:hover {
+            background: var(--bg);
+        }
+        
+        .contract-title {
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .contract-title:hover {
+            text-decoration: underline;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-awarded {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .status-closed {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .status-low {
+            background: #f0fdf4;
+            color: #166534;
+        }
+        
+        .status-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-high {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .status-critical {
+            background: #fef2f2;
+            color: #dc2626;
+            font-weight: 700;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            margin: 2% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .bids-table {
+            margin-top: 2rem;
+        }
+        
+        .bid-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .bid-info {
+            flex: 1;
+        }
+        
+        .bid-hotel {
+            font-weight: 600;
+        }
+        
+        .bid-rates {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">FEDEVENT Admin</div>
+            <div class="nav-links">
+                <a href="/admin-dashboard.html">Hotels</a>
+                <a href="/admin-contracts.html">Contracts</a>
+                <a href="/sam-search-admin.html">SAM Search</a>
+            </div>
+            <div class="user-menu">
+                <div class="user-info" id="userInfo">Loading...</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Notice ID Search Section -->
+        <div style="background: var(--white); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem;">
+            <h3 style="margin-bottom: 1rem; color: var(--text);">Notice ID Lookup</h3>
+            <div style="display: flex; gap: 1rem; align-items: center;">
+                <div style="flex: 1;">
+                    <label for="solicitationNumber" style="display: block; margin-bottom: 0.5rem; font-weight: 500;">Notice ID or Solicitation Number</label>
+                    <input type="text" id="solicitationNumber" placeholder="Paste 32‑char Notice ID or type Solicitation # (e.g., W52P1J-25-R-0001)" 
+                           style="width: 100%; padding: 0.75rem; border: 1px solid var(--border); border-radius: 4px; font-size: 1rem;"
+                           onkeypress="if(event.key==='Enter') searchSolicitation()">
+                </div>
+                <button class="btn" onclick="searchSolicitation()" style="margin-top: 1.5rem;">Search Notice</button>
+            </div>
+            <div id="solicitationResults" style="margin-top: 1rem;"></div>
+        </div>
+
+        <div class="page-header">
+            <h1 class="page-title">Contract Management</h1>
+            <div style="display: flex; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="showCreateDirectiveModal()">Create Contract Directive</button>
+                <button class="btn" onclick="showCreateContractModal()">Create New Contract</button>
+            </div>
+        </div>
+        
+        <!-- Contract Directives Section -->
+        <div class="contracts-table" style="margin-bottom: 2rem;">
+            <div class="table-header">
+                <h2 class="table-title">Contract Directives</h2>
+            </div>
+            
+            <div id="directivesTableContent">
+                <div class="loading">Loading directives...</div>
+            </div>
+        </div>
+
+        <div class="contracts-table">
+            <div class="table-header">
+                <h2 class="table-title">Active Contracts</h2>
+            </div>
+            
+            <div id="tableContent">
+                <div class="loading">Loading contracts...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Create Contract Modal -->
+    <div id="createContractModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create New Contract</h3>
+                <button class="close-btn" onclick="closeModal('createContractModal')">&times;</button>
+            </div>
+            <form id="createContractForm">
+                <div class="form-group">
+                    <label for="title">Contract Title</label>
+                    <input type="text" id="title" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <textarea id="description" placeholder="Brief description of the contract requirements"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="location_city">City</label>
+                            <input type="text" id="location_city" required>
+                        </div>
+                        <div>
+                            <label for="location_state">State/Province</label>
+                            <input type="text" id="location_state">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location_country">Country</label>
+                    <input type="text" id="location_country" value="USA">
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="start_date">Start Date</label>
+                            <input type="date" id="start_date" required>
+                        </div>
+                        <div>
+                            <label for="end_date">End Date</label>
+                            <input type="date" id="end_date" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="room_count">Room Count</label>
+                            <input type="number" id="room_count" min="1" required>
+                        </div>
+                        <div>
+                            <label for="per_diem_rate">Per Diem Rate ($)</label>
+                            <input type="number" id="per_diem_rate" step="0.01" min="0" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="bidding_deadline">Bidding Deadline</label>
+                            <input type="datetime-local" id="bidding_deadline">
+                        </div>
+                        <div>
+                            <label for="decision_date">Decision Date</label>
+                            <input type="date" id="decision_date">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="requirements">Requirements</label>
+                    <textarea id="requirements" placeholder="Minimum requirements for hotels"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sow_document">Statement of Work</label>
+                    <textarea id="sow_document" placeholder="Full statement of work details"></textarea>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn" id="createContractBtn">Create Contract & Send Notifications</button>
+                    <button type="button" class="btn" onclick="closeModal('createContractModal')" style="background: #6b7280;">Cancel</button>
+                </div>
+                
+                <div id="createContractMessage"></div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Contract Details Modal -->
+    <div id="contractDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="contractDetailsTitle">Contract Details</h3>
+                <button class="close-btn" onclick="closeModal('contractDetailsModal')">&times;</button>
+            </div>
+            <div id="contractDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Create Contract Directive Modal -->
+    <div id="createDirectiveModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Contract Directive</h3>
+                <button class="close-btn" onclick="closeModal('createDirectiveModal')">&times;</button>
+            </div>
+            <form id="createDirectiveForm">
+                <div class="form-group">
+                    <label for="directive_name">Directive Name</label>
+                    <input type="text" id="directive_name" required placeholder="e.g., Security Requirements, Accessibility Standards">
+                </div>
+                
+                <div class="form-group">
+                    <label for="directive_type">Directive Type</label>
+                    <select id="directive_type" required>
+                        <option value="">Select Type</option>
+                        <option value="security">Security Requirements</option>
+                        <option value="accessibility">Accessibility Standards</option>
+                        <option value="environmental">Environmental Standards</option>
+                        <option value="compliance">Compliance Requirements</option>
+                        <option value="quality">Quality Standards</option>
+                        <option value="safety">Safety Requirements</option>
+                        <option value="technology">Technology Standards</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="directive_description">Description</label>
+                    <textarea id="directive_description" placeholder="Detailed description of the directive requirements"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="directive_requirements">Specific Requirements</label>
+                    <textarea id="directive_requirements" placeholder="List specific requirements that hotels must meet" rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-row">
+                        <div>
+                            <label for="directive_priority">Priority Level</label>
+                            <select id="directive_priority" required>
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                                <option value="critical">Critical</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="directive_effective_date">Effective Date</label>
+                            <input type="date" id="directive_effective_date" required>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="directive_applicable_locations">Applicable Locations (Optional)</label>
+                    <textarea id="directive_applicable_locations" placeholder="List specific cities, states, or regions where this directive applies. Leave empty for all locations."></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="directive_penalties">Non-Compliance Penalties</label>
+                    <textarea id="directive_penalties" placeholder="Describe penalties or consequences for non-compliance"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="directive_auto_apply"> Auto-apply to new contracts
+                    </label>
+                    <small style="display: block; color: var(--text-light); margin-top: 0.25rem;">
+                        Automatically apply this directive to all new contracts created after the effective date
+                    </small>
+                </div>
+                
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn" id="createDirectiveBtn">Create Directive</button>
+                    <button type="button" class="btn" onclick="closeModal('createDirectiveModal')" style="background: #6b7280;">Cancel</button>
+                </div>
+                
+                <div id="createDirectiveMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+        let allContracts = [];
+        let allDirectives = [];
+        
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            document.getElementById('userInfo').textContent = `${user.first_name} ${user.last_name}`;
+            return true;
+        }
+        
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('sessionId');
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok && response.status === 401) {
+                localStorage.removeItem('sessionId');
+                localStorage.removeItem('user');
+                window.location.href = '/admin-login.html';
+                return null;
+            }
+            
+            return result;
+        }
+        
+        // Load contracts
+        async function loadContracts() {
+            try {
+                const result = await apiCall('/api/admin/contracts');
+                
+                if (result && result.ok) {
+                    allContracts = result.contracts;
+                    renderContractsTable();
+                } else {
+                    document.getElementById('tableContent').innerHTML = 
+                        '<div class="error">Failed to load contracts</div>';
+                }
+            } catch (error) {
+                console.error('Load contracts error:', error);
+                document.getElementById('tableContent').innerHTML = 
+                    '<div class="error">Failed to load contracts</div>';
+            }
+        }
+
+        // Search solicitation
+        async function searchSolicitation() {
+            const rawInput = document.getElementById('solicitationNumber').value.trim();
+            const resultsDiv = document.getElementById('solicitationResults');
+            
+            if (!rawInput) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a Notice ID or Solicitation Number</div>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div class="loading">Searching solicitation...</div>';
+
+            // Robust input handling:
+            // - Extract 32-hex anywhere in the string (works for full SAM URLs)
+            // - Otherwise, treat remaining token as a solicitation number
+            const hexMatch = rawInput.match(/[a-fA-F0-9]{32}/);
+            const isHexId = !!hexMatch;
+            const noticeId = isHexId ? hexMatch[0].toLowerCase() : '';
+            const solToken = isHexId ? '' : (rawInput.match(/[A-Za-z0-9][A-Za-z0-9-]{4,}/)?.[0] || rawInput);
+            const solicitationNumber = solToken.toUpperCase();
+
+            try {
+                if (isHexId) {
+                    const result = await apiCall(`/api/admin/solicitation/${noticeId}`);
+                    if (result && result.ok) {
+                        displaySolicitationData(result.solicitation);
+                    } else {
+                        const detail = (result && (result.detail || result.error)) ? `<div style=\"margin-top:.5rem;color:#6b7280;font-size:.9rem;\">${result.detail || result.error}</div>` : '';
+                        resultsDiv.innerHTML = `<div class=\"error\">Notice lookup failed.${detail}</div>`;
+                    }
+                    return;
+                }
+
+                // Solicitation number path: query our backend proxy using a valid 1-year window
+                const today = new Date();
+                const yearAgo = new Date();
+                yearAgo.setFullYear(today.getFullYear() - 1);
+                const fmt = (d) => `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`;
+                const postedFrom = fmt(yearAgo);
+                const postedTo = fmt(today);
+
+                const resp = await fetch(`/api/opps?${new URLSearchParams({ solicitationNumber, postedFrom, postedTo, limit: '1' })}`);
+                let data;
+                try {
+                    data = await resp.json();
+                } catch (_) {
+                    const txt = await resp.text();
+                    data = JSON.parse(txt);
+                }
+
+                if (!resp.ok) {
+                    const detail = data && (data.body || data.error || data.details);
+                    resultsDiv.innerHTML = `<div class=\"error\">Solicitation search failed.${detail ? `<div style='margin-top:.5rem;color:#6b7280;font-size:.9rem;'>${detail}</div>`:''}</div>`;
+                    return;
+                }
+
+                const opp = (data.results && data.results[0]) || (data.opportunitiesData && data.opportunitiesData[0]) || null;
+                if (!opp) {
+                    resultsDiv.innerHTML = '<div class="error">No solicitation found for that number.</div>';
+                    return;
+                }
+
+                const solicitation = {
+                    solicitation_number: opp.solicitationNumber || solicitationNumber,
+                    title: opp.title || 'Untitled',
+                    agency: opp.fullParentPathName || opp.department || 'Unknown Agency',
+                    office: '',
+                    location: '',
+                    naics_code: opp.naicsCode || '',
+                    response_deadline: opp.responseDeadLine || opp.reponseDeadLine || opp.responseDeadline || null,
+                    set_aside: opp.setAside || '',
+                    description: opp.description || 'View full details on SAM.gov',
+                    requirements: ''
+                };
+
+                displaySolicitationData(solicitation);
+            } catch (error) {
+                console.error('Solicitation search error:', error);
+                resultsDiv.innerHTML = '<div class="error">Failed to search solicitation</div>';
+            }
+        }
+
+        // Display solicitation data
+        function displaySolicitationData(solicitation) {
+            const resultsDiv = document.getElementById('solicitationResults');
+            
+            const solicitationHTML = `
+                <div style="background: #f0fdf4; border: 1px solid #16a34a; border-radius: 8px; padding: 1.5rem;">
+                    <h4 style="color: #166534; margin-bottom: 1rem;">Solicitation Found</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <strong>Solicitation Number:</strong><br>
+                            <span style="color: var(--primary); font-weight: 600;">${solicitation.solicitation_number || 'N/A'}</span>
+                        </div>
+                        <div>
+                            <strong>Title:</strong><br>
+                            ${solicitation.title || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Agency:</strong><br>
+                            ${solicitation.agency || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Office:</strong><br>
+                            ${solicitation.office || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Location:</strong><br>
+                            ${solicitation.location || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>NAICS Code:</strong><br>
+                            ${solicitation.naics_code || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Response Deadline:</strong><br>
+                            ${solicitation.response_deadline ? formatDate(solicitation.response_deadline) : 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Set Aside:</strong><br>
+                            ${solicitation.set_aside || 'N/A'}
+                        </div>
+                    </div>
+                    
+                    ${solicitation.description ? `
+                        <div style="margin-top: 1rem;">
+                            <strong>Description:</strong><br>
+                            <div style="background: var(--white); padding: 1rem; border-radius: 4px; margin-top: 0.5rem; border: 1px solid var(--border);">
+                                ${solicitation.description}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${solicitation.requirements ? `
+                        <div style="margin-top: 1rem;">
+                            <strong>Requirements:</strong><br>
+                            <div style="background: var(--white); padding: 1rem; border-radius: 4px; margin-top: 0.5rem; border: 1px solid var(--border);">
+                                ${solicitation.requirements}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button class="btn btn-success" onclick="createContractFromSolicitation('${solicitation.solicitation_number}')">
+                            Create Contract from Solicitation
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSolicitationSearch()">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = solicitationHTML;
+        }
+
+        // Create contract from solicitation
+        async function createContractFromSolicitation(solicitationNumber) {
+            try {
+                const result = await apiCall(`/api/admin/solicitation/${solicitationNumber}/create-contract`, {
+                    method: 'POST'
+                });
+                
+                if (result && result.ok) {
+                    alert('Contract created successfully from solicitation!');
+                    loadContracts(); // Refresh contracts table
+                    clearSolicitationSearch();
+                } else {
+                    alert('Failed to create contract: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Create contract from solicitation error:', error);
+                alert('Failed to create contract from solicitation');
+            }
+        }
+
+        // Clear solicitation search
+        function clearSolicitationSearch() {
+            document.getElementById('solicitationNumber').value = '';
+            document.getElementById('solicitationResults').innerHTML = '';
+        }
+
+        // Load directives
+        async function loadDirectives() {
+            try {
+                const result = await apiCall('/api/admin/directives');
+                
+                if (result && result.ok) {
+                    allDirectives = result.directives || [];
+                    renderDirectivesTable();
+                } else {
+                    document.getElementById('directivesTableContent').innerHTML = 
+                        '<div class="error">Failed to load directives</div>';
+                }
+            } catch (error) {
+                console.error('Load directives error:', error);
+                document.getElementById('directivesTableContent').innerHTML = 
+                    '<div class="error">Failed to load directives</div>';
+            }
+        }
+        
+        // Render directives table
+        function renderDirectivesTable() {
+            const tableContent = document.getElementById('directivesTableContent');
+            
+            if (allDirectives.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No directives found. Create your first directive above.</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Directive Name</th>
+                            <th>Type</th>
+                            <th>Priority</th>
+                            <th>Effective Date</th>
+                            <th>Auto-Apply</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allDirectives.map(directive => `
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--primary); cursor: pointer;" onclick="showDirectiveDetails(${directive.id})">
+                                        ${directive.name}
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">
+                                        ${directive.description ? directive.description.substring(0, 100) + '...' : 'No description'}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="text-transform: capitalize; background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                                        ${directive.type}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-${directive.priority}">${directive.priority}</span>
+                                </td>
+                                <td>${directive.effective_date}</td>
+                                <td>
+                                    <span style="color: ${directive.auto_apply ? 'var(--success)' : 'var(--text-light)'};">
+                                        ${directive.auto_apply ? 'Yes' : 'No'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-${directive.status || 'active'}">${directive.status || 'active'}</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="applyDirectiveToContracts(${directive.id})">
+                                        Apply to Contracts
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableContent.innerHTML = tableHTML;
+        }
+
+        // Render contracts table
+        function renderContractsTable() {
+            const tableContent = document.getElementById('tableContent');
+            
+            if (allContracts.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No contracts found</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Contract Title</th>
+                            <th>Location</th>
+                            <th>Duration</th>
+                            <th>Rooms</th>
+                            <th>Per Diem</th>
+                            <th>Hotels Notified</th>
+                            <th>Bids</th>
+                            <th>Lowest Bid</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allContracts.map(contract => `
+                            <tr>
+                                <td>
+                                    <div class="contract-title" onclick="showContractDetails(${contract.id})">
+                                        ${contract.title}
+                                    </div>
+                                </td>
+                                <td>${[contract.location_city, contract.location_state].filter(Boolean).join(', ')}</td>
+                                <td>${contract.start_date} to ${contract.end_date}</td>
+                                <td>${contract.room_count}</td>
+                                <td>$${contract.per_diem_rate}</td>
+                                <td>${contract.notified_hotels}</td>
+                                <td>${contract.bidding_hotels}</td>
+                                <td>${contract.lowest_bid ? '$' + contract.lowest_bid : '-'}</td>
+                                <td><span class="status-badge status-${contract.status}">${contract.status}</span></td>
+                                <td>
+                                    ${contract.status === 'active' && contract.bidding_hotels > 0 ? 
+                                        `<button class="btn btn-success" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="showContractDetails(${contract.id})">Award</button>` : 
+                                        contract.awarded_hotel_name || '-'
+                                    }
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableContent.innerHTML = tableHTML;
+        }
+        
+        // Show create contract modal
+        function showCreateContractModal() {
+            document.getElementById('createContractModal').style.display = 'block';
+        }
+
+        // Show create directive modal
+        function showCreateDirectiveModal() {
+            // Set default effective date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('directive_effective_date').value = today;
+            document.getElementById('createDirectiveModal').style.display = 'block';
+        }
+        
+        // Show contract details
+        async function showContractDetails(contractId) {
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}`);
+                
+                if (result && result.ok) {
+                    const { contract, bids, notifications } = result;
+                    
+                    document.getElementById('contractDetailsTitle').textContent = contract.title;
+                    
+                    const content = `
+                        <div class="form-group">
+                            <h4>Contract Information</h4>
+                            <p><strong>Description:</strong> ${contract.description || 'N/A'}</p>
+                            <p><strong>Location:</strong> ${[contract.location_city, contract.location_state, contract.location_country].filter(Boolean).join(', ')}</p>
+                            <p><strong>Duration:</strong> ${contract.start_date} to ${contract.end_date}</p>
+                            <p><strong>Rooms:</strong> ${contract.room_count}</p>
+                            <p><strong>Per Diem Rate:</strong> $${contract.per_diem_rate}</p>
+                            <p><strong>Max Contracted Rate:</strong> $${contract.max_contracted_rate} (30% off)</p>
+                            <p><strong>Max Self-Pay Rate:</strong> $${contract.max_self_pay_rate} (10% off)</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${contract.status}">${contract.status}</span></p>
+                        </div>
+                        
+                        <div class="bids-table">
+                            <h4>Current Bids (${bids.length})</h4>
+                            ${bids.length > 0 ? bids.map(bid => `
+                                <div class="bid-row">
+                                    <div class="bid-info">
+                                        <div class="bid-hotel">${bid.hotel_name}</div>
+                                        <div class="bid-rates">
+                                            Contracted: $${bid.contracted_rate}/night | 
+                                            Self-Pay: $${bid.self_pay_rate}/night
+                                        </div>
+                                        ${bid.additional_notes ? `<div style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">${bid.additional_notes}</div>` : ''}
+                                    </div>
+                                    ${contract.status === 'active' ? `
+                                        <button class="btn btn-success" style="padding: 0.5rem 1rem;" onclick="awardContract(${contract.id}, ${bid.hotel_id})">
+                                            Award Contract
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('') : '<p>No bids submitted yet.</p>'}
+                        </div>
+                        
+                        <div style="margin-top: 2rem;">
+                            <h4>Hotel Notifications (${notifications.length})</h4>
+                            ${notifications.map(notif => `
+                                <div style="padding: 0.5rem; border-bottom: 1px solid var(--border);">
+                                    <strong>${notif.hotel_name}</strong> - 
+                                    ${notif.response ? `Response: ${notif.response}` : 'No response yet'} 
+                                    (${notif.email_sent_at ? 'Sent: ' + formatDate(notif.email_sent_at) : 'Not sent'})
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    document.getElementById('contractDetailsContent').innerHTML = content;
+                    document.getElementById('contractDetailsModal').style.display = 'block';
+                } else {
+                    alert('Failed to load contract details');
+                }
+            } catch (error) {
+                console.error('Contract details error:', error);
+                alert('Failed to load contract details');
+            }
+        }
+        
+        // Award contract
+        async function awardContract(contractId, hotelId) {
+            if (!confirm('Are you sure you want to award this contract?')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}/award`, {
+                    method: 'POST',
+                    body: JSON.stringify({ hotel_id: hotelId })
+                });
+                
+                if (result && result.ok) {
+                    alert('Contract awarded successfully!');
+                    closeModal('contractDetailsModal');
+                    loadContracts(); // Refresh the table
+                } else {
+                    alert('Failed to award contract: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Award contract error:', error);
+                alert('Failed to award contract');
+            }
+        }
+        
+        // Show directive details
+        async function showDirectiveDetails(directiveId) {
+            const directive = allDirectives.find(d => d.id === directiveId);
+            if (!directive) return;
+
+            const content = `
+                <div class="form-group">
+                    <h4>Directive Information</h4>
+                    <p><strong>Name:</strong> ${directive.name}</p>
+                    <p><strong>Type:</strong> ${directive.type}</p>
+                    <p><strong>Priority:</strong> <span class="status-badge status-${directive.priority}">${directive.priority}</span></p>
+                    <p><strong>Effective Date:</strong> ${directive.effective_date}</p>
+                    <p><strong>Auto-Apply:</strong> ${directive.auto_apply ? 'Yes' : 'No'}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${directive.status || 'active'}">${directive.status || 'active'}</span></p>
+                </div>
+                
+                <div class="form-group">
+                    <h4>Description</h4>
+                    <p>${directive.description || 'No description provided'}</p>
+                </div>
+                
+                <div class="form-group">
+                    <h4>Specific Requirements</h4>
+                    <p>${directive.requirements || 'No specific requirements listed'}</p>
+                </div>
+                
+                ${directive.applicable_locations ? `
+                    <div class="form-group">
+                        <h4>Applicable Locations</h4>
+                        <p>${directive.applicable_locations}</p>
+                    </div>
+                ` : ''}
+                
+                ${directive.penalties ? `
+                    <div class="form-group">
+                        <h4>Non-Compliance Penalties</h4>
+                        <p>${directive.penalties}</p>
+                    </div>
+                ` : ''}
+                
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-secondary" onclick="applyDirectiveToContracts(${directive.id})">
+                        Apply to All Contracts
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('contractDetailsTitle').textContent = directive.name;
+            document.getElementById('contractDetailsContent').innerHTML = content;
+            document.getElementById('contractDetailsModal').style.display = 'block';
+        }
+
+        // Apply directive to contracts
+        async function applyDirectiveToContracts(directiveId) {
+            const directive = allDirectives.find(d => d.id === directiveId);
+            if (!directive) return;
+
+            const applicableContracts = allContracts.filter(contract => 
+                contract.status === 'active' && 
+                new Date(contract.start_date) >= new Date(directive.effective_date)
+            );
+
+            if (applicableContracts.length === 0) {
+                alert('No active contracts found that are eligible for this directive.');
+                return;
+            }
+
+            if (!confirm(`Apply "${directive.name}" directive to ${applicableContracts.length} active contract(s)?`)) {
+                return;
+            }
+
+            try {
+                const result = await apiCall(`/api/admin/directives/${directiveId}/apply`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        contract_ids: applicableContracts.map(c => c.id)
+                    })
+                });
+                
+                if (result && result.ok) {
+                    alert(`Directive applied to ${result.applied_count} contract(s) successfully!`);
+                    loadContracts(); // Refresh contracts
+                } else {
+                    alert('Failed to apply directive: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Apply directive error:', error);
+                alert('Failed to apply directive');
+            }
+        }
+
+        // Create directive form handler
+        document.getElementById('createDirectiveForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('directive_name').value,
+                type: document.getElementById('directive_type').value,
+                description: document.getElementById('directive_description').value,
+                requirements: document.getElementById('directive_requirements').value,
+                priority: document.getElementById('directive_priority').value,
+                effective_date: document.getElementById('directive_effective_date').value,
+                applicable_locations: document.getElementById('directive_applicable_locations').value,
+                penalties: document.getElementById('directive_penalties').value,
+                auto_apply: document.getElementById('directive_auto_apply').checked
+            };
+            
+            const createBtn = document.getElementById('createDirectiveBtn');
+            const message = document.getElementById('createDirectiveMessage');
+            
+            createBtn.disabled = true;
+            createBtn.textContent = 'Creating...';
+            message.innerHTML = '';
+            
+            try {
+                const result = await apiCall('/api/admin/directives', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                if (result && result.ok) {
+                    message.innerHTML = '<div class="success">Directive created successfully!</div>';
+                    setTimeout(() => {
+                        closeModal('createDirectiveModal');
+                        loadDirectives(); // Refresh the table
+                    }, 2000);
+                } else {
+                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Create directive error:', error);
+                message.innerHTML = '<div class="error">Failed to create directive</div>';
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = 'Create Directive';
+            }
+        });
+
+        // Create contract form handler
+        document.getElementById('createContractForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                title: document.getElementById('title').value,
+                description: document.getElementById('description').value,
+                location_city: document.getElementById('location_city').value,
+                location_state: document.getElementById('location_state').value,
+                location_country: document.getElementById('location_country').value,
+                start_date: document.getElementById('start_date').value,
+                end_date: document.getElementById('end_date').value,
+                room_count: parseInt(document.getElementById('room_count').value),
+                per_diem_rate: parseFloat(document.getElementById('per_diem_rate').value),
+                bidding_deadline: document.getElementById('bidding_deadline').value,
+                decision_date: document.getElementById('decision_date').value,
+                requirements: document.getElementById('requirements').value,
+                sow_document: document.getElementById('sow_document').value
+            };
+            
+            const createBtn = document.getElementById('createContractBtn');
+            const message = document.getElementById('createContractMessage');
+            
+            createBtn.disabled = true;
+            createBtn.textContent = 'Creating...';
+            message.innerHTML = '';
+            
+            try {
+                const result = await apiCall('/api/admin/contracts', {
+                    method: 'POST',
+                    body: JSON.stringify(formData)
+                });
+                
+                if (result && result.ok) {
+                    message.innerHTML = '<div class="success">Contract created and notifications sent successfully!</div>';
+                    setTimeout(() => {
+                        closeModal('createContractModal');
+                        loadContracts(); // Refresh the table
+                    }, 2000);
+                } else {
+                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                }
+            } catch (error) {
+                console.error('Create contract error:', error);
+                message.innerHTML = '<div class="error">Failed to create contract</div>';
+            } finally {
+                createBtn.disabled = false;
+                createBtn.textContent = 'Create Contract & Send Notifications';
+            }
+        });
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'createContractModal') {
+                document.getElementById('createContractForm').reset();
+                document.getElementById('createContractMessage').innerHTML = '';
+            } else if (modalId === 'createDirectiveModal') {
+                document.getElementById('createDirectiveForm').reset();
+                document.getElementById('createDirectiveMessage').innerHTML = '';
+            }
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await apiCall('/api/auth/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Initialize
+        if (checkAuth()) {
+            loadContracts();
+            loadDirectives();
+        }
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modals = ['createContractModal', 'contractDetailsModal', 'createDirectiveModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+
