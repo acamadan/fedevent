@@ -435,6 +435,55 @@ app.get('/', (req, res) => {
   }
 });
 
+// ---------- uploads (moved earlier to ensure initialization before usage) ----------
+const allowed = new Set([
+  'application/pdf',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
+  'application/vnd.ms-powerpoint',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx
+  'application/vnd.ms-excel',
+  'text/plain',
+  'image/png',
+  'image/jpeg',
+  'image/jpg',
+  'image/webp'
+]);
+
+function sanitizeFilename(name) {
+  const base = path.basename(name);
+  const parsed = path.parse(base);
+  const safeName = parsed.name.normalize('NFKD').replace(/[^\w.-]+/g, '_');
+  const ext = (parsed.ext || '').toLowerCase();
+  return `${safeName}${ext}`;
+}
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => {
+    // Use Render persistent disk if available, fallback to local
+    let uploadDir = path.join(__dirname, 'uploads');
+    
+    // Check for Render production environment
+    if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
+      const renderUploadDir = '/opt/render/project/src/uploads';
+      if (fs.existsSync(renderUploadDir)) {
+        uploadDir = renderUploadDir;
+      }
+    }
+    
+    cb(null, uploadDir);
+  },
+  filename: (_req, file, cb) => cb(null, `${Date.now()}-${sanitizeFilename(file.originalname)}`)
+});
+const upload = multer({
+  storage,
+  limits: { fileSize: 25 * 1024 * 1024, files: 12 },
+  fileFilter: (_req, file, cb) => {
+    if (allowed.has(file.mimetype)) cb(null, true);
+    else cb(new Error(`Unsupported file type: ${file.mimetype}`));
+  }
+});
+
 // Submit bid for final acceptance (locks the bid)
 app.post('/api/hotel/contracts/:id/bid/submit', requireAuth, (req, res) => {
   try {
@@ -2702,46 +2751,6 @@ app.post('/api/test-email', async (req, res) => {
     return ok(res, { message: `Test email sent to ${to}` });
   } catch (e) {
     return fail(res, 500, 'Test email failed', { detail: String(e.message || e) });
-  }
-});
-
-// ---------- uploads ----------
-const allowed = new Set([
-  'application/pdf',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // .docx
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation', // .pptx
-  'image/png','image/jpeg','image/webp','image/tiff','image/bmp'
-]);
-function sanitizeFilename(name) {
-  const base = path.basename(name);
-  const parsed = path.parse(base);
-  const safeName = parsed.name.normalize('NFKD').replace(/[^\w.-]+/g, '_');
-  const ext = (parsed.ext || '').toLowerCase();
-  return `${safeName}${ext}`;
-}
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    // Use Render persistent disk if available, fallback to local
-    let uploadDir = path.join(__dirname, 'uploads');
-    
-    // Check for Render production environment
-    if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-      const renderUploadDir = '/opt/render/project/src/uploads';
-      if (fs.existsSync(renderUploadDir)) {
-        uploadDir = renderUploadDir;
-      }
-    }
-    
-    cb(null, uploadDir);
-  },
-  filename: (_req, file, cb) => cb(null, `${Date.now()}-${sanitizeFilename(file.originalname)}`)
-});
-const upload = multer({
-  storage,
-  limits: { fileSize: 25 * 1024 * 1024, files: 12 },
-  fileFilter: (_req, file, cb) => {
-    if (allowed.has(file.mimetype)) cb(null, true);
-    else cb(new Error(`Unsupported file type: ${file.mimetype}`));
   }
 });
 
