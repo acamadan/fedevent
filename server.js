@@ -5893,8 +5893,8 @@ app.post('/submit-request', upload.array('attachments', 10), async (req, res) =>
 });
 
 // ---------- Start Server ----------
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+const PORT = process.env.PORT || 5050;
+app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 FEDEVENT server running on port ${PORT}`);
   console.log(`📍 Admin login: http://localhost:${PORT}/admin-login.html`);
   console.log(`🏨 Hotel portal: http://localhost:${PORT}/hotel-login.html`);

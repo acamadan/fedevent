@@ -1274,26 +1274,16 @@
 
     <main>
       <section class="hero">
+        <!-- Flag Video Background -->
         <div class="flag-video-wrap">
-          <video
-            id="flagVideo"
-            playsinline
-            autoplay
-            muted
-            loop
-            poster="/flag-1200x400.jpg"
-            width="1200" height="400"
-            preload="auto"
-            style="max-width:100%;display:block;object-fit:cover;">
+          <video id="flagVideo" autoplay muted loop playsinline>
             <source src="/flag-1200x400.mp4" type="video/mp4">
-            <source src="/flag-1200x400.webm" type="video/webm">
-            <!-- High quality fallback -->
-            <source src="/flag-1920x800.mp4" type="video/mp4">
+            <img src="/flag-1200x400.jpg" alt="US Flag" style="width: 100%; height: 100%; object-fit: cover;">
           </video>
         </div>
         
         <div class="container">
-          <h1 class="title">Aligning mission objectives with industry capabilities No task is beyond reach</h1>
+          <h1 class="title">Aligning mission objectives with industry capabilities — no task is beyond reach</h1>
           <p class="hero-description">The trusted bridge between government agencies and qualified venues. We streamline event planning, lodging coordination, and logistics support to deliver reliable results for both sides.</p>
           <div class="actions" style="position: relative; z-index: 2;">
             <a class="btn primary" href="/contact.html" onclick="trackButtonClick('Mission Support Form')">Mission Support Form</a>
@@ -1727,62 +1717,7 @@
 
         // Parallax Flag Video Controls
         document.addEventListener('DOMContentLoaded', function() {
-            const video = document.getElementById('flagVideo');
-            const hero = document.querySelector('.hero');
-            const flagWrap = document.querySelector('.flag-video-wrap');
-            
-            if (video && hero && flagWrap) {
-                // Improve seamless looping
-                video.addEventListener('loadeddata', function() {
-                    video.currentTime = 0.05; // Start slightly after beginning to avoid loop gap
-                });
-                
-                // Fix loop gap issue with better timing
-                video.addEventListener('timeupdate', function() {
-                    if (video.duration - video.currentTime < 0.05) {
-                        video.currentTime = 0.05;
-                    }
-                });
-                
-                // Ensure video plays
-                const playVideo = () => {
-                    video.play().catch(e => {
-                        console.log('Video autoplay prevented, trying manual play:', e);
-                        document.addEventListener('click', () => {
-                            video.play().catch(console.log);
-                        }, { once: true });
-                    });
-                };
-                
-                if (video.readyState >= 2) {
-                    playVideo();
-                } else {
-                    video.addEventListener('loadeddata', playVideo);
-                }
-                
-                // Parallax scroll effect
-                window.addEventListener('scroll', function() {
-                    const scrolled = window.pageYOffset;
-                    const heroRect = hero.getBoundingClientRect();
-                    
-                    // Only apply parallax when hero is visible
-                    if (heroRect.bottom > 0 && heroRect.top < window.innerHeight) {
-                        // Move flag slower than scroll (parallax effect)
-                        const parallaxSpeed = scrolled * 0.5;
-                        flagWrap.style.transform = `translateY(${parallaxSpeed}px)`;
-                        
-                        // Adjust opacity based on scroll position (maintain better visibility)
-                        const opacity = Math.max(0.5, 0.9 - (scrolled / window.innerHeight) * 0.3);
-                        video.style.opacity = opacity;
-                    }
-                });
-                
-                // Handle video errors gracefully
-                video.addEventListener('error', function() {
-                    console.log('Flag video failed to load');
-                    video.style.display = 'none';
-                });
-            }
+            // Clean header/user menus are handled by nav.js
         });
         
         // Navigation Dropdown and Sidebar Functionality

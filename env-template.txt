@@ -15,11 +15,11 @@ NOTIFY_FROM=noreply@fedevent.com
 NOTIFY_TO=admin@fedevent.com
 
 # SAM.gov API (for government contracts)
-SAM_API_KEY=SAM-d0bbe9c8-589b-4aff-9716-ae5602dc7d5a
+SAM_API_KEY=
 SAM_API_BASE=https://api.sam.gov/opportunities/v2/search
 
 # GSA Per Diem API
-GSA_API_KEY=S3OiIKuA4fVIl6R8g2luQQpDlr0ICAr0Rg5BfQ6B
+GSA_API_KEY=
 
 # Optional: Development mode
 # DEV_AUTH=true

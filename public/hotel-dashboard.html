@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Dashboard - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
     <style>
         * {
             margin: 0;
@@ -380,35 +381,7 @@
     </style>
 </head>
 <body>
-    <header>
-      <nav class="container">
-        <div class="logo-menu" style="position: relative;">
-          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
-          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
-            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
-            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
-            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
-            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
-            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
-            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
-          </div>
-        </div>
-        <ul class="nav-links">
-          <li id="userMenu" class="user-menu" style="display:none;">
-            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
-              <span class="user-avatar" id="userInitial">U</span>
-              <span id="userNameLabel">User</span>
-              <span aria-hidden>▾</span>
-            </a>
-            <div class="user-dropdown" id="userDropdown">
-              <a href="/hotel-dashboard.html">Hotel Portal</a>
-              <a href="/user-profile.html">User Settings</a>
-              <button type="button" onclick="logoutUser()">Logout</button>
-            </div>
-          </li>
-        </ul>
-      </nav>
-    </header>
+    <!-- Shared header will be injected by nav.js -->
 
     <div class="container">
         <div class="dashboard-grid">
@@ -488,6 +461,25 @@
                         </a>
                         <button class="quick-action-btn" onclick="viewBidding()">
                             📈 Open Bidding Page
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents & Agreements Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #fef3c7; color: #92400e;">📄</div>
+                    <div class="card-title">Documents & Agreements</div>
+                </div>
+                <div class="card-content">
+                    <p>Access important documents, agreements, and legal forms for your hotel partnership.</p>
+                    <div class="quick-actions">
+                        <a href="/hotelagreemnt.html" class="quick-action-btn">
+                            ✍️ Sign Partnership Agreement
+                        </a>
+                        <button class="quick-action-btn" onclick="viewDocuments()">
+                            📁 View All Documents
                         </button>
                     </div>
                 </div>
@@ -678,9 +670,39 @@
         // Load team stats
         async function loadTeamStats() {
             try {
-                // Simulate team data for now
-                document.getElementById('teamCount').textContent = '3';
-                document.getElementById('activeCount').textContent = '2';
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    document.getElementById('teamCount').textContent = '0';
+                    document.getElementById('activeCount').textContent = '0';
+                    return;
+                }
+
+                // Fetch real team data from the API
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.ok && result.users) {
+                        // Count total team members and active members
+                        const totalMembers = result.users.length;
+                        // For now, consider all members as active
+                        // In a more sophisticated system, we could check last_login or other status fields
+                        const activeMembers = result.users.filter(user => user.last_login).length || totalMembers;
+                        
+                        document.getElementById('teamCount').textContent = totalMembers;
+                        document.getElementById('activeCount').textContent = activeMembers;
+                    } else {
+                        document.getElementById('teamCount').textContent = '0';
+                        document.getElementById('activeCount').textContent = '0';
+                    }
+                } else {
+                    document.getElementById('teamCount').textContent = '0';
+                    document.getElementById('activeCount').textContent = '0';
+                }
             } catch (error) {
                 console.error('Error loading team stats:', error);
                 document.getElementById('teamCount').textContent = '0';
@@ -725,40 +747,86 @@
         function addTeamMember() {
             const email = prompt('Enter team member email address:');
             if (email && email.trim()) {
-                const role = prompt('Select role:\n1. Manager\n2. Sales\n3. Admin\n4. View Only\n\nEnter number (1-4):');
-                const roles = ['Manager', 'Sales', 'Admin', 'View Only'];
-                const selectedRole = roles[parseInt(role) - 1] || 'View Only';
-                
-                if (confirm(`Add ${email} as ${selectedRole}?`)) {
-                    showMessage(`Team member invitation sent to ${email}`, 'success');
-                    // In a real implementation, this would send an invitation
+                // In a real implementation, this would send an invitation
+                sendTeamInvitation(email);
+            }
+        }
+
+        // Send team invitation
+        async function sendTeamInvitation(email) {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    alert('You must be logged in to invite team members.');
+                    return;
                 }
+
+                const response = await fetch('/api/team/invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionId}`
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        firstName: '',
+                        lastName: '',
+                        jobTitle: 'Team Member',
+                        permissions: {}
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.ok) {
+                    showMessage(`Team member invitation sent to ${email}`, 'success');
+                    // Refresh team stats
+                    loadTeamStats();
+                } else {
+                    showMessage(`Error: ${result.error || 'Failed to send invitation'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                showMessage('Failed to send invitation. Please try again.', 'error');
             }
         }
 
         // View team members
         function viewTeamMembers() {
-            // Create a modal or redirect to team management page
-            const teamMembers = [
-                { name: 'John Smith', email: 'john@hotel.com', role: 'Manager', status: 'Active' },
-                { name: 'Jane Doe', email: 'jane@hotel.com', role: 'Sales', status: 'Active' },
-                { name: 'Mike Johnson', email: 'mike@hotel.com', role: 'Admin', status: 'Pending' }
-            ];
-            
-            let message = 'Current Team Members:\n\n';
-            teamMembers.forEach((member, index) => {
-                message += `${index + 1}. ${member.name} (${member.email})\n`;
-                message += `   Role: ${member.role} | Status: ${member.status}\n\n`;
-            });
-            message += 'Full team management interface coming soon!';
-            
-            alert(message);
+            // In a real implementation, this would show the team management interface
+            loadTeamMembers();
+        }
+
+        // Load team members
+        async function loadTeamMembers() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    alert('You must be logged in to view team members.');
+                    return;
+                }
+
+                // For now, show a simple message with refresh option
+                const confirmed = confirm('Team management interface is being prepared. Click OK to refresh team stats.');
+                if (confirmed) {
+                    loadTeamStats();
+                }
+            } catch (error) {
+                console.error('Error loading team members:', error);
+                showMessage('Failed to load team members. Please try again.', 'error');
+            }
         }
 
         // View bidding
         function viewBidding() {
             // Navigate to contracts & bidding page
             window.location.href = '/hotel-contracts.html';
+        }
+
+        // View documents
+        function viewDocuments() {
+            // Navigate to documents page or show document list
+            alert('Documents section - coming soon! For now, use the signature links above to access agreements.');
         }
 
         // Contact support

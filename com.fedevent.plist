@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.fedevent</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/atakancamadan/Documents/GitHub/fedevent/start.sh</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>WorkingDirectory</key>
+    <string>/Users/atakancamadan/Documents/GitHub/fedevent</string>
+    <key>StandardOutPath</key>
+    <string>/Users/atakancamadan/Documents/GitHub/fedevent/logs/output.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/atakancamadan/Documents/GitHub/fedevent/logs/error.log</string>
+</dict>
+</plist>

@@ -377,6 +377,27 @@
     <script>
         const API_BASE = '';
         
+        // Check if user is already signed in
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = localStorage.getItem('user');
+            
+            if (sessionId && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    if (userData.role === 'hotel') {
+                        // Already signed in as hotel, redirect to dashboard
+                        window.location.href = '/hotel-dashboard.html';
+                        return;
+                    }
+                } catch (e) {
+                    // Invalid user data, clear it
+                    localStorage.removeItem('sessionId');
+                    localStorage.removeItem('user');
+                }
+            }
+        });
+        
         function showForgotPasswordModal() {
             document.getElementById('forgotPasswordModal').style.display = 'block';
         }

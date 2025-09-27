@@ -215,6 +215,27 @@
     <script>
         const API_BASE = '';
         
+        // Check if user is already signed in
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = localStorage.getItem('user');
+            
+            if (sessionId && user) {
+                try {
+                    const userData = JSON.parse(user);
+                    if (userData.role === 'admin') {
+                        // Already signed in as admin, redirect to dashboard
+                        window.location.href = '/admin-dashboard.html';
+                        return;
+                    }
+                } catch (e) {
+                    // Invalid user data, clear it
+                    localStorage.removeItem('sessionId');
+                    localStorage.removeItem('user');
+                }
+            }
+        });
+        
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             

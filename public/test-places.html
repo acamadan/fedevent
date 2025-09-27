@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Places API Test</title>
+</head>
+<body>
+    <h1>Google Places API Test</h1>
+    <input id="address" type="text" placeholder="Enter an address">
+    <button onclick="testPlacesApi()">Test Google Places API</button>
+    <div id="results"></div>
+
+    <script>
+        let googlePlacesApiKey = null;
+        
+        // Fetch the API key from the server
+        fetch('/api/google-places-key')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Server response:', data);
+                
+                // Handle mock mode
+                if (data.mockMode) {
+                    googlePlacesApiKey = null;
+                    document.getElementById('results').innerHTML += 
+                        `<p class="warning">Development Mode: ${data.message}</p>
+                         <p>Google Places API is not configured. Tests will use mock data.</p>`;
+                    return;
+                }
+                
+                document.getElementById('results').innerHTML += 
+                    '<p>Server API Key Status: ' + (data.apiKey ? 'Received' : 'Not found') + '</p>';
+                
+                if (data.apiKey) {
+                    googlePlacesApiKey = data.apiKey;
+                    document.getElementById('results').innerHTML += 
+                        '<p>Google Places API is ready for testing!</p>';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching API key:', error);
+                document.getElementById('results').innerHTML += 
+                    '<p>Error fetching API key: ' + error.message + '</p>';
+            });
+        
+        // Test the Google Places API directly using HTTP requests
+        async function testPlacesApi() {
+            const addressInput = document.getElementById('address');
+            const query = addressInput.value.trim();
+            
+            if (!query) {
+                document.getElementById('results').innerHTML += '<p>Please enter an address to search</p>';
+                return;
+            }
+            
+            if (!googlePlacesApiKey) {
+                document.getElementById('results').innerHTML += '<p>Error: API key not available</p>';
+                return;
+            }
+            
+            try {
+                document.getElementById('results').innerHTML += '<p>Searching for: ' + query + '</p>';
+                
+                // Use the new Google Places API with direct HTTP request
+                const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': googlePlacesApiKey,
+                        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress'
+                    },
+                    body: JSON.stringify({
+                        textQuery: query,
+                        maxResultCount: 5
+                    })
+                });
+                
+                const responseText = await response.text();
+                
+                if (!response.ok) {
+                    throw new Error(`API request failed with status ${response.status}: ${responseText}`);
+                }
+                
+                const data = JSON.parse(responseText);
+                console.log('Places API response:', data);
+                
+                if (data.places && data.places.length > 0) {
+                    document.getElementById('results').innerHTML += 
+                        '<p class="success">Google Places API: Search successful!</p>' +
+                        '<p>Found ' + data.places.length + ' results:</p>' +
+                        '<ul>' + data.places.map(place => 
+                            '<li><strong>' + (place.displayName?.text || 'N/A') + '</strong> - ' + 
+                            (place.formattedAddress || 'N/A') + '</li>'
+                        ).join('') + '</ul>';
+                } else {
+                    document.getElementById('results').innerHTML += 
+                        '<p>No places found for the query: ' + query + '</p>';
+                }
+                
+            } catch (error) {
+                console.error('Error testing Places API:', error);
+                document.getElementById('results').innerHTML += 
+                    '<p class="error">Google Places API: Error - ' + error.message + '</p>';
+            }
+        }
+    </script>
+    
+    <style>
+        .success { color: green; }
+        .error { color: red; }
+        .warning { color: orange; }
+    </style>
+</body>
+</html>

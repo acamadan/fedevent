@@ -629,6 +629,10 @@
                                             <div>Job Title: ${user.job_title || 'Not specified'}</div>
                                             <div>Phone: ${user.phone || 'Not provided'}</div>
                                             <div>Last Login: ${user.last_login ? formatDate(user.last_login) : 'Never'}</div>
+                                            <div>Status: ${user.is_active ? '<span style="color: #16a34a;">Active</span>' : '<span style="color: #dc2626;">Deactivated</span>'}</div>
+                                            ${user.is_active ? 
+                                                `<button onclick="deactivateUser(${user.id}, '${user.email}')" style="background: #dc2626; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 0.5rem; font-size: 0.875rem;">Deactivate Account</button>` : 
+                                                `<button onclick="reactivateUser(${user.id}, '${user.email}')" style="background: #16a34a; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; margin-top: 0.5rem; font-size: 0.875rem;">Reactivate Account</button>`}
                                         </div>
                                     </div>
                                 `).join('') : '<p style="color: var(--text-light); text-align: center; padding: 2rem;">No team members registered</p>'}
@@ -663,6 +667,70 @@
             if (!dateString) return '-';
             const date = new Date(dateString);
             return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // Deactivate user
+        async function deactivateUser(userId, userEmail) {
+            const reason = prompt(`Please provide a reason for deactivating ${userEmail}'s account (minimum 10 characters):`);
+            
+            if (!reason || reason.trim().length < 10) {
+                alert('Deactivation reason must be at least 10 characters long.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to deactivate ${userEmail}'s account?`)) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`/api/admin/users/${userId}/deactivate`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: reason.trim() })
+                });
+                
+                if (result && result.ok) {
+                    alert(`User account deactivated successfully!`);
+                    // Reload the page to show updated status
+                    loadHotelDetails();
+                } else {
+                    alert(`Failed to deactivate user: ${result?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Deactivate user error:', error);
+                alert('Failed to deactivate user. Please try again.');
+            }
+        }
+        
+        // Reactivate user
+        async function reactivateUser(userId, userEmail) {
+            const reason = prompt(`Please provide a reason for reactivating ${userEmail}'s account (minimum 10 characters):`);
+            
+            if (!reason || reason.trim().length < 10) {
+                alert('Reactivation reason must be at least 10 characters long.');
+                return;
+            }
+            
+            if (!confirm(`Are you sure you want to reactivate ${userEmail}'s account?`)) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`/api/admin/users/${userId}/reactivate`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason: reason.trim() })
+                });
+                
+                if (result && result.ok) {
+                    alert(`User account reactivated successfully!`);
+                    // Reload the page to show updated status
+                    loadHotelDetails();
+                } else {
+                    alert(`Failed to reactivate user: ${result?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Reactivate user error:', error);
+                alert('Failed to reactivate user. Please try again.');
+            }
         }
         
         // Logout

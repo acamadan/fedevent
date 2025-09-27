@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Places API Troubleshooting Checklist</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #ea4335 0%, #4285f4 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #d2e3fc 0%, #e8eaed 100%);
+            border-left: 5px solid #4285f4;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 25px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        
+        .checklist {
+            background-color: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .checklist h2 {
+            color: #202124;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4285f4;
+        }
+        
+        .checklist-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #f8f9fa;
+            border-left: 4px solid #dadce0;
+        }
+        
+        .checklist-item h3 {
+            color: #202124;
+            margin-bottom: 10px;
+        }
+        
+        .checklist-item.completed {
+            border-left-color: #34a853;
+            background-color: #e6f4ea;
+        }
+        
+        .checklist-item.problem {
+            border-left-color: #ea4335;
+            background-color: #fce8e6;
+        }
+        
+        .checklist-item ul {
+            padding-left: 20px;
+            margin-top: 10px;
+        }
+        
+        .checklist-item li {
+            margin-bottom: 8px;
+        }
+        
+        .checklist-item code {
+            background-color: #e8eaed;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            margin: 10px 5px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn-secondary {
+            background: linear-gradient(135deg, #fbbc04 0%, #ea4335 100%);
+        }
+        
+        .error-details {
+            background-color: #fce8e6;
+            color: #d93025;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border-left: 5px solid #d93025;
+        }
+        
+        .error-details h3 {
+            margin-top: 0;
+            color: #d93025;
+        }
+        
+        .error-details pre {
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .solution {
+            background: linear-gradient(135deg, #e6f4ea 0%, #d2e3fc 100%);
+            border-left: 5px solid #34a853;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin: 25px 0;
+        }
+        
+        .solution h3 {
+            margin-top: 0;
+            color: #137333;
+        }
+        
+        .next-steps {
+            text-align: center;
+            margin: 30px 0;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .content {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Google Places API Troubleshooting</h1>
+            <p class="subtitle">Resolving "API key not valid" Error</p>
+        </header>
+        
+        <div class="content">
+            <div class="instructions">
+                <h3>Current Error Details</h3>
+                <p>You're encountering the following error:</p>
+                <div class="error-details">
+                    <h3>API Error: API key not valid. Please pass a valid API key.</h3>
+                    <pre>{
+  "error": {
+    "code": 400,
+    "message": "API key not valid. Please pass a valid API key.",
+    "status": "INVALID_ARGUMENT",
+    "details": [
+      {
+        "@type": "type.googleapis.com/google.rpc.ErrorInfo",
+        "reason": "API_KEY_INVALID",
+        "domain": "googleapis.com",
+        "metadata": {
+          "service": "places.googleapis.com"
+        }
+      }
+    ]
+  }
+}</pre>
+                </div>
+                <p>This error indicates that while your API key is loaded correctly in the application, it's not valid for the Google Places API (New). Let's systematically troubleshoot this issue.</p>
+            </div>
+            
+            <div class="solution">
+                <h3>Immediate Solution</h3>
+                <p>Based on your error, here's what you need to do:</p>
+                <ol>
+                    <li><strong>Wait for API key propagation</strong> - Google mentions it can take up to 5 minutes for settings to take effect</li>
+                    <li><strong>Verify Google Cloud Console configuration</strong> - Ensure all settings are correctly applied</li>
+                    <li><strong>Clear browser cache</strong> - For localhost:5050 to ensure you're not loading cached validation results</li>
+                </ol>
+            </div>
+            
+            <div class="checklist">
+                <h2>Google Cloud Console Configuration Checklist</h2>
+                
+                <div class="checklist-item completed">
+                    <h3>1. Enable Required APIs</h3>
+                    <p>Ensure these APIs are enabled in your Google Cloud Console project:</p>
+                    <ul>
+                        <li>✅ <strong>Maps JavaScript API</strong> - Required for map display features</li>
+                        <li>✅ <strong>Places API</strong> - The original Places API</li>
+                        <li>✅ <strong>Places API (New)</strong> - The new version you're using</li>
+                    </ul>
+                    <p><strong>How to check:</strong> Go to Google Cloud Console > APIs & Services > Library, search for each API and ensure it shows as "API enabled"</p>
+                </div>
+                
+                <div class="checklist-item completed">
+                    <h3>2. API Key Restrictions</h3>
+                    <p>Verify your API key restrictions are properly configured:</p>
+                    <ul>
+                        <li>✅ <strong>Application restrictions</strong> - Set to "HTTP referrers (websites)"</li>
+                        <li>✅ <strong>HTTP referrers</strong> - Must include <code>http://localhost:5050/*</code></li>
+                        <li>✅ <strong>API restrictions</strong> - Set to "Restrict key" with all three APIs checked</li>
+                    </ul>
+                    <p><strong>How to check:</strong> Go to Google Cloud Console > APIs & Services > Credentials > Click on your API key > Verify restrictions section</p>
+                </div>
+                
+                <div class="checklist-item completed">
+                    <h3>3. Billing Configuration</h3>
+                    <p>Confirm your project has billing enabled:</p>
+                    <ul>
+                        <li>✅ <strong>Billing account</strong> - Linked to your project</li>
+                        <li>✅ <strong>Billing status</strong> - Active and in good standing</li>
+                    </ul>
+                    <p><strong>How to check:</strong> Go to Google Cloud Console > Billing > Verify your project is linked to an active billing account</p>
+                </div>
+                
+                <div class="checklist-item">
+                    <h3>4. API Key Verification</h3>
+                    <p>Double-check your API key is correct:</p>
+                    <ul>
+                        <li>✅ <strong>API key in .env file</strong> - Matches exactly with Google Cloud Console</li>
+                        <li>✅ <strong>No extra spaces</strong> - Before or after the key</li>
+                        <li>✅ <strong>Correct key type</strong> - Server key (not iOS/Android key)</li>
+                    </ul>
+                    <p><strong>How to check:</strong> Compare the key in your <code>.env</code> file with the one in Google Cloud Console</p>
+                </div>
+            </div>
+            
+            <div class="checklist">
+                <h2>Advanced Troubleshooting Steps</h2>
+                
+                <div class="checklist-item">
+                    <h3>1. Create an Unrestricted Test Key</h3>
+                    <p>For diagnostic purposes only:</p>
+                    <ul>
+                        <li>Go to Google Cloud Console > APIs & Services > Credentials</li>
+                        <li>Click "+ CREATE CREDENTIALS" > "API key"</li>
+                        <li><strong>DO NOT</strong> add any restrictions to this key</li>
+                        <li>Copy the key and temporarily replace your current key in the <code>.env</code> file</li>
+                        <li>Test your application</li>
+                        <li><strong>IMPORTANT:</strong> Delete or restrict this key immediately after testing</li>
+                    </ul>
+                </div>
+                
+                <div class="checklist-item">
+                    <h3>2. Check for Multiple API Keys</h3>
+                    <p>Ensure you're using the correct API key:</p>
+                    <ul>
+                        <li>Verify you don't have multiple API keys in Google Cloud Console</li>
+                        <li>Ensure you're using the key with the correct restrictions</li>
+                        <li>Check if there are any expired or deactivated keys</li>
+                    </ul>
+                </div>
+                
+                <div class="checklist-item">
+                    <h3>3. Verify Project ID</h3>
+                    <p>Ensure your API key is associated with the correct project:</p>
+                    <ul>
+                        <li>Check that you're working in the correct Google Cloud project</li>
+                        <li>Verify the project has the correct name and ID</li>
+                        <li>Ensure all APIs are enabled in the same project where your key was created</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="next-steps">
+                <h3>Next Steps</h3>
+                <p>After completing the above checks, try these actions:</p>
+                <button class="btn" onclick="window.location.reload()">Refresh This Page</button>
+                <button class="btn btn-secondary" onclick="clearBrowserCache()">Clear Browser Cache</button>
+                <button class="btn" onclick="testApiAgain()">Test API Again</button>
+                
+                <p style="margin-top: 20px;">If issues persist, consider creating a new API key or contacting Google Cloud support.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function clearBrowserCache() {
+            // This is a simplified version - in reality, users would need to manually clear cache
+            alert("Please manually clear your browser cache:\n1. Press F12 to open Developer Tools\n2. Right-click the refresh button\n3. Select 'Empty Cache and Hard Reload'\n4. Or press Ctrl+Shift+Delete and select 'Cached images and files'");
+        }
+        
+        function testApiAgain() {
+            alert("Please refresh the places-api-verification.html page to test the API again.");
+        }
+        
+        // Auto-scroll to error details if they exist
+        document.addEventListener('DOMContentLoaded', function() {
+            const errorDetails = document.querySelector('.error-details');
+            if (errorDetails) {
+                errorDetails.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    </script>
+</body>
+</html>

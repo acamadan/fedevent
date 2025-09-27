@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Places API Diagnostic Tool</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .diagnostic-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 4px;
+        }
+        
+        .info {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+        }
+        
+        .success {
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+        
+        .warning {
+            background-color: #fff3cd;
+            border-color: #ffeaa7;
+        }
+        
+        .error {
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        
+        .test-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+        
+        .test-button:hover {
+            background-color: #0056b3;
+        }
+        
+        .test-button:disabled {
+            background-color: #6c757d;
+            cursor: not-allowed;
+        }
+        
+        .result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .instructions {
+            background-color: #e9f7ef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+        }
+        
+        .instructions ul {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google Places API Diagnostic Tool</h1>
+        
+        <div class="instructions">
+            <h3>Troubleshooting Steps</h3>
+            <ol>
+                <li>Check if the API key is properly configured in the .env file</li>
+                <li>Verify API key restrictions in Google Cloud Console</li>
+                <li>Ensure all required APIs are enabled</li>
+                <li>Confirm billing is enabled for your project</li>
+            </ol>
+        </div>
+        
+        <div class="diagnostic-section info">
+            <h2>1. API Key Configuration Check</h2>
+            <button id="checkApiKeyBtn" class="test-button">Check API Key Configuration</button>
+            <div id="apiKeyResult" class="result hidden"></div>
+        </div>
+        
+        <div class="diagnostic-section info">
+            <h2>2. Direct API Test</h2>
+            <button id="testApiBtn" class="test-button">Test Google Places API</button>
+            <div id="apiTestResult" class="result hidden"></div>
+        </div>
+        
+        <div class="diagnostic-section info">
+            <h2>3. Mock Mode Check</h2>
+            <button id="checkMockBtn" class="test-button">Check Mock Mode Status</button>
+            <div id="mockCheckResult" class="result hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        // DOM Elements
+        const checkApiKeyBtn = document.getElementById('checkApiKeyBtn');
+        const testApiBtn = document.getElementById('testApiBtn');
+        const checkMockBtn = document.getElementById('checkMockBtn');
+        
+        const apiKeyResult = document.getElementById('apiKeyResult');
+        const apiTestResult = document.getElementById('apiTestResult');
+        const mockCheckResult = document.getElementById('mockCheckResult');
+        
+        // Check API Key Configuration
+        checkApiKeyBtn.addEventListener('click', async () => {
+            try {
+                checkApiKeyBtn.disabled = true;
+                apiKeyResult.classList.remove('hidden');
+                apiKeyResult.textContent = 'Checking API key configuration...';
+                
+                const response = await fetch('/api/google-places-key');
+                const data = await response.json();
+                
+                if (data.mockMode) {
+                    apiKeyResult.className = 'result warning';
+                    apiKeyResult.textContent = `API Key Configuration: MOCK MODE\n\n` +
+                        `Reason: API key not properly configured or using placeholder value\n` +
+                        `Message: ${data.message || 'No additional message'}`;
+                } else if (data.apiKey) {
+                    apiKeyResult.className = 'result success';
+                    apiKeyResult.textContent = `API Key Configuration: VALID\n\n` +
+                        `API Key Prefix: ${data.apiKey.substring(0, 10)}...`;
+                } else {
+                    apiKeyResult.className = 'result error';
+                    apiKeyResult.textContent = `API Key Configuration: INVALID\n\n` +
+                        `No API key found in response`;
+                }
+            } catch (error) {
+                apiKeyResult.className = 'result error';
+                apiKeyResult.textContent = `Error checking API key configuration:\n${error.message}`;
+            } finally {
+                checkApiKeyBtn.disabled = false;
+            }
+        });
+        
+        // Test Google Places API Directly
+        testApiBtn.addEventListener('click', async () => {
+            try {
+                testApiBtn.disabled = true;
+                apiTestResult.classList.remove('hidden');
+                apiTestResult.textContent = 'Testing Google Places API...';
+                
+                // First get the API key
+                const keyResponse = await fetch('/api/google-places-key');
+                const keyData = await keyResponse.json();
+                
+                if (keyData.mockMode) {
+                    apiTestResult.className = 'result warning';
+                    apiTestResult.textContent = `Cannot test API: Running in mock mode\n\n` +
+                        `Reason: ${keyData.message || 'API key not properly configured'}`;
+                    return;
+                }
+                
+                if (!keyData.apiKey) {
+                    apiTestResult.className = 'result error';
+                    apiTestResult.textContent = `Cannot test API: No valid API key available`;
+                    return;
+                }
+                
+                // Test the API with a simple query
+                const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': keyData.apiKey,
+                        'X-Goog-FieldMask': 'places.id,places.displayName'
+                    },
+                    body: JSON.stringify({
+                        textQuery: 'hotel',
+                        maxResultCount: 3
+                    })
+                });
+                
+                const responseData = await response.json();
+                
+                if (response.ok) {
+                    apiTestResult.className = 'result success';
+                    apiTestResult.textContent = `Google Places API Test: SUCCESS\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Results: ${responseData.places ? responseData.places.length : 0} places found\n` +
+                        `Sample: ${JSON.stringify(responseData, null, 2)}`;
+                } else {
+                    apiTestResult.className = 'result error';
+                    apiTestResult.textContent = `Google Places API Test: FAILED\n\n` +
+                        `Status: ${response.status} ${response.statusText}\n` +
+                        `Error: ${JSON.stringify(responseData, null, 2)}`;
+                }
+            } catch (error) {
+                apiTestResult.className = 'result error';
+                apiTestResult.textContent = `Error testing Google Places API:\n${error.message}`;
+            } finally {
+                testApiBtn.disabled = false;
+            }
+        });
+        
+        // Check Mock Mode Status
+        checkMockBtn.addEventListener('click', async () => {
+            try {
+                checkMockBtn.disabled = true;
+                mockCheckResult.classList.remove('hidden');
+                mockCheckResult.textContent = 'Checking mock mode status...';
+                
+                const response = await fetch('/api/google-places-key');
+                const data = await response.json();
+                
+                if (data.mockMode) {
+                    mockCheckResult.className = 'result warning';
+                    mockCheckResult.textContent = `Mock Mode: ACTIVE\n\n` +
+                        `Reason: ${data.message || 'API key not properly configured'}\n\n` +
+                        `In mock mode, the application uses sample data instead of real API calls.\n` +
+                        `This is normal during development when the API key is not configured.`;
+                } else {
+                    mockCheckResult.className = 'result success';
+                    mockCheckResult.textContent = `Mock Mode: INACTIVE\n\n` +
+                        `The application is using the real Google Places API with a valid API key.`;
+                }
+            } catch (error) {
+                mockCheckResult.className = 'result error';
+                mockCheckResult.textContent = `Error checking mock mode status:\n${error.message}`;
+            } finally {
+                checkMockBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

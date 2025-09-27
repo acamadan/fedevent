@@ -29,7 +29,7 @@ nav{display:flex;align-items:center;justify-content:space-between;gap:24px;paddi
 .card{background:var(--card);border:1px solid #eee;border-radius:16px;padding:18px;box-shadow:0 10px 30px rgba(0,0,0,.04)}
 .kicker{color:var(--blue);font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:.8rem;margin-bottom:8px}
 .title{font-size:36px;margin:0 0 16px}
-footer{background:#0f172a;color:#cbd5e1;padding:56px 0;margin-top:40px}
+footer{background:#1f2937;color:white;padding:56px 0;margin-top:40px}
 footer a{color:#e2e8f0;text-decoration:none}
 /* Global user menu styles (ensure dropdown is hidden by default on all pages) */
 .user-menu{position:relative}
@@ -44,7 +44,7 @@ footer a{color:#e2e8f0;text-decoration:none}
   header{background:rgba(20,20,20,.7);border-bottom-color:#1f2937}
   .nav-links a{color:var(--ink-2)}
   .card{border-color:#1f2937;box-shadow:0 10px 30px rgba(0,0,0,.3)}
-  footer{background:#0b0f19;color:#cbd5e1}
+  footer{background:#1f2937;color:white}
   footer a{color:#e5e7eb}
 }
 #chat-bubble{position:fixed;right:18px;bottom:18px;width:52px;height:52px;border-radius:50%;background:#111827;color:#fff;display:grid;place-items:center;font-size:22px;cursor:pointer;box-shadow:0 10px 30px rgba(0,0,0,.2);z-index:60;transition:transform 0.2s ease;}

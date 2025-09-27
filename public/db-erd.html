@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>FEDEVENT Database ERD</title>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; margin: 0; }
+    header { position: sticky; top: 0; z-index: 10; backdrop-filter: saturate(180%) blur(6px); background: color-mix(in oklab, Canvas, CanvasText 4%); border-bottom: 1px solid color-mix(in oklab, CanvasText 18%, transparent); }
+    .wrap { max-width: 1200px; margin: 0 auto; padding: 16px; }
+    h1 { font-size: 20px; margin: 0; }
+    .actions { display: flex; gap: 8px; align-items: center; }
+    button { padding: 8px 12px; border-radius: 8px; border: 1px solid color-mix(in oklab, CanvasText 18%, transparent); background: color-mix(in oklab, Canvas, CanvasText 2%); color: inherit; cursor: pointer; }
+    button:hover { background: color-mix(in oklab, Canvas, CanvasText 6%); }
+    main.wrap { padding-block: 24px; }
+    section { margin-bottom: 40px; }
+    h2 { font-size: 18px; margin: 0 0 8px; }
+    p { margin: 0 0 16px; opacity: .8; }
+    .mermaid { border: 1px solid color-mix(in oklab, CanvasText 18%, transparent); border-radius: 10px; padding: 12px; background: color-mix(in oklab, Canvas, CanvasText 2%); overflow: auto; }
+    footer { padding: 24px; text-align: center; opacity: .7; border-top: 1px solid color-mix(in oklab, CanvasText 18%, transparent); }
+    @media print {
+      header, .noprint { display: none !important; }
+      main.wrap { max-width: none; }
+      section { page-break-inside: avoid; }
+    }
+  </style>
+  <script type="module">
+    // Light/dark theme for mermaid
+    const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+    window.mermaidTheme = prefersDark ? 'dark' : 'default';
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      mermaid.initialize({ startOnLoad: true, theme: window.mermaidTheme || 'default', securityLevel: 'loose' });
+      const printBtn = document.getElementById('print-btn');
+      if (printBtn) printBtn.addEventListener('click', () => window.print());
+    });
+  </script>
+  <meta name="description" content="Entity-Relationship Diagram (ERD) for FEDEVENT SQLite database." />
+</head>
+<body>
+  <header>
+    <div class="wrap" style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h1>FEDEVENT Database ERD</h1>
+      <div class="actions noprint">
+        <button id="print-btn" title="Print to PDF">Print / Save as PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section>
+      <h2>Overview</h2>
+      <p>Relational model of core domains: accounts, hotels, contracts & bidding, government module, and auxiliary tables. Data store: SQLite via better-sqlite3 at <code>/data/creata.db</code>.</p>
+    </section>
+
+    <section>
+      <h2>Accounts, Hotels, Sessions</h2>
+      <div class="mermaid">
+erDiagram
+  HOTELS ||--o{ USERS : "hotel_id"
+  USERS ||--o{ SESSIONS : "user_id"
+
+  HOTELS {
+    INTEGER id PK
+    TEXT name
+    TEXT email
+    TEXT city
+    TEXT state
+    TEXT country
+    TEXT tags
+    TEXT created_at
+  }
+
+  USERS {
+    INTEGER id PK
+    TEXT email UNIQUE
+    TEXT password_hash
+    TEXT role
+    INTEGER hotel_id FK
+    TEXT first_name
+    TEXT last_name
+    TEXT phone
+    TEXT job_title
+    TEXT fedevent_account_number UNIQUE
+    INTEGER is_active
+    TEXT created_at
+    TEXT last_login
+  }
+
+  SESSIONS {
+    TEXT id PK
+    INTEGER user_id FK
+    TEXT data
+    TEXT created_at
+  }
+      </div>
+    </section>
+
+    <section>
+      <h2>Contracts, Bids, Access, Q&amp;A, Files</h2>
+      <div class="mermaid">
+erDiagram
+  USERS ||--o{ CONTRACTS : "created_by"
+  HOTELS ||--o{ CONTRACTS : "awarded_hotel_id"
+  CONTRACTS ||--o{ CONTRACT_ACCESS : "contract_id"
+  HOTELS ||--o{ CONTRACT_ACCESS : "hotel_id"
+  CONTRACTS ||--o{ CONTRACT_NOTIFICATIONS : "contract_id"
+  HOTELS ||--o{ CONTRACT_NOTIFICATIONS : "hotel_id"
+  CONTRACTS ||--o{ CONTRACT_BIDS : "contract_id"
+  HOTELS ||--o{ CONTRACT_BIDS : "hotel_id"
+  CONTRACT_BIDS ||--o{ BID_FILES : "bid_id"
+  CONTRACTS ||--o{ BID_FILES : "contract_id"
+  HOTELS ||--o{ BID_FILES : "hotel_id"
+  CONTRACTS ||--o{ CONTRACT_AWARDS : "contract_id"
+  HOTELS ||--o{ CONTRACT_AWARDS : "hotel_id"
+  CONTRACTS ||--o{ CONTRACT_QUESTIONS : "contract_id"
+  CONTRACT_BIDS ||--o{ BID_ANSWERS : "bid_id"
+  CONTRACTS ||--o{ BID_ANSWERS : "contract_id"
+  CONTRACT_QUESTIONS ||--o{ BID_ANSWERS : "question_id"
+  CONTRACTS ||--o{ CONTRACT_QNA : "contract_id"
+  HOTELS ||--o{ CONTRACT_QNA : "hotel_id"
+  USERS ||--o{ CONTRACT_QNA : "answered_by"
+
+  CONTRACTS {
+    INTEGER id PK
+    TEXT title
+    TEXT description
+    TEXT visibility
+    TEXT status
+    INTEGER created_by FK
+    TEXT created_at
+    TEXT updated_at
+    TEXT bidding_deadline
+    INTEGER awarded_hotel_id FK
+  }
+
+  CONTRACT_BIDS {
+    INTEGER id PK
+    INTEGER contract_id FK
+    INTEGER hotel_id FK
+    REAL contracted_rate
+    REAL self_pay_rate
+    TEXT breakdown
+    REAL total_price
+    REAL tax_rate
+    REAL total_with_tax
+    TEXT status
+    TEXT created_at
+    TEXT updated_at
+  }
+      </div>
+    </section>
+
+    <section>
+      <h2>Hotels: Profiles, Documents, Invitations, Deletions</h2>
+      <div class="mermaid">
+erDiagram
+  HOTELS ||--o{ HOTEL_PROFILES : "hotel_id"
+  HOTELS ||--o{ HOTEL_DOCUMENTS : "hotel_id"
+  HOTELS ||--o{ TEAM_INVITATIONS : "hotel_id"
+  USERS ||--o{ TEAM_INVITATIONS : "inviter_user_id"
+  USERS ||--o{ HOTEL_DELETIONS : "admin_user_id"
+
+  HOTEL_PROFILES {
+    INTEGER id PK
+    INTEGER hotel_id FK
+    TEXT data
+    TEXT created_at
+    TEXT updated_at
+  }
+
+  HOTEL_DOCUMENTS {
+    INTEGER id PK
+    INTEGER hotel_id FK
+    TEXT filename
+    TEXT original_name
+    TEXT mime_type
+    INTEGER size
+    TEXT uploaded_at
+  }
+      </div>
+    </section>
+
+    <section>
+      <h2>Government Module</h2>
+      <div class="mermaid">
+erDiagram
+  GOVERNMENT_USERS ||--o{ GOVERNMENT_SESSIONS : "government_user_id"
+  GOVERNMENT_USERS ||--o{ GOVERNMENT_DOCUMENTS : "government_user_id"
+  GOVERNMENT_USERS ||--o{ GOVERNMENT_PROJECTS : "government_user_id"
+  GOVERNMENT_USERS ||--o{ GOVERNMENT_QUOTE_REQUESTS : "government_user_id"
+  HOTELS ||--o{ GOVERNMENT_QUOTE_REQUESTS : "hotel_id"
+
+  GOVERNMENT_USERS {
+    INTEGER id PK
+    TEXT email UNIQUE
+    TEXT password_hash
+    TEXT name
+    TEXT created_at
+  }
+      </div>
+    </section>
+
+    <section>
+      <h2>Auxiliary</h2>
+      <p>Additional tables not diagrammed above: <code>signed_agreements</code>, <code>live_auctions</code>, <code>auction_bids</code>, <code>chats</code>, <code>support_requests</code>, <code>user_drafts</code>, <code>hotel_drafts</code>.</p>
+    </section>
+  </main>
+
+  <footer>
+    FEDEVENT ERD • Generated for internal review. Use the Print button to save as PDF.
+  </footer>
+</body>
+</html>
+
+

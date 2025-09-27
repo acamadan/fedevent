@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final Verification - Team Member Functionality</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .failure {
+            color: red;
+            font-weight: bold;
+        }
+        .team-member {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            position: relative;
+            background-color: #fff;
+        }
+        .remove-team-member {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 5px 10px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Final Verification - Team Member Functionality</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Add Team Member Functionality</h2>
+            <p>This test verifies that team members can be added to the form.</p>
+            <button id="testAdd">Run Test</button>
+            <div id="addResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 2: Remove Team Member Functionality</h2>
+            <p>This test verifies that team members can be removed from the form.</p>
+            <button id="testRemove">Run Test</button>
+            <div id="removeResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 3: Data Collection</h2>
+            <p>This test verifies that team member data is collected correctly.</p>
+            <button id="testData">Run Test</button>
+            <div id="dataResult"></div>
+        </div>
+        
+        <!-- Test area -->
+        <div style="margin-top: 30px;">
+            <button type="button" id="addTeamMemberBtn">+ Add Team Member</button>
+            <div id="teamMembersContainer"></div>
+        </div>
+        
+        <!-- Team Member Template -->
+        <template id="team-member-template">
+            <div class="team-member">
+                <button type="button" class="remove-team-member">Remove</button>
+                <div>
+                    <label>Team Member Name</label>
+                    <input type="text" class="team-member-name">
+                </div>
+                <div>
+                    <label>Title/Position</label>
+                    <input type="text" class="team-member-title" placeholder="Enter position title">
+                </div>
+                <div>
+                    <label>Email</label>
+                    <input type="email" class="team-member-email">
+                </div>
+                <div>
+                    <label>Phone</label>
+                    <input type="tel" class="team-member-phone">
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+            const teamMembersContainer = document.getElementById('teamMembersContainer');
+            const teamMemberTemplate = document.getElementById('team-member-template');
+            
+            const testAddBtn = document.getElementById('testAdd');
+            const testRemoveBtn = document.getElementById('testRemove');
+            const testDataBtn = document.getElementById('testData');
+            
+            const addResult = document.getElementById('addResult');
+            const removeResult = document.getElementById('removeResult');
+            const dataResult = document.getElementById('dataResult');
+            
+            // Initialize team member functionality
+            function initTeamMemberFunctionality() {
+                if (addTeamMemberBtn && teamMembersContainer && teamMemberTemplate) {
+                    // Add team member button click handler
+                    addTeamMemberBtn.addEventListener('click', function() {
+                        // Clone the template
+                        const templateContent = teamMemberTemplate.content.cloneNode(true);
+                        
+                        // Add to container
+                        teamMembersContainer.appendChild(templateContent);
+                        
+                        // Add event listener to the remove button of the newly added team member
+                        const newTeamMember = teamMembersContainer.lastElementChild;
+                        const removeBtn = newTeamMember.querySelector('.remove-team-member');
+                        if (removeBtn) {
+                            removeBtn.addEventListener('click', function() {
+                                newTeamMember.remove();
+                            });
+                        }
+                    });
+                    
+                    // Event delegation for remove buttons (for dynamically added elements)
+                    teamMembersContainer.addEventListener('click', function(e) {
+                        if (e.target && e.target.classList.contains('remove-team-member')) {
+                            e.target.closest('.team-member').remove();
+                        }
+                    });
+                }
+            }
+            
+            // Test 1: Add team member
+            testAddBtn.addEventListener('click', function() {
+                // Clear container
+                teamMembersContainer.innerHTML = '';
+                
+                // Click add button
+                addTeamMemberBtn.click();
+                
+                // Check if team member was added
+                const teamMembers = teamMembersContainer.querySelectorAll('.team-member');
+                if (teamMembers.length === 1) {
+                    addResult.innerHTML = '<span class="success">PASS: Team member added successfully</span>';
+                } else {
+                    addResult.innerHTML = '<span class="failure">FAIL: Team member not added</span>';
+                }
+            });
+            
+            // Test 2: Remove team member
+            testRemoveBtn.addEventListener('click', function() {
+                // Clear container
+                teamMembersContainer.innerHTML = '';
+                
+                // Add a team member
+                addTeamMemberBtn.click();
+                
+                // Click remove button
+                const removeBtn = teamMembersContainer.querySelector('.remove-team-member');
+                if (removeBtn) {
+                    removeBtn.click();
+                }
+                
+                // Check if team member was removed
+                const teamMembers = teamMembersContainer.querySelectorAll('.team-member');
+                if (teamMembers.length === 0) {
+                    removeResult.innerHTML = '<span class="success">PASS: Team member removed successfully</span>';
+                } else {
+                    removeResult.innerHTML = '<span class="failure">FAIL: Team member not removed</span>';
+                }
+            });
+            
+            // Test 3: Data collection
+            testDataBtn.addEventListener('click', function() {
+                // Clear container
+                teamMembersContainer.innerHTML = '';
+                
+                // Add a team member
+                addTeamMemberBtn.click();
+                
+                // Fill in data
+                const nameInput = teamMembersContainer.querySelector('.team-member-name');
+                const titleInput = teamMembersContainer.querySelector('.team-member-title');
+                const emailInput = teamMembersContainer.querySelector('.team-member-email');
+                const phoneInput = teamMembersContainer.querySelector('.team-member-phone');
+                
+                if (nameInput) nameInput.value = 'John Doe';
+                if (titleInput) titleInput.value = 'Sales Manager';
+                if (emailInput) emailInput.value = 'john@example.com';
+                if (phoneInput) phoneInput.value = '123-456-7890';
+                
+                // Collect data
+                const teamMembers = [];
+                const teamMemberElements = teamMembersContainer.querySelectorAll('.team-member');
+                teamMemberElements.forEach((member) => {
+                    const name = member.querySelector('.team-member-name')?.value || '';
+                    const title = member.querySelector('.team-member-title')?.value || '';
+                    const email = member.querySelector('.team-member-email')?.value || '';
+                    const phone = member.querySelector('.team-member-phone')?.value || '';
+                    
+                    if (name || title || email || phone) {
+                        teamMembers.push({ name, title, email, phone });
+                    }
+                });
+                
+                // Check if data was collected correctly
+                if (teamMembers.length === 1 && 
+                    teamMembers[0].name === 'John Doe' && 
+                    teamMembers[0].title === 'Sales Manager' && 
+                    teamMembers[0].email === 'john@example.com' && 
+                    teamMembers[0].phone === '123-456-7890') {
+                    dataResult.innerHTML = '<span class="success">PASS: Team member data collected correctly</span>';
+                } else {
+                    dataResult.innerHTML = '<span class="failure">FAIL: Team member data not collected correctly</span>';
+                }
+            });
+            
+            // Initialize the functionality
+            initTeamMemberFunctionality();
+        });
+    </script>
+</body>
+</html>

@@ -3,7 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SAM Search - FEDEVENT</title>
+    <title>Create Contract From SOW - FEDEVENT</title>
+    <meta name="robots" content="noindex, nofollow">
+    <script>
+        (function(){
+            try {
+                const user = JSON.parse(localStorage.getItem('user')||'null');
+                const sessionId = localStorage.getItem('sessionId');
+                if (!sessionId || !user || user.role !== 'admin') {
+                    window.location.replace('/admin-login.html');
+                    return;
+                }
+                // Admins should use the admin page
+                window.location.replace('/sam-search-admin.html');
+            } catch (_) {
+                window.location.replace('/admin-login.html');
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="site.css">
     
     <!-- Google Analytics 4 (GA4) -->
@@ -525,486 +542,60 @@
 </head>
 <body>
 
-    <div class="main-container">
-        <!-- Left Sidebar - Filter Panel -->
-        <div class="filter-sidebar">
-            <!-- Main Search Box -->
-            <div class="main-search">
-                <div class="search-label">Search</div>
-                <div class="search-input-container">
-                    <select class="search-dropdown" id="searchType">
-                        <option value="all">All Words</option>
-                        <option value="any">Any Words</option>
-                        <option value="exact">Exact Phrase</option>
-                    </select>
-                    <input type="text" class="search-input" id="searchInput" placeholder="e.g. 1606N020Q02">
-                    <button class="search-button" id="searchBtn">🔍</button>
-                </div>
+    <div class="main-container" style="display:flex; align-items:center; justify-content:center; min-height:70vh;">
+        <div style="max-width:640px; width:100%; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:24px;">
+            <h1 style="margin:0 0 12px 0; font-size:22px;">Create Contract From SOW</h1>
+            <p style="color:#6b7280; margin-bottom:16px;">Upload a Statement of Work (PDF/DOC/DOCX/TXT/Image). The system will read it and create a new contract with a brief summary, place/period of performance, and CLIN info.</p>
+            <div style="margin-bottom:16px;">
+                <input type="file" id="sow_file" accept=".pdf,.doc,.docx,.txt,.png,.jpg,.jpeg,.webp,.tif,.tiff" style="width:100%;">
             </div>
-
-            <!-- Tab Navigation -->
-            <div class="tab-navigation">
-                <button class="tab-btn active" data-tab="opportunities">Contract Opportunities</button>
+            <div style="display:flex; gap:12px;">
+                <button id="createFromSowBtn" style="appearance:none;border:0;border-radius:8px;background:#1e40af;color:#fff;padding:12px 16px;font-weight:700;cursor:pointer;">Create Contract From SOW</button>
             </div>
-
-            <!-- Search Criteria Message -->
-            <div class="search-criteria-info">
-                <div class="info-icon">i</div>
-                <div class="info-text">
-                    <h3>Set Your Search Criteria</h3>
-                    <p>Use the filters on the left to start your search</p>
-                </div>
-            </div>
-
-            <!-- Filter By Section -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('filterBy')">
-                    Filter By
-                    <span class="expand-icon">▼</span>
-                </div>
-            </div>
-
-            <!-- Keyword Search -->
-            <div class="keyword-search">
-                <div class="keyword-title">Keyword Search</div>
-                <p>For more information on how to use our keyword search, visit our <a href="#" class="help-link">help guide ↗</a></p>
-                
-                <div class="search-type-tabs">
-                    <div class="search-type-tab active">Simple Search</div>
-                    <div class="search-type-tab">Search Editor</div>
-                </div>
-
-                <div class="search-options">
-                    <div class="radio-group">
-                        <input type="radio" id="anyWords" name="searchMethod" value="any">
-                        <label for="anyWords">Any Words ⓘ</label>
-                    </div>
-                    <div class="radio-group">
-                        <input type="radio" id="allWords" name="searchMethod" value="all" checked>
-                        <label for="allWords">All Words ⓘ</label>
-                    </div>
-                    <div class="radio-group">
-                        <input type="radio" id="exactPhrase" name="searchMethod" value="exact">
-                        <label for="exactPhrase">Exact Phrase ⓘ</label>
-                    </div>
-                </div>
-
-                <input type="text" class="form-control" placeholder="e.g. W91QVN-17-R-008">
-            </div>
-
-            <!-- Federal Organizations -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('federalOrgs')">
-                    Federal Organizations
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="federalOrgs">
-                    <div class="form-group">
-                        <label>Federal Organizations</label>
-                        <input type="text" class="form-control" placeholder="Enter Code or Name ▼">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Dates -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('dates')">
-                    Dates
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="dates">
-                    <div class="form-group">
-                        <label>Response/Date Offers Due</label>
-                        <select class="form-control">
-                            <option>Anytime ▼</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Updated Date</label>
-                        <select class="form-control">
-                            <option>Anytime ▼</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notice Type -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('noticeType')">
-                    Notice Type
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="noticeType">
-                    <div class="form-group">
-                        <label>Notice Type</label>
-                        <select class="form-control">
-                            <option>Select Notice Type ▼</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Product or Service Information -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('productService')">
-                    Product or Service Information
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="productService">
-                    <div class="form-group">
-                        <label>NAICS Code</label>
-                        <div style="position: relative;">
-                            <input type="text" class="form-control" id="naicsCode" placeholder="Example: 621511" value="721110" autocomplete="off">
-                            <div id="naicsDropdown" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #ced4da; border-top: none; max-height: 200px; overflow-y: auto; z-index: 1000; display: none;"></div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Product and Service Code</label>
-                        <select class="form-control">
-                            <option>Example: C1LB ▼</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Set Aside -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('setAside')">
-                    Set Aside
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="setAside">
-                    <div class="form-group">
-                        <label>Set Aside</label>
-                        <select class="form-control">
-                            <option>Select Set Aside ▼</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Place of Performance -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('placePerformance')">
-                    Place of Performance
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="placePerformance">
-                    <div class="form-group">
-                        <label>Zip Code</label>
-                        <input type="text" class="form-control" placeholder="e.g. 20001">
-                    </div>
-                    <div class="form-group">
-                        <label>State / Territory</label>
-                        <select class="form-control">
-                            <option>Select State / Territory ▼</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Country</label>
-                        <select class="form-control">
-                            <option>Select Country ▼</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Status Section -->
-            <div class="filter-section status-section">
-                <div class="filter-header status-header">
-                    Status
-                    <span class="expand-icon expanded">▲</span>
-                </div>
-                <div class="status-options">
-                    <div class="checkbox-item active">
-                        <input type="checkbox" id="activeStatus" checked>
-                        <label for="activeStatus">Active</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="inactiveStatus">
-                        <label for="inactiveStatus">Inactive</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filter Actions -->
-            <div class="filter-actions">
-                <a href="#" class="more-filters">More Filters ☰</a>
-                <a href="#" class="reset-button" onclick="resetFilters()">Reset ↻</a>
-            </div>
-        </div>
-
-        <!-- Right Content Area -->
-        <div class="content-area">
-            <div class="results-container" id="resultsContainer">
-                <p>Configure your search criteria and click search to see results</p>
-            </div>
+            <div id="msg" style="margin-top:12px;"></div>
         </div>
     </div>
 
+    <!-- Requirements Table Add-on (will load when assets are present) -->
+    <link rel="stylesheet" href="/css/requirements.css">
+    <script type="module" src="/js/requirementsTable.js"></script>
+
+    <div class="req-upload" style="max-width:640px; margin:24px auto; background:#fff; border:1px solid #e5e7eb; border-radius:12px; padding:24px;">
+      <h2 style="margin:0 0 12px 0; font-size:18px;">Requirements Extraction</h2>
+      <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+        <input id="req-file" type="file" style="flex:1;" />
+        <button id="req-run" style="appearance:none;border:0;border-radius:8px;background:#1e40af;color:#fff;padding:10px 14px;font-weight:700;cursor:pointer;">Extract Requirements</button>
+      </div>
+      <div id="req-meta" class="req-meta" style="margin-bottom:12px;"></div>
+      <div id="req-table" class="req-table"></div>
+      <div class="req-actions" style="display:flex; gap:12px; margin-top:12px;">
+        <button id="req-save" style="appearance:none;border:0;border-radius:8px;background:#16a34a;color:#fff;padding:10px 14px;font-weight:700;cursor:pointer;">Save to Contract</button>
+        <button id="req-export" style="appearance:none;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;padding:10px 14px;font-weight:700;cursor:pointer;">Export CSV</button>
+      </div>
+    </div>
+
     <script>
-        // Toggle filter sections
-        function toggleFilter(sectionId) {
-            const content = document.getElementById(sectionId);
-            const header = content ? content.previousElementSibling : null;
-            const icon = header ? header.querySelector('.expand-icon') : null;
-            
-            if (content && header && icon) {
-                if (content.classList.contains('expanded')) {
-                    content.classList.remove('expanded');
-                    header.classList.remove('expanded');
-                    icon.classList.remove('expanded');
-                } else {
-                    content.classList.add('expanded');
-                    header.classList.add('expanded');
-                    icon.classList.add('expanded');
-                }
-            }
-        }
-
-        // Reset filters
-        function resetFilters() {
-            document.getElementById('searchInput').value = '';
-            document.querySelectorAll('input[type="text"]').forEach(input => input.value = '');
-            document.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-            document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = checkbox.id === 'activeStatus';
-            });
-            document.querySelector('input[name="searchMethod"][value="all"]').checked = true;
-            document.getElementById('naicsCode').value = '721110';
-        }
-
-        // Calculate days until deadline and return appropriate class
-        function getDeadlineClass(deadlineStr) {
-            if (!deadlineStr || deadlineStr === 'N/A') {
-                return 'deadline-unknown';
-            }
-
-            try {
-                const deadline = new Date(deadlineStr);
-                const now = new Date();
-                const diffTime = deadline - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                if (diffDays <= 3 && diffDays >= 0) {
-                    return 'deadline-urgent';  // Red
-                } else if (diffDays <= 7 && diffDays >= 4) {
-                    return 'deadline-warning'; // Yellow
-                } else if (diffDays > 7) {
-                    return 'deadline-safe';    // Green
-                } else {
-                    return 'deadline-unknown'; // Past deadline
-                }
-            } catch (error) {
-                return 'deadline-unknown';
-            }
-        }
-
-        // Format deadline with days remaining
-        function formatDeadlineWithDays(deadlineStr) {
-            if (!deadlineStr || deadlineStr === 'N/A') {
-                return 'No deadline specified';
-            }
-
-            try {
-                const deadline = new Date(deadlineStr);
-                const now = new Date();
-                const diffTime = deadline - now;
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-                let daysText = '';
-                if (diffDays > 0) {
-                    daysText = ` (${diffDays} day${diffDays === 1 ? '' : 's'} remaining)`;
-                } else if (diffDays === 0) {
-                    daysText = ' (Due today!)';
-                } else {
-                    daysText = ` (${Math.abs(diffDays)} day${Math.abs(diffDays) === 1 ? '' : 's'} overdue)`;
-                }
-
-                return deadlineStr + daysText;
-            } catch (error) {
-                return deadlineStr;
-            }
-        }
-
-        // Display search results
-        function displayResults(results) {
-            const container = document.getElementById('resultsContainer');
-            
-            if (!results || results.length === 0) {
-                container.innerHTML = '<p style="padding: 40px; text-align: center; color: #666;">No opportunities found matching your criteria</p>';
+        // Create contract directly from SOW
+        document.getElementById('createFromSowBtn').addEventListener('click', async () => {
+            const fileInput = document.getElementById('sow_file');
+            const msg = document.getElementById('msg');
+            msg.innerHTML = '';
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                msg.innerHTML = '<div style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:12px;border-radius:8px;">Please select a SOW file.</div>';
                 return;
             }
-
-            let html = `
-                <div style="padding: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #6c7ae0; padding-bottom: 15px;">
-                        <h3 style="margin: 0; color: #333;">Found ${results.length} Contract Opportunities</h3>
-                        <div style="font-size: 14px; color: #666;">
-                            Legend: 
-                            <span class="deadline-urgent">1-3 days</span>
-                            <span class="deadline-warning">4-7 days</span>
-                            <span class="deadline-safe">7+ days</span>
-                        </div>
-                    </div>
-            `;
-
-            results.forEach((result, index) => {
-                const deadlineClass = getDeadlineClass(result.deadline);
-                const formattedDeadline = formatDeadlineWithDays(result.deadline);
-                
-                html += `
-                    <div class="result-card">
-                        <h4 class="result-title">${result.title || 'No Title Available'}</h4>
-                        
-                        <div class="result-meta">
-                            <div class="meta-item">
-                                <span class="meta-label">Solicitation Number:</span>
-                                <span class="meta-value">${result.solicitation_number || 'N/A'}</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-label">Agency:</span>
-                                <span class="meta-value">${result.agency || 'N/A'}</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-label">NAICS Code:</span>
-                                <span class="meta-value">${result.naics || 'N/A'}</span>
-                            </div>
-                            <div class="meta-item">
-                                <span class="meta-label">Response Deadline:</span>
-                                <span class="meta-value ${deadlineClass}">${formattedDeadline}</span>
-                            </div>
-                        </div>
-
-                        <div class="result-description">
-                            ${(result.description || 'No description available').substring(0, 300)}${result.description && result.description.length > 300 ? '...' : ''}
-                        </div>
-
-                        <div class="result-actions">
-                            ${result.url ? `<a href="${result.url}" target="_blank" class="action-link">View on SAM.gov</a>` : '<span style="color: #999;">No link available</span>'}
-                            <span style="color: #666; font-size: 12px;">Posted: ${result.posted_date || 'Unknown'}</span>
-                        </div>
-                    </div>
-                `;
-            });
-
-            html += '</div>';
-            container.innerHTML = html;
-        }
-
-        // Search functionality
-        document.getElementById('searchBtn').addEventListener('click', async function() {
-            const searchTerm = document.getElementById('searchInput').value;
-            const naicsCode = document.getElementById('naicsCode').value;
-            const activeOnly = document.getElementById('activeStatus').checked;
-            
-            const resultsContainer = document.getElementById('resultsContainer');
-            resultsContainer.innerHTML = '<div style="padding: 40px; text-align: center;"><p>Searching SAM.gov database...</p><div style="margin-top: 20px;"><div style="border: 4px solid #f3f3f3; border-top: 4px solid #6c7ae0; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div></div></div>';
-
             try {
-                const params = new URLSearchParams({
-                    q: searchTerm || 'lodging',
-                    naics: naicsCode || '721110',
-                    active: activeOnly,
-                    limit: 25
-                });
-
-                const response = await fetch(`/api/sam/search?${params}`);
-                const data = await response.json();
-
-                if (data.ok && data.results) {
-                    displayResults(data.results);
-                    if (data.stub) {
-                        const notice = document.createElement('div');
-                        notice.style.cssText = 'background: #fff3cd; color: #856404; padding: 15px; margin: 20px; border-radius: 8px; border: 1px solid #ffeaa7;';
-                        notice.innerHTML = '<strong>Demo Mode:</strong> Showing sample data. Add SAM_API_KEY to .env file for live results.';
-                        document.querySelector('.content-area').insertBefore(notice, resultsContainer);
-                    }
-                } else {
-                    resultsContainer.innerHTML = '<p style="padding: 40px; text-align: center; color: #dc3545;">Search failed. Please try again or check your connection.</p>';
-                }
-            } catch (error) {
-                console.error('Search error:', error);
-                resultsContainer.innerHTML = '<p style="padding: 40px; text-align: center; color: #dc3545;">Search failed. Please check your connection and try again.</p>';
+                const fd = new FormData();
+                fd.append('file', fileInput.files[0]);
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
+                const resp = await fetch('/api/admin/contracts/create-from-sow', { method:'POST', headers: sessionId ? { 'Authorization': `Bearer ${sessionId}` } : {}, body: fd });
+                const data = await resp.json();
+                if (!data.ok) { msg.innerHTML = `<div style=\"background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:12px;border-radius:8px;\">${data.error||'Create from SOW failed'}</div>`; return; }
+                msg.innerHTML = '<div style="background:#f0fdf4;color:#166534;border:1px solid #bbf7d0;padding:12px;border-radius:8px;">Contract created from SOW.</div>';
+            } catch (e) {
+                console.error('create-from-sow error', e);
+                msg.innerHTML = '<div style="background:#fef2f2;color:#b91c1c;border:1px solid #fecaca;padding:12px;border-radius:8px;">Create from SOW failed.</div>';
             }
-        });
-
-        // NAICS Code Autocomplete
-        let naicsData = [];
-        
-        // Load NAICS data
-        async function loadNaicsData() {
-            try {
-                const response = await fetch('/naics.json');
-                naicsData = await response.json();
-                console.log('NAICS data loaded:', naicsData.length, 'codes');
-            } catch (error) {
-                console.error('Failed to load NAICS data:', error);
-            }
-        }
-        
-        // Setup NAICS autocomplete
-        function setupNaicsAutocomplete() {
-            const naicsInput = document.getElementById('naicsCode');
-            const dropdown = document.getElementById('naicsDropdown');
-            
-            naicsInput.addEventListener('input', function() {
-                const value = this.value.trim();
-                if (value.length < 2) {
-                    dropdown.style.display = 'none';
-                    return;
-                }
-                
-                // Filter NAICS codes
-                const matches = naicsData.filter(item => 
-                    item.code.includes(value) || 
-                    item.title.toLowerCase().includes(value.toLowerCase())
-                ).slice(0, 10); // Limit to 10 results
-                
-                if (matches.length > 0) {
-                    dropdown.innerHTML = matches.map(item => 
-                        `<div style="padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f1f3f4;" 
-                              onmouseover="this.style.background='#f8f9fa'" 
-                              onmouseout="this.style.background='white'"
-                              onclick="selectNaics('${item.code}', '${item.title.replace(/'/g, '&#39;')}')">
-                            <strong>${item.code}</strong> - ${item.title}
-                        </div>`
-                    ).join('');
-                    dropdown.style.display = 'block';
-                } else {
-                    dropdown.style.display = 'none';
-                }
-            });
-            
-            // Hide dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (!naicsInput.contains(e.target) && !dropdown.contains(e.target)) {
-                    dropdown.style.display = 'none';
-                }
-            });
-        }
-        
-        // Select NAICS code
-        function selectNaics(code, title) {
-            document.getElementById('naicsCode').value = code;
-            document.getElementById('naicsDropdown').style.display = 'none';
-            console.log('Selected NAICS:', code, '-', title);
-        }
-
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('naicsCode').value = '721110';
-            loadNaicsData();
-            setupNaicsAutocomplete();
-            
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes spin {
-                    0% { transform: rotate(0deg); }
-                    100% { transform: rotate(360deg); }
-                }
-            `;
-            document.head.appendChild(style);
         });
     </script>
 </body>

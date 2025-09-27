@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Management Company Contact Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; }
+        .row { display: flex; gap: 15px; margin-bottom: 15px; }
+        .col { flex: 1; }
+        .col-6 { flex: 0 0 calc(50% - 8px); }
+        button { background-color: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Management Company Contact Test</h1>
+        
+        <form id="managementContactForm">
+            <div class="form-group">
+                <label for="isManagementCompanyManaged">Is your hotel management/franchise company managed?</label>
+                <select id="isManagementCompanyManaged" name="is_management_company_managed" required>
+                    <option value="">Select...</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
+                </select>
+            </div>
+            
+            <div id="managementCompanyDetails" style="display: none; border: 1px solid #ddd; padding: 20px; border-radius: 5px; margin-top: 20px;">
+                <h2>Management/Franchise Company Information</h2>
+                
+                <div class="form-group">
+                    <label for="managementCompanyName">Management/Franchise Company Name</label>
+                    <input type="text" id="managementCompanyName" name="management_company_name" />
+                </div>
+                
+                <div class="form-group">
+                    <label for="managementCompanyAddress">Address</label>
+                    <input type="text" id="managementCompanyAddress" name="management_company_address_full" />
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <label for="managementCompanyCity">City</label>
+                        <input type="text" id="managementCompanyCity" name="management_company_city" />
+                    </div>
+                    <div class="col">
+                        <label for="managementCompanyState">State</label>
+                        <input type="text" id="managementCompanyState" name="management_company_state" maxlength="2" placeholder="e.g. FL" />
+                    </div>
+                    <div class="col">
+                        <label for="managementCompanyZip">Postal Code</label>
+                        <input type="text" id="managementCompanyZip" name="management_company_zip" />
+                    </div>
+                    <div class="col">
+                        <label for="managementCompanyCountry">Country</label>
+                        <input type="text" id="managementCompanyCountry" name="management_company_country" maxlength="2" placeholder="e.g. US" />
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col">
+                        <label for="managementCompanyPhone">Phone Number</label>
+                        <input type="tel" id="managementCompanyPhone" name="management_company_phone" />
+                    </div>
+                    <div class="col">
+                        <label for="managementCompanyWebsite">Website Address</label>
+                        <input type="url" id="managementCompanyWebsite" name="management_company_website" placeholder="https://" />
+                    </div>
+                </div>
+                
+                <!-- Management Company Primary Contact Person -->
+                <h3>Primary Contact Person</h3>
+                
+                <div class="form-group">
+                    <label for="managementCompanyContactName">Primary Contact Person Name</label>
+                    <input type="text" id="managementCompanyContactName" name="management_company_contact_name" />
+                </div>
+                
+                <div class="row">
+                    <div class="col-6">
+                        <label for="managementCompanyContactTitle">Contact Person Title</label>
+                        <select id="managementCompanyContactTitle" name="management_company_contact_title">
+                            <option value="">Select a title...</option>
+                            <option value="Vice President of Hotel Operations">Vice President of Hotel Operations</option>
+                            <option value="Corporate Director of Hotel Operations">Corporate Director of Hotel Operations</option>
+                            <option value="Regional Vice President (Hospitality / Lodging)">Regional Vice President (Hospitality / Lodging)</option>
+                            <option value="Managing Director – Hotel Portfolio">Managing Director – Hotel Portfolio</option>
+                            <option value="Head of Hotel Performance & Compliance">Head of Hotel Performance & Compliance</option>
+                        </select>
+                    </div>
+                    <div class="col-6">
+                        <label for="managementCompanyContactEmail">Contact Person Email</label>
+                        <input type="email" id="managementCompanyContactEmail" name="management_company_contact_email" />
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="managementCompanyContactPhone">Contact Person Phone</label>
+                    <input type="tel" id="managementCompanyContactPhone" name="management_company_contact_phone" />
+                </div>
+            </div>
+            
+            <button type="submit">Submit</button>
+        </form>
+        
+        <div id="output" style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 5px; display: none;">
+            <h3>Form Data:</h3>
+            <pre id="formData"></pre>
+        </div>
+    </div>
+
+    <script>
+        // Show/hide management company details based on selection
+        document.getElementById('isManagementCompanyManaged').addEventListener('change', function() {
+            const details = document.getElementById('managementCompanyDetails');
+            if (this.value === 'Yes') {
+                details.style.display = 'block';
+            } else {
+                details.style.display = 'none';
+            }
+        });
+        
+        // Handle form submission
+        document.getElementById('managementContactForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect form data
+            const formData = new FormData(this);
+            const data = {};
+            for (const [key, value] of formData.entries()) {
+                data[key] = value;
+            }
+            
+            // Display form data
+            document.getElementById('formData').textContent = JSON.stringify(data, null, 2);
+            document.getElementById('output').style.display = 'block';
+            
+            console.log('Form data:', data);
+        });
+    </script>
+</body>
+</html>

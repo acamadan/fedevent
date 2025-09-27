@@ -540,6 +540,23 @@
             <div id="resultsContainer" class="results-container">
                 Configure your search criteria and click search to see results
             </div>
+
+            <!-- Requirements Table Add-on (lightweight placeholder) -->
+            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
+                <h2 class="page-title" style="font-size:1.25rem; margin-bottom: .75rem;">Requirements Extraction</h2>
+                <link rel="stylesheet" href="/css/requirements.css">
+                <script type="module" src="/js/requirementsTable.js"></script>
+                <div class="req-upload" style="display:flex; gap: .75rem; align-items:center; margin-bottom: .75rem;">
+                  <input id="req-file" type="file" style="flex:1;" />
+                  <button id="req-run" class="search-button" style="padding:.6rem 1rem;">Extract Requirements</button>
+                </div>
+                <div id="req-meta" class="req-meta" style="margin-bottom:.5rem;"></div>
+                <div id="req-table" class="req-table"></div>
+                <div class="req-actions" style="display:flex; gap:.75rem; margin-top:.75rem;">
+                  <button id="req-save" class="search-button" style="background:#16a34a;">Save to Contract</button>
+                  <button id="req-export" class="action-link" style="border-color:#d1d5db; color:#111827;">Export CSV</button>
+                </div>
+            </div>
         </div>
     </div>
 

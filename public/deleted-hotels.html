@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deleted Hotels - FEDEVENT Admin</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: #d97706;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        .hotels-table {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        
+        .table-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+        
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        tr:hover {
+            background: var(--bg);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-deleted {
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        
+        .status-retracted {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            margin: 5% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">FEDEVENT Admin</div>
+            <div class="nav-links">
+                <a href="/admin-dashboard.html">Hotels</a>
+                <a href="/admin-contracts.html">Contracts</a>
+                <a href="/sam-search-admin.html">SAM Search</a>
+            </div>
+            <div class="user-menu">
+                <div class="user-info" id="userInfo">Loading...</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+    
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">🗂️ Deleted Hotels</h1>
+            <button class="btn" onclick="window.location.href='/admin-dashboard.html'">← Back to Dashboard</button>
+        </div>
+        
+        <div class="hotels-table">
+            <div class="table-header">
+                <h2 class="table-title">Deleted Hotel Records</h2>
+            </div>
+            
+            <div id="tableContent">
+                <div class="loading">Loading deleted hotels...</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Retract Deletion Modal -->
+    <div id="retractDeletionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">↩️ Retract Hotel Deletion</h3>
+                <button class="close-btn" onclick="closeModal('retractDeletionModal')">&times;</button>
+            </div>
+            <div id="retractModalContent">
+                <div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem;">
+                    <p style="color: #0369a1; font-weight: 600; margin-bottom: 0.5rem;">ℹ️ Retract Deletion</p>
+                    <p style="color: #075985; font-size: 0.9rem;">This will restore the hotel profile and all associated data exactly as it was before deletion.</p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <p style="font-weight: 600; margin-bottom: 0.5rem;">Hotel to restore: <span id="retractHotelName" style="color: #16a34a;"></span></p>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Reason for retraction (required, minimum 10 characters):</label>
+                    <textarea id="retractionReason" 
+                              placeholder="Please provide a reason for retracting this deletion..."></textarea>
+                    <div id="retractReasonError" style="color: #dc2626; font-size: 0.875rem; margin-top: 0.5rem; display: none;"></div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="closeModal('retractDeletionModal')" 
+                            style="background: #6b7280; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button id="confirmRetractBtn" onclick="executeRetractDeletion()" 
+                            style="background: #16a34a; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; font-size: 1rem; font-weight: 600;">
+                        ↩️ Restore Hotel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+        let currentDeletionToRetract = null;
+        
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            document.getElementById('userInfo').textContent = `${user.first_name} ${user.last_name}`;
+            return true;
+        }
+        
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('sessionId');
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok && response.status === 401) {
+                localStorage.removeItem('sessionId');
+                localStorage.removeItem('user');
+                window.location.href = '/admin-login.html';
+                return null;
+            }
+            
+            return result;
+        }
+        
+        // Load deleted hotels
+        async function loadDeletedHotels() {
+            try {
+                const result = await apiCall('/api/admin/deleted-hotels');
+                
+                if (result && result.ok) {
+                    const deletedHotels = result.deletedHotels;
+                    renderDeletedHotelsTable(deletedHotels);
+                } else {
+                    document.getElementById('tableContent').innerHTML = 
+                        '<div class="error">Failed to load deleted hotels</div>';
+                }
+            } catch (error) {
+                console.error('Load deleted hotels error:', error);
+                document.getElementById('tableContent').innerHTML = 
+                    '<div class="error">Failed to load deleted hotels</div>';
+            }
+        }
+        
+        // Render deleted hotels table
+        function renderDeletedHotelsTable(deletedHotels) {
+            const tableContent = document.getElementById('tableContent');
+            
+            if (deletedHotels.length === 0) {
+                tableContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #6b7280;">
+                        <p style="font-size: 1.2rem; margin-bottom: 0.5rem;">✨ No deleted hotels</p>
+                        <p>All hotel profiles are currently active.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Hotel Name</th>
+                            <th>Registered Email</th>
+                            <th>Deleted By</th>
+                            <th>Reason</th>
+                            <th>Deleted At</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${deletedHotels.map(deletion => `
+                            <tr>
+                                <td style="font-weight: 600; color: #1f2937;">${deletion.hotel_name}</td>
+                                <td>${deletion.hotel_email || 'N/A'}</td>
+                                <td>${deletion.admin_name}</td>
+                                <td style="max-width: 200px; overflow: hidden; text-overflow: ellipsis;" title="${deletion.deletion_reason}">${deletion.deletion_reason}</td>
+                                <td>${formatDate(deletion.deleted_at)}</td>
+                                <td>
+                                    ${deletion.is_retracted ? 
+                                        `<span class="status-badge status-retracted">✅ Retracted</span>` :
+                                        `<span class="status-badge status-deleted">🗑️ Deleted</span>`
+                                    }
+                                </td>
+                                <td>
+                                    ${!deletion.is_retracted ? 
+                                        `<button onclick="confirmRetractDeletion(${deletion.id}, '${deletion.hotel_name.replace(/'/g, "\\'")}', '${(deletion.hotel_email || '').replace(/'/g, "\\'")}')" 
+                                                class="btn btn-success" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                                            ↩️ Retract
+                                        </button>` :
+                                        `<span style="color: #6b7280; font-size: 0.875rem;">Restored on ${formatDate(deletion.retracted_at)}</span>`
+                                    }
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableContent.innerHTML = tableHTML;
+        }
+        
+        // Confirm retract deletion
+        function confirmRetractDeletion(deletionId, hotelName, hotelEmail) {
+            currentDeletionToRetract = deletionId;
+            document.getElementById('retractHotelName').textContent = hotelName + (hotelEmail ? ` (${hotelEmail})` : '');
+            document.getElementById('retractionReason').value = '';
+            document.getElementById('retractReasonError').style.display = 'none';
+            document.getElementById('retractDeletionModal').style.display = 'block';
+        }
+        
+        // Execute retract deletion
+        async function executeRetractDeletion() {
+            const reason = document.getElementById('retractionReason').value.trim();
+            const reasonError = document.getElementById('retractReasonError');
+            
+            if (!reason || reason.length < 10) {
+                reasonError.textContent = 'Retraction reason must be at least 10 characters long.';
+                reasonError.style.display = 'block';
+                return;
+            }
+            
+            reasonError.style.display = 'none';
+            
+            try {
+                const confirmBtn = document.getElementById('confirmRetractBtn');
+                confirmBtn.disabled = true;
+                confirmBtn.textContent = 'Retracting...';
+                
+                const result = await apiCall(`/api/admin/retract-deletion/${currentDeletionToRetract}`, {
+                    method: 'POST',
+                    body: JSON.stringify({ reason })
+                });
+                
+                if (result && result.ok) {
+                    closeModal('retractDeletionModal');
+                    
+                    // Show success message
+                    alert(`Hotel deletion retracted successfully!\n\n"${result.hotelName}" has been restored with all its data.`);
+                    
+                    // Refresh the deleted hotels list
+                    await loadDeletedHotels();
+                } else {
+                    alert(`Failed to retract deletion: ${result?.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Retract deletion error:', error);
+                alert('Failed to retract deletion. Please try again.');
+            } finally {
+                const confirmBtn = document.getElementById('confirmRetractBtn');
+                confirmBtn.disabled = false;
+                confirmBtn.textContent = '↩️ Restore Hotel';
+                currentDeletionToRetract = null;
+            }
+        }
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await apiCall('/api/auth/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Initialize
+        if (checkAuth()) {
+            loadDeletedHotels();
+        }
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modal = document.getElementById('retractDeletionModal');
+            if (event.target === modal) {
+                closeModal('retractDeletionModal');
+            }
+        }
+    </script>
+</body>
+</html>

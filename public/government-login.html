@@ -302,7 +302,10 @@
             
             <div class="form-group">
                 <label for="password">Password</label>
-                <input type="password" id="password" name="password" required>
+                <div style="position: relative;">
+                    <input type="password" id="password" name="password" required style="padding-right: 50px;">
+                    <button type="button" onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: #666;">👁️</button>
+                </div>
             </div>
             
             <button type="submit" class="login-button" id="loginButton">
@@ -314,9 +317,27 @@
             <p>New to FEDEVENT Government Portal?</p>
             <a href="/government-registration.html">Request Government Account</a>
         </div>
+        
+        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin-top: 2rem; font-size: 0.9rem;">
+            <h4 style="color: #0369a1; margin-top: 0;">🧪 Test Accounts</h4>
+            <p style="color: #0c4a6e; margin-bottom: 0.5rem;"><strong>Email:</strong> test@fedevent.mil</p>
+            <p style="color: #0c4a6e; margin-bottom: 0.5rem;"><strong>Password:</strong> Atakanc1$</p>
+            <p style="color: #0c4a6e; margin: 0; font-size: 0.8rem;">Use these credentials to test the government portal functionality.</p>
+        </div>
     </div>
     
     <script>
+        // Check if user is already signed in
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionId = localStorage.getItem('gov_session');
+            
+            if (sessionId) {
+                // Already signed in as government, redirect to dashboard
+                window.location.href = '/government-dashboard.html';
+                return;
+            }
+        });
+        
         document.getElementById('loginForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -337,8 +358,10 @@
                     email = 'admin@fedevent.com';
                 }
                 
-                // Validate government email (allow admin@fedevent.com)
-                if (!email.endsWith('.gov') && !email.endsWith('.mil') && email !== 'admin@fedevent.com') {
+                // Validate government email (allow admin@fedevent.com and test accounts)
+                if (!email.endsWith('.gov') && !email.endsWith('.mil') && 
+                    email !== 'admin@fedevent.com' && 
+                    !email.includes('@fedevent.com')) {
                     throw new Error('Please use your official government email address (.gov or .mil)');
                 }
                 
@@ -351,17 +374,40 @@
                 });
                 
                 const data = await response.json();
+                console.log('Login response:', data);
                 
                 if (data.ok) {
                     // Store session token
                     localStorage.setItem('gov_session', data.sessionId);
+                    console.log('Session stored:', data.sessionId);
                     
-                    // Redirect to government dashboard
-                    window.location.href = '/government-dashboard.html';
+                    // Show success message briefly
+                    errorDiv.style.display = 'none';
+                    const successDiv = document.createElement('div');
+                    successDiv.style.cssText = 'background: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 1rem;';
+                    successDiv.textContent = '✅ Login successful! Redirecting in 3 seconds...';
+                    document.getElementById('loginForm').parentNode.insertBefore(successDiv, document.getElementById('loginForm'));
+                    
+                    // Countdown
+                    let countdown = 3;
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        successDiv.textContent = `✅ Login successful! Redirecting in ${countdown} seconds...`;
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                        }
+                    }, 1000);
+                    
+                    // Redirect to government portal after delay
+                    setTimeout(() => {
+                        console.log('Redirecting to portal...');
+                        window.location.href = '/government-portal.html';
+                    }, 3000);
                 } else {
                     throw new Error(data.error || 'Login failed');
                 }
             } catch (error) {
+                console.error('Login error:', error);
                 errorDiv.textContent = error.message;
                 errorDiv.style.display = 'block';
             } finally {
@@ -373,6 +419,20 @@
         // Check if already logged in
         if (localStorage.getItem('gov_session')) {
             window.location.href = '/government-dashboard.html';
+        }
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = passwordInput.nextElementSibling;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = '👁️';
+            }
         }
 
         function toggleUserDropdown(e) {

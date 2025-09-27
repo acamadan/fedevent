@@ -730,7 +730,7 @@
                 
                 if (result && result.ok) {
                     currentContract = result.contract;
-                    const { contract, bids, myBid } = result;
+                    const { contract, bids, myBid, leadingBid, countdown } = result;
                     
                     document.getElementById('biddingModalTitle').textContent = contract.title;
                     
@@ -754,8 +754,11 @@
                                     <strong>Per Diem Rate:</strong> $${contract.per_diem_rate}/night
                                 </div>
                                 ${contract.bidding_deadline ? `
-                                    <div style="margin-bottom: 1rem;">
-                                        <strong>Bidding Deadline:</strong> ${formatDate(contract.bidding_deadline)}
+                                    <div style="margin-bottom: 1rem; display:flex; gap:1rem; align-items:center;">
+                                        <div><strong>Bidding Deadline:</strong> ${formatDate(contract.bidding_deadline)}</div>
+                                        <div id="countdownTimer" style="background:#1e40af;color:#fff;padding:.25rem .5rem;border-radius:4px;font-weight:600;">
+                                            Calculating time left...
+                                        </div>
                                     </div>
                                 ` : ''}
                             </div>
@@ -767,10 +770,11 @@
                                 </div>
                             ` : ''}
                             
-                            ${contract.sow_document ? `
+                            ${(contract.sow_summary || contract.sow_redacted) ? `
                                 <div class="sow-section">
-                                    <h3>Statement of Work</h3>
-                                    <div style="white-space: pre-wrap; line-height: 1.6;">${contract.sow_document}</div>
+                                    <h3>Statement of Work (Hotel-Facing)</h3>
+                                ${contract.description ? `<div style="margin-bottom:1rem;">${contract.description}</div>` : ''}
+                                ${contract.sow_redacted ? `<div style="white-space: pre-wrap; line-height: 1.6;">${contract.sow_redacted}</div>` : ''}
                                 </div>
                             ` : ''}
                         </div>
@@ -794,7 +798,8 @@
                                     `).join('')}
                                 </div>
                                 <div style="margin-top: 1rem; padding: 1rem; background: #fef3c7; border-radius: 6px;">
-                                    <strong>Current Winning Bid:</strong> $${bids[0].contracted_rate}/night (Contracted) | $${bids[0].self_pay_rate}/night (Self-Pay)
+                                    <strong>Leading (Lowest) Bid:</strong> $${(leadingBid?leadingBid.contracted_rate:bids[0].contracted_rate)}/night (Contracted) | $${(leadingBid?leadingBid.self_pay_rate:bids[0].self_pay_rate)}/night (Self-Pay)
+                                    <div class="rate-hint">Reverse auction: lower prices improve your rank.</div>
                                 </div>
                             ` : '<p style="color: var(--text-light);">No bids submitted yet. Be the first to bid!</p>'}
                         </div>
@@ -816,6 +821,18 @@
                                         <div class="rate-hint">Maximum: $${contract.max_self_pay_rate} (10% off per diem)</div>
                                     </div>
                                 </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="tax_rate">Tax Rate (e.g., 0.085 for 8.5%)</label>
+                                        <input type="number" id="tax_rate" step="0.0001" min="0" max="1" value="${myBid && myBid.tax_rate != null ? myBid.tax_rate : ''}">
+                                        <div class="rate-hint">Used to compute total with tax.</div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="total_price">Total Price (optional)</label>
+                                        <input type="number" id="total_price" step="0.01" min="0" value="${myBid && myBid.total_price ? myBid.total_price : ''}">
+                                        <div class="rate-hint">If provided, we compute total with tax.</div>
+                                    </div>
+                                </div>
                                 
                                 <div class="form-group">
                                     <label for="breakdown">Breakdown (JSON)</label>
@@ -823,15 +840,9 @@
                                     <div class="rate-hint">Provide line items as JSON. We'll validate on submit.</div>
                                 </div>
 
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="total_price">Total Price (optional)</label>
-                                        <input type="number" id="total_price" step="0.01" min="0" value="${myBid && myBid.total_price ? myBid.total_price : ''}">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="additional_notes">Additional Notes (Optional)</label>
-                                        <textarea id="additional_notes" rows="3" placeholder="Any additional information about your bid...">${myBid ? (myBid.additional_notes || '') : ''}</textarea>
-                                    </div>
+                                <div class="form-group">
+                                    <label for="additional_notes">Additional Notes (Optional)</label>
+                                    <textarea id="additional_notes" rows="3" placeholder="Any additional information about your bid...">${myBid ? (myBid.additional_notes || '') : ''}</textarea>
                                 </div>
 
                                 <div class="form-group">
@@ -872,6 +883,11 @@
                     document.getElementById('biddingModalContent').innerHTML = content;
                     document.getElementById('biddingModal').style.display = 'block';
                     
+                    // Setup countdown
+                    if (contract.bidding_deadline && countdown) {
+                        startCountdown('countdownTimer', countdown.serverTime, countdown.remainingMs);
+                    }
+
                     // Setup form handler
                     setupBidForm(contractId);
                     // Load Q&A and wire post
@@ -918,6 +934,11 @@
                     self_pay_rate: parseFloat(document.getElementById('self_pay_rate').value),
                     additional_notes: document.getElementById('additional_notes').value
                 };
+                const taxRateEl = document.getElementById('tax_rate');
+                if (taxRateEl && taxRateEl.value !== '') {
+                    const tr = parseFloat(taxRateEl.value);
+                    if (!Number.isNaN(tr)) formData.tax_rate = tr;
+                }
                 const breakdownEl = document.getElementById('breakdown');
                 const totalPriceEl = document.getElementById('total_price');
                 if (breakdownEl && breakdownEl.value.trim()) {
@@ -941,7 +962,7 @@
                         body: JSON.stringify(formData)
                     });
                     
-                    if (result && result.ok) {
+                        if (result && result.ok) {
                         // upload file if any
                         const fileInput = document.getElementById('bid_file');
                         if (fileInput && fileInput.files && fileInput.files[0]) {
@@ -980,7 +1001,7 @@
                     try {
                         const result = await apiCall(`/api/hotel/contracts/${contractId}/bid/submit`, { method: 'POST' });
                         if (result && result.ok) {
-                            message.innerHTML = '<div class="success">Bid submitted. It is now locked.</div>';
+                            message.innerHTML = '<div class="success">Bid submitted. You can still edit until the deadline.</div>';
                             setTimeout(() => { closeModal(); loadContracts(); }, 1200);
                         } else {
                             message.innerHTML = `<div class=\"error\">${result.error}</div>`;
@@ -993,6 +1014,30 @@
                     }
                 });
             }
+        }
+
+        // Countdown utilities
+        function startCountdown(elementId, serverIso, remainingMs) {
+            const el = document.getElementById(elementId);
+            if (!el) return;
+            const serverNow = new Date(serverIso).getTime();
+            const clientStart = Date.now();
+            const endAt = clientStart + remainingMs + (Date.now() - clientStart) + (serverNow - clientStart);
+
+            const update = () => {
+                const now = Date.now();
+                const left = Math.max(0, endAt - now);
+                const h = Math.floor(left / 3600000);
+                const m = Math.floor((left % 3600000) / 60000);
+                const s = Math.floor((left % 60000) / 1000);
+                el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')} remaining`;
+                if (left <= 0) {
+                    clearInterval(timer);
+                    el.textContent = 'Bidding closed';
+                }
+            };
+            update();
+            const timer = setInterval(update, 1000);
         }
         
         // Close modal

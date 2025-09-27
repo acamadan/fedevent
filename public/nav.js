@@ -238,19 +238,12 @@
     const isAdmin = /\badmin\-/.test(location.pathname) || /\/admin/.test(location.pathname);
     if (isAdmin) return; // do nothing on admin pages
 
-    let header = document.querySelector('header');
-    let navLinks = document.querySelector('header nav .nav-links');
-
-    if (!header || !navLinks) {
-      // Inject our header at the top of body
-      header = buildHeader();
-      document.body.insertBefore(header, document.body.firstChild);
+    const existingHeader = document.querySelector('header');
+    const newHeader = buildHeader();
+    if (existingHeader) {
+      existingHeader.replaceWith(newHeader);
     } else {
-      // Add user menu if not present
-      if (!document.getElementById('userMenu')) {
-        const liUser = buildHeader().querySelector('#userMenu');
-        if (liUser) navLinks.appendChild(liUser);
-      }
+      document.body.insertBefore(newHeader, document.body.firstChild);
     }
     loadUserMenu();
 

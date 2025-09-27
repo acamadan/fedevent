@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Profile - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
     <style>
         * {
             margin: 0;
@@ -251,8 +252,11 @@
                     <a href="/hotel-registration.html" class="btn" style="background: #f59e0b; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
                         Complete Registration
                     </a>
-                    <a href="/user-profile.html" class="btn" style="background: #0a58ca; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                    <a href="javascript:void(0)" onclick="editProfile()" id="updateProfileBtn" class="btn" style="background: #0a58ca; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
                         Update Profile
+                    </a>
+                    <a href="/pricing.html" class="btn" style="background: #10b981; color: white; text-decoration: none; padding: 10px 20px; border-radius: 8px; font-weight: 600;">
+                        View Pricing Plans
                     </a>
                 </div>
             </div>
@@ -438,7 +442,64 @@
                     throw new Error(result.error || 'Failed to load profile');
                 }
 
-                hotelProfile = result.profile;
+                // Server returns { hotel, users, profiles }
+                const hotel = result.hotel || {};
+                const profiles = Array.isArray(result.profiles) ? result.profiles : [];
+
+                // Pick latest profile record (by submitted_at or id)
+                const latest = profiles
+                    .slice()
+                    .sort((a, b) => {
+                        const ad = new Date(a.submitted_at || a.updated_at || 0).getTime();
+                        const bd = new Date(b.submitted_at || b.updated_at || 0).getTime();
+                        if (ad === bd) return (a.id || 0) - (b.id || 0);
+                        return ad - bd;
+                    })
+                    .pop();
+
+                let profileData = {};
+                try {
+                    if (latest && latest.profile_data) {
+                        profileData = typeof latest.profile_data === 'string' ? JSON.parse(latest.profile_data) : latest.profile_data;
+                    }
+                } catch (e) {
+                    console.warn('Failed to parse profile_data JSON', e);
+                }
+
+                // Merge hotel basics with submitted profile_data for display
+                hotelProfile = {
+                    name: hotel.name,
+                    address: hotel.address,
+                    city: hotel.city,
+                    state: hotel.state,
+                    country: hotel.country,
+                    phone: hotel.phone,
+                    email: hotel.email,
+                    status: latest?.status || 'pending',
+                    created_at: hotel.created_at,
+                    // Optional stats/fields from profile_data
+                    total_rooms: profileData.total_rooms,
+                    king_rooms: profileData.king_rooms,
+                    double_rooms: profileData.double_rooms,
+                    suites: profileData.suites,
+                    meeting_rooms: profileData.meeting_rooms,
+                    hotel_location_type: profileData.hotel_location_type,
+                    ach_bank_name: profileData.ach_bank_name,
+                    ach_routing_number: profileData.ach_routing_number,
+                    ach_ar_email: profileData.ach_ar_email,
+                    wire_bank_name: profileData.wire_bank_name,
+                    wire_swift_code: profileData.wire_swift_code,
+                    wire_ar_email: profileData.wire_ar_email,
+                    tax_percent: profileData.tax_percent,
+                    resort_fee: profileData.resort_fee,
+                    self_parking: profileData.self_parking,
+                    valet_parking: profileData.valet_parking,
+                    wifi_fee: profileData.wifi_fee,
+                    accepts_net30: profileData.accepts_net30,
+                    accepts_po: profileData.accepts_po,
+                    aaa_diamond_rating: profileData.aaa_diamond_rating
+                };
+
                 displayProfile(hotelProfile);
 
                 document.getElementById('loadingState').style.display = 'none';
@@ -568,7 +629,19 @@
             `).join('');
         }
 
+        function isProfileComplete(profile) {
+            if (!profile) return false;
+            const hasBasics = !!(profile.name && profile.address && profile.phone && profile.email);
+            const goodStatus = profile.status !== 'pending' && profile.status !== 'incomplete';
+            return hasBasics && goodStatus;
+        }
+
         function editProfile() {
+            const complete = isProfileComplete(hotelProfile);
+            if (!complete) {
+                alert('Please complete your hotel registration first. Use the "Complete Registration" button.');
+                return;
+            }
             window.location.href = '/hotel-registration.html?mode=edit';
         }
 

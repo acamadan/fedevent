@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Select Element</title>
+</head>
+<body>
+    <h1>Test Select Element</h1>
+    
+    <select id="test-select">
+        <option value="">Select a position...</option>
+        <optgroup label="Executive / Property Leadership">
+            <option>General Manager (GM)</option>
+            <option>Assistant General Manager (AGM)</option>
+            <option>Resident Manager</option>
+            <option>Hotel Manager</option>
+        </optgroup>
+        <optgroup label="Sales & Marketing">
+            <option>Director of Sales (DOS)</option>
+            <option>Assistant Director of Sales</option>
+            <option>Sales Manager</option>
+            <option>Sales Coordinator</option>
+            <option>Marketing Manager</option>
+        </optgroup>
+    </select>
+    
+    <button id="get-value">Get Value</button>
+    <button id="set-value">Set Value</button>
+    <input type="text" id="value-input" placeholder="Enter value to set">
+    
+    <div id="output"></div>
+    
+    <script>
+        document.getElementById('get-value').addEventListener('click', function() {
+            const select = document.getElementById('test-select');
+            document.getElementById('output').innerHTML = 'Selected value: ' + select.value;
+        });
+        
+        document.getElementById('set-value').addEventListener('click', function() {
+            const select = document.getElementById('test-select');
+            const inputValue = document.getElementById('value-input').value;
+            select.value = inputValue;
+            document.getElementById('output').innerHTML = 'Set value to: ' + inputValue;
+        });
+    </script>
+</body>
+</html>
