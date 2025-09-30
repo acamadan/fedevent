@@ -1,9 +1,12 @@
 NODE_ENV=production
-PORT=3000
+PORT=5050
 
 # Admin Configuration
 ADMIN_EMAIL=admin@fedevent.com
 ADMIN_PASSWORD=secure-admin-password-change-this
+
+# Support Configuration
+SUPPORT_EMAIL=support@fedevent.com
 
 # SMTP Configuration using SendGrid (Twilio)
 SMTP_HOST=smtp.sendgrid.net
@@ -26,3 +29,9 @@ GSA_API_KEY=
 
 # SendGrid
 SENDGRID_API_KEY=
+
+# Google Places API
+GOOGLE_PLACES_API_KEY=
+
+# OpenAI API
+OPENAI_API_KEY=

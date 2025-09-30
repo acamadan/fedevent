@@ -95,7 +95,7 @@ Make sure to set up your environment variables in a `.env` file:
 
 ```env
 # Database and server settings
-PORT=3000
+PORT=5050
 NODE_ENV=production
 
 # Email settings (if needed)
@@ -124,7 +124,7 @@ Logs are stored in the `logs` directory:
 
 1. **Port already in use:**
    - Change the PORT in your `.env` file
-   - Or kill the process using the port: `lsof -i :3000` then `kill -9 PID`
+   - Or kill the process using the port: `lsof -i :5050` then `kill -9 PID`
 
 2. **Permission denied:**
    - Make sure scripts are executable: `chmod +x *.sh`

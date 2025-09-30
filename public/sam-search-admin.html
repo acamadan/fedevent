@@ -142,6 +142,7 @@
         
         .main-container {
             display: flex;
+            flex-direction: column;
             min-height: calc(100vh - 80px);
             max-width: 1400px;
             margin: 0 auto;
@@ -149,19 +150,15 @@
             gap: 2rem;
         }
         
-        .filter-sidebar {
-            width: 400px;
+        .search-container {
             background: var(--white);
             border-radius: 12px;
             border: 1px solid var(--border);
             padding: 1.5rem;
-            height: fit-content;
-            position: sticky;
-            top: 100px;
+            width: 100%;
         }
         
         .content-area {
-            flex: 1;
             background: var(--white);
             border-radius: 12px;
             border: 1px solid var(--border);
@@ -226,35 +223,6 @@
             background: var(--primary-dark);
         }
         
-        .filter-section {
-            background: var(--bg);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            overflow: hidden;
-        }
-        
-        .filter-header {
-            background: var(--white);
-            padding: 1rem;
-            border-bottom: 1px solid var(--border);
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        
-        .filter-content {
-            padding: 1rem;
-            display: none;
-        }
-        
-        .filter-content.expanded {
-            display: block;
-        }
-        
         .form-group {
             margin-bottom: 1rem;
         }
@@ -282,50 +250,39 @@
             box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
         }
         
-        .radio-group {
-            margin-bottom: 0.75rem;
+        .autocomplete-suggestions {
+            position: absolute;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: calc(100% - 2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         
-        .radio-group input[type="radio"] {
-            margin-right: 0.5rem;
-        }
-        
-        .radio-group label {
-            font-weight: normal;
+        .autocomplete-suggestion {
+            padding: 0.75rem;
             cursor: pointer;
-            font-size: 0.9rem;
+            border-bottom: 1px solid var(--border);
         }
         
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            margin-bottom: 0.75rem;
+        .autocomplete-suggestion:hover {
+            background-color: var(--bg);
         }
         
-        .checkbox-item input[type="checkbox"] {
-            margin-right: 0.75rem;
-            transform: scale(1.2);
-        }
-        
-        .status-section {
-            background: #e7f3ff;
-            border: 1px solid var(--primary);
-        }
-        
-        .status-header {
-            background: var(--primary);
-            color: white;
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
         }
         
         .results-container {
-            min-height: 400px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            background: var(--bg);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-light);
+            min-height: 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            display: block;
+            color: var(--text);
         }
         
         .result-card {
@@ -401,14 +358,6 @@
             color: var(--text-light);
         }
         
-        .expand-icon {
-            transition: transform 0.2s;
-        }
-        
-        .expand-icon.expanded {
-            transform: rotate(180deg);
-        }
-        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
@@ -427,6 +376,106 @@
         
         .back-btn:hover {
             background: var(--text);
+        }
+        
+        .search-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .search-option {
+            flex: 1;
+        }
+        
+        .requirements-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .requirements-section h2 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .requirements-section label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .requirements-section input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        
+        .requirements-section .req-meta {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .requirements-section .req-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5rem;
+        }
+        
+        .requirements-section .req-table th,
+        .requirements-section .req-table td {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+        }
+        
+        .requirements-section .req-table th {
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .requirements-section .req-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+        
+        .requirements-section .req-actions button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        
+        .requirements-section .req-actions button:hover {
+            background: var(--primary-dark);
+        }
+        
+        .search-options-top {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-option-top {
+            flex: 1;
+            min-width: 300px;
         }
     </style>
 </head>
@@ -447,120 +496,43 @@
     </header>
     
     <div class="main-container">
-        <!-- Left Sidebar - Filter Panel -->
-        <div class="filter-sidebar">
-            <h2 class="page-title">SAM.gov Search</h2>
-            
-            <!-- Main Search Box -->
-            <div class="search-section">
-                <div class="search-title">Search</div>
-                <div class="search-input-container">
-                    <select class="search-dropdown" id="searchType">
-                        <option value="all">All Words</option>
-                        <option value="any">Any Words</option>
-                        <option value="exact">Exact Phrase</option>
-                    </select>
-                    <input type="text" class="search-input" id="searchInput" placeholder="e.g. 1606N020Q02">
-                    <button class="search-button" id="searchBtn" onclick="performSamSearch()">🔍</button>
-                </div>
-            </div>
-
-            <!-- Keyword Search -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('keywordSearch')">
-                    Keyword Search
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="keywordSearch">
-                    <div class="radio-group">
-                        <input type="radio" id="anyWords" name="searchMethod" value="any">
-                        <label for="anyWords">Any Words ⓘ</label>
-                    </div>
-                    <div class="radio-group">
-                        <input type="radio" id="allWords" name="searchMethod" value="all" checked>
-                        <label for="allWords">All Words ⓘ</label>
-                    </div>
-                    <div class="radio-group">
-                        <input type="radio" id="exactPhrase" name="searchMethod" value="exact">
-                        <label for="exactPhrase">Exact Phrase ⓘ</label>
-                    </div>
-                    <input type="text" class="form-control" placeholder="e.g. W91QVN-17-R-008">
-                </div>
-            </div>
-
-            <!-- Product or Service Information -->
-            <div class="filter-section">
-                <div class="filter-header" onclick="toggleFilter('productService')">
-                    Product or Service Information
-                    <span class="expand-icon">▼</span>
-                </div>
-                <div class="filter-content" id="productService">
-                    <div class="form-group">
-                        <label for="naicsCode">NAICS Code</label>
-                        <input type="text" class="form-control" id="naicsCode" placeholder="Example: 621511" value="721110">
-                    </div>
-                    <div class="form-group">
-                        <label>Product and Service Code</label>
-                        <select class="form-control">
-                            <option>Example: C1LB ▼</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Status Section -->
-            <div class="filter-section status-section">
-                <div class="filter-header status-header">
-                    Status
-                    <span class="expand-icon expanded">▲</span>
-                </div>
-                <div class="filter-content expanded">
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="activeStatus" checked>
-                        <label for="activeStatus">Active</label>
-                    </div>
-                    <div class="checkbox-item">
-                        <input type="checkbox" id="inactiveStatus">
-                        <label for="inactiveStatus">Inactive</label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Filter Actions -->
-            <div style="display: flex; justify-content: space-between; margin-top: 1rem;">
-                <button onclick="resetFilters()" style="color: var(--primary); background: none; border: none; font-weight: 600; cursor: pointer;">Reset ↻</button>
-            </div>
-        </div>
-
         <!-- Right Content Area -->
         <div class="content-area">
             <a href="/admin-dashboard.html" class="back-btn">← Back to Dashboard</a>
-            <h1 class="page-title">Search Results</h1>
+            <h1 class="page-title">SAM.gov Search</h1>
+            
+            <!-- Search Options at Top -->
+            <div class="search-options-top">
+                <div class="search-option-top">
+                    <div class="search-title">Keyword Search</div>
+                    <div class="search-input-container">
+                        <input type="text" class="search-input" id="searchInput" placeholder="Enter keywords...">
+                        <button class="search-button" id="searchBtn" onclick="performSamSearch()">Search</button>
+                    </div>
+                </div>
+                
+                <div class="search-option-top">
+                    <div class="search-title">NAICS Code</div>
+                    <div class="form-group" style="position: relative; display:flex; gap:.5rem; align-items:center;">
+                        <input type="text" class="form-control" id="naicsCode" placeholder="Enter NAICS code or description..." oninput="showNaicsSuggestions(this.value)" style="flex:1;">
+                        <button class="search-button" onclick="performNaicsSearch()">Search</button>
+                        <div id="naicsSuggestions" class="autocomplete-suggestions" style="display: none; position:absolute; left:0; right:0; top:100%;"></div>
+                    </div>
+                </div>
+            </div>
             
             <div id="resultsContainer" class="results-container">
-                Configure your search criteria and click search to see results
+                Enter search criteria above and click search to see results
             </div>
 
-            <!-- Requirements Table Add-on (lightweight placeholder) -->
-            <div style="margin-top: 2rem; border-top: 1px solid var(--border); padding-top: 1.5rem;">
-                <h2 class="page-title" style="font-size:1.25rem; margin-bottom: .75rem;">Requirements Extraction</h2>
-                <link rel="stylesheet" href="/css/requirements.css">
-                <script type="module" src="/js/requirementsTable.js"></script>
-                <div class="req-upload" style="display:flex; gap: .75rem; align-items:center; margin-bottom: .75rem;">
-                  <input id="req-file" type="file" style="flex:1;" />
-                  <button id="req-run" class="search-button" style="padding:.6rem 1rem;">Extract Requirements</button>
-                </div>
-                <div id="req-meta" class="req-meta" style="margin-bottom:.5rem;"></div>
-                <div id="req-table" class="req-table"></div>
-                <div class="req-actions" style="display:flex; gap:.75rem; margin-top:.75rem;">
-                  <button id="req-save" class="search-button" style="background:#16a34a;">Save to Contract</button>
-                  <button id="req-export" class="action-link" style="border-color:#d1d5db; color:#111827;">Export CSV</button>
-                </div>
-            </div>
+            <!-- Removed left/extra section per request -->
         </div>
     </div>
 
     <script>
+        // Load NAICS data
+        let naicsData = [];
+        
         // Check authentication
         function checkAuth() {
             const sessionId = localStorage.getItem('sessionId');
@@ -575,47 +547,90 @@
             return true;
         }
         
-        // Toggle filter sections
-        function toggleFilter(sectionId) {
-            const content = document.getElementById(sectionId);
-            const header = content ? content.previousElementSibling : null;
-            const icon = header ? header.querySelector('.expand-icon') : null;
-            
-            if (content && header && icon) {
-                if (content.classList.contains('expanded')) {
-                    content.classList.remove('expanded');
-                    icon.classList.remove('expanded');
-                } else {
-                    content.classList.add('expanded');
-                    icon.classList.add('expanded');
-                }
+        // Load NAICS data on page load
+        async function loadNaicsData() {
+            try {
+                const response = await fetch('/naics.json');
+                naicsData = await response.json();
+            } catch (error) {
+                console.error('Failed to load NAICS data:', error);
             }
         }
+        
+        // Show NAICS suggestions
+        function showNaicsSuggestions(input) {
+            const suggestionsContainer = document.getElementById('naicsSuggestions');
+            
+            if (!input || input.length < 1) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Filter NAICS codes based on input
+            const filtered = naicsData.filter(item => 
+                item.code.includes(input) || 
+                item.title.toLowerCase().includes(input.toLowerCase())
+            ).slice(0, 10); // Limit to 10 suggestions
+            
+            if (filtered.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(item => {
+                html += `<div class="autocomplete-suggestion" onclick="selectNaics('${item.code}', '${item.title.replace(/'/g, "&#39;")}')">${item.code} - ${item.title}</div>`;
+            });
+            
+            suggestionsContainer.innerHTML = html;
+            suggestionsContainer.style.display = 'block';
+        }
+        
+        // Select a NAICS code
+        function selectNaics(code, title) {
+            document.getElementById('naicsCode').value = `${code} - ${title}`;
+            document.getElementById('naicsSuggestions').style.display = 'none';
+        }
 
+        // Trigger search by NAICS only
+        function performNaicsSearch() {
+            const input = document.getElementById('naicsCode').value;
+            const code = input.split(' - ')[0].trim();
+            if (!code) return;
+            document.getElementById('searchInput').value = '';
+            // reuse performSamSearch flow with NAICS filled
+            performSamSearch();
+        }
+        
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#naicsCode') && !e.target.closest('#naicsSuggestions')) {
+                document.getElementById('naicsSuggestions').style.display = 'none';
+            }
+        });
+        
         // Reset filters
         function resetFilters() {
             document.getElementById('searchInput').value = '';
-            document.getElementById('naicsCode').value = '721110';
-            document.getElementById('activeStatus').checked = true;
-            document.getElementById('inactiveStatus').checked = false;
-            document.querySelector('input[name="searchMethod"][value="all"]').checked = true;
+            document.getElementById('naicsCode').value = '';
         }
 
         // Perform SAM Search
         async function performSamSearch() {
             const searchTerm = document.getElementById('searchInput').value;
-            const naicsCode = document.getElementById('naicsCode').value;
-            const activeOnly = document.getElementById('activeStatus').checked;
+            // Extract just the code part if NAICS has title included
+            const naicsInput = document.getElementById('naicsCode').value;
+            const naicsCode = naicsInput.split(' - ')[0].trim() || '721110';
             
             const resultsContainer = document.getElementById('resultsContainer');
             resultsContainer.innerHTML = '<div class="loading"><p>Searching SAM.gov database...</p><div style="margin-top: 20px;"><div style="border: 4px solid #f3f3f3; border-top: 4px solid #1e40af; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div></div></div>';
 
             try {
                 const params = new URLSearchParams({
-                    q: searchTerm || 'lodging',
-                    naics: naicsCode || '721110',
-                    active: activeOnly,
-                    limit: 25
+                    q: searchTerm,
+                    naics: naicsCode,
+                    limit: 25,
+                    _t: Date.now() // Cache busting
                 });
 
                 const response = await fetch(`/api/sam/search?${params}`);
@@ -623,12 +638,7 @@
 
                 if (data.ok && data.results) {
                     displayResults(data.results);
-                    if (data.stub) {
-                        const notice = document.createElement('div');
-                        notice.style.cssText = 'background: #fff3cd; color: #856404; padding: 15px; margin: 20px; border-radius: 8px; border: 1px solid #ffeaa7;';
-                        notice.innerHTML = '<strong>Demo Mode:</strong> Showing sample data. Add SAM_API_KEY to .env file for live results.';
-                        resultsContainer.insertBefore(notice, resultsContainer.firstChild);
-                    }
+                    // Remove banners per request
                 } else {
                     resultsContainer.innerHTML = '<div class="loading"><p style="color: #dc3545;">Search failed. Please try again or check your connection.</p></div>';
                 }
@@ -638,7 +648,7 @@
             }
         }
         
-        // Display search results
+        // Display search results with additional fields
         function displayResults(results) {
             const container = document.getElementById('resultsContainer');
             
@@ -655,43 +665,199 @@
             `;
 
             results.forEach((result, index) => {
+                // Format dates
+                const postedDate = result.postedDate ? new Date(result.postedDate).toLocaleDateString() : 'N/A';
+                const updatedDate = result.lastUpdatedDate ? new Date(result.lastUpdatedDate).toLocaleDateString() : 'N/A';
+                const publishedDate = result.publishedDate ? new Date(result.publishedDate).toLocaleDateString() : 'N/A';
+                const responseDeadline = result.responseDeadline ? new Date(result.responseDeadline).toLocaleDateString() : 'N/A';
+                
+                // Extract agency hierarchy
+                const agencyParts = (result.agency || '').split('.');
+                const department = agencyParts[0] || 'N/A';
+                const subtier = agencyParts[1] || 'N/A';
+                const office = agencyParts[2] || agencyParts.slice(1).join('.') || 'N/A';
+                
+                // Format office address if available
+                let officeAddress = 'N/A';
+                if (result.officeAddress) {
+                    const addr = result.officeAddress;
+                    officeAddress = `${addr.city || ''}, ${addr.state || ''} ${addr.zipcode || ''}`;
+                }
+                
+                // Format points of contact (show up to 2)
+                let pointOfContact = 'N/A';
+                if (result.pointOfContact && Array.isArray(result.pointOfContact) && result.pointOfContact.length > 0) {
+                    const pocs = result.pointOfContact.slice(0, 2).map(p => `${p.fullName || ''}${p.title ? ` (${p.title})` : ''}${p.email ? ` - ${p.email}` : ''}`).filter(Boolean);
+                    pointOfContact = pocs.length ? pocs.join(' | ') : 'N/A';
+                }
+                
                 html += `
                     <div class="result-card">
-                        <h4 class="result-title">${result.title || 'No Title Available'}</h4>
+                        <h4 class="result-title"><a href="#" onclick="openNotice('${result.id || ''}'); return false;">${result.title || 'No Title Available'}</a></h4>
                         
                         <div class="result-meta">
                             <div class="meta-item">
-                                <span class="meta-label">Notice ID:</span>
-                                <span class="meta-value">${result.solicitation_number || 'N/A'}</span>
+                                <span class="meta-label">Solicitation Number:</span>
+                                <span class="meta-value">${result.solicitationNumber || 'N/A'}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">Agency:</span>
-                                <span class="meta-value">${result.agency || 'N/A'}</span>
+                                <span class="meta-label">Department/Ind.Agency:</span>
+                                <span class="meta-value">${department}</span>
                             </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Subtier:</span>
+                                <span class="meta-value">${subtier}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Office:</span>
+                                <span class="meta-value">${office}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="result-meta">
                             <div class="meta-item">
                                 <span class="meta-label">NAICS Code:</span>
                                 <span class="meta-value">${result.naics || 'N/A'}</span>
                             </div>
                             <div class="meta-item">
-                                <span class="meta-label">Response Deadline:</span>
-                                <span class="meta-value">${result.deadline || 'N/A'}</span>
+                                <span class="meta-label">Notice Type:</span>
+                                <span class="meta-value">${result.type || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Current Date Offers Due:</span>
+                                <span class="meta-value" style="${deadlineStyle(result.responseDeadline)}">${responseDeadline}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Posted Date:</span>
+                                <span class="meta-value">${postedDate}</span>
                             </div>
                         </div>
+                        
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Updated Date:</span>
+                                <span class="meta-value">${updatedDate}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Published Date:</span>
+                                <span class="meta-value">${publishedDate}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Set Aside:</span>
+                                <span class="meta-value">${result.setAside || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Active:</span>
+                                <span class="meta-value">${result.active || 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Office Address:</span>
+                                <span class="meta-value">${officeAddress}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Point of Contact:</span>
+                                <span class="meta-value">${pointOfContact}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Classification Code:</span>
+                                <span class="meta-value">${result.classificationCode || 'N/A'}</span>
+                            </div>
+                            
+                        </div>
 
-                        <div class="result-description">
-                            ${(result.description || 'No description available').substring(0, 300)}${result.description && result.description.length > 300 ? '...' : ''}
+                        <div class="result-description" id="desc-${index}">
+                            Loading description...
                         </div>
 
                         <div class="result-actions">
-                            ${result.url ? `<a href="${result.url}" target="_blank" class="action-link">View on SAM.gov</a>` : '<span style="color: #999;">No link available</span>'}
-                            <span style="color: #666; font-size: 12px;">Posted: ${result.posted_date || 'Unknown'}</span>
+                            ${result.uiLink ? `<a href="${result.uiLink}" target="_blank" class="action-link">View on SAM.gov</a>` : '<span style="color: #999;">No link available</span>'}
                         </div>
+
+                        ${Array.isArray(result.resourceLinks) && result.resourceLinks.length ? `
+                        <div style="margin-top: .75rem;">
+                          <div class="search-title" style="margin-bottom:.5rem;">Documents</div>
+                          <ul style="list-style: none; padding:0; margin:0;">
+                            ${result.resourceLinks.map((href, i) => `<li style=\"margin-bottom:.35rem;\"><a class=\"action-link\" href=\"${href}\" target=\"_blank\">Download Document ${i+1}</a></li>`).join('')}
+                          </ul>
+                        </div>` : ''}
                     </div>
                 `;
             });
 
             html += '</div>';
             container.innerHTML = html;
+
+            // Fetch descriptions inline without leaving page
+            results.forEach((result, index) => {
+                if (result.description) {
+                    const url = result.description.includes('api_key') ? result.description : `${result.description}${result.description.includes('?') ? '&' : '?'}api_key=${encodeURIComponent(getSamApiKeyHint())}`;
+                    fetch(url)
+                      .then(r => r.text())
+                      .then(text => {
+                        const el = document.getElementById(`desc-${index}`);
+                        if (el) el.textContent = text.slice(0, 800) + (text.length > 800 ? '…' : '');
+                      })
+                      .catch(() => {
+                        const el = document.getElementById(`desc-${index}`);
+                        if (el) el.textContent = 'Description Not Found';
+                      });
+                } else {
+                    const el = document.getElementById(`desc-${index}`);
+                    if (el) el.textContent = 'No description available';
+                }
+            });
+        }
+
+        // Helper to hint API key usage for description endpoint
+        function getSamApiKeyHint() {
+            return 'SAM-34a0de14-8d52-4e37-8ac3-f8db8513eaf2';
+        }
+
+        // Deadline coloring legend helper
+        function deadlineStyle(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const now = new Date();
+                const due = new Date(dateStr);
+                const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+                // 1-2 days: red, 3-4 days: amber, up to 7 days: blue, up to 14 days: green
+                if (diffDays <= 2) return 'color:#dc2626; font-weight:700;';       // red
+                if (diffDays <= 4) return 'color:#f59e0b; font-weight:600;';       // amber
+                if (diffDays <= 7) return 'color:#0ea5e9; font-weight:600;';       // blue
+                if (diffDays <= 14) return 'color:#16a34a; font-weight:600;';      // green
+                return '';
+            } catch { return ''; }
+        }
+
+        // Open solicitation details inline (no external navigation)
+        async function openNotice(noticeId) {
+            if (!noticeId) return;
+            const container = document.getElementById('resultsContainer');
+            const res = await fetch(`/api/sam/notice/${encodeURIComponent(noticeId)}`);
+            const data = await res.json();
+            if (!data || !data.notice) return;
+            const n = data.notice;
+            const posted = n.postedDate ? new Date(n.postedDate).toLocaleDateString() : 'N/A';
+            const due = n.responseDeadline ? new Date(n.responseDeadline).toLocaleDateString() : 'N/A';
+            container.innerHTML = `
+              <div class="result-card">
+                <a href="#" class="back-btn" onclick="performSamSearch(); return false;">← Back to Results</a>
+                <h3 class="result-title">${n.title || 'No Title'}</h3>
+                <div class="result-meta" style="margin-top: .5rem;">
+                  <div class="meta-item"><span class="meta-label">Solicitation:</span><span class="meta-value">${n.solicitationNumber || n.id || ''}</span></div>
+                  <div class="meta-item"><span class="meta-label">Posted:</span><span class="meta-value">${posted}</span></div>
+                  <div class="meta-item"><span class="meta-label">Due:</span><span class="meta-value">${due}</span></div>
+                  <div class="meta-item"><span class="meta-label">NAICS:</span><span class="meta-value">${n.naics || ''}</span></div>
+                </div>
+                <div class="result-description" style="white-space: pre-wrap; margin-top: 1rem;">${n.description || 'No description available'}</div>
+                <div class="result-actions" style="margin-top: 1rem;">
+                  ${n.uiLink ? `<a href="${n.uiLink}" target="_blank" class="action-link">Open on SAM.gov</a>` : ''}
+                </div>
+              </div>
+            `;
         }
         
         // Logout
@@ -716,9 +882,100 @@
         
         // Initialize
         if (checkAuth()) {
-            // Initialize with default values
-            document.getElementById('naicsCode').value = '721110';
+            loadNaicsData();
         }
     </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 </body>
 </html>

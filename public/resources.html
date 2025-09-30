@@ -52,26 +52,26 @@
     <!-- Controls Panel -->
     <section class="bg-white rounded-2xl shadow p-5">
       <h2 class="text-lg font-semibold mb-1">Search Per Diem</h2>
-      <p class="text-sm text-gray-600 mb-4">Click a state on the map to list all per diem locations for that state (GSA style). Or search by City/State or ZIP.</p>
+      <p class="text-sm text-gray-600 mb-4">Search by State and City OR by ZIP code. Click a state on the map to list all per diem locations for that state (GSA style).</p>
 
       <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
         <div>
           <label class="block text-sm font-medium">State</label>
           <select id="stateSelect" class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-black/10 p-2"></select>
-                    </div>
+        </div>
         <div>
-          <label class="block text-sm font-medium">City (optional)</label>
+          <label class="block text-sm font-medium">City</label>
           <select id="citySelect" class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-black/10 p-2"></select>
         </div>
         <div>
-          <label class="block text-sm font-medium">ZIP (optional)</label>
+          <label class="block text-sm font-medium">OR ZIP Code</label>
           <input id="zipInput" type="text" inputmode="numeric" pattern="[0-9]{5}" maxlength="5" placeholder="e.g., 30301" class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-black/10 p-2" />
-                                </div>
+        </div>
         <div>
           <label class="block text-sm font-medium">Fiscal Year</label>
           <select id="yearSelect" class="w-full rounded-lg border-gray-300 focus:ring-2 focus:ring-black/10 p-2"></select>
         </div>
-                </div>
+      </div>
 
       <div class="flex gap-3">
         <button id="lookupBtn" class="inline-flex items-center justify-center rounded-xl bg-black text-white px-4 py-2 font-medium hover:bg-gray-800">
@@ -79,8 +79,8 @@
           <span id="lookupSpinner" class="hidden animate-spin rounded-full h-4 w-4 border-b-2 border-white ml-2"></span>
         </button>
         <button id="resetBtn" class="inline-flex items-center justify-center rounded-xl bg-white border px-4 py-2 font-medium hover:bg-gray-50">Reset</button>
-            </div>
-        </section>
+      </div>
+    </section>
 
     <!-- Available Cities for selected state -->
     <section id="cityListCard" class="bg-white rounded-2xl shadow p-5 hidden">
@@ -129,7 +129,7 @@
     // Populate dropdowns
     (function initDropdowns(){
       stateSelect.innerHTML = '<option value="">Select state…</option>' + STATES.map(([ab,n])=>`<option value="${ab}">${n}</option>`).join('');
-            const now = new Date();
+      const now = new Date();
       const fy = now.getFullYear();
       const years = [fy-1, fy, fy+1, fy+2];
       yearSelect.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
@@ -159,9 +159,8 @@
           const city = el.getAttribute('data-city');
           const state = stateAbbr;
           const year = yearSelect.value || '';
-          const month = monthSelect.value || '';
           try {
-            const data = await fetchPerDiem({ city, state, year, month });
+            const data = await fetchPerDiem({ city, state, year });
             const rows = Array.isArray(data?.rows) ? data.rows : (data ? [data] : []);
             showResultTable(rows, `City: ${city}, ${state}`);
           } catch (_) { alert('API error'); }
@@ -173,8 +172,8 @@
       if (!rows || !rows.length) {
         resultBody.innerHTML = `<div>No data returned. Try a different month/year or input.</div>`;
         resultCard.classList.remove('hidden');
-                    return;
-                }
+        return;
+      }
       const table = `
         <div class="mb-2 text-sm text-gray-600">${heading || ''}</div>
         <div class="overflow-x-auto">
@@ -190,7 +189,7 @@
               ${rows.map(r => `
                 <tr>
                   <td class="p-2 border">${r.location || '—'}</td>
-                  <td class="p-2 border">$${Number(r.lodging||0)}</td>
+                  <td class="p-2 border">$${Number(r.lodging||0).toFixed(2)}</td>
                   <td class="p-2 border">$${Number(r.mie||0)}</td>
                 </tr>`).join('')}
             </tbody>
@@ -220,6 +219,7 @@
         document.getElementById('lookupSpinner').classList.remove('hidden');
         lookupBtn.disabled = true;
         
+        // Get search parameters
         const params = {
           state: stateSelect.value || '',
           city: citySelect.value || '',
@@ -227,10 +227,36 @@
           year: yearSelect.value || ''
         };
         
+        // Validate input - either state/city or zip must be provided
+        if (!params.zip && !params.state) {
+          alert('Please select a state or enter a ZIP code');
+          // Reset button state
+          document.getElementById('lookupText').textContent = 'Find rates';
+          document.getElementById('lookupSpinner').classList.add('hidden');
+          lookupBtn.disabled = false;
+          return;
+        }
+        
+        // If ZIP is provided, use only ZIP (ignore state/city)
+        if (params.zip) {
+          // Validate ZIP code format
+          if (!/^\d{5}$/.test(params.zip)) {
+            alert('Please enter a valid 5-digit ZIP code');
+            // Reset button state
+            document.getElementById('lookupText').textContent = 'Find rates';
+            document.getElementById('lookupSpinner').classList.add('hidden');
+            lookupBtn.disabled = false;
+            return;
+          }
+          // Clear state/city when using ZIP
+          params.state = '';
+          params.city = '';
+        }
+        
         // Small delay to show loading state
         await new Promise(resolve => setTimeout(resolve, 500));
         
-        // Navigate to full-year results page (ignore month to show all months)
+        // Navigate to full-year results page
         const qs = new URLSearchParams({ year: params.year });
         if (params.state) qs.set('state', params.state);
         if (params.city) qs.set('city', params.city);
@@ -318,6 +344,22 @@
       }
     });
 
+    // Clear ZIP input when state is selected
+    stateSelect.addEventListener('change', () => {
+      if (stateSelect.value) {
+        zipInput.value = '';
+      }
+    });
+
+    // Clear state/city when ZIP is entered
+    zipInput.addEventListener('input', () => {
+      if (zipInput.value.trim()) {
+        stateSelect.value = '';
+        citySelect.innerHTML = '<option value="">(Select state first)</option>';
+        document.getElementById('cityListCard').classList.add('hidden');
+      }
+    });
+
     // ---- Render the US map with D3 from TopoJSON
     const svg = d3.select('#usSvg');
     const g = svg.append('g');
@@ -364,31 +406,97 @@
       });
     </script>
 
-    <footer class="bg-gray-900 text-white py-12 mt-16">
-        <div class="max-w-6xl mx-auto px-4">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-                <div>
-                    <h3 class="text-xl font-bold mb-4 text-yellow-400">FEDEVENT</h3>
-                    <p class="text-gray-300">Professional event planning services for U.S. Government agencies.</p>
+        <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FEDEVENT</h3>
+                    <p>Professional event planning services for U.S. Government agencies.</p>
                 </div>
-                <div>
-                    <h3 class="text-xl font-bold mb-4 text-yellow-400">Services</h3>
-                    <a href="/hotel-signup.html" class="block text-gray-300 hover:text-yellow-400 mb-2">Hotel Registration</a>
-                    <a href="/request.html" class="block text-gray-300 hover:text-yellow-400 mb-2">Event Planning</a>
-                    <a href="/government-portal.html" class="block text-gray-300 hover:text-yellow-400 mb-2">Venue Matching</a>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="/hotel-signup.html">Hotel Sourcing</a>
+                    <a href="/contact.html">Event Planning</a>
+                    <a href="/government-portal.html">Venue Matching</a>
+                    <a href="/support-ticket.html">Support Ticket</a>
                 </div>
-                <div class="text-right md:text-right">
-                    <h3 class="text-xl font-bold mb-4 text-yellow-400">Contact</h3>
-                    <p class="text-gray-300">Email: info@fedevent.com</p>
-                    <p class="text-gray-300">Phone: 3058507848</p>
+                <div class="footer-section footer-contact">
+                    <h3>Contact</h3>
+                    <p>Email: info@fedevent.com</p>
+                    <p>Phone: (305) 850-7848</p>
+                    <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                        🔐 Admin Access
+                    </a>
                 </div>
             </div>
-            <div class="border-t border-gray-700 pt-8 text-center text-gray-400">
+            <div class="footer-bottom">
                 <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
-                <p class="mt-2">&copy; 2025 FEDEVENT. All rights reserved.</p>
+                <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">
+                    <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                        🔐 Admin Sign In
+                    </a>
+                </p>
             </div>
         </div>
     </footer>
+
+    <style>
+        /* Footer Styles */
+        footer {
+            background: var(--text, #1f2937);
+            color: white;
+            padding: 3rem 0 1rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary, #f59e0b);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary, #f59e0b);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
     
     <script>
         function toggleUserDropdown(e) {
@@ -438,5 +546,6 @@
             if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
         });
     </script>
+    <script src="/footer.js"></script>
 </body>
 </html>

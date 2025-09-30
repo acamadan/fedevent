@@ -101,8 +101,33 @@
               <div class="field-grid">
                 <label class="field"><span>Hotel Name</span><input id="hotelName" required></label>
                 <label class="field"><span>Representative Name</span><input id="repName" required></label>
-                <label class="field"><span>Title</span><input id="repTitle" required></label>
+                <label class="field"><span>Title</span>
+                  <select id="repTitle" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px">
+                    <option value="">Select title…</option>
+                    <option>Owner</option>
+                    <option>General Manager</option>
+                    <option>Director of Sales</option>
+                    <option>Sales Manager</option>
+                    <option>Sales Coordinator</option>
+                    <option>Other</option>
+                  </select>
+                </label>
                 <label class="field"><span>Email</span><input id="repEmail" type="email" required></label>
+              </div>
+              <div class="field-grid">
+                <label class="field"><span>Approver Name</span><input id="approverName" placeholder="e.g., General Manager" required></label>
+                <label class="field"><span>Approver Title</span>
+                  <select id="approverTitle" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px">
+                    <option value="">Select title…</option>
+                    <option>Owner</option>
+                    <option>General Manager</option>
+                    <option>Director of Sales</option>
+                    <option>Sales Manager</option>
+                    <option>Sales Coordinator</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+                <label class="field"><span>Approver Email</span><input id="approverEmail" type="email" placeholder="approver@hotel.com" required></label>
               </div>
               <label class="consent"><input type="checkbox" id="consent" required> <span>I consent to transact electronically under ESIGN/UETA and agree to the Terms.</span></label>
 
@@ -145,30 +170,96 @@
 </main>
 
 <footer id="contact">
-  <div class="container">
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>FEDEVENT</h3>
-        <p>Professional event planning services for U.S. Government agencies.</p>
-      </div>
-      <div class="footer-section">
-        <h3>Services</h3>
-        <a href="/hotel-signup.html">Hotel Registration</a>
-        <a href="#services">Event Planning</a>
-        <a href="#features">Venue Matching</a>
-      </div>
-      <div class="footer-section footer-contact">
-        <h3>Contact</h3>
-        <p>Email: info@fedevent.com</p>
-        <p>Phone: 3058507848</p>
-      </div>
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
     </div>
-    <div class="footer-bottom">
-      <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
-      <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
-    </div>
-  </div>
 </footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 
 <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
 <script>
@@ -228,6 +319,9 @@
       repName: document.getElementById('repName').value.trim(),
       title: document.getElementById('repTitle').value.trim(),
       email: document.getElementById('repEmail').value.trim(),
+      approverName: document.getElementById('approverName').value.trim(),
+      approverTitle: document.getElementById('approverTitle').value.trim(),
+      approverEmail: document.getElementById('approverEmail').value.trim(),
       signatureDataUrl: dataUrl,
       agreementVersion: '1.0',
       agreementEffective: new Date().toISOString().slice(0,10),
@@ -247,6 +341,90 @@
       alert('Error: ' + (err.message || err));
     }
   });
+
+  // Header dropdown functionality
+  // Auto-fill from session profile or URL params
+  (async function autofillFromContext(){
+    try {
+      const params = new URLSearchParams(location.search);
+      const qHotel = params.get('hotel');
+      const qName  = params.get('name');
+      const qEmail = params.get('email');
+      if (qHotel) document.getElementById('hotelName').value = qHotel;
+      if (qName)  document.getElementById('repName').value = qName;
+      if (qEmail) document.getElementById('repEmail').value = qEmail;
+
+      // Attempt to load registration draft from localStorage
+      const localDraftRaw = localStorage.getItem('hotel_registration_draft');
+      if (localDraftRaw) {
+        try {
+          const draft = JSON.parse(localDraftRaw) || {};
+          const fd = draft.formData || {};
+          // Hotel name
+          if (!document.getElementById('hotelName').value && fd.hotel_name) {
+            document.getElementById('hotelName').value = fd.hotel_name;
+          }
+          // Contacts mapping: assume [0] is Signer, [1] is Approver per validation rules
+          const name0 = fd['sign_contacts[0][name]'] || '';
+          const email0 = fd['sign_contacts[0][email]'] || '';
+          const title0 = fd['sign_contacts[0][title]'] || '';
+          const role0  = fd['sign_contacts[0][role]'] || '';
+          const name1 = fd['sign_contacts[1][name]'] || '';
+          const email1 = fd['sign_contacts[1][email]'] || '';
+          const title1 = fd['sign_contacts[1][title]'] || '';
+          const role1  = fd['sign_contacts[1][role]'] || '';
+
+          // Determine representative (Signer) and approver
+          const rep = role0 === 'Signer' ? { name: name0, email: email0, title: title0 } : (role1 === 'Signer' ? { name: name1, email: email1, title: title1 } : null);
+          const appr = role0 === 'Approver' ? { name: name0, email: email0, title: title0 } : (role1 === 'Approver' ? { name: name1, email: email1, title: title1 } : null);
+
+          if (rep) {
+            if (!document.getElementById('repName').value && rep.name) document.getElementById('repName').value = rep.name;
+            if (!document.getElementById('repEmail').value && rep.email) document.getElementById('repEmail').value = rep.email;
+            if (rep.title) document.getElementById('repTitle').value = rep.title;
+          }
+          if (appr) {
+            if (appr.name) document.getElementById('approverName').value = appr.name;
+            if (appr.email) document.getElementById('approverEmail').value = appr.email;
+            if (appr.title) document.getElementById('approverTitle').value = appr.title;
+          }
+        } catch (e) { /* ignore parse errors */ }
+      }
+
+      // Attempt to load server draft if session exists and fields still empty
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (sessionId && (!document.getElementById('repName').value || !document.getElementById('approverName').value)) {
+        try {
+          const resp = await fetch('/api/draft/load', { headers: { 'Authorization': `Bearer ${sessionId}` } });
+          if (resp.ok) {
+            const result = await resp.json();
+            const fd = (result && result.draft && result.draft.formData) || {};
+            if (fd.hotel_name && !document.getElementById('hotelName').value) document.getElementById('hotelName').value = fd.hotel_name;
+            const name0 = fd['sign_contacts[0][name]'] || '';
+            const email0 = fd['sign_contacts[0][email]'] || '';
+            const title0 = fd['sign_contacts[0][title]'] || '';
+            const role0  = fd['sign_contacts[0][role]'] || '';
+            const name1 = fd['sign_contacts[1][name]'] || '';
+            const email1 = fd['sign_contacts[1][email]'] || '';
+            const title1 = fd['sign_contacts[1][title]'] || '';
+            const role1  = fd['sign_contacts[1][role]'] || '';
+            const rep = role0 === 'Signer' ? { name: name0, email: email0, title: title0 } : (role1 === 'Signer' ? { name: name1, email: email1, title: title1 } : null);
+            const appr = role0 === 'Approver' ? { name: name0, email: email0, title: title0 } : (role1 === 'Approver' ? { name: name1, email: email1, title: title1 } : null);
+            if (rep) {
+              if (!document.getElementById('repName').value && rep.name) document.getElementById('repName').value = rep.name;
+              if (!document.getElementById('repEmail').value && rep.email) document.getElementById('repEmail').value = rep.email;
+              if (rep.title) document.getElementById('repTitle').value = rep.title;
+            }
+            if (appr) {
+              if (!document.getElementById('approverName').value && appr.name) document.getElementById('approverName').value = appr.name;
+              if (!document.getElementById('approverEmail').value && appr.email) document.getElementById('approverEmail').value = appr.email;
+              if (appr.title) document.getElementById('approverTitle').value = appr.title;
+            }
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+  })();
 
   // Header dropdown functionality
   function toggleUserDropdown(e) {
@@ -283,6 +461,7 @@
     }
   });
 </script>
+    <script src="/footer.js"></script>
 </body>
 </html>
 

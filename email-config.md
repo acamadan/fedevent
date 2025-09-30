@@ -57,11 +57,24 @@ curl -X POST http://localhost:3000/api/test-email \
 
 ✅ **Fixed**: Signup success messages now stay visible longer (8 seconds instead of 2.6 seconds)
 ✅ **Fixed**: Improved success message styling and persistence
+✅ **Added**: Support email configuration (support@fedevent.com)
 ❌ **Needs Setup**: SMTP configuration for email delivery
+
+## Support Email Setup
+
+The application references `support@fedevent.com` throughout the codebase. To enable this email:
+
+1. **Create Email Account**: Set up `support@fedevent.com` in your domain hosting provider
+2. **DNS Configuration**: Ensure MX records are properly configured
+3. **Environment Variable**: Add `SUPPORT_EMAIL=support@fedevent.com` to your `.env` file
+4. **Testing**: Verify the email account can send and receive messages
 
 ## Next Steps
 
 1. Create `.env` file with SMTP settings
-2. Restart the server
-3. Test email functionality
-4. Try user signup to verify welcome emails are sent
+2. Set up support@fedevent.com email account
+3. Restart the server
+4. Test email functionality
+5. Try user signup to verify welcome emails are sent
+
+

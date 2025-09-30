@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Per Diem Debug</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="p-8">
+    <h1 class="text-2xl font-bold mb-4">Per Diem Data Debug</h1>
+    
+    <div class="mb-4">
+        <button id="loadData" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            Load and Debug Montana Per Diem Data
+        </button>
+    </div>
+    
+    <div id="debugInfo" class="mt-4"></div>
+    <div id="results" class="mt-4"></div>
+
+    <script>
+        document.getElementById('loadData').addEventListener('click', async () => {
+            try {
+                // Load data for all months
+                const months = Array.from({length:12}, (_,i)=>String(i+1).padStart(2,'0'));
+                const monthToRowsMap = {};
+                
+                for (let i = 0; i < months.length; i++) {
+                    const m = months[i];
+                    try {
+                        const response = await fetch(`/api/perdiem?state=MT&year=2025&month=${m}`);
+                        const data = await response.json();
+                        const rows = Array.isArray(data?.rows) ? data.rows : (data ? [data] : []);
+                        monthToRowsMap[m] = rows;
+                    } catch (e) {
+                        monthToRowsMap[m] = [];
+                    }
+                }
+                
+                // Debug info
+                let debugHtml = '<h2 class="text-xl font-semibold mb-2">Debug Information</h2>';
+                debugHtml += '<div class="bg-gray-100 p-4 rounded">';
+                debugHtml += '<h3 class="font-semibold">Month to Rows Mapping:</h3>';
+                debugHtml += '<pre class="text-xs">' + JSON.stringify(monthToRowsMap, null, 2) + '</pre>';
+                debugHtml += '</div>';
+                document.getElementById('debugInfo').innerHTML = debugHtml;
+                
+                // Display data in table
+                const locations = new Set();
+                Object.values(monthToRowsMap).forEach(rows => {
+                    rows.forEach(row => {
+                        locations.add(row.location || '—');
+                    });
+                });
+                const allLocations = Array.from(locations).sort();
+                
+                let html = '<h2 class="text-xl font-semibold mb-2 mt-6">Per Diem Rates by Month</h2>';
+                html += '<table class="min-w-full bg-white border border-gray-300">';
+                html += '<thead><tr class="bg-gray-100">';
+                html += '<th class="py-2 px-4 border-b text-left">Location</th>';
+                
+                months.forEach(m => {
+                    html += `<th class="py-2 px-4 border-b text-left">${getMonthLabel(m)}</th>`;
+                });
+                
+                html += '</tr></thead><tbody>';
+                
+                allLocations.forEach(loc => {
+                    html += '<tr>';
+                    html += `<td class="py-2 px-4 border-b font-medium">${loc}</td>`;
+                    
+                    months.forEach(m => {
+                        const row = (monthToRowsMap[m] || []).find(r => (r.location || '—') === loc) || null;
+                        const lodging = row ? Number(row.lodging || 0) : '';
+                        html += `<td class="py-2 px-4 border-b">${lodging !== '' ? '$' + Number(lodging).toFixed(2) : ''}</td>`;
+                    });
+                    
+                    html += '</tr>';
+                });
+                
+                html += '</tbody></table>';
+                document.getElementById('results').innerHTML = html;
+                
+            } catch (error) {
+                document.getElementById('results').innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+            }
+        });
+        
+        function getMonthLabel(m) {
+            const i = parseInt(m, 10) - 1;
+            return new Date(2000, i, 1).toLocaleString(undefined, { month: 'short' });
+        }
+    </script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

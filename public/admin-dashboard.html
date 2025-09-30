@@ -490,6 +490,20 @@
             border-radius: 4px;
             margin: 1rem 0;
         }
+
+        .form-message {
+            font-size: 0.9rem;
+            margin-bottom: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .form-message.error {
+            color: var(--error);
+        }
+
+        .form-message.success {
+            color: var(--success);
+        }
         
         .modal {
             display: none;
@@ -566,6 +580,21 @@
             font-weight: 500;
             margin-top: 0.25rem;
         }
+
+        /* Hotel Cards */
+        .hotel-cards { display: flex; flex-direction: column; gap: 1rem; }
+        .hotel-card { display: grid; grid-template-columns: 140px 1fr auto; gap: 1rem; align-items: center; background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 0.75rem; box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+        .hotel-thumb { width: 140px; height: 90px; border-radius: 10px; background: linear-gradient(135deg, #e2e8f0, #f1f5f9); display: flex; align-items: center; justify-content: center; color: #64748b; font-weight: 700; }
+        .hotel-body { display: grid; grid-template-columns: 1fr; gap: .35rem; }
+        .hotel-title { display:flex; align-items:center; gap:.5rem; font-size: 1.25rem; font-weight: 700; color:#0f172a; cursor: pointer; }
+        .hotel-sub { color:#475569; font-size: .95rem; display:flex; gap:.5rem; flex-wrap: wrap; }
+        .chips { display:flex; gap:.35rem; flex-wrap: wrap; }
+        .chip { background:#eef2ff; color:#3730a3; padding:.2rem .5rem; border-radius:999px; font-size:.75rem; font-weight:600; }
+        .stats { display:flex; gap:1rem; color:#334155; font-size:.95rem; align-items:center; flex-wrap: wrap; }
+        .stat { display:flex; align-items:center; gap:.35rem; }
+        .right-col { display:flex; align-items:center; gap:.75rem; }
+        .add-btn { background:#ffffff; color:#1e40af; border:1px solid #c7d2fe; padding:.5rem 1rem; border-radius:999px; font-weight:700; cursor:pointer; }
+        .select-wrap { display:flex; align-items:center; gap:.5rem; color:#475569; font-size:.9rem; }
     </style>
 </head>
 <body>
@@ -618,7 +647,7 @@
                 <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">🚀 Admin Actions</h2>
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
                     <button class="btn" onclick="showAddContractModal()" style="background: #16a34a; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">➕ Add Contract Opportunity</button>
-                    <button class="btn" onclick="showAddAuctionModal()" style="background: #dc2626; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">⚡ Create Live Auction</button>
+                    <a href="/admin-create-auction.html" class="btn" style="background: #dc2626; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600; text-decoration:none; display:inline-flex; align-items:center; justify-content:center;">⚡ Create Live Auction</a>
                     <button class="btn" onclick="showBulkEmailModal()" style="background: #7c3aed; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">📧 Send Bulk Email</button>
                     <a href="/admin-contracts.html" class="btn" style="background: #0891b2; text-decoration: none; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">📋 Manage Contracts</a>
                     <button class="btn" onclick=" window.location.href='/deleted-hotels.html'" style="background: #f59e0b; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">🗂️ View Deleted Hotels</button>
@@ -644,42 +673,74 @@
                     <input type="checkbox" id="showPerDiemHotels" onchange="filterHotelsByCapability()">
                     Show hotels with 30% per diem discount acceptance
                 </label>
-                <button class="btn" onclick="toggleAdvancedSearch()" style="background: #7c3aed; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">🔍 Advanced Search</button>
+                <button class="btn" onclick="openAdvancedSearchDrawer()" style="background: #7c3aed; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">🔍 Advanced Search</button>
                 <button class="btn" onclick="resetCapabilityFilter()" style="background: #6b7280; padding: 0.5rem 1rem; font-size: 0.9rem;">Reset Filter</button>
             </div>
             
-            <!-- Advanced Search Panel -->
-            <div id="advancedSearchPanel" style="display: none; background: #f8fafc; padding: 1.5rem; border-radius: 8px; border: 1px solid #e5e7eb; margin-top: 1rem;">
-                <h3 style="margin: 0 0 1rem; font-size: 1.2rem; font-weight: 600; color: #1f2937;">Advanced Search Filters</h3>
-                
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem;">
-                    <!-- Location Filters -->
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Location</label>
-                        <input type="text" id="searchCity" placeholder="City" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.5rem;">
-                        <input type="text" id="searchState" placeholder="State" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+            <!-- Advanced Search Drawer (hidden by default) -->
+            <div id="advancedSearchOverlay" style="display:none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 60;" onclick="closeAdvancedSearchDrawer()"></div>
+            <aside id="advancedSearchDrawer" style="display:none; position: fixed; top: 0; right: 0; height: 100vh; width: 380px; max-width: 90vw; background: #ffffff; border-left: 1px solid #e5e7eb; box-shadow: -8px 0 24px rgba(0,0,0,0.08); z-index: 61; padding: 1rem; overflow-y: auto;">
+                <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom: .75rem;">
+                    <h3 style="margin: 0; font-size: 1.1rem; font-weight: 700; color:#111827;">Advanced Hotel Search</h3>
+                    <button onclick="closeAdvancedSearchDrawer()" style="background:#6b7280; color:#fff; border:none; padding:.4rem .6rem; border-radius:6px; cursor:pointer;">✕</button>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr; gap: 1rem;">
+                    <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:.75rem;">
+                        <div style="font-weight:600; margin-bottom:.5rem; color:#374151;">Location</div>
+                        <label style="font-size:.85rem; color:#6b7280; display:block; margin-bottom:.25rem;">Country</label>
+                        <select id="advCountries" multiple style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px; min-height: 80px;"></select>
+                        <label style="font-size:.85rem; color:#6b7280; display:block; margin:.5rem 0 .25rem;">State / Province</label>
+                        <select id="advStates" multiple style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px; min-height: 80px;"></select>
+                        <label style="font-size:.85rem; color:#6b7280; display:block; margin:.5rem 0 .25rem;">City</label>
+                        <select id="advCities" multiple style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px; min-height: 80px;"></select>
                     </div>
-                    
-                    <!-- Capability Filters -->
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Capabilities</label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="checkbox" id="filterNet30">
-                            <span style="font-size: 0.9rem;">NET30 Terms Accepted</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-                            <input type="checkbox" id="filterNoDirectBill">
-                            <span style="font-size: 0.9rem;">No Direct Bill Accepted</span>
-                        </label>
-                        <label style="display: flex; align-items: center; gap: 0.5rem;">
-                            <input type="checkbox" id="filterGovernmentPO">
-                            <span style="font-size: 0.9rem;">Government PO Accepted</span>
-                        </label>
+                    <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:.75rem;">
+                        <div style="font-weight:600; margin-bottom:.5rem; color:#374151;">Sleeping Rooms</div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.5rem;">
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Total Rooms (min)</label>
+                                <input id="advMinTotalRooms" type="number" min="0" style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Total Rooms (max)</label>
+                                <input id="advMaxTotalRooms" type="number" min="0" style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Min Single/Kings</label>
+                                <input id="advMinSingleRooms" type="number" min="0" style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Min Double/Queen</label>
+                                <input id="advMinDoubleRooms" type="number" min="0" style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px;" />
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Activity Filters -->
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Activity</label>
+                    <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:.75rem;">
+                        <div style="font-weight:600; margin-bottom:.5rem; color:#374151;">Meeting Space</div>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.5rem;">
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Min Rooms</label>
+                                <input id="advMinMeetingRooms" type="number" min="0" style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px;" />
+                            </div>
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Has Pillar-free?</label>
+                                <select id="advPillarFree" style="width:100%; padding:.5rem; border:1px solid #d1d5db; border-radius:6px;">
+                                    <option value="">Any</option>
+                                    <option value="yes">Yes</option>
+                                    <option value="no">No</option>
+                                </select>
+                            </div>
+                        </div>
+                        <small style="color:#6b7280; display:block; margin-top:.25rem;">Pillar-free filter matches if any room is pillar-free.</small>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:.75rem;">
+                        <div style="font-weight:600; margin-bottom:.5rem; color:#374151;">Capabilities</div>
+                        <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:.25rem;"><input type="checkbox" id="filterNet30"> <span>NET30 Terms</span></label>
+                        <label style="display:flex; align-items:center; gap:.5rem; margin-bottom:.25rem;"><input type="checkbox" id="filterNoDirectBill"> <span>No Direct Bill</span></label>
+                        <label style="display:flex; align-items:center; gap:.5rem;"><input type="checkbox" id="filterGovernmentPO"> <span>Government PO</span></label>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e5e7eb; border-radius:8px; padding:.75rem;">
+                        <div style="font-weight:600; margin-bottom:.5rem; color:#374151;">Activity</div>
                         <select id="filterTeamSize" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.5rem;">
                             <option value="">Any Team Size</option>
                             <option value="1">1 Member</option>
@@ -692,21 +753,23 @@
                             <option value="approved">Approved</option>
                             <option value="rejected">Rejected</option>
                         </select>
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:.5rem; margin-top:.5rem;">
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Registered From</label>
+                                <input type="date" id="filterDateFrom" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                            </div>
+                            <div>
+                                <label style="font-size:.85rem; color:#6b7280; display:block;">Registered To</label>
+                                <input type="date" id="filterDateTo" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Date Filters -->
-                    <div>
-                        <label style="display: block; font-weight: 600; margin-bottom: 0.5rem;">Registration Date</label>
-                        <input type="date" id="filterDateFrom" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; margin-bottom: 0.5rem;">
-                        <input type="date" id="filterDateTo" style="width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <div style="display:flex; gap:.5rem; justify-content: flex-end; position: sticky; bottom: 0; background: #fff; padding-top:.5rem; border-top:1px solid #e5e7eb;">
+                        <button class="btn" onclick="resetAdvancedFilters()" style="background:#6b7280;">Reset</button>
+                        <button class="btn" onclick="applyAdvancedFilters()" style="background:#16a34a;">Apply</button>
                     </div>
                 </div>
-                
-                <div style="display: flex; gap: 1rem; align-items: center;">
-                    <button class="btn" onclick="applyAdvancedFilters()" style="background: #16a34a; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">Apply Filters</button>
-                    <button class="btn" onclick="resetAdvancedFilters()" style="background: #6b7280; padding: 0.75rem 1.5rem; font-size: 1rem; font-weight: 600;">Reset All</button>
-                </div>
-            </div>
+            </aside>
             
             <div id="capabilityStats" style="font-size: 0.9rem; color: #6b7280;"></div>
         </div>
@@ -1223,7 +1286,7 @@ You can use these placeholders:
             document.getElementById('recentRegistrations').textContent = recentRegistrations;
         }
         
-        // Render hotels table
+        // Render hotels as large cards
         function renderHotelsTable(hotels = allHotels) {
             const tableContent = document.getElementById('tableContent');
             
@@ -1232,172 +1295,45 @@ You can use these placeholders:
                 return;
             }
             
-            const tableHTML = `
-                <table>
-                    <thead>
-                        <tr>
-                            <th>
-                                <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()" style="margin-right: 0.5rem;">
-                                <label for="selectAllCheckbox">Select All</label>
-                            </th>
-                            <th>Hotel Name</th>
-                            <th>Location</th>
-                            <th>Email</th>
-                            <th>Users</th>
-                            <th>Profiles</th>
-                            <th>Priority</th>
-                            <th>Last Activity</th>
-                            <th>Registered</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${hotels.map(hotel => `
-                            <tr>
-                                <td>
-                                    <input type="checkbox" 
-                                           class="hotel-checkbox" 
-                                           data-hotel-id="${hotel.id}"
-                                           onchange="updateSelection()"
-                                           style="margin-right: 0.5rem;">
-                                </td>
-                                <td>
-                                    <div class="hotel-name" 
-                                         onclick="showHotelDetails(${hotel.id})"
-                                         onmouseenter="showHotelHover(${hotel.id})"
-                                         onmouseleave="hideHotelHoverTimeout()"
-                                         onmouseover="clearHotelHoverTimeout()">
-                                        ${hotel.name || 'Unnamed Hotel'}
-                                        <div class="hotel-hover-popup" id="hover-${hotel.id}">
-                                            <div class="hotel-hover-header">
-                                                <h3 class="hotel-hover-title">${hotel.name || 'Unnamed Hotel'}</h3>
-                                                <button class="hotel-hover-close" onclick="hideHotelHover()">&times;</button>
-                                            </div>
-                                            <div class="hotel-hover-details">
-                                                <div class="hotel-hover-section">
-                                                    <div class="hotel-hover-section-title">📍 Property Information</div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Property Name:</span>
-                                                        <span class="hotel-hover-value">${hotel.name || hotel.property_name || 'Not specified'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Property Code:</span>
-                                                        <span class="hotel-hover-value">${hotel.property_code || 'Not provided'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Brand/Chain:</span>
-                                                        <span class="hotel-hover-value">${hotel.brand || 'Unknown'} ${hotel.chain ? `(${hotel.chain})` : ''}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Location:</span>
-                                                        <span class="hotel-hover-value">${[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ') || 'Not specified'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Contact Email:</span>
-                                                        <span class="hotel-hover-value">${hotel.email || 'Not provided'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Primary Contact:</span>
-                                                        <span class="hotel-hover-value">${hotel.primary_contact_name || 'Not provided'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Phone:</span>
-                                                        <span class="hotel-hover-value">${hotel.phone || hotel.primary_phone || 'Not provided'}</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="hotel-hover-section">
-                                                    <div class="hotel-hover-section-title">👥 Team & Activity</div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Team Members:</span>
-                                                        <span class="hotel-hover-value">${hotel.user_count}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Profile Submissions:</span>
-                                                        <span class="hotel-hover-value">${hotel.profile_count}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Registered:</span>
-                                                        <span class="hotel-hover-value">${formatDate(hotel.created_at)}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Last Activity:</span>
-                                                        <span class="hotel-hover-value">${hotel.last_user_login ? formatDate(hotel.last_user_login) : 'Never'}</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="hotel-hover-section">
-                                                    <div class="hotel-hover-section-title">🏨 Property Details</div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Total Rooms:</span>
-                                                        <span class="hotel-hover-value">${hotel.total_rooms || 'Not specified'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">AAA Rating:</span>
-                                                        <span class="hotel-hover-value">${hotel.aaa_rating || 'Not rated'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Meeting Spaces:</span>
-                                                        <span class="hotel-hover-value">${hotel.meeting_spaces || 'Not specified'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Accepts Gov Per Diem:</span>
-                                                        <span class="hotel-hover-value">${hotel.accepts_gov_per_diem ? '✅ Yes' : '❌ No'}</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="hotel-hover-section">
-                                                    <div class="hotel-hover-section-title">🎯 Payment & Policies</div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">NET30 Terms:</span>
-                                                        <span class="hotel-hover-value">${hotel.accepts_net30 ? '✅ Accepted' : '❌ Not Accepted'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">30% Per Diem Discount:</span>
-                                                        <span class="hotel-hover-value">${hotel.accepts_per_diem_discount ? '✅ Accepted' : '⭕ Optional'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">No Direct Bill Policy:</span>
-                                                        <span class="hotel-hover-value">${hotel.accepts_no_direct_bill ? '✅ Accepted' : '❌ Not Accepted'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Government PO:</span>
-                                                        <span class="hotel-hover-value">✅ Accepted</span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div class="hotel-hover-section">
-                                                    <div class="hotel-hover-section-title">📊 Status</div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Account Status:</span>
-                                                        <span class="hotel-hover-value">${hotel.is_active ? '🟢 Active' : '🔴 Inactive'}</span>
-                                                    </div>
-                                                    <div class="hotel-hover-item">
-                                                        <span class="hotel-hover-label">Profile Status:</span>
-                                                        <span class="hotel-hover-value">${hotel.profile_status || 'Pending'}</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>${[hotel.city, hotel.state, hotel.country].filter(Boolean).join(', ') || '-'}</td>
-                                <td>${hotel.email || '-'}</td>
-                                <td>${hotel.user_count}</td>
-                                <td>${hotel.profile_count}</td>
-                                <td>
-                                    <span class="priority-indicator ${hotel.is_priority ? 'priority-yes' : 'priority-no'}">
-                                        ${hotel.is_priority ? '⭐ Priority' : 'Standard'}
-                                    </span>
-                                </td>
-                                <td>${hotel.last_user_login ? formatDate(hotel.last_user_login) : '-'}</td>
-                                <td>${formatDate(hotel.created_at)}</td>
-                            </tr>
-                        `).join('')}
-                    </tbody>
-                </table>
-            `;
+            const listHTML = `
+                <div style="display:flex; align-items:center; justify-content: space-between; margin-bottom:.5rem;">
+                    <div class="select-wrap">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                        <label for="selectAllCheckbox">Select All</label>
+                    </div>
+                    <div style="color:#64748b; font-size:.9rem;">${hotels.length} result(s)</div>
+                </div>
+                <div class="hotel-cards">
+                    ${hotels.map(hotel => `
+                        <div class="hotel-card">
+                            <div class="hotel-thumb">${(hotel.city || 'Hotel').slice(0,12)}</div>
+                            <div class="hotel-body">
+                                <div class="hotel-title" onclick="showHotelDetails(${hotel.id})">${hotel.name || 'Unnamed Hotel'}</div>
+                                <div class="hotel-sub">${[hotel.city, hotel.state].filter(Boolean).join(', ')} ${hotel.country ? `· ${hotel.country}` : ''} ${hotel.brand ? `· ${hotel.brand}` : ''} ${hotel.chain ? `· ${hotel.chain}` : ''}</div>
+                                <div class="chips">
+                                    ${hotel.accepts_per_diem_discount ? '<span class="chip">30% Per Diem</span>' : ''}
+                                    ${hotel.accepts_net30 ? '<span class="chip">NET30</span>' : ''}
+                                    ${hotel.accepts_no_direct_bill ? '<span class="chip">No Direct Bill</span>' : ''}
+                                    ${hotel.accepts_gov_per_diem ? '<span class="chip">Gov Per Diem</span>' : ''}
+                                    ${hotel.is_priority ? '<span class="chip" style="background:#fff7ed;color:#9a3412;border:1px solid #fed7aa;">Priority</span>' : ''}
+                                </div>
+                                <div class="stats">
+                                    <div class="stat">🏨 ${hotel.total_rooms || '—'} rooms</div>
+                                    <div class="stat">🗓️ ${formatDate(hotel.created_at)}</div>
+                                    <div class="stat">👥 ${hotel.user_count || 0} users</div>
+                                    <div class="stat">📄 ${hotel.profile_count || 0} profiles</div>
+                                    <div class="stat">⏱️ ${hotel.last_user_login ? formatDate(hotel.last_user_login) : 'Never active'}</div>
+                                </div>
+                            </div>
+                            <div class="right-col">
+                                <button class="add-btn" onclick="showHotelDetails(${hotel.id})">View</button>
+                                <input type="checkbox" class="hotel-checkbox" data-hotel-id="${hotel.id}" onchange="updateSelection()">
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>`;
             
-            tableContent.innerHTML = tableHTML;
+            tableContent.innerHTML = listHTML;
         }
         
         // Search functionality
@@ -1661,13 +1597,73 @@ You can use these placeholders:
             }
         }
         
-        function bulkEdit() {
+        async function bulkEdit() {
             if (selectedHotels.size === 0) {
                 alert('Please select hotels to edit.');
                 return;
             }
             
-            alert(`Bulk edit functionality for ${selectedHotels.size} hotels will be implemented.`);
+            // Create a modal for bulk editing
+            const selectedHotelArray = Array.from(selectedHotels);
+            
+            // Show a simple prompt-based bulk edit for now
+            const field = prompt('Enter field to update (name, email, city, state, country, brand, chain, total_rooms, meeting_spaces, accepts_net30, accepts_per_diem_discount, accepts_no_direct_bill, is_priority, is_active):');
+            
+            if (!field) return;
+            
+            const allowedFields = [
+                'name', 'email', 'city', 'state', 'country', 
+                'brand', 'chain', 'total_rooms', 'meeting_spaces',
+                'accepts_net30', 'accepts_per_diem_discount', 'accepts_no_direct_bill',
+                'is_priority', 'is_active'
+            ];
+            
+            if (!allowedFields.includes(field)) {
+                alert('Invalid field. Please choose from the allowed fields.');
+                return;
+            }
+            
+            const value = prompt(`Enter new value for ${field}:`);
+            
+            if (value === null) return;
+            
+            // Convert value to appropriate type
+            let finalValue = value;
+            if (field === 'accepts_net30' || field === 'accepts_per_diem_discount' || 
+                field === 'accepts_no_direct_bill' || field === 'is_priority' || field === 'is_active') {
+                finalValue = value.toLowerCase() === 'true' || value === '1';
+            } else if (field === 'total_rooms' || field === 'meeting_spaces') {
+                finalValue = parseInt(value) || 0;
+            }
+            
+            try {
+                const sessionId = localStorage.getItem('sessionId');
+                const response = await fetch('/api/admin/hotels/bulk-edit', {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        hotelIds: selectedHotelArray,
+                        updates: {
+                            [field]: finalValue
+                        }
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result && result.ok) {
+                    alert(`${result.updatedCount} hotels updated successfully!`);
+                    loadHotels(); // Refresh the table
+                } else {
+                    alert('Failed to update hotels: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Bulk edit error:', error);
+                alert('Failed to update hotels: ' + error.message);
+            }
         }
         
         
@@ -1783,17 +1779,52 @@ You can use these placeholders:
             document.getElementById('capabilityStats').textContent = statsText;
         }
         
-        // Toggle advanced search panel
-        function toggleAdvancedSearch() {
-            const panel = document.getElementById('advancedSearchPanel');
-            const isVisible = panel.style.display !== 'none';
-            panel.style.display = isVisible ? 'none' : 'block';
+        // Advanced Search Drawer controls
+        function openAdvancedSearchDrawer() {
+            populateLocationFilters();
+            document.getElementById('advancedSearchOverlay').style.display = 'block';
+            document.getElementById('advancedSearchDrawer').style.display = 'block';
+        }
+        function closeAdvancedSearchDrawer() {
+            document.getElementById('advancedSearchOverlay').style.display = 'none';
+            document.getElementById('advancedSearchDrawer').style.display = 'none';
+        }
+        function stopPropagation(event) { event.stopPropagation(); }
+        
+        function populateLocationFilters() {
+            const countrySet = new Set();
+            const stateSet = new Set();
+            const citySet = new Set();
+            allHotels.forEach(h => {
+                if (h.country) countrySet.add(h.country);
+                if (h.state) stateSet.add(h.state);
+                if (h.city) citySet.add(h.city);
+            });
+            const countries = Array.from(countrySet).sort();
+            const states = Array.from(stateSet).sort();
+            const cities = Array.from(citySet).sort();
+            const countriesEl = document.getElementById('advCountries');
+            const statesEl = document.getElementById('advStates');
+            const citiesEl = document.getElementById('advCities');
+            const setOptions = (el, values) => {
+                const prev = Array.from(el.selectedOptions).map(o => o.value);
+                el.innerHTML = values.map(v => `<option value="${v}">${v}</option>`).join('');
+                // restore previous selections if values still exist
+                prev.forEach(v => {
+                    const opt = Array.from(el.options).find(o => o.value === v);
+                    if (opt) opt.selected = true;
+                });
+            };
+            setOptions(countriesEl, countries);
+            setOptions(statesEl, states);
+            setOptions(citiesEl, cities);
         }
         
         // Apply advanced filters
         function applyAdvancedFilters() {
-            const city = document.getElementById('searchCity').value.toLowerCase();
-            const state = document.getElementById('searchState').value.toLowerCase();
+            const selectedCountries = Array.from(document.getElementById('advCountries').selectedOptions).map(o => o.value.toLowerCase());
+            const selectedStates = Array.from(document.getElementById('advStates').selectedOptions).map(o => o.value.toLowerCase());
+            const selectedCities = Array.from(document.getElementById('advCities').selectedOptions).map(o => o.value.toLowerCase());
             const net30 = document.getElementById('filterNet30').checked;
             const noDirectBill = document.getElementById('filterNoDirectBill').checked;
             const governmentPO = document.getElementById('filterGovernmentPO').checked;
@@ -1804,17 +1835,53 @@ You can use these placeholders:
             
             let filteredHotels = allHotels;
             
-            // Location filters
-            if (city) {
-                filteredHotels = filteredHotels.filter(hotel => 
-                    (hotel.city || '').toLowerCase().includes(city)
-                );
+            // Location filters (multi-select exact-ish match)
+            if (selectedCountries.length) {
+                filteredHotels = filteredHotels.filter(hotel => selectedCountries.includes((hotel.country || '').toLowerCase()));
             }
-            
-            if (state) {
-                filteredHotels = filteredHotels.filter(hotel => 
-                    (hotel.state || '').toLowerCase().includes(state)
-                );
+            if (selectedStates.length) {
+                filteredHotels = filteredHotels.filter(hotel => selectedStates.includes((hotel.state || '').toLowerCase()));
+            }
+            if (selectedCities.length) {
+                filteredHotels = filteredHotels.filter(hotel => selectedCities.includes((hotel.city || '').toLowerCase()));
+            }
+
+            // Sleeping rooms filters
+            const minTotal = parseInt(document.getElementById('advMinTotalRooms').value || '');
+            const maxTotal = parseInt(document.getElementById('advMaxTotalRooms').value || '');
+            const minSingle = parseInt(document.getElementById('advMinSingleRooms').value || '');
+            const minDouble = parseInt(document.getElementById('advMinDoubleRooms').value || '');
+            if (!Number.isNaN(minTotal)) {
+                filteredHotels = filteredHotels.filter(h => (h.total_rooms ?? 0) >= minTotal);
+            }
+            if (!Number.isNaN(maxTotal)) {
+                filteredHotels = filteredHotels.filter(h => (h.total_rooms ?? 0) <= maxTotal);
+            }
+            if (!Number.isNaN(minSingle)) {
+                // match common field names from registration mapping
+                const singleVal = h => h.rooms_single ?? h.king_rooms ?? h.singleRooms ?? h.kingRooms ?? 0;
+                filteredHotels = filteredHotels.filter(h => (singleVal(h) || 0) >= minSingle);
+            }
+            if (!Number.isNaN(minDouble)) {
+                const doubleVal = h => h.rooms_double ?? h.double_rooms ?? h.doubleRooms ?? 0;
+                filteredHotels = filteredHotels.filter(h => (doubleVal(h) || 0) >= minDouble);
+            }
+
+            // Meeting space filters
+            const minMeetingRooms = parseInt(document.getElementById('advMinMeetingRooms').value || '');
+            const pillarFree = document.getElementById('advPillarFree').value; // '', 'yes', 'no'
+            if (!Number.isNaN(minMeetingRooms)) {
+                const countVal = h => h.meeting_rooms_count ?? h.meeting_spaces ?? 0;
+                filteredHotels = filteredHotels.filter(h => (countVal(h) || 0) >= minMeetingRooms);
+            }
+            if (pillarFree) {
+                const hasPillarFree = h => {
+                    // expect boolean or string flags from aggregated data if present
+                    if (typeof h.any_room_pillar_free === 'boolean') return h.any_room_pillar_free;
+                    if (typeof h.any_room_pillar_free === 'string') return h.any_room_pillar_free.toLowerCase() === 'yes';
+                    return false;
+                };
+                filteredHotels = filteredHotels.filter(h => pillarFree === 'yes' ? hasPillarFree(h) : !hasPillarFree(h));
             }
             
             // Capability filters
@@ -1869,12 +1936,20 @@ You can use these placeholders:
             
             renderHotelsTable(filteredHotels);
             updateCapabilityStats(filteredHotels);
+            closeAdvancedSearchDrawer();
         }
         
         // Reset advanced filters
         function resetAdvancedFilters() {
-            document.getElementById('searchCity').value = '';
-            document.getElementById('searchState').value = '';
+            ['advCountries','advStates','advCities'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) Array.from(el.options).forEach(o => o.selected = false);
+            });
+            ['advMinTotalRooms','advMaxTotalRooms','advMinSingleRooms','advMinDoubleRooms','advMinMeetingRooms'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+            document.getElementById('advPillarFree').value = '';
             document.getElementById('filterNet30').checked = false;
             document.getElementById('filterNoDirectBill').checked = false;
             document.getElementById('filterGovernmentPO').checked = false;
@@ -2394,9 +2469,6 @@ This action cannot be undone.`)) {
             window.location.href = '/admin-contracts.html';
         }
         
-        function showAddAuctionModal() {
-            alert('Live Auction feature coming soon!');
-        }
         
         // Show deactivated users
         async function showDeactivatedUsers() {
@@ -2433,7 +2505,7 @@ This action cannot be undone.`)) {
             loadDashboard();
             setupSearch();
         }
-        
+
         // Add keyboard support for closing popup
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
@@ -2443,9 +2515,12 @@ This action cannot be undone.`)) {
         
         // Close modal on outside click
         window.onclick = function(event) {
-            const modal = document.getElementById('hotelModal');
-            if (event.target === modal) {
-                closeModal('hotelModal');
+            if (event.target && event.target.classList && event.target.classList.contains('modal')) {
+                const modalId = event.target.id;
+                event.target.style.display = 'none';
+                if (modalId === 'hotelModal') {
+                    hideHotelHover();
+                }
             }
         }
         
@@ -2462,6 +2537,97 @@ This action cannot be undone.`)) {
     
     <!-- Universal Logout System -->
     <script src="/logout-universal.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 </body>
 </html>
-

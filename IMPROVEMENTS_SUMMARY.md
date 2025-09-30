@@ -91,7 +91,7 @@ v=spf1 include:sendgrid.net ~all
 ### **Environment Variables (.env file):**
 ```bash
 NODE_ENV=production
-PORT=3000
+PORT=5050
 ADMIN_EMAIL=admin@fedevent.com
 ADMIN_PASSWORD=your-secure-password
 
@@ -156,3 +156,5 @@ The application is now ready for deployment to GoDaddy hosting with confidence t
 3. Monitor email delivery rates
 4. Test the complete user journey in production
 5. Gather user feedback for further improvements
+
+

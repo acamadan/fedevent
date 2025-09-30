@@ -74,7 +74,7 @@ npm run build
 Create `.env` file in your root directory:
 ```bash
 NODE_ENV=production
-PORT=3000
+PORT=5050
 ADMIN_EMAIL=admin@yourdomain.com
 ADMIN_PASSWORD=secure-admin-password-here
 
@@ -175,3 +175,5 @@ Monitor application logs for:
 ---
 
 **Note**: This setup should handle thousands of users efficiently. Monitor growth and upgrade as needed.
+
+

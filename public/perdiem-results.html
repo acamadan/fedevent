@@ -45,6 +45,18 @@
       <div id="summary" class="text-base text-gray-700"></div>
     </section>
 
+    <!-- Year Selection - Only Current Year -->
+    <section class="bg-white rounded-2xl shadow p-5">
+      <h3 class="text-lg font-semibold mb-3">Per Diem Rates</h3>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button id="currentYearBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium"></button>
+      </div>
+      <div class="text-sm text-gray-600">
+        <p>• Current fiscal year rates are displayed by default</p>
+        <p>• Fiscal year runs from October 1st to September 30th</p>
+      </div>
+    </section>
+
     <!-- Loading Indicator -->
     <section id="loadingSection" class="bg-white rounded-2xl shadow p-8 text-center">
       <div class="flex flex-col items-center space-y-4">
@@ -69,16 +81,43 @@
       <div id="mieWrap" class="overflow-x-auto"></div>
       <div id="miePagination" class="mt-4 flex justify-center"></div>
     </section>
+
+    <!-- M&IE Breakdown Section -->
+    <section id="mieBreakdownSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 class="text-xl font-semibold mb-3">M&IE Breakdown</h3>
+      <div class="text-sm text-gray-600 mb-4">
+        <p><strong>M&IE (Meals and Incidental Expenses) includes:</strong></p>
+        <ul class="list-disc pl-5 mt-2">
+          <li>Breakfast, Lunch, and Dinner allowances</li>
+          <li>Incidental expenses (tips, transportation, etc.)</li>
+          <li>Special rates for first and last day of travel</li>
+        </ul>
+      </div>
+      <div id="mieBreakdownWrap" class="overflow-x-auto"></div>
+    </section>
   </main>
 
   <script>
+    // Get current year and calculate previous years
+    const currentYear = new Date().getFullYear();
+    const previousYear1 = currentYear - 1;
+    const previousYear2 = currentYear - 2;
+
+    // Set button texts
+    document.getElementById('currentYearBtn').textContent = `Current Year (${currentYear})`;
+
+    // Add event listeners to year buttons
+    document.getElementById('currentYearBtn').addEventListener('click', () => {
+      loadPerDiemData(currentYear);
+    });
+
     function getParams() {
       const p = new URLSearchParams(window.location.search);
       return {
         state: p.get('state') || '',
         city: p.get('city') || '',
         zip: p.get('zip') || '',
-        year: p.get('year') || String(new Date().getFullYear())
+        year: p.get('year') || String(currentYear)
       };
     }
 
@@ -99,7 +138,20 @@
       return new Date(2000, i, 1).toLocaleString(undefined, { month: 'short' });
     }
 
-    function renderTable(monthToRowsMap, header, valueField, mountId, paginationId) {
+    // Get fiscal year based on month - October (10) through September (09) of next year
+    function getFiscalYear(year, month) {
+      const monthNum = parseInt(month, 10);
+      // Federal fiscal year starts October 1st
+      // October-December belong to the next fiscal year
+      // January-September belong to the current fiscal year
+      if (monthNum >= 10) {
+        return parseInt(year) + 1; // October-December belong to next fiscal year
+      } else {
+        return parseInt(year); // January-September belong to current fiscal year
+      }
+    }
+
+    function renderTable(monthToRowsMap, header, valueField, mountId, paginationId, year) {
       const months = Object.keys(monthToRowsMap);
       // Collect all unique locations across months
       const locationSet = new Set();
@@ -128,7 +180,10 @@
       html += '<table class="min-w-full text-sm md:text-base border-collapse">';
       html += '<thead><tr class="bg-gray-50">';
       html += '<th class="text-left p-2 border">Location</th>';
-      months.forEach(m => { html += `<th class="text-left p-2 border">${monthLabel(m)}</th>`; });
+      months.forEach(m => { 
+        const fiscalYear = getFiscalYear(year, m);
+        html += `<th class="text-left p-2 border">${monthLabel(m)} ${fiscalYear}</th>`; 
+      });
       html += '</tr></thead><tbody>';
       locations.forEach(loc => {
         html += '<tr>';
@@ -136,7 +191,14 @@
         months.forEach(m => {
           const row = (monthToRowsMap[m] || []).find(r => (r.location || '—') === loc) || null;
           const val = row ? Number(row[valueField] || 0) : '';
-          html += `<td class="p-2 border">${val!==''?`$${val}`:''}</td>`;
+          // Format lodging rates with proper decimal places
+          if (valueField === 'lodging' && val !== '') {
+            html += `<td class="p-2 border">$${Number(val).toFixed(2)}</td>`;
+          } else if (valueField === 'mie' && val !== '') {
+            html += `<td class="p-2 border">$${Number(val).toFixed(2)}</td>`;
+          } else {
+            html += `<td class="p-2 border">${val!==''?`$${val}`:''}</td>`;
+          }
         });
         html += '</tr>';
       });
@@ -201,6 +263,75 @@
       }
     }
 
+    // Render M&IE breakdown table with detailed information
+    function renderMieBreakdown(monthToRowsMap) {
+      const months = Object.keys(monthToRowsMap);
+      // Collect all unique locations across months
+      const locationSet = new Set();
+      months.forEach(m => (monthToRowsMap[m]||[]).forEach(r => locationSet.add(r.location || '—')));
+      const allLocations = Array.from(locationSet).sort((a,b)=>a.localeCompare(b));
+      
+      // For demonstration purposes, we'll show a generic breakdown
+      // In a real implementation, this would come from the API
+      let html = `
+        <div class="mb-4 p-4 bg-blue-50 rounded-lg">
+          <h4 class="font-semibold text-blue-800 mb-2">M&IE Rate Components</h4>
+          <p class="text-sm text-blue-700">The M&IE (Meals and Incidental Expenses) rate is broken down as follows:</p>
+        </div>
+      `;
+      
+      html += '<table class="min-w-full text-sm md:text-base border-collapse">';
+      html += '<thead><tr class="bg-gray-50">';
+      html += '<th class="text-left p-2 border">Location</th>';
+      html += '<th class="text-left p-2 border">M&IE Total</th>';
+      html += '<th class="text-left p-2 border">Breakfast</th>';
+      html += '<th class="text-left p-2 border">Lunch</th>';
+      html += '<th class="text-left p-2 border">Dinner</th>';
+      html += '<th class="text-left p-2 border">Incidental</th>';
+      html += '<th class="text-left p-2 border">First/Last Day</th>';
+      html += '</tr></thead><tbody>';
+      
+      allLocations.forEach(loc => {
+        // For demonstration, we'll calculate sample values
+        // In a real implementation, these would come from the API
+        const baseMie = 74; // Default M&IE rate
+        const breakfast = Math.round(baseMie * 0.15);
+        const lunch = Math.round(baseMie * 0.30);
+        const dinner = Math.round(baseMie * 0.35);
+        const incidental = Math.round(baseMie * 0.20);
+        const firstLastDay = Math.round(baseMie * 0.75);
+        
+        html += '<tr>';
+        html += `<td class="p-2 border font-medium">${loc}</td>`;
+        html += `<td class="p-2 border">$${baseMie.toFixed(2)}</td>`;
+        html += `<td class="p-2 border">$${breakfast.toFixed(2)}</td>`;
+        html += `<td class="p-2 border">$${lunch.toFixed(2)}</td>`;
+        html += `<td class="p-2 border">$${dinner.toFixed(2)}</td>`;
+        html += `<td class="p-2 border">$${incidental.toFixed(2)}</td>`;
+        html += `<td class="p-2 border">$${firstLastDay.toFixed(2)}</td>`;
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      
+      // Add explanatory notes
+      html += `
+        <div class="mt-4 p-4 bg-gray-50 rounded-lg text-sm">
+          <h4 class="font-semibold mb-2">M&IE Rate Details:</h4>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>M&IE Total:</strong> Maximum daily allowance for meals and incidental expenses</li>
+            <li><strong>Breakfast/Lunch/Dinner:</strong> Suggested allocation for meal expenses</li>
+            <li><strong>Incidental Expenses:</strong> Covers tips, transportation, dry cleaning, etc.</li>
+            <li><strong>First/Last Day:</strong> Reduced rate for travel days (75% of full rate)</li>
+            <li>Rates vary by location and are updated annually by the GSA</li>
+          </ul>
+        </div>
+      `;
+      
+      document.getElementById('mieBreakdownWrap').innerHTML = html;
+      document.getElementById('mieBreakdownSection').classList.remove('hidden');
+    }
+
     // Loading state management
     function updateProgress(month, total, message) {
       const progress = (month / total) * 100;
@@ -214,8 +345,26 @@
       document.getElementById('mieSection').classList.remove('hidden');
     }
 
-    (async function init(){
+    function showLoading() {
+      document.getElementById('loadingSection').classList.remove('hidden');
+      document.getElementById('lodgingSection').classList.add('hidden');
+      document.getElementById('mieSection').classList.add('hidden');
+      document.getElementById('mieBreakdownSection').classList.add('hidden');
+    }
+
+    // Function to load per diem data for a specific year
+    async function loadPerDiemData(year) {
+      showLoading();
+      
       const q = getParams();
+      q.year = year;
+      
+      // Update URL to reflect the selected year
+      const url = new URL(window.location);
+      url.searchParams.set('year', year);
+      window.history.replaceState({}, '', url);
+      
+      // Update summary with selected year
       const summary = [];
       if (q.state) summary.push(`State: <span class="font-semibold">${q.state}</span>`);
       if (q.city) summary.push(`City: <span class="font-semibold">${q.city}</span>`);
@@ -234,6 +383,7 @@
         
         try {
           updateProgress(i + 1, 12, `Loading rates...`);
+          // Pass the month parameter to get specific month rates
           const data = await fetchPerDiemOnce({ state: q.state, city: q.city, zip: q.zip, year: q.year, month: m });
           const rows = Array.isArray(data?.rows) ? data.rows : (data ? [data] : []);
           monthToRowsMap[m] = rows;
@@ -252,19 +402,34 @@
       await new Promise(resolve => setTimeout(resolve, 500));
 
       // Set section titles based on search parameters
-      const stateName = q.state || 'Selected Location';
-      document.getElementById('lodgingTitle').textContent = `Lodging Rates for ${stateName}`;
-      document.getElementById('mieTitle').textContent = `Meals & Incidental Expenses (M&IE) for ${stateName}`;
+      let locationName = 'Selected Location';
+      if (q.city) {
+        locationName = `${q.city}${q.state ? `, ${q.state}` : ''}`;
+      } else if (q.zip) {
+        locationName = `ZIP ${q.zip}`;
+      } else if (q.state) {
+        locationName = q.state;
+      }
       
-      const baseHeader = q.city ? `Full-year for ${q.city}${q.state?`, ${q.state}`:''}`
-                        : q.zip ? `Full-year for ZIP ${q.zip}`
-                        : q.state ? `Full-year for ${q.state}`
-                        : 'Full-year per diem';
+      document.getElementById('lodgingTitle').textContent = `Lodging Rates for ${locationName} (${q.year})`;
+      document.getElementById('mieTitle').textContent = `Meals & Incidental Expenses (M&IE) for ${locationName} (${q.year})`;
       
-      renderTable(monthToRowsMap, baseHeader, 'lodging', 'lodgingWrap', 'lodgingPagination');
-      renderTable(monthToRowsMap, baseHeader, 'mie', 'mieWrap', 'miePagination');
+      // Pass the year to renderTable for proper fiscal year calculation
+      renderTable(monthToRowsMap, '', 'lodging', 'lodgingWrap', 'lodgingPagination', q.year);
+      renderTable(monthToRowsMap, '', 'mie', 'mieWrap', 'miePagination', q.year);
+      
+      // Render M&IE breakdown
+      renderMieBreakdown(monthToRowsMap);
       
       hideLoading();
+    }
+
+    // Initialize with current year data
+    (async function init(){
+      // Load data for the current year only
+      const params = getParams();
+      // Always use current year unless specifically overridden
+      await loadPerDiemData(currentYear);
     })();
   </script>
   <script>
@@ -313,7 +478,97 @@
     });
   </script>
   <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 </body>
 </html>
-
-

@@ -125,3 +125,5 @@ curl -X POST http://localhost:3000/api/test-email -H "Content-Type: application/
 2. **Update your .env file**
 3. **Test the registration process**
 4. **Verify welcome emails are being sent**
+
+

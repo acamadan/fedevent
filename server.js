@@ -12,8 +12,12 @@ import mammoth from 'mammoth';
 import unzipper from 'unzipper';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
+import OpenAI from 'openai';
 // guessFields will be imported dynamically in the autofill endpoint
 import { spawnSync } from 'child_process';
+import { rotateLogs } from './scripts/log-rotation.js';
+
+const fsp = fs.promises;
 
 // ---------- shell helpers / OCR pipeline ----------
 function hasBin(cmd) {
@@ -422,6 +426,33 @@ console.log('Public directory exists:', fs.existsSync(path.join(__dirname, 'publ
 const app = express();
 app.use(cors());
 app.use(express.json());
+// --- Maintenance mode gate (enable with MAINTENANCE=1) ---
+if (process.env.MAINTENANCE === '1' || process.env.MAINTENANCE === 'true') {
+  const allowedStatic = new Set([
+    '/maintenance.html',
+    '/robots.txt',
+    '/site.css',
+    '/favicon.ico',
+    '/flag-1200x400.jpg',
+    '/flag-1200x400.mp4'
+  ]);
+  app.use((req, res, next) => {
+    // Allow health checks
+    if (req.path === '/health' || req.path === '/healthz' || req.path === '/readyz') {
+      return res.status(200).json({ ok: true });
+    }
+    // Allow the maintenance page and essential assets
+    if (req.method === 'GET' && (allowedStatic.has(req.path))) return next();
+    // Serve maintenance page for all other GETs
+    if (req.method === 'GET') {
+      res.set('Retry-After', '3600');
+      return res.status(503).sendFile(path.join(__dirname, 'public', 'maintenance.html'));
+    }
+    // Block mutating/API requests
+    res.set('Retry-After', '3600');
+    return res.status(503).json({ error: 'Service temporarily unavailable for maintenance' });
+  });
+}
 // Serve static files from public directory
 app.use(express.static(path.join(__dirname, 'public')));
 
@@ -525,9 +556,15 @@ app.post('/api/hotel/contracts/:id/bid/submit', requireAuth, (req, res) => {
     }
 
     db.prepare(`
-      UPDATE contract_bids SET status = 'submitted', submitted_at = datetime('now'), updated_at = datetime('now')
+      UPDATE contract_bids 
+      SET status = 'submitted',
+          submitted_at = datetime('now'),
+          updated_at = datetime('now'),
+          auto_bid_active = 0
       WHERE id = ?
     `).run(bid.id);
+
+    recalculateStandings(contractId, { updateDb: true, suppressEmail: true });
 
     return ok(res, { message: 'Bid submitted and locked' });
   } catch (error) {
@@ -695,6 +732,288 @@ app.get('/government-hotel-search.html', (req, res) => {
 });
 
 
+// Support ticket system endpoints
+
+// Create a new support ticket
+app.post('/api/support/tickets', upload.array('attachments', 5), (req, res) => {
+  try {
+    const { subject, description, category, priority, customer_email, customer_name, customer_phone } = req.body;
+    
+    // Generate unique ticket number
+    const ticketNumber = 'TK-' + Date.now() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+    
+    // Handle file attachments
+    let attachments = [];
+    if (req.files && req.files.length > 0) {
+      attachments = req.files.map(file => ({
+        filename: file.originalname,
+        path: file.path,
+        size: file.size,
+        mimetype: file.mimetype
+      }));
+    }
+    
+    // Create ticket
+    const stmt = db.prepare(`
+      INSERT INTO support_tickets (
+        ticket_number, subject, description, category, priority, 
+        customer_email, customer_name, customer_phone, attachments
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const result = stmt.run(
+      ticketNumber, subject, description, category || 'general', 
+      priority || 'medium', customer_email, customer_name, customer_phone,
+      JSON.stringify(attachments)
+    );
+    
+    const ticketId = result.lastInsertRowid;
+    
+    // Create initial message
+    const messageStmt = db.prepare(`
+      INSERT INTO support_ticket_messages (
+        ticket_id, message, sender_type, sender_name, sender_email
+      ) VALUES (?, ?, ?, ?, ?)
+    `);
+    
+    messageStmt.run(
+      ticketId, description, 'customer', customer_name, customer_email
+    );
+    
+    // Send confirmation email to customer
+    sendSupportTicketConfirmation(customer_email, ticketNumber, subject);
+    
+    // Send notification to admin
+    sendSupportTicketNotification(ticketNumber, subject, customer_email, category, priority);
+    
+    return ok(res, { 
+      message: 'Support ticket created successfully',
+      ticket_number: ticketNumber,
+      ticket_id: ticketId
+    });
+    
+  } catch (error) {
+    console.error('Create support ticket error:', error);
+    return fail(res, 500, 'Failed to create support ticket');
+  }
+});
+
+// Get support tickets (admin only)
+app.get('/api/support/tickets', requireAuth, (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return fail(res, 403, 'Admin access required');
+    }
+    
+    const { status, category, priority, page = 1, limit = 20 } = req.query;
+    const offset = (page - 1) * limit;
+    
+    let query = `
+      SELECT st.*, u.first_name, u.last_name, h.name as hotel_name
+      FROM support_tickets st
+      LEFT JOIN users u ON st.user_id = u.id
+      LEFT JOIN hotels h ON st.hotel_id = h.id
+    `;
+    
+    const conditions = [];
+    const params = [];
+    
+    if (status) {
+      conditions.push('st.status = ?');
+      params.push(status);
+    }
+    
+    if (category) {
+      conditions.push('st.category = ?');
+      params.push(category);
+    }
+    
+    if (priority) {
+      conditions.push('st.priority = ?');
+      params.push(priority);
+    }
+    
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+    
+    query += ' ORDER BY st.created_at DESC LIMIT ? OFFSET ?';
+    params.push(parseInt(limit), parseInt(offset));
+    
+    const tickets = db.prepare(query).all(...params);
+    
+    return ok(res, { tickets });
+    
+  } catch (error) {
+    console.error('Get support tickets error:', error);
+    return fail(res, 500, 'Failed to retrieve support tickets');
+  }
+});
+
+// Get single ticket with messages
+app.get('/api/support/tickets/:id', requireAuth, (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    
+    // Get ticket details
+    const ticket = db.prepare(`
+      SELECT st.*, u.first_name, u.last_name, h.name as hotel_name
+      FROM support_tickets st
+      LEFT JOIN users u ON st.user_id = u.id
+      LEFT JOIN hotels h ON st.hotel_id = h.id
+      WHERE st.id = ?
+    `).get(ticketId);
+    
+    if (!ticket) {
+      return fail(res, 404, 'Ticket not found');
+    }
+    
+    // Check permissions (admin or ticket owner)
+    if (req.user.role !== 'admin' && ticket.user_id !== req.user.id) {
+      return fail(res, 403, 'Access denied');
+    }
+    
+    // Get ticket messages
+    const messages = db.prepare(`
+      SELECT * FROM support_ticket_messages
+      WHERE ticket_id = ? AND (is_internal = 0 OR ? = 1)
+      ORDER BY created_at ASC
+    `).all(ticketId, req.user.role === 'admin' ? 1 : 0);
+    
+    ticket.messages = messages;
+    
+    return ok(res, { ticket });
+    
+  } catch (error) {
+    console.error('Get ticket error:', error);
+    return fail(res, 500, 'Failed to retrieve ticket');
+  }
+});
+
+// Add message to ticket
+app.post('/api/support/tickets/:id/messages', requireAuth, upload.array('attachments', 5), (req, res) => {
+  try {
+    const ticketId = req.params.id;
+    const { message, is_internal = false } = req.body;
+    
+    // Get ticket
+    const ticket = db.prepare('SELECT * FROM support_tickets WHERE id = ?').get(ticketId);
+    if (!ticket) {
+      return fail(res, 404, 'Ticket not found');
+    }
+    
+    // Check permissions
+    if (req.user.role !== 'admin' && ticket.user_id !== req.user.id) {
+      return fail(res, 403, 'Access denied');
+    }
+    
+    // Handle attachments
+    let attachments = [];
+    if (req.files && req.files.length > 0) {
+      attachments = req.files.map(file => ({
+        filename: file.originalname,
+        path: file.path,
+        size: file.size,
+        mimetype: file.mimetype
+      }));
+    }
+    
+    // Add message
+    const stmt = db.prepare(`
+      INSERT INTO support_ticket_messages (
+        ticket_id, message, sender_type, sender_name, sender_email, 
+        is_internal, attachments
+      ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
+    
+    const senderType = req.user.role === 'admin' ? 'admin' : 'customer';
+    const senderName = req.user.role === 'admin' ? 'FEDEVENT Support' : req.user.first_name + ' ' + req.user.last_name;
+    
+    stmt.run(
+      ticketId, message, senderType, senderName, req.user.email,
+      is_internal ? 1 : 0, JSON.stringify(attachments)
+    );
+    
+    // Update ticket timestamp
+    db.prepare('UPDATE support_tickets SET updated_at = datetime("now") WHERE id = ?').run(ticketId);
+    
+    // Send email notification if customer message
+    if (senderType === 'customer') {
+      sendTicketUpdateNotification(ticket.customer_email, ticket.ticket_number, message);
+    }
+    
+    return ok(res, { message: 'Message added successfully' });
+    
+  } catch (error) {
+    console.error('Add message error:', error);
+    return fail(res, 500, 'Failed to add message');
+  }
+});
+
+// Update ticket status (admin only)
+app.put('/api/support/tickets/:id/status', requireAuth, (req, res) => {
+  try {
+    if (req.user.role !== 'admin') {
+      return fail(res, 403, 'Admin access required');
+    }
+    
+    const ticketId = req.params.id;
+    const { status, resolution_notes } = req.body;
+    
+    const validStatuses = ['open', 'in_progress', 'waiting_customer', 'resolved', 'closed'];
+    if (!validStatuses.includes(status)) {
+      return fail(res, 400, 'Invalid status');
+    }
+    
+    const updateData = { status, updated_at: new Date().toISOString() };
+    if (resolution_notes) {
+      updateData.resolution_notes = resolution_notes;
+    }
+    if (status === 'resolved' || status === 'closed') {
+      updateData.resolved_at = new Date().toISOString();
+    }
+    
+    const stmt = db.prepare(`
+      UPDATE support_tickets 
+      SET status = ?, resolution_notes = ?, resolved_at = ?, updated_at = ?
+      WHERE id = ?
+    `);
+    
+    stmt.run(status, resolution_notes, updateData.resolved_at, updateData.updated_at, ticketId);
+    
+    // Send status update notification
+    const ticket = db.prepare('SELECT * FROM support_tickets WHERE id = ?').get(ticketId);
+    sendTicketStatusUpdate(ticket.customer_email, ticket.ticket_number, status);
+    
+    return ok(res, { message: 'Ticket status updated successfully' });
+    
+  } catch (error) {
+    console.error('Update ticket status error:', error);
+    return fail(res, 500, 'Failed to update ticket status');
+  }
+});
+
+// Email notification functions
+function sendSupportTicketConfirmation(customerEmail, ticketNumber, subject) {
+  // Implementation for sending confirmation email
+  console.log(`Sending confirmation email to ${customerEmail} for ticket ${ticketNumber}`);
+}
+
+function sendSupportTicketNotification(ticketNumber, subject, customerEmail, category, priority) {
+  // Implementation for sending admin notification
+  console.log(`Sending admin notification for ticket ${ticketNumber}`);
+}
+
+function sendTicketUpdateNotification(customerEmail, ticketNumber, message) {
+  // Implementation for sending update notification
+  console.log(`Sending update notification to ${customerEmail} for ticket ${ticketNumber}`);
+}
+
+function sendTicketStatusUpdate(customerEmail, ticketNumber, status) {
+  // Implementation for sending status update
+  console.log(`Sending status update to ${customerEmail} for ticket ${ticketNumber}`);
+}
+
 // Basic site pages (stubs if missing)
 const staticPages = [
   'about.html',
@@ -704,10 +1023,12 @@ const staticPages = [
   'admin-login.html',
   'admin-dashboard.html',
   'admin-contracts.html',
+  'admin-support.html',
   'hotel-login.html',
   'hotel-dashboard.html',
   'hotel-contracts.html',
-  'reset-password.html'
+  'reset-password.html',
+  'support-ticket.html'
 ];
 for (const p of staticPages) {
   app.get('/' + p, (req, res) => {
@@ -721,6 +1042,17 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 // ---------- database ----------
 // Use local data directory (persists in Render's container filesystem)
 const db = new Database(path.join(__dirname, 'data', 'creata.db'));
+
+// ---------- OpenAI client ----------
+let openai = null;
+if (process.env.OPENAI_API_KEY) {
+  openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+  });
+  console.log('OpenAI client initialized');
+} else {
+  console.log('OpenAI API key not found - OpenAI features disabled');
+}
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS hotels (
@@ -777,6 +1109,29 @@ try { db.exec(`CREATE TABLE IF NOT EXISTS contract_access (
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN breakdown TEXT`); } catch (e) {}
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN total_price REAL`); } catch (e) {}
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN status TEXT DEFAULT 'draft'`); } catch (e) {}
+try { db.exec(`ALTER TABLE contracts ADD COLUMN bid_strategy TEXT DEFAULT 'FIRM_FIXED'`); } catch (e) {}
+try { db.exec(`ALTER TABLE contracts ADD COLUMN target_bid_min INTEGER`); } catch (e) {}
+try { db.exec(`ALTER TABLE contracts ADD COLUMN target_bid_max INTEGER`); } catch (e) {}
+try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_active INTEGER DEFAULT 0`); } catch (e) {}
+try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_floor REAL`); } catch (e) {}
+try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_step REAL DEFAULT 1`); } catch (e) {}
+try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_last_adjusted_at TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE contract_bids ADD COLUMN last_known_rank INTEGER`); } catch (e) {}
+try { db.exec(`ALTER TABLE live_auctions ADD COLUMN requirement_summary TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE live_auctions ADD COLUMN sow_document TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE live_auctions ADD COLUMN sow_original_name TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE live_auctions ADD COLUMN sow_mime_type TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE live_auctions ADD COLUMN sow_size INTEGER`); } catch (e) {}
+try { db.exec(`CREATE TABLE IF NOT EXISTS auction_clins (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  auction_id INTEGER NOT NULL,
+  clin_number TEXT,
+  title TEXT,
+  description TEXT,
+  display_order INTEGER DEFAULT 0,
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (auction_id) REFERENCES live_auctions (id) ON DELETE CASCADE
+)`); } catch (e) {}
 try { db.exec(`CREATE TABLE IF NOT EXISTS contract_qna (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
   contract_id INTEGER NOT NULL,
@@ -1090,6 +1445,73 @@ db.exec(`
     FOREIGN KEY (hotel_id) REFERENCES hotels (id)
   );
 
+  -- Signed agreements (hotel participation one-pager)
+  CREATE TABLE IF NOT EXISTS signed_agreements (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    hotel_name TEXT NOT NULL,
+    rep_name TEXT NOT NULL,
+    title TEXT,
+    email TEXT,
+    agreement_version TEXT,
+    agreement_effective TEXT,
+    signed_at TEXT DEFAULT (datetime('now')),
+    user_agent TEXT,
+    ip_address TEXT,
+    signature_path TEXT
+  );
+
+  -- Approval workflow for second signature
+  CREATE TABLE IF NOT EXISTS agreement_approvals (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    agreement_id INTEGER NOT NULL,
+    approver_name TEXT,
+    approver_email TEXT,
+    status TEXT DEFAULT 'pending', -- pending, signed
+    token TEXT UNIQUE,
+    signed_at TEXT,
+    signature_path TEXT,
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (agreement_id) REFERENCES signed_agreements (id)
+  );
+
+  -- Support ticket system
+  CREATE TABLE IF NOT EXISTS support_tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_number TEXT UNIQUE NOT NULL,
+    subject TEXT NOT NULL,
+    description TEXT NOT NULL,
+    category TEXT NOT NULL, -- technical, billing, general, feature_request
+    priority TEXT DEFAULT 'medium', -- low, medium, high, urgent
+    status TEXT DEFAULT 'open', -- open, in_progress, waiting_customer, resolved, closed
+    customer_email TEXT NOT NULL,
+    customer_name TEXT,
+    customer_phone TEXT,
+    user_id INTEGER, -- if logged in user
+    hotel_id INTEGER, -- if hotel user
+    assigned_to INTEGER, -- admin user ID
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now')),
+    resolved_at TEXT,
+    resolution_notes TEXT,
+    attachments TEXT, -- JSON array of file paths
+    FOREIGN KEY (user_id) REFERENCES users (id),
+    FOREIGN KEY (hotel_id) REFERENCES hotels (id),
+    FOREIGN KEY (assigned_to) REFERENCES users (id)
+  );
+
+  CREATE TABLE IF NOT EXISTS support_ticket_messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER NOT NULL,
+    message TEXT NOT NULL,
+    sender_type TEXT NOT NULL, -- customer, admin, system
+    sender_name TEXT,
+    sender_email TEXT,
+    is_internal INTEGER DEFAULT 0, -- internal notes vs customer-visible
+    attachments TEXT, -- JSON array of file paths
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (ticket_id) REFERENCES support_tickets (id)
+  );
+
   -- (Migrations handled in JS after DB init)
 `);
 
@@ -1099,7 +1521,7 @@ function createDefaultAdmin() {
   
   if (!adminExists) {
     const adminEmail = process.env.ADMIN_EMAIL || 'admin@fedevent.com';
-    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+    const adminPassword = process.env.ADMIN_PASSWORD || generateSecurePassword();
     
     console.log('Creating default admin user...');
     console.log(`Admin Email: ${adminEmail}`);
@@ -1175,6 +1597,22 @@ db.exec(`
     created_at TEXT DEFAULT (datetime('now'))
   );
 `);
+
+// --- lightweight migrations for existing databases ---
+function ensureColumn(table, column, definition) {
+  try {
+    const cols = db.prepare(`PRAGMA table_info(${table})`).all();
+    const has = cols.some(c => String(c.name).toLowerCase() === String(column).toLowerCase());
+    if (!has) {
+      db.prepare(`ALTER TABLE ${table} ADD COLUMN ${definition}`).run();
+      console.log(`[migrate] added ${table}.${column}`);
+    }
+  } catch (e) {
+    console.warn(`[migrate] failed adding ${table}.${column}:`, e?.message || e);
+  }
+}
+
+ensureColumn('signed_agreements', 'signature_path', 'signature_path TEXT');
 db.exec(`
   CREATE TABLE IF NOT EXISTS user_drafts (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1189,7 +1627,7 @@ db.exec(`
 // ---------- SAM.gov integration ----------
 app.get('/api/sam/search', async (req, res) => {
   try {
-    const q = String(req.query.q || '').trim() || 'lodging OR hotel OR conference';
+    const q = String(req.query.q || '').trim();
     const naics = String(req.query.naics || '721110');
     const limit = Math.min(parseInt(req.query.limit || '10', 10) || 10, 1000); // SAM API max is 1000
     const apiKey = process.env.SAM_API_KEY;
@@ -1203,7 +1641,7 @@ app.get('/api/sam/search', async (req, res) => {
           fullParentPathName: 'DEPT OF DEFENSE.DEPT OF THE ARMY.US ARMY CONTRACTING COMMAND',
           department: 'Department of Defense',
           postedDate: '2025-09-15T00:00:00.000Z',
-          responseDeadLine: '2025-10-15T23:59:59.000Z',
+          responseDeadline: '2025-10-15T23:59:59.000Z',
           naicsCode: '721110',
           type: 'Solicitation',
           active: 'Yes',
@@ -1217,7 +1655,7 @@ app.get('/api/sam/search', async (req, res) => {
           fullParentPathName: 'DEPT OF DEFENSE.DEFENSE LOGISTICS AGENCY',
           department: 'Department of Defense',
           postedDate: '2025-09-10T00:00:00.000Z',
-          responseDeadLine: '2025-10-20T23:59:59.000Z',
+          responseDeadline: '2025-10-20T23:59:59.000Z',
           naicsCode: '721110',
           type: 'Solicitation',
           active: 'Yes',
@@ -1231,7 +1669,7 @@ app.get('/api/sam/search', async (req, res) => {
           fullParentPathName: 'DEPT OF VETERANS AFFAIRS.VETERANS HEALTH ADMINISTRATION',
           department: 'Department of Veterans Affairs',
           postedDate: '2025-09-05T00:00:00.000Z',
-          responseDeadLine: '2025-10-05T23:59:59.000Z',
+          responseDeadline: '2025-10-05T23:59:59.000Z',
           naicsCode: '721110',
           type: 'Sources Sought',
           active: 'Yes',
@@ -1254,28 +1692,48 @@ app.get('/api/sam/search', async (req, res) => {
     // Real SAM.gov API call using correct v2 endpoint
     const samUrl = 'https://api.sam.gov/opportunities/v2/search';
     
-    // Calculate date range (REQUIRED by SAM API - max 1 year, MM/dd/yyyy format)
-    const today = new Date();
-    const thirtyDaysAgo = new Date();
-    thirtyDaysAgo.setDate(today.getDate() - 30);
-    
-    // Format dates as MM/dd/yyyy (required format)
+    // Calculate and validate date range (REQUIRED by SAM API - MM/dd/yyyy format)
     const formatDate = (date) => {
       const month = String(date.getMonth() + 1).padStart(2, '0');
       const day = String(date.getDate()).padStart(2, '0');
       const year = date.getFullYear();
       return `${month}/${day}/${year}`;
     };
+
+    const mmddyyyy = /^\d{2}\/\d{2}\/\d{4}$/;
+    const parseMmddyyyy = (s) => {
+      if (!s || !mmddyyyy.test(s)) return null;
+      const [m, d, y] = s.split('/').map(Number);
+      const dt = new Date(y, m - 1, d);
+      if (dt.getFullYear() !== y || dt.getMonth() !== m - 1 || dt.getDate() !== d) return null;
+      return dt;
+    };
+
+    const today = new Date();
+    const defaultFrom = new Date();
+    defaultFrom.setDate(today.getDate() - 60);
+
+    const fromDt = parseMmddyyyy(String(req.query.postedFrom || '').trim()) || defaultFrom;
+    const toDt = parseMmddyyyy(String(req.query.postedTo || '').trim()) || today;
+
+    // Enforce max 60-day range per SAM constraints
+    const diffMs = toDt - fromDt;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffDays > 60) {
+      return fail(res, 400, 'Date range must be 60 days or less');
+    }
+
+    const postedFrom = formatDate(fromDt);
+    const postedTo = formatDate(toDt);
     
-    const postedFrom = formatDate(thirtyDaysAgo);
-    const postedTo = formatDate(today);
-    
+    // Cap limit at 1000 to avoid SAM blocking
+    const safeLimit = Math.min(Number.isFinite(limit) ? limit : 10, 1000);
     const params = new URLSearchParams({
       api_key: apiKey,
       postedFrom: postedFrom, // REQUIRED - MM/dd/yyyy format
       postedTo: postedTo, // REQUIRED - MM/dd/yyyy format
-      limit: String(limit),
-      offset: '0'
+      limit: String(safeLimit),
+      offset: String(parseInt(req.query.offset || '0', 10) || 0)
     });
     
     // Add optional parameters only if they have values
@@ -1288,12 +1746,20 @@ app.get('/api/sam/search', async (req, res) => {
     // Default to solicitations if no specific type requested
     params.append('ptype', 'o');
 
+    console.log(`SAM API URL: ${samUrl}?${params}`);
     let response;
     try {
+      // Create AbortController for timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
+      
       response = await fetch(`${samUrl}?${params}`, {
         headers: { 'Accept': 'application/json' },
-        timeout: 10000
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
+      console.log(`SAM API response status: ${response.status} ${response.statusText}`);
     } catch (error) {
       console.log(`SAM API network error: ${error.message} - falling back to demo data`);
       // Network error - fall back to demo data
@@ -1304,7 +1770,7 @@ app.get('/api/sam/search', async (req, res) => {
           fullParentPathName: 'DEPT OF DEFENSE.DEPT OF THE ARMY.US ARMY CONTRACTING COMMAND',
           department: 'Department of Defense',
           postedDate: '2025-09-15T00:00:00.000Z',
-          responseDeadLine: '2025-10-15T23:59:59.000Z',
+          responseDeadline: '2025-10-15T23:59:59.000Z',
           naicsCode: '721110',
           type: 'Solicitation',
           active: 'Yes',
@@ -1336,6 +1802,9 @@ app.get('/api/sam/search', async (req, res) => {
 
     if (!response.ok) {
       console.log(`SAM API error: ${response.status} ${response.statusText} - falling back to demo data`);
+      const errorText = await response.text();
+      console.log(`SAM API error details: ${errorText}`);
+      
       // Fall back to demo data if API fails
       const demoResults = [
         {
@@ -1344,7 +1813,7 @@ app.get('/api/sam/search', async (req, res) => {
           fullParentPathName: 'DEPT OF DEFENSE.DEPT OF THE ARMY.US ARMY CONTRACTING COMMAND',
           department: 'Department of Defense',
           postedDate: '2025-09-15T00:00:00.000Z',
-          responseDeadLine: '2025-10-15T23:59:59.000Z',
+          responseDeadline: '2025-10-15T23:59:59.000Z',
           naicsCode: '721110',
           type: 'Solicitation',
           active: 'Yes',
@@ -1358,7 +1827,7 @@ app.get('/api/sam/search', async (req, res) => {
           fullParentPathName: 'DEPT OF DEFENSE.DEFENSE LOGISTICS AGENCY',
           department: 'Department of Defense',
           postedDate: '2025-09-10T00:00:00.000Z',
-          responseDeadLine: '2025-10-20T23:59:59.000Z',
+          responseDeadline: '2025-10-20T23:59:59.000Z',
           naicsCode: '721110',
           type: 'Solicitation',
           active: 'Yes',
@@ -1387,33 +1856,43 @@ app.get('/api/sam/search', async (req, res) => {
           description: opp.description || 'View full details on SAM.gov'
         })),
         query: { q, naics, limit, postedFrom, postedTo },
-        note: 'Demo data - SAM API key unauthorized. Key may need activation or registration for opportunities endpoint. Contact SAM.gov support for assistance.'
+        note: `Demo data - SAM API error ${response.status}: ${response.statusText}. Check API key and parameters.`
       });
     }
 
     const data = await response.json();
     console.log('SAM API response structure:', Object.keys(data));
     console.log('SAM API total records:', data.totalRecords);
+    console.log('SAM API opportunitiesData length:', (data.opportunitiesData || []).length);
     
     const opportunities = data.opportunitiesData || [];
+    console.log('Processing', opportunities.length, 'opportunities');
 
     const results = opportunities.map(opp => ({
       id: opp.solicitationNumber || opp.noticeId,
       title: opp.title || 'Untitled',
       agency: opp.fullParentPathName || opp.department || 'Unknown Agency',
       postedDate: opp.postedDate ? opp.postedDate.split('T')[0] : null,
-      responseDeadline: opp.reponseDeadLine ? opp.reponseDeadLine.split('T')[0] : null, // Note: API uses 'reponseDeadLine' (typo in API)
+      responseDeadline: opp.responseDeadLine ? opp.responseDeadLine.split('T')[0] : null, // Note: API uses 'responseDeadLine'
       naics: opp.naicsCode,
       type: opp.type,
-      setAside: opp.setAside,
-      setAsideCode: opp.setAsideCode,
+      setAside: opp.setAside || opp.typeOfSetAsideDescription,
+      setAsideCode: opp.setAsideCode || opp.typeOfSetAside,
       solicitationNumber: opp.solicitationNumber,
       active: opp.active,
       uiLink: opp.uiLink,
       description: opp.description || 'View full details on SAM.gov',
+      resourceLinks: Array.isArray(opp.resourceLinks) ? opp.resourceLinks : [],
       organizationType: opp.organizationType,
-      classificationCode: opp.classificationCode
+      classificationCode: opp.classificationCode,
+      lastUpdatedDate: opp.lastUpdatedDate ? opp.lastUpdatedDate.split('T')[0] : null,
+      publishedDate: opp.publishedDate ? opp.publishedDate.split('T')[0] : null,
+      officeAddress: opp.officeAddress,
+      pointOfContact: opp.pointOfContact
     }));
+
+    console.log('Mapped', results.length, 'results');
+    console.log('First result:', results[0]);
 
     return ok(res, {
       totalRecords: data.totalRecords || results.length,
@@ -1556,7 +2035,7 @@ app.get('/api/sam/notice/:id', async (req, res) => {
       title: opp.title || 'Untitled',
       agency: opp.fullParentPathName || opp.department || 'Unknown Agency',
       postedDate: opp.postedDate ? opp.postedDate.split('T')[0] : null,
-      responseDeadline: opp.reponseDeadLine ? opp.reponseDeadLine.split('T')[0] : null,
+      responseDeadline: opp.responseDeadLine ? opp.responseDeadLine.split('T')[0] : null,
       naics: opp.naicsCode,
       type: opp.type,
       setAside: opp.setAside,
@@ -1578,7 +2057,7 @@ app.get('/api/sam/notice/:id', async (req, res) => {
 app.get('/api/admin/solicitation/:id', async (req, res) => {
   // Delegate to the SAM notice endpoint
   try {
-    const r = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sam/notice/${encodeURIComponent(req.params.id)}`);
+    const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/notice/${encodeURIComponent(req.params.id)}`);
     const data = await r.json();
     if (!data || data.error) return fail(res, 404, data?.error || 'Not found');
 
@@ -1624,7 +2103,7 @@ app.get('/api/opps', async (req, res) => {
 
     if (noticeid) {
       // Delegate to our notice lookup
-      const r = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sam/notice/${encodeURIComponent(noticeid)}`);
+      const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/notice/${encodeURIComponent(noticeid)}`);
       const data = await r.json();
       if (!data || data.error) return fail(res, 404, data?.error || 'Not found', { detail: data?.detail, raw: data?.raw });
       return ok(res, { ok: true, totalRecords: 1, results: [data.notice] });
@@ -1636,7 +2115,7 @@ app.get('/api/opps', async (req, res) => {
     if (postedTo) params.set('postedTo', postedTo);
     params.set('limit', limit);
 
-    const r = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sam/search?${params.toString()}`);
+    const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/search?${params.toString()}`);
     const data = await r.json();
     if (!data || data.error) return fail(res, 400, data?.error || 'Search failed', { detail: data?.detail });
     return ok(res, data);
@@ -1653,7 +2132,7 @@ app.post('/api/sam/search-and-email', async (req, res) => {
     const q = (Array.isArray(keywords) ? keywords : String(keywords||'').split(',')).map(s=>String(s||'').trim()).filter(Boolean).join(' OR ') || 'lodging OR hotel OR conference';
 
     // Fetch real results via our search endpoint
-    const searchResponse = await fetch(`http://localhost:${process.env.PORT || 3000}/api/sam/search?${new URLSearchParams({ q, naics, limit: '20' })}`);
+    const searchResponse = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/search?${new URLSearchParams({ q, naics, limit: '20' })}`);
     const searchData = await searchResponse.json();
     const results = searchData.results || [];
 
@@ -2057,8 +2536,16 @@ app.get('/api/perdiem', async (req, res) => {
             // Select lodging rate for requested month (fallback to current month, then first available)
             const requestedMonthNum = (month && /^\d{2}$/.test(month)) ? parseInt(month, 10) : (new Date().getMonth() + 1);
             const monthlyRates = rateInfo.months?.month || [];
-            const monthData = monthlyRates.find(m => m.number === requestedMonthNum) || monthlyRates.find(m => m.short === String(requestedMonthNum).padStart(2,'0')) || monthlyRates[0];
-            const lodging = monthData?.value || 0;
+            
+            // Find the specific month rate
+            let lodging = 0;
+            if (monthlyRates.length > 0) {
+              // Try to find the exact month
+              const monthData = monthlyRates.find(m => m.number === requestedMonthNum) || 
+                               monthlyRates.find(m => m.short === String(requestedMonthNum).padStart(2,'0')) || 
+                               monthlyRates[0];
+              lodging = parseFloat(monthData?.value) || 0;
+            }
             
             if (city && (lodging > 0 || meals > 0)) {
               rows.push({ 
@@ -2786,6 +3273,7 @@ const validation = {
     return text.trim().substring(0, maxLength);
   },
   
+  
   // Number validation
   isValidNumber: (num, min = 0, max = Number.MAX_SAFE_INTEGER) => {
     const parsed = parseFloat(num);
@@ -2846,6 +3334,15 @@ function generateSessionId() {
   return randomBytes(32).toString('hex');
 }
 
+function generateSecurePassword() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+  let password = '';
+  for (let i = 0; i < 16; i++) {
+    password += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return password;
+}
+
 function hashPassword(password) {
   return bcrypt.hashSync(password, 12);
 }
@@ -2863,7 +3360,7 @@ const preparedQueries = {
   getSessionUser: db.prepare(`
     SELECT s.*, u.* FROM sessions s
     JOIN users u ON s.user_id = u.id
-    WHERE s.id = ? AND s.expires_at > datetime('now')
+    WHERE s.id = ? AND datetime(s.expires_at) > datetime('now')
   `),
   updateLastLogin: db.prepare(`UPDATE users SET last_login = datetime('now') WHERE id = ?`),
   
@@ -2921,7 +3418,10 @@ function requireAuth(req, res, next) {
   const user = getSessionUser(sessionId);
   
   if (!user) {
-    return fail(res, 401, 'Authentication required');
+    return res.status(401).json({ 
+      ok: false, 
+      error: 'Your session has expired. Please log in again.' 
+    });
   }
   
   req.user = user;
@@ -2936,30 +3436,58 @@ function requireAdmin(req, res, next) {
 }
 
 async function sendMail({ to, subject, html, attachments = [], replyTo, from }) {
-  if (!process.env.SMTP_HOST || !to) return { skipped: true };
-  const smtpPort = Number(process.env.SMTP_PORT || 587);
-  const secure = (String(process.env.SMTP_SECURE||'').toLowerCase()==='true') || smtpPort === 465;
-  const tx = nodemailer.createTransport({
-    host: process.env.SMTP_HOST,
-    port: smtpPort,
-    secure,
-    requireTLS: !secure, // enforce STARTTLS on 587
-    auth: (process.env.SMTP_USER && process.env.SMTP_PASS)
-      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      : undefined
-  });
-  
-  const mailOptions = {
-    from: from || process.env.NOTIFY_FROM || process.env.SMTP_USER || 'noreply@example.com',
-    to, subject, html, attachments
-  };
-  
-  if (replyTo) {
-    mailOptions.replyTo = replyTo;
+  try {
+    if (!process.env.SMTP_HOST || !to) {
+      console.warn('Email skipped: Missing SMTP_HOST or recipient');
+      return { skipped: true, reason: 'Missing configuration' };
+    }
+    
+    const smtpPort = Number(process.env.SMTP_PORT || 587);
+    const secure = (String(process.env.SMTP_SECURE||'').toLowerCase()==='true') || smtpPort === 465;
+    
+    const tx = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: smtpPort,
+      secure,
+      requireTLS: !secure, // enforce STARTTLS on 587
+      auth: (process.env.SMTP_USER && process.env.SMTP_PASS)
+        ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+        : undefined,
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 5000,    // 5 seconds
+      socketTimeout: 10000      // 10 seconds
+    });
+    
+    const mailOptions = {
+      from: from || process.env.NOTIFY_FROM || process.env.SMTP_USER || 'noreply@example.com',
+      to, subject, html, attachments
+    };
+    
+    if (replyTo) {
+      mailOptions.replyTo = replyTo;
+    }
+    
+    const result = await tx.sendMail(mailOptions);
+    console.log(`Email sent successfully to ${to}: ${result.messageId}`);
+    return { ok: true, messageId: result.messageId };
+    
+  } catch (error) {
+    console.error('Email send failed:', {
+      to,
+      subject,
+      error: error.message,
+      code: error.code,
+      response: error.response
+    });
+    
+    // Return structured error for better handling
+    return { 
+      ok: false, 
+      error: error.message,
+      code: error.code,
+      skipped: false
+    };
   }
-  
-  await tx.sendMail(mailOptions);
-  return { ok: true };
 }
 
 // ---------- endpoints ----------
@@ -3012,8 +3540,9 @@ app.get('/api/routing/:routingNumber', async (req, res) => {
       }
     }
 
-    // Fallback to known routing numbers
+    // Comprehensive bank routing numbers database
     const knownRoutingNumbers = {
+      // Major National Banks
       '021000021': 'WELLS FARGO BANK NA',
       '111000025': 'BANK OF AMERICA N.A.',
       '026009593': 'BANK OF AMERICA N.A.',
@@ -3033,7 +3562,95 @@ app.get('/api/routing/:routingNumber', async (req, res) => {
       '322271627': 'JPMORGAN CHASE BANK N.A.',
       '011103093': 'SANTANDER BANK N.A.',
       '011075150': 'WEBSTER BANK N.A.',
-      '021302567': 'CITIZENS BANK N.A.'
+      '021302567': 'CITIZENS BANK N.A.',
+      
+      // Additional Major Banks
+      '036001808': 'USAA FEDERAL SAVINGS BANK',
+      '114000093': 'JPMORGAN CHASE BANK N.A.',
+      '021100361': 'CITIBANK N.A.',
+      '021000089': 'CITIBANK N.A.',
+      '063000047': 'CAPITAL ONE N.A.',
+      '051000017': 'BANK OF AMERICA N.A.',
+      '111000046': 'BANK OF AMERICA N.A.',
+      '054001204': 'BANK OF AMERICA N.A.',
+      '063000047': 'CAPITAL ONE N.A.',
+      '031000503': 'U.S. BANK NATIONAL ASSOCIATION',
+      '123103716': 'U.S. BANK NATIONAL ASSOCIATION',
+      '091000019': 'U.S. BANK NATIONAL ASSOCIATION',
+      '041000124': 'WELLS FARGO BANK NA',
+      '091300010': 'WELLS FARGO BANK NA',
+      '102000076': 'WELLS FARGO BANK NA',
+      
+      // Regional and Community Banks
+      '091905489': 'VALLEY NATIONAL BANK',
+      '021201383': 'VALLEY NATIONAL BANK',
+      '221371415': 'VALLEY NATIONAL BANK',
+      '021300077': 'VALLEY NATIONAL BANK',
+      '011600033': 'FIRST NATIONAL BANK OF PENNSYLVANIA',
+      '031302955': 'REGIONS BANK',
+      '062000080': 'REGIONS BANK',
+      '083900363': 'REGIONS BANK',
+      '062203751': 'REGIONS BANK',
+      '053207766': 'FIFTH THIRD BANK',
+      '042000314': 'FIFTH THIRD BANK',
+      '072000805': 'FIFTH THIRD BANK',
+      '011000138': 'CITIZENS BANK N.A.',
+      '021302567': 'CITIZENS BANK N.A.',
+      '261071315': 'CITIZENS BANK N.A.',
+      '066010057': 'CITIZENS BANK N.A.',
+      '311992904': 'NAVY FEDERAL CREDIT UNION',
+      '256074974': 'NAVY FEDERAL CREDIT UNION',
+      '331303518': 'NAVY FEDERAL CREDIT UNION',
+      
+      // Credit Unions
+      '302075319': 'PENFED CREDIT UNION',
+      '253177049': 'PENFED CREDIT UNION',
+      '061091311': 'ALLIANT CREDIT UNION',
+      '271981528': 'ALLIANT CREDIT UNION',
+      '322271724': 'SPACE COAST CREDIT UNION',
+      '263182794': 'SCHOOL FIRST FEDERAL CREDIT UNION',
+      '272471548': 'BECU',
+      '125000024': 'BECU',
+      
+      // State and Local Banks
+      '021400524': 'TD BANK N.A.',
+      '031101169': 'TD BANK N.A.',
+      '054001725': 'TD BANK N.A.',
+      '011103093': 'SANTANDER BANK N.A.',
+      '231372691': 'SANTANDER BANK N.A.',
+      '061000052': 'SUNTRUST BANK',
+      '053000196': 'SUNTRUST BANK',
+      '063000047': 'CAPITAL ONE N.A.',
+      '051000020': 'CAPITAL ONE N.A.',
+      '065000090': 'CAPITAL ONE N.A.',
+      
+      // Online Banks
+      '124303065': 'ALLY BANK',
+      '031176110': 'ALLY BANK',
+      '321180379': 'DISCOVER BANK',
+      '011075150': 'WEBSTER BANK N.A.',
+      '211274450': 'FIRST INTERNET BANK OF INDIANA',
+      '271081528': 'AXOS BANK',
+      '322271627': 'JPMORGAN CHASE BANK N.A.',
+      
+      // Investment and Specialty Banks
+      '021000089': 'CITIBANK N.A.',
+      '021001486': 'CITIBANK N.A.',
+      '322271627': 'JPMORGAN CHASE BANK N.A.',
+      '111000025': 'BANK OF AMERICA N.A.',
+      '325081403': 'COMPASS BANK',
+      '111319694': 'PNC BANK N.A.',
+      '043000096': 'PNC BANK N.A.',
+      '054000030': 'PNC BANK N.A.',
+      '083000137': 'PNC BANK N.A.',
+      
+      // Additional Valley Bank routing numbers
+      '091905489': 'VALLEY NATIONAL BANK',
+      '021201383': 'VALLEY NATIONAL BANK',
+      '221371415': 'VALLEY NATIONAL BANK', 
+      '021300077': 'VALLEY NATIONAL BANK',
+      '091900533': 'VALLEY NATIONAL BANK',
+      '211274450': 'VALLEY NATIONAL BANK'
     };
 
     if (knownRoutingNumbers[routingNumber]) {
@@ -3334,8 +3951,10 @@ app.post('/api/government/login', async (req, res) => {
       return fail(res, 400, 'Email and password required');
     }
     
-    // Special admin account check
-    if (email === 'admin@fedevent.com' && password === 'admin123') {
+    // Special admin account check - use environment variable for security
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@fedevent.com';
+    const adminPassword = process.env.ADMIN_PASSWORD;
+    if (email === adminEmail && adminPassword && password === adminPassword) {
       // Create admin session
       const sessionId = generateSessionId();
       const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(); // 24 hours
@@ -3345,7 +3964,7 @@ app.post('/api/government/login', async (req, res) => {
       
       let adminUserId;
       if (!adminUser) {
-        const adminPasswordHash = hashPassword('admin123');
+        const adminPasswordHash = hashPassword(adminPassword);
         const result = db.prepare(`
           INSERT INTO government_users (email, password_hash, first_name, last_name, phone, agency, department, job_title, government_id, is_active)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
@@ -3910,7 +4529,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     // Store reset token (you might want to add a password_reset_tokens table in production)
     // For now, we'll just send the email
     
-    const resetUrl = `${process.env.BASE_URL || 'http://localhost:3000'}/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${process.env.BASE_URL || 'http://localhost:5050'}/reset-password.html?token=${resetToken}`;
     
     const subject = 'Password Reset - FEDEVENT Hotel Portal';
     const html = `
@@ -4339,7 +4958,8 @@ app.post('/api/admin/contracts', requireAuth, requireAdmin, async (req, res) => 
     const {
       title, description, location_city, location_state, location_country,
       start_date, end_date, room_count, per_diem_rate, requirements,
-      sow_document, bidding_deadline, decision_date, visibility
+      sow_document, bidding_deadline, decision_date, visibility,
+      bid_strategy, target_bid_min, target_bid_max
     } = req.body;
 
     if (!title || !per_diem_rate || !room_count) {
@@ -4350,18 +4970,37 @@ app.post('/api/admin/contracts', requireAuth, requireAdmin, async (req, res) => 
     const max_contracted_rate = per_diem_rate * 0.7;
     const max_self_pay_rate = per_diem_rate * 0.9;
 
+    const bidStrategy = (bid_strategy || 'FIRM_FIXED').toString().toUpperCase();
+    const targetBidMin = (target_bid_min !== undefined && target_bid_min !== null && target_bid_min !== '')
+      ? Number.parseInt(target_bid_min, 10)
+      : null;
+    const targetBidMax = (target_bid_max !== undefined && target_bid_max !== null && target_bid_max !== '')
+      ? Number.parseInt(target_bid_max, 10)
+      : null;
+
+    if (targetBidMin !== null && (Number.isNaN(targetBidMin) || targetBidMin < 0)) {
+      return fail(res, 400, 'Target minimum bidders must be zero or greater');
+    }
+    if (targetBidMax !== null && (Number.isNaN(targetBidMax) || targetBidMax < 0)) {
+      return fail(res, 400, 'Target maximum bidders must be zero or greater');
+    }
+    if (targetBidMin !== null && targetBidMax !== null && targetBidMin > targetBidMax) {
+      return fail(res, 400, 'Target minimum bidders cannot be greater than maximum bidders');
+    }
+
     const result = db.prepare(`
       INSERT INTO contracts (
         title, description, location_city, location_state, location_country,
         start_date, end_date, room_count, per_diem_rate, max_contracted_rate,
         max_self_pay_rate, requirements, sow_document, bidding_deadline,
-        decision_date, created_by, visibility
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        decision_date, created_by, visibility, bid_strategy, target_bid_min, target_bid_max
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       title, description, location_city, location_state, location_country,
       start_date, end_date, room_count, per_diem_rate, max_contracted_rate,
       max_self_pay_rate, requirements, sow_document, bidding_deadline,
-      decision_date, req.user.id, (visibility || 'PUBLIC').toUpperCase()
+      decision_date, req.user.id, (visibility || 'PUBLIC').toUpperCase(),
+      bidStrategy, targetBidMin, targetBidMax
     );
 
     const contractId = result.lastInsertRowid;
@@ -4397,6 +5036,194 @@ app.get('/api/admin/contracts', requireAuth, requireAdmin, (req, res) => {
   } catch (error) {
     console.error('Get contracts error:', error);
     return fail(res, 500, 'Failed to fetch contracts');
+  }
+});
+
+app.post('/api/admin/auctions/parse-sow', requireAuth, requireAdmin, upload.single('sow'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return fail(res, 400, 'No SOW uploaded');
+    }
+
+    const { requirements, summary, clins, warnings } = await parseSowDocument(
+      req.file.path,
+      req.file.originalname || '',
+      req.file.mimetype || ''
+    );
+    return ok(res, {
+      requirements,
+      summary,
+      clins,
+      warnings
+    });
+  } catch (error) {
+    console.error('Parse SOW error:', error);
+    return fail(res, 500, 'Failed to analyze SOW document');
+  } finally {
+    if (req.file?.path) {
+      try {
+        await fsp.unlink(req.file.path);
+      } catch (_) {}
+    }
+  }
+});
+
+// Create live auction (admin only)
+app.post('/api/admin/auctions', requireAuth, requireAdmin, upload.single('sow'), (req, res) => {
+  try {
+    const {
+      title,
+      description,
+      location_city,
+      location_state,
+      start_date,
+      end_date,
+      bidding_start,
+      bidding_end,
+      base_rate,
+      room_count,
+      requirements,
+      requirement_summary
+    } = req.body || {};
+
+    if (!title || !bidding_start || !bidding_end) {
+      return fail(res, 400, 'Title, bidding start, and bidding end are required');
+    }
+
+    const parsedStartDate = start_date ? new Date(start_date) : null;
+    const parsedEndDate = end_date ? new Date(end_date) : null;
+    const parsedBidStart = new Date(bidding_start);
+    const parsedBidEnd = new Date(bidding_end);
+
+    if (Number.isNaN(parsedBidStart.getTime()) || Number.isNaN(parsedBidEnd.getTime())) {
+      return fail(res, 400, 'Invalid bidding window');
+    }
+    if (parsedStartDate && Number.isNaN(parsedStartDate.getTime())) {
+      return fail(res, 400, 'Invalid start date');
+    }
+    if (parsedEndDate && Number.isNaN(parsedEndDate.getTime())) {
+      return fail(res, 400, 'Invalid end date');
+    }
+    if (parsedStartDate && parsedEndDate && parsedStartDate > parsedEndDate) {
+      return fail(res, 400, 'Event start date must be before the end date');
+    }
+    if (parsedBidStart > parsedBidEnd) {
+      return fail(res, 400, 'Bidding start must be before bidding end');
+    }
+
+    const numericBaseRate = base_rate ? Number.parseFloat(base_rate) : null;
+    if (numericBaseRate !== null && (Number.isNaN(numericBaseRate) || numericBaseRate < 0)) {
+      return fail(res, 400, 'Base rate must be a positive number');
+    }
+
+    const numericRoomCount = room_count ? Number.parseInt(room_count, 10) : null;
+    if (numericRoomCount !== null && (Number.isNaN(numericRoomCount) || numericRoomCount < 0)) {
+      return fail(res, 400, 'Room count must be zero or greater');
+    }
+
+    let sowDocument = null;
+    let sowOriginal = null;
+    let sowMime = null;
+    let sowSize = null;
+
+    if (req.file) {
+      sowDocument = req.file.filename;
+      sowOriginal = req.file.originalname || null;
+      sowMime = req.file.mimetype || null;
+      sowSize = req.file.size || null;
+    }
+
+    const safeRequirements = requirements ? scrubSensitiveContent(requirements) : null;
+    const safeSummary = requirement_summary ? scrubSensitiveContent(requirement_summary) : null;
+
+    const insert = db.prepare(`
+      INSERT INTO live_auctions (
+        title,
+        description,
+        location_city,
+        location_state,
+        start_date,
+        end_date,
+        bidding_start,
+        bidding_end,
+        base_rate,
+        room_count,
+        requirements,
+        requirement_summary,
+        sow_document,
+        sow_original_name,
+        sow_mime_type,
+        sow_size
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      title,
+      description || null,
+      location_city || null,
+      location_state || null,
+      start_date || new Date().toISOString().split('T')[0], // Default to today if not provided
+      end_date || new Date(Date.now() + 7*24*60*60*1000).toISOString().split('T')[0], // Default to 7 days from now
+      bidding_start,
+      bidding_end,
+      numericBaseRate,
+      numericRoomCount,
+      safeRequirements,
+      safeSummary,
+      sowDocument,
+      sowOriginal,
+      sowMime,
+      sowSize
+    );
+
+    const auctionId = insert.lastInsertRowid;
+
+    let clinsInserted = 0;
+    if (req.body && typeof req.body.clin_data === 'string' && req.body.clin_data.trim()) {
+      try {
+        const parsed = JSON.parse(req.body.clin_data);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const records = parsed
+            .map((item, index) => {
+              if (!item || typeof item !== 'object') return null;
+              const clinNumber = String(item.clin_number || '').trim().slice(0, 32) || `000${index + 1}`;
+              const title = scrubSensitiveContent(String(item.title || '').trim());
+              const description = scrubSensitiveContent(String(item.description || '').trim());
+              if (!title && !description) return null;
+              return {
+                clin_number: clinNumber,
+                title: (title || `Requirement ${String(index + 1).padStart(4, '0')}`).slice(0, 200),
+                description: description || title || '',
+                display_order: Number.isInteger(item.display_order) ? item.display_order : index
+              };
+            })
+            .filter(Boolean);
+
+          if (records.length) {
+            const stmt = db.prepare(`
+              INSERT INTO auction_clins (auction_id, clin_number, title, description, display_order)
+              VALUES (?, ?, ?, ?, ?)
+            `);
+            const insertMany = db.transaction((rows) => {
+              rows.forEach(row => {
+                stmt.run(auctionId, row.clin_number, row.title, row.description, row.display_order);
+              });
+            });
+            insertMany(records);
+            clinsInserted = records.length;
+          }
+        }
+      } catch (clinError) {
+        console.warn('Failed to parse clin_data payload:', clinError);
+      }
+    }
+
+    return ok(res, {
+      message: 'Live auction created',
+      auctionId,
+      clinsInserted
+    });
+  } catch (error) {
+    console.error('Create live auction error:', error);
+    return fail(res, 500, 'Failed to create live auction');
   }
 });
 
@@ -4483,6 +5310,135 @@ app.post('/api/admin/contracts/:id/grant', requireAuth, requireAdmin, (req, res)
   }
 });
 
+// Delete contract (admin only)
+app.delete('/api/admin/contracts/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const contractId = req.params.id;
+    
+    // Check if contract exists
+    const contract = db.prepare(`SELECT * FROM contracts WHERE id = ?`).get(contractId);
+    if (!contract) {
+      return fail(res, 404, 'Contract not found');
+    }
+    
+    // Delete associated data (cascade delete)
+    db.prepare(`DELETE FROM contract_bids WHERE contract_id = ?`).run(contractId);
+    db.prepare(`DELETE FROM contract_notifications WHERE contract_id = ?`).run(contractId);
+    db.prepare(`DELETE FROM contract_access WHERE contract_id = ?`).run(contractId);
+    db.prepare(`DELETE FROM contract_qna WHERE contract_id = ?`).run(contractId);
+    db.prepare(`DELETE FROM bid_files WHERE contract_id = ?`).run(contractId);
+    db.prepare(`DELETE FROM contracts WHERE id = ?`).run(contractId);
+    
+    return ok(res, { message: 'Contract deleted successfully' });
+  } catch (error) {
+    console.error('Delete contract error:', error);
+    return fail(res, 500, 'Failed to delete contract');
+  }
+});
+
+// Update contract (admin only)
+app.put('/api/admin/contracts/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const contractId = req.params.id;
+    const {
+      title, description, location_city, location_state, location_country,
+      start_date, end_date, room_count, per_diem_rate, requirements,
+      sow_document, bidding_deadline, decision_date, visibility, status,
+      bid_strategy, target_bid_min, target_bid_max
+    } = req.body;
+
+    // Check if contract exists
+    const contract = db.prepare(`SELECT * FROM contracts WHERE id = ?`).get(contractId);
+    if (!contract) {
+      return fail(res, 404, 'Contract not found');
+    }
+
+    // Calculate max rates if per_diem_rate is provided
+    let max_contracted_rate = contract.max_contracted_rate;
+    let max_self_pay_rate = contract.max_self_pay_rate;
+    
+    if (per_diem_rate !== undefined) {
+      max_contracted_rate = per_diem_rate * 0.7;
+      max_self_pay_rate = per_diem_rate * 0.9;
+    }
+
+    let normalizedBidStrategy = null;
+    if (bid_strategy !== undefined) {
+      normalizedBidStrategy = bid_strategy ? bid_strategy.toString().toUpperCase() : null;
+    }
+
+    const normalizedTargetMin = (target_bid_min !== undefined)
+      ? (target_bid_min === null || target_bid_min === '' ? null : Number.parseInt(target_bid_min, 10))
+      : undefined;
+    if (normalizedTargetMin !== undefined && normalizedTargetMin !== null) {
+      if (Number.isNaN(normalizedTargetMin) || normalizedTargetMin < 0) {
+        return fail(res, 400, 'Target minimum bidders must be zero or greater');
+      }
+    }
+
+    const normalizedTargetMax = (target_bid_max !== undefined)
+      ? (target_bid_max === null || target_bid_max === '' ? null : Number.parseInt(target_bid_max, 10))
+      : undefined;
+    if (normalizedTargetMax !== undefined && normalizedTargetMax !== null) {
+      if (Number.isNaN(normalizedTargetMax) || normalizedTargetMax < 0) {
+        return fail(res, 400, 'Target maximum bidders must be zero or greater');
+      }
+    }
+
+    if (normalizedTargetMin !== undefined && normalizedTargetMax !== undefined && normalizedTargetMin !== null && normalizedTargetMax !== null) {
+      if (normalizedTargetMin > normalizedTargetMax) {
+        return fail(res, 400, 'Target minimum bidders cannot be greater than maximum bidders');
+      }
+    }
+
+    // Update contract
+    const result = db.prepare(`
+      UPDATE contracts SET
+        title = COALESCE(?, title),
+        description = COALESCE(?, description),
+        location_city = COALESCE(?, location_city),
+        location_state = COALESCE(?, location_state),
+        location_country = COALESCE(?, location_country),
+        start_date = COALESCE(?, start_date),
+        end_date = COALESCE(?, end_date),
+        room_count = COALESCE(?, room_count),
+        per_diem_rate = COALESCE(?, per_diem_rate),
+        max_contracted_rate = COALESCE(?, max_contracted_rate),
+        max_self_pay_rate = COALESCE(?, max_self_pay_rate),
+        requirements = COALESCE(?, requirements),
+        sow_document = COALESCE(?, sow_document),
+        bidding_deadline = COALESCE(?, bidding_deadline),
+        decision_date = COALESCE(?, decision_date),
+        visibility = COALESCE(?, visibility),
+        status = COALESCE(?, status),
+        bid_strategy = COALESCE(?, bid_strategy),
+        target_bid_min = COALESCE(?, target_bid_min),
+        target_bid_max = COALESCE(?, target_bid_max)
+      WHERE id = ?
+    `).run(
+      title, description, location_city, location_state, location_country,
+      start_date, end_date, room_count, per_diem_rate, max_contracted_rate,
+      max_self_pay_rate, requirements, sow_document, bidding_deadline,
+      decision_date, visibility, status,
+      normalizedBidStrategy,
+      normalizedTargetMin === undefined ? null : normalizedTargetMin,
+      normalizedTargetMax === undefined ? null : normalizedTargetMax,
+      contractId
+    );
+
+    // Get updated contract
+    const updatedContract = db.prepare(`SELECT * FROM contracts WHERE id = ?`).get(contractId);
+
+    return ok(res, { 
+      message: 'Contract updated successfully',
+      contract: updatedContract
+    });
+  } catch (error) {
+    console.error('Update contract error:', error);
+    return fail(res, 500, 'Failed to update contract');
+  }
+});
+
 // Hotel responds to notification (interested/not interested)
 app.post('/api/contracts/respond/:token', async (req, res) => {
   try {
@@ -4517,10 +5473,122 @@ app.post('/api/contracts/respond/:token', async (req, res) => {
   }
 });
 
+function fetchActiveContractBids(contractId) {
+  return db.prepare(`
+    SELECT cb.*, h.name as hotel_name, h.email as hotel_email
+    FROM contract_bids cb
+    JOIN hotels h ON cb.hotel_id = h.id
+    WHERE cb.contract_id = ? AND cb.status IN ('active','submitted','clarification','bafo')
+    ORDER BY cb.contracted_rate ASC, cb.updated_at ASC, cb.id ASC
+  `).all(contractId);
+}
+
+function calculateContractStandings(contractId) {
+  const bids = fetchActiveContractBids(contractId);
+  return bids.map((bid, index) => ({ position: index + 1, bid }));
+}
+
+function sanitizeStandingsForHotel(standings, hotelId) {
+  return standings.map(({ position, bid }) => {
+    const isYou = bid.hotel_id === hotelId;
+    const entry = {
+      position,
+      isYou,
+      label: isYou ? 'Your Bid' : `Bidder ${position}`,
+      status: position === 1 ? 'leading' : (position === 2 ? 'runner_up' : 'participating')
+    };
+    if (isYou) {
+      entry.contracted_rate = bid.contracted_rate;
+      entry.self_pay_rate = bid.self_pay_rate;
+      entry.auto_bid_active = bid.auto_bid_active === 1;
+      entry.auto_bid_floor = bid.auto_bid_floor;
+      entry.auto_bid_step = bid.auto_bid_step;
+      entry.last_known_rank = bid.last_known_rank;
+      entry.updated_at = bid.updated_at;
+      entry.submitted_at = bid.submitted_at;
+    }
+    return entry;
+  });
+}
+
+function notifyBidLoss(contractId, bid, contract) {
+  if (!bid || bid.hotel_id == null || !bid.hotel_email) return;
+  const subject = `Bid status update for ${contract?.title || 'your contract'}`;
+  const html = `
+    <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 640px; margin: 0 auto;">
+      <h2 style="color:#1e40af;">You have been outbid</h2>
+      <p>Another hotel has moved into first place for <strong>${contract?.title || 'this opportunity'}</strong>.</p>
+      <p style="margin:1rem 0;">Log into the FEDEVENT hotel portal to review your standing and decide if you want to lower your bid or adjust your auto-stop settings.</p>
+      <p style="font-size:0.875rem;color:#6b7280;">This automated notice was sent regarding contract #${contractId}.</p>
+    </div>
+  `;
+  const fromAddress = process.env.BID_NOTIFY_FROM || process.env.SMTP_FROM || process.env.NOTIFY_FROM || 'noreply@fedevent.com';
+  sendMail({ to: bid.hotel_email, subject, html, from: fromAddress }).catch(err => {
+    console.error('Failed to send bid loss email:', err);
+  });
+}
+
+function recalculateStandings(contractId, options = {}) {
+  const { updateDb = false, suppressEmail = false } = options;
+  const standings = calculateContractStandings(contractId);
+  if (updateDb && standings.length > 0) {
+    const contract = suppressEmail ? null : db.prepare(`SELECT id, title FROM contracts WHERE id = ?`).get(contractId);
+    const updateStmt = db.prepare(`UPDATE contract_bids SET last_known_rank = ? WHERE id = ?`);
+    standings.forEach(({ position, bid }) => {
+      if (!suppressEmail && bid.last_known_rank === 1 && position > 1) {
+        notifyBidLoss(contractId, bid, contract);
+      }
+      updateStmt.run(position, bid.id);
+    });
+  }
+  return standings;
+}
+
+function applyAutoBidAdjustments(contractId) {
+  let changed = false;
+  let attempts = 0;
+  while (attempts < 8) {
+    attempts += 1;
+    const standings = calculateContractStandings(contractId);
+    if (standings.length < 2) break;
+    const leaderRate = Number.parseFloat(standings[0].bid.contracted_rate);
+    if (!Number.isFinite(leaderRate)) break;
+    let cycleChanged = false;
+    for (let i = 1; i < standings.length; i += 1) {
+      const bid = standings[i].bid;
+      if (bid.status !== 'active') continue;
+      if (bid.auto_bid_active !== 1) continue;
+      const floorValue = Number.parseFloat(bid.auto_bid_floor);
+      if (!Number.isFinite(floorValue)) continue;
+      const stepValue = Number.isFinite(Number.parseFloat(bid.auto_bid_step)) && Number.parseFloat(bid.auto_bid_step) > 0
+        ? Number.parseFloat(bid.auto_bid_step)
+        : 1;
+      let target = leaderRate - stepValue;
+      const currentRate = Number.parseFloat(bid.contracted_rate);
+      if (!Number.isFinite(currentRate)) continue;
+      let newRate = Math.max(target, floorValue);
+      newRate = Number.isFinite(newRate) ? Number(newRate.toFixed(2)) : currentRate;
+      if (newRate < 0) newRate = 0;
+      if (newRate < currentRate - 0.0001) {
+        db.prepare(`
+          UPDATE contract_bids
+          SET contracted_rate = ?, updated_at = datetime('now'), auto_bid_last_adjusted_at = datetime('now')
+          WHERE id = ?
+        `).run(newRate, bid.id);
+        cycleChanged = true;
+      }
+    }
+    if (!cycleChanged) break;
+    changed = true;
+  }
+  return changed;
+}
+
 // Get available contracts for hotel (hotel users only)
 app.get('/api/hotel/contracts', requireAuth, (req, res) => {
   try {
-    if (req.user.role !== 'hotel' || !req.user.hotel_id) {
+    // Allow hotel users to view PUBLIC contracts even if their profile is not fully linked yet (no hotel_id)
+    if (req.user.role !== 'hotel') {
       return fail(res, 403, 'Hotel access required');
     }
 
@@ -4543,9 +5611,17 @@ app.get('/api/hotel/contracts', requireAuth, (req, res) => {
         c.visibility = 'PUBLIC' OR ca.id IS NOT NULL
       )
       ORDER BY c.bidding_deadline ASC NULLS LAST, c.id DESC
-    `).all(req.user.hotel_id, req.user.hotel_id, req.user.hotel_id);
+    `).all(req.user.hotel_id || null, req.user.hotel_id || null, req.user.hotel_id || null);
+    const enriched = contracts.map(contract => {
+      const standings = calculateContractStandings(contract.id);
+      contract.bid_count = standings.length;
+      const myEntry = standings.find(item => item.bid.hotel_id === req.user.hotel_id);
+      contract.my_position = myEntry ? myEntry.position : null;
+      contract.my_auto_bid_active = myEntry ? myEntry.bid.auto_bid_active === 1 : false;
+      return contract;
+    });
 
-    return ok(res, { contracts });
+    return ok(res, { contracts: enriched });
   } catch (error) {
     console.error('Get hotel contracts error:', error);
     return fail(res, 500, 'Failed to fetch contracts');
@@ -4602,22 +5678,26 @@ app.get('/api/hotel/contracts/:id', requireAuth, (req, res) => {
       return fail(res, 404, 'Contract not found');
     }
 
-    // Get all active bids for this contract (for bid war visibility)
-    const bids = db.prepare(`
-      SELECT cb.contracted_rate, cb.self_pay_rate, cb.submitted_at, h.name as hotel_name
-      FROM contract_bids cb
-      JOIN hotels h ON cb.hotel_id = h.id
-      WHERE cb.contract_id = ? AND cb.status = 'active'
-      ORDER BY cb.contracted_rate ASC
-    `).all(contractId);
+    const standings = calculateContractStandings(contractId);
+    const sanitized = sanitizeStandingsForHotel(standings, req.user.hotel_id);
 
-    // Get hotel's current bid if exists
     const myBid = db.prepare(`
       SELECT * FROM contract_bids 
-      WHERE contract_id = ? AND hotel_id = ? AND status IN ('active','submitted')
+      WHERE contract_id = ? AND hotel_id = ?
+      ORDER BY updated_at DESC
+      LIMIT 1
     `).get(contractId, req.user.hotel_id);
 
-    return ok(res, { contract, bids, myBid });
+    const myEntry = sanitized.find(item => item.isYou) || null;
+
+    return ok(res, {
+      contract,
+      standings: sanitized,
+      total_bidders: standings.length,
+      my_position: myEntry ? myEntry.position : null,
+      my_bid: myBid,
+      myBid
+    });
   } catch (error) {
     console.error('Get contract details error:', error);
     return fail(res, 500, 'Failed to fetch contract details');
@@ -4632,10 +5712,74 @@ app.post('/api/hotel/contracts/:id/bid', requireAuth, (req, res) => {
     }
 
     const contractId = req.params.id;
-    const { contracted_rate, self_pay_rate, additional_notes, breakdown, total_price } = req.body;
+    const payload = req.body || {};
 
-    if (!contracted_rate || !self_pay_rate) {
-      return fail(res, 400, 'Both contracted and self-pay rates required');
+    const contractedRate = Number.parseFloat(payload.contracted_rate);
+    const selfPayRate = Number.parseFloat(payload.self_pay_rate);
+
+    if (!Number.isFinite(contractedRate) || contractedRate <= 0) {
+      return fail(res, 400, 'A valid contracted rate is required');
+    }
+    if (!Number.isFinite(selfPayRate) || selfPayRate < 0) {
+      return fail(res, 400, 'A valid self-pay rate is required');
+    }
+
+    const additionalNotes = (payload.additional_notes || '').toString();
+
+    let breakdownValue = null;
+    if (payload.breakdown) {
+      if (typeof payload.breakdown === 'string') {
+        breakdownValue = payload.breakdown;
+      } else {
+        try {
+          breakdownValue = JSON.stringify(payload.breakdown);
+        } catch (jsonErr) {
+          return fail(res, 400, 'Breakdown must be valid JSON');
+        }
+      }
+    }
+
+    let totalPrice = null;
+    if (payload.total_price !== undefined && payload.total_price !== null && payload.total_price !== '') {
+      const parsedTotal = Number.parseFloat(payload.total_price);
+      if (!Number.isFinite(parsedTotal) || parsedTotal < 0) {
+        return fail(res, 400, 'Total price must be a positive number');
+      }
+      totalPrice = parsedTotal;
+    }
+
+    const autoBidActive = payload.auto_bid_active ? 1 : 0;
+    let autoBidFloor = null;
+    if (payload.auto_bid_floor !== undefined && payload.auto_bid_floor !== null && payload.auto_bid_floor !== '') {
+      const parsedFloor = Number.parseFloat(payload.auto_bid_floor);
+      if (!Number.isFinite(parsedFloor) || parsedFloor < 0) {
+        return fail(res, 400, 'Auto-stop floor must be zero or higher');
+      }
+      autoBidFloor = parsedFloor;
+    }
+
+    let autoBidStep = null;
+    if (payload.auto_bid_step !== undefined && payload.auto_bid_step !== null && payload.auto_bid_step !== '') {
+      const parsedStep = Number.parseFloat(payload.auto_bid_step);
+      if (!Number.isFinite(parsedStep) || parsedStep <= 0) {
+        return fail(res, 400, 'Auto-stop step must be greater than zero');
+      }
+      autoBidStep = parsedStep;
+    }
+
+    if (autoBidActive) {
+      if (autoBidFloor == null) {
+        return fail(res, 400, 'Auto-stop floor is required when auto bid is enabled');
+      }
+      if (autoBidFloor > contractedRate) {
+        return fail(res, 400, 'Auto-stop floor must be less than or equal to your starting bid');
+      }
+      if (autoBidStep == null) {
+        autoBidStep = 1;
+      }
+    } else {
+      autoBidFloor = autoBidFloor == null ? null : autoBidFloor;
+      autoBidStep = autoBidStep == null ? null : autoBidStep;
     }
 
     // Get contract to check max rates
@@ -4652,11 +5796,11 @@ app.post('/api/hotel/contracts/:id/bid', requireAuth, (req, res) => {
     }
 
     // Check if rates are within acceptable limits
-    if (contracted_rate > contract.max_contracted_rate) {
+    if (contractedRate > contract.max_contracted_rate) {
       return fail(res, 400, `Contracted rate cannot exceed $${contract.max_contracted_rate} (30% off per diem)`);
     }
 
-    if (self_pay_rate > contract.max_self_pay_rate) {
+    if (selfPayRate > contract.max_self_pay_rate) {
       return fail(res, 400, `Self-pay rate cannot exceed $${contract.max_self_pay_rate} (10% off per diem)`);
     }
 
@@ -4678,25 +5822,78 @@ app.post('/api/hotel/contracts/:id/bid', requireAuth, (req, res) => {
         return fail(res, 400, 'Bid is submitted and locked');
       }
       // Guard: allowed statuses for editing
-      const editableStatuses = new Set(['draft','clarification','bafo']);
+      const editableStatuses = new Set(['draft','clarification','bafo','active']);
       if (!editableStatuses.has(existingBid.status)) {
         return fail(res, 400, 'Bid cannot be edited in current status');
       }
       // Update existing bid
       db.prepare(`
         UPDATE contract_bids 
-        SET contracted_rate = ?, self_pay_rate = ?, additional_notes = ?, breakdown = ?, total_price = ?, updated_at = datetime('now')
+        SET contracted_rate = ?,
+            self_pay_rate = ?,
+            additional_notes = ?,
+            breakdown = ?,
+            total_price = ?,
+            status = 'active',
+            auto_bid_active = ?,
+            auto_bid_floor = ?,
+            auto_bid_step = ?,
+            updated_at = datetime('now')
         WHERE id = ?
-      `).run(contracted_rate, self_pay_rate, additional_notes || '', breakdown ? JSON.stringify(breakdown) : null, total_price || null, existingBid.id);
+      `).run(
+        contractedRate,
+        selfPayRate,
+        additionalNotes,
+        breakdownValue,
+        totalPrice,
+        autoBidActive,
+        autoBidFloor,
+        autoBidStep,
+        existingBid.id
+      );
     } else {
       // Create new bid
       db.prepare(`
-        INSERT INTO contract_bids (contract_id, hotel_id, contracted_rate, self_pay_rate, additional_notes, breakdown, total_price, status)
-        VALUES (?, ?, ?, ?, ?, ?, ?, 'draft')
-      `).run(contractId, req.user.hotel_id, contracted_rate, self_pay_rate, additional_notes || '', breakdown ? JSON.stringify(breakdown) : null, total_price || null);
+        INSERT INTO contract_bids (
+          contract_id,
+          hotel_id,
+          contracted_rate,
+          self_pay_rate,
+          additional_notes,
+          breakdown,
+          total_price,
+          status,
+          auto_bid_active,
+          auto_bid_floor,
+          auto_bid_step
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 'active', ?, ?, ?)
+      `).run(
+        contractId,
+        req.user.hotel_id,
+        contractedRate,
+        selfPayRate,
+        additionalNotes,
+        breakdownValue,
+        totalPrice,
+        autoBidActive,
+        autoBidFloor,
+        autoBidStep
+      );
     }
+    // Rebalance auto bids before recalculating standings
+    applyAutoBidAdjustments(contractId);
 
-    return ok(res, { message: 'Bid submitted successfully' });
+    const standings = recalculateStandings(contractId, { updateDb: true });
+    const sanitized = sanitizeStandingsForHotel(standings, req.user.hotel_id);
+    const myEntry = sanitized.find(item => item.isYou) || null;
+
+    return ok(res, {
+      message: 'Bid saved',
+      standings: sanitized,
+      bids: sanitized,
+      total_bidders: standings.length,
+      my_position: myEntry ? myEntry.position : null
+    });
   } catch (error) {
     console.error('Submit bid error:', error);
     return fail(res, 500, 'Failed to submit bid');
@@ -4775,7 +5972,7 @@ async function sendContractNotification(hotel, contractId, token) {
     }
 
     const subject = `New Contract Opportunity - ${contract.title}`;
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.BASE_URL || 'http://localhost:5050';
     const interestedUrl = `${baseUrl}/api/contracts/respond/${token}`;
     
     const html = `
@@ -4845,6 +6042,225 @@ app.post('/api/signin', (req, res) => {
   if (SIGNUP_DISABLED) return fail(res, 501, 'Signin disabled');
   const { user = 'guest' } = req.body || {};
   return ok(res, { user: { id: 1, username: user } });
+});
+
+// Simple PDF generator using minimal canvas drawing via PDF syntax
+function generateAgreementPdfBytes(opts) {
+  const {
+    hotelName = '',
+    repName = '',
+    title = '',
+    email = '',
+    effective = '',
+    version = '1.0',
+    signaturePngBytes = null
+  } = opts || {};
+
+  // Very small, minimalist PDF with one page
+  // We'll embed a PNG signature if provided. For simplicity and reliability,
+  // we will render text only if signature isn't embedded.
+  const lines = [];
+  const push = (s) => lines.push(s + '\n');
+  push('%PDF-1.4');
+  const objects = [];
+  const addObj = (s) => { objects.push(s); return objects.length; };
+
+  // Fonts
+  const fontObjId = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
+
+  // Content stream (simple text)
+  const text = [
+    'BT',
+    '/F1 12 Tf',
+    '72 760 Td',
+    `(CREATA Hotel Partner Terms of Participation - v${version}) Tj`,
+    'T*',
+    `(Hotel: ${hotelName}) Tj`,
+    'T*',
+    `(Representative: ${repName}) Tj`,
+    'T*',
+    `(Title: ${title}) Tj`,
+    'T*',
+    `(Email: ${email}) Tj`,
+    'T*',
+    `(Effective: ${effective}) Tj`,
+    'T*',
+    '(By signing electronically, you agree to the Terms shown on the website.) Tj',
+    'ET'
+  ].join('\n');
+  const stream = `<< /Length ${text.length} >>\nstream\n${text}\nendstream`;
+  const contentsId = addObj(stream);
+
+  // Page
+  const pageId = addObj(`<< /Type /Page /Parent 0 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 ${fontObjId} 0 R >> >> /Contents ${contentsId} 0 R >>`);
+
+  // Pages
+  const pagesId = addObj(`<< /Type /Pages /Kids [${pageId} 0 R] /Count 1 >>`);
+
+  // Catalog
+  const catalogId = addObj(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
+
+  // Assemble xref
+  let offset = '%PDF-1.4\n'.length;
+  const xref = ['xref', `0 ${objects.length + 1}`, '0000000000 65535 f '];
+  const out = ['%PDF-1.4\n'];
+  for (let i = 0; i < objects.length; i++) {
+    const header = `${i + 1} 0 obj\n`;
+    out.push(header);
+    xref.push(String(offset).padStart(10, '0') + ' 00000 n ');
+    offset += header.length;
+    out.push(objects[i] + '\nendobj\n');
+    offset += objects[i].length + '\nendobj\n'.length;
+  }
+  out.push(xref.join('\n') + '\n');
+  out.push('trailer\n');
+  out.push(`<< /Size ${objects.length + 1} /Root ${catalogId} 0 R >>\n`);
+  out.push('startxref\n');
+  out.push(String(offset) + '\n');
+  out.push('%%EOF');
+  return Buffer.from(out.join(''));
+}
+
+// Sign agreement endpoint: stores record and returns a simple PDF
+app.post('/api/sign-agreement', async (req, res) => {
+  try {
+    const {
+      consent,
+      hotelName = '',
+      repName = '',
+      title = '',
+      email = '',
+      approverName = '',
+      approverEmail = '',
+      agreementVersion = '1.0',
+      agreementEffective = '',
+      signatureDataUrl = '',
+      userAgent = ''
+    } = req.body || {};
+
+    if (!consent) return fail(res, 400, 'Consent required');
+    if (!hotelName || !repName || !email) return fail(res, 400, 'Missing required fields');
+
+    // Decode signature if present and save to uploads
+    let signaturePath = null;
+    if (signatureDataUrl && /^data:image\/.+;base64,/.test(signatureDataUrl)) {
+      const base64 = signatureDataUrl.split(',')[1];
+      const buf = Buffer.from(base64, 'base64');
+      const dir = path.join(__dirname, 'uploads');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const file = `signature_${Date.now()}.png`;
+      signaturePath = path.join(dir, file);
+      fs.writeFileSync(signaturePath, buf);
+    }
+
+    // Store DB record
+    const insert = db.prepare(`
+      INSERT INTO signed_agreements (hotel_name, rep_name, title, email, agreement_version, agreement_effective, user_agent, ip_address, signature_path)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+    const result = insert.run(
+      hotelName,
+      repName,
+      title,
+      email,
+      agreementVersion,
+      agreementEffective || new Date().toISOString().slice(0, 10),
+      userAgent,
+      (req.headers['x-forwarded-for'] || req.socket.remoteAddress || ''),
+      signaturePath
+    );
+    const agreementId = result.lastInsertRowid;
+
+    // If approver provided, create approval record and email link
+    if (approverEmail) {
+      const token = (randomBytes(16).toString('hex'));
+      db.prepare(`
+        INSERT INTO agreement_approvals (agreement_id, approver_name, approver_email, token, status)
+        VALUES (?, ?, ?, ?, 'pending')
+      `).run(agreementId, approverName || '', approverEmail, token);
+
+      // Send email if SMTP is configured
+      try {
+        await sendMail({
+          to: approverEmail,
+          subject: `Action required: Approve CREATA agreement for ${hotelName}`,
+          html: `
+            <p>Hello ${approverName || ''},</p>
+            <p>${repName} signed the CREATA participation agreement on behalf of ${hotelName}. Please countersign to approve.</p>
+            <p><a href="${process.env.BASE_URL || 'http://localhost:' + (process.env.PORT || 5050)}/approve-agreement.html?token=${token}">Click here to review and sign</a></p>
+            <p>Thank you.</p>
+          `
+        });
+      } catch (e) {
+        console.warn('approver email skipped/failed:', e?.message || e);
+      }
+    }
+
+    const pdf = generateAgreementPdfBytes({
+      hotelName,
+      repName,
+      title,
+      email,
+      effective: agreementEffective || new Date().toISOString().slice(0, 10),
+      version: agreementVersion
+    });
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="CREATA-Hotel-Participation.pdf"');
+    return res.status(200).send(pdf);
+  } catch (e) {
+    console.error('sign-agreement error:', e);
+    return fail(res, 500, 'Failed to sign agreement');
+  }
+});
+
+// Approver: fetch info by token
+app.get('/api/approver/agreement/:token', (req, res) => {
+  try {
+    const token = req.params.token;
+    const row = db.prepare(`
+      SELECT a.id as approval_id, a.status, a.approver_name, a.approver_email, s.hotel_name, s.rep_name, s.title, s.email
+      FROM agreement_approvals a
+      JOIN signed_agreements s ON s.id = a.agreement_id
+      WHERE a.token = ?
+    `).get(token);
+    if (!row) return fail(res, 404, 'Invalid or expired token');
+    return ok(res, { approval: row });
+  } catch (e) {
+    return fail(res, 500, 'Lookup failed');
+  }
+});
+
+// Approver: countersign
+app.post('/api/approver/agreement/:token/sign', (req, res) => {
+  try {
+    const token = req.params.token;
+    const { signatureDataUrl = '' } = req.body || {};
+    const approval = db.prepare(`SELECT * FROM agreement_approvals WHERE token = ?`).get(token);
+    if (!approval) return fail(res, 404, 'Invalid token');
+    if (approval.status === 'signed') return ok(res, { message: 'Already signed' });
+
+    let signaturePath = null;
+    if (signatureDataUrl && /^data:image\/.+;base64,/.test(signatureDataUrl)) {
+      const base64 = signatureDataUrl.split(',')[1];
+      const buf = Buffer.from(base64, 'base64');
+      const dir = path.join(__dirname, 'uploads');
+      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+      const file = `approver_sig_${Date.now()}.png`;
+      signaturePath = path.join(dir, file);
+      fs.writeFileSync(signaturePath, buf);
+    }
+
+    db.prepare(`
+      UPDATE agreement_approvals
+      SET status='signed', signed_at = datetime('now'), signature_path = ?
+      WHERE id = ?
+    `).run(signaturePath, approval.id);
+
+    return ok(res, { message: 'Countersigned' });
+  } catch (e) {
+    return fail(res, 500, 'Countersign failed');
+  }
 });
 
 
@@ -4994,7 +6410,7 @@ app.post('/api/submit', upload.any(), async (req, res) => {
           </div>
           
           <div style="margin:2rem 0;">
-            <a href="${process.env.BASE_URL || 'http://localhost:3000'}/admin-dashboard.html" 
+            <a href="${process.env.BASE_URL || 'http://localhost:5050'}/admin-dashboard.html" 
                style="background:#1f2937; color:white; padding:0.75rem 1.5rem; text-decoration:none; border-radius:6px; display:inline-block;">
               View in Admin Dashboard
             </a>
@@ -5166,6 +6582,66 @@ app.post('/api/admin/hotels/bulk-priority', requireAuth, requireAdmin, (req, res
   } catch (error) {
     console.error('Bulk priority update error:', error);
     return fail(res, 500, 'Failed to update hotel priority status');
+  }
+});
+
+// Bulk edit hotels
+app.put('/api/admin/hotels/bulk-edit', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const { hotelIds, updates } = req.body;
+    
+    if (!Array.isArray(hotelIds) || hotelIds.length === 0) {
+      return fail(res, 400, 'Hotel IDs array is required');
+    }
+    
+    if (!updates || typeof updates !== 'object') {
+      return fail(res, 400, 'Updates object is required');
+    }
+    
+    // Build dynamic update query based on provided fields
+    const allowedFields = [
+      'name', 'email', 'phone', 'city', 'state', 'country', 
+      'brand', 'chain', 'total_rooms', 'meeting_spaces',
+      'accepts_net30', 'accepts_per_diem_discount', 'accepts_no_direct_bill',
+      'is_priority', 'is_active'
+    ];
+    
+    const fieldsToUpdate = Object.keys(updates).filter(key => allowedFields.includes(key));
+    
+    if (fieldsToUpdate.length === 0) {
+      return fail(res, 400, 'No valid fields provided for update');
+    }
+    
+    // Create SET clause for update query
+    const setClause = fieldsToUpdate.map(field => `${field} = ?`).join(', ');
+    const values = fieldsToUpdate.map(field => {
+      // Handle boolean values
+      if (typeof updates[field] === 'boolean') {
+        return updates[field] ? 1 : 0;
+      }
+      return updates[field];
+    });
+    
+    // Add hotel IDs to the end of values array
+    const placeholders = hotelIds.map(() => '?').join(',');
+    const allValues = [...values, ...hotelIds];
+    
+    const updateStmt = db.prepare(`
+      UPDATE hotels 
+      SET ${setClause}
+      WHERE id IN (${placeholders})
+    `);
+    
+    const result = updateStmt.run(...allValues);
+    
+    return ok(res, { 
+      message: `${result.changes} hotels updated successfully`,
+      updatedCount: result.changes,
+      updatedFields: fieldsToUpdate
+    });
+  } catch (error) {
+    console.error('Bulk edit hotels error:', error);
+    return fail(res, 500, 'Failed to update hotels');
   }
 });
 
@@ -5604,6 +7080,148 @@ function normalizeFields(fields) {
   }
 }
 
+function normalizeSowText(text = '') {
+  return (text || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+function buildRequirementsTextFromSow(text, firstClinIndex) {
+  let relevant = text;
+  if (Number.isInteger(firstClinIndex) && firstClinIndex >= 0) {
+    relevant = text.slice(0, firstClinIndex).trim();
+  }
+  if (!relevant || relevant.length < 60) {
+    const paragraphs = text.split(/\n{2,}/).map(p => p.trim()).filter(Boolean);
+    relevant = paragraphs.slice(0, 3).join('\n\n');
+  }
+  if (relevant.length > 1500) {
+    relevant = relevant.slice(0, 1500).trim() + '...';
+  }
+  return relevant;
+}
+
+function buildSummaryFromSow(text) {
+  const clean = text.replace(/\s+/g, ' ').trim();
+  if (!clean) return '';
+  const sentences = clean.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const summary = sentences.slice(0, 3).join(' ');
+  return summary.length > 600 ? summary.slice(0, 600).trim() + '...' : summary;
+}
+
+function scrubSensitiveContent(text = '') {
+  if (!text) return '';
+  let cleaned = text;
+  cleaned = cleaned.replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[redacted]');
+  cleaned = cleaned.replace(/(?:\+?1[-.\s]?)?(?:\(?\d{3}\)?[-.\s]?)?\d{3}[-.\s]?\d{4}/g, '[redacted]');
+  cleaned = cleaned.replace(/\$\s?[\d,]+(?:\.\d{2})?/g, '[redacted]');
+  cleaned = cleaned.replace(/[\d,]+(?:\.\d{2})?\s?(?:USD|usd|Dollars|dollars)/g, '[redacted]');
+  cleaned = cleaned.replace(/(?<=Rate:?\s*)[\d,]+(?:\.\d{2})?/gi, '[redacted]');
+  return cleaned.replace(/\s+\[redacted\]/g, ' [redacted]').replace(/\s+/g, ' ').trim();
+}
+
+function parseClinsFromSow(text) {
+  const clins = [];
+  if (!text) return clins;
+
+  const pattern = /(Contract\s+Line\s+Item\s+Number|CLIN)\s*[-#:]*\s*([0-9]{4}[A-Z0-9]*)/ig;
+  const matches = [];
+  let match;
+  while ((match = pattern.exec(text)) !== null) {
+    matches.push({ index: match.index, number: match[2].toUpperCase() });
+  }
+
+  if (!matches.length) {
+    return clins;
+  }
+
+  for (let i = 0; i < matches.length; i += 1) {
+    const start = matches[i].index;
+    const end = i + 1 < matches.length ? matches[i + 1].index : text.length;
+    const chunk = text.slice(start, end).trim();
+    const lines = chunk.split(/\n/).map(l => l.trim()).filter(Boolean);
+    const header = lines.shift() || '';
+    let title = header.replace(/^(?:Contract\s+Line\s+Item\s+Number|CLIN)\s*[-#:]*\s*[0-9]{4}[A-Z0-9]*/i, '').replace(/^[-–—:\s]+/, '').trim();
+    let description = lines.join(' ').trim();
+
+    if (!description) {
+      description = title;
+    }
+    if (!title) {
+      title = description ? description.slice(0, 120).trim() : `Requirement ${matches[i].number}`;
+    }
+    if (description && description.length > 600) {
+      description = description.slice(0, 600).trim() + '...';
+    }
+
+    clins.push({
+      clin_number: matches[i].number,
+      title: title.trim() || `Requirement ${matches[i].number}`,
+      description: description || title
+    });
+  }
+
+  return clins;
+}
+
+async function extractPlainTextFromSow(filePath, originalName = '', mimeType = '') {
+  const ext = (originalName || '').toLowerCase().split('.').pop() || '';
+  const warnings = [];
+  let text = '';
+
+  try {
+    if (ext === 'docx') {
+      const result = await mammoth.extractRawText({ path: filePath });
+      text = result.value || '';
+    } else if (ext === 'pdf') {
+      try {
+        text = await ocrPdfText(filePath);
+      } catch (error) {
+        warnings.push(`PDF parsing warning: ${error.message || error}`);
+        text = '';
+      }
+    } else if (ext === 'txt' || mimeType === 'text/plain') {
+      text = await fsp.readFile(filePath, 'utf8');
+    } else {
+      try {
+        text = await fsp.readFile(filePath, 'utf8');
+        warnings.push(`Treated ${originalName} as plain text. Review extracted content carefully.`);
+      } catch {
+        warnings.push(`Unsupported SOW format (${ext || mimeType}).`);
+      }
+    }
+  } catch (error) {
+    warnings.push(`Extraction error: ${error.message || error}`);
+    text = '';
+  }
+
+  return { text: normalizeSowText(text), warnings };
+}
+
+async function parseSowDocument(filePath, originalName, mimeType) {
+  const { text, warnings } = await extractPlainTextFromSow(filePath, originalName, mimeType);
+  if (!text) {
+    return { requirements: '', summary: '', clins: [], warnings };
+  }
+
+  const clins = parseClinsFromSow(text);
+  const firstClinMatch = text.match(/(Contract\s+Line\s+Item\s+Number|CLIN)\s*[-#:]*\s*[0-9]{4}[A-Z0-9]*/i);
+  const firstClinIndex = firstClinMatch ? firstClinMatch.index : -1;
+  const requirements = scrubSensitiveContent(buildRequirementsTextFromSow(text, firstClinIndex));
+  const summary = scrubSensitiveContent(buildSummaryFromSow(requirements || text));
+  const sanitizedClins = clins.map((clin, idx) => ({
+    clin_number: clin.clin_number,
+    title: scrubSensitiveContent(clin.title) || `Requirement ${String(idx + 1).padStart(4, '0')}`,
+    description: scrubSensitiveContent(clin.description)
+  }));
+
+  return { requirements, summary, clins: sanitizedClins, warnings };
+}
+
 // SOW Document Processing API
 app.post('/api/process-sow', upload.single('sow_document'), async (req, res) => {
   try {
@@ -5892,8 +7510,324 @@ app.post('/submit-request', upload.array('attachments', 10), async (req, res) =>
   }
 });
 
+// Google Places API key endpoint
+app.get('/api/google-places-key', (req, res) => {
+  try {
+    const apiKey = process.env.GOOGLE_PLACES_API_KEY;
+    
+    if (!apiKey) {
+      // Return mock mode if no API key is configured
+      return res.json({
+        mockMode: true,
+        message: 'Google Places API key not configured'
+      });
+    }
+    
+    return res.json({
+      apiKey: apiKey,
+      mockMode: false
+    });
+  } catch (error) {
+    console.error('Error getting Google Places API key:', error);
+    return res.status(500).json({
+      error: 'Failed to get Google Places API key',
+      mockMode: true
+    });
+  }
+});
+
+// ---------- OpenAI API Endpoints ----------
+
+// Code review endpoint
+app.post('/api/openai/code-review', requireAuth, async (req, res) => {
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'OpenAI service not available',
+      message: 'OpenAI API key not configured'
+    });
+  }
+
+  try {
+    const { code, language = 'javascript', focus = 'general' } = req.body;
+
+    if (!code || !code.trim()) {
+      return res.status(400).json({ error: 'Code content is required' });
+    }
+
+    const prompts = {
+      general: `Please review this ${language} code and provide feedback on:
+1. Code quality and best practices
+2. Potential bugs or issues
+3. Security concerns
+4. Performance optimizations
+5. Maintainability suggestions
+
+Code:
+\`\`\`${language}
+${code}
+\`\`\``,
+      
+      security: `Please perform a security review of this ${language} code. Focus on:
+1. Security vulnerabilities
+2. Input validation
+3. Authentication/authorization issues
+4. Data exposure risks
+5. Injection attacks
+
+Code:
+\`\`\`${language}
+${code}
+\`\`\``,
+      
+      performance: `Please analyze this ${language} code for performance issues:
+1. Performance bottlenecks
+2. Memory usage optimization
+3. Algorithm efficiency
+4. Database query optimization
+5. Caching opportunities
+
+Code:
+\`\`\`${language}
+${code}
+\`\`\``,
+      
+      refactor: `Please suggest refactoring improvements for this ${language} code:
+1. Code structure improvements
+2. Function/method extraction
+3. Design pattern applications
+4. Readability enhancements
+5. Code organization
+
+Code:
+\`\`\`${language}
+${code}
+\`\`\``
+    };
+
+    const prompt = prompts[focus] || prompts.general;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{
+        role: 'user',
+        content: prompt
+      }],
+      max_tokens: 1000,
+      temperature: 0.3
+    });
+
+    const review = completion.choices[0]?.message?.content;
+    
+    res.json({
+      review,
+      focus,
+      language,
+      tokens_used: completion.usage?.total_tokens || 0
+    });
+
+  } catch (error) {
+    console.error('OpenAI code review error:', error);
+    res.status(500).json({ 
+      error: 'Code review failed',
+      message: error.message
+    });
+  }
+});
+
+// Document analysis endpoint
+app.post('/api/openai/analyze-document', requireAuth, async (req, res) => {
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'OpenAI service not available',
+      message: 'OpenAI API key not configured'
+    });
+  }
+
+  try {
+    const { text, analysis_type = 'summary' } = req.body;
+
+    if (!text || !text.trim()) {
+      return res.status(400).json({ error: 'Document text is required' });
+    }
+
+    const prompts = {
+      summary: `Please provide a concise summary of this document:
+
+${text}`,
+      
+      key_points: `Please extract the key points and important information from this document:
+
+${text}`,
+      
+      requirements: `Please extract requirements, specifications, and constraints from this document:
+
+${text}`,
+      
+      action_items: `Please identify action items, tasks, and deliverables from this document:
+
+${text}`
+    };
+
+    const prompt = prompts[analysis_type] || prompts.summary;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{
+        role: 'user',
+        content: prompt
+      }],
+      max_tokens: 800,
+      temperature: 0.3
+    });
+
+    const analysis = completion.choices[0]?.message?.content;
+    
+    res.json({
+      analysis,
+      analysis_type,
+      tokens_used: completion.usage?.total_tokens || 0
+    });
+
+  } catch (error) {
+    console.error('OpenAI document analysis error:', error);
+    res.status(500).json({ 
+      error: 'Document analysis failed',
+      message: error.message
+    });
+  }
+});
+
+// Contract proposal generation endpoint
+app.post('/api/openai/generate-proposal', requireAuth, async (req, res) => {
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'OpenAI service not available',
+      message: 'OpenAI API key not configured'
+    });
+  }
+
+  try {
+    const { requirements, hotel_info, contract_type = 'hotel_services' } = req.body;
+
+    if (!requirements || !requirements.trim()) {
+      return res.status(400).json({ error: 'Requirements are required' });
+    }
+
+    const prompt = `Generate a professional contract proposal for hotel services based on these requirements:
+
+REQUIREMENTS:
+${requirements}
+
+HOTEL INFORMATION:
+${hotel_info || 'Standard hotel services provider'}
+
+Please create a structured proposal including:
+1. Executive Summary
+2. Scope of Services
+3. Deliverables
+4. Timeline
+5. Terms and Conditions
+6. Pricing Structure (placeholder)
+
+Format as a professional business proposal.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [{
+        role: 'user',
+        content: prompt
+      }],
+      max_tokens: 1200,
+      temperature: 0.4
+    });
+
+    const proposal = completion.choices[0]?.message?.content;
+    
+    res.json({
+      proposal,
+      contract_type,
+      tokens_used: completion.usage?.total_tokens || 0
+    });
+
+  } catch (error) {
+    console.error('OpenAI proposal generation error:', error);
+    res.status(500).json({ 
+      error: 'Proposal generation failed',
+      message: error.message
+    });
+  }
+});
+
+// General AI assistant endpoint
+app.post('/api/openai/assistant', requireAuth, async (req, res) => {
+  if (!openai) {
+    return res.status(503).json({ 
+      error: 'OpenAI service not available',
+      message: 'OpenAI API key not configured'
+    });
+  }
+
+  try {
+    const { message, context = '' } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    const systemPrompt = `You are an AI assistant for FEDEVENT, a federal contracting and hotel management platform. Help users with:
+- Government contracting questions
+- Hotel management advice
+- Federal procurement guidance
+- Business process optimization
+
+Be professional, helpful, and accurate.`;
+
+    const userPrompt = context ? `Context: ${context}
+
+Question: ${message}` : message;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-3.5-turbo',
+      messages: [
+        {
+          role: 'system',
+          content: systemPrompt
+        },
+        {
+          role: 'user',
+          content: userPrompt
+        }
+      ],
+      max_tokens: 800,
+      temperature: 0.7
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    
+    res.json({
+      response,
+      tokens_used: completion.usage?.total_tokens || 0
+    });
+
+  } catch (error) {
+    console.error('OpenAI assistant error:', error);
+    res.status(500).json({ 
+      error: 'Assistant request failed',
+      message: error.message
+    });
+  }
+});
+
 // ---------- Start Server ----------
 const PORT = process.env.PORT || 5050;
+
+// Run log rotation on startup
+try {
+  rotateLogs();
+} catch (error) {
+  console.warn('Log rotation failed on startup:', error.message);
+}
+
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 FEDEVENT server running on port ${PORT}`);
   console.log(`📍 Admin login: http://localhost:${PORT}/admin-login.html`);

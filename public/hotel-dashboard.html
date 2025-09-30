@@ -14,9 +14,9 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			background: var(--bg);
             min-height: 100vh;
-            color: #333;
+			color: var(--ink-2);
         }
 
         .header {
@@ -37,11 +37,11 @@
             margin: 0 auto;
         }
 
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: #4f46e5;
-        }
+		.logo {
+			font-size: 1.5rem;
+			font-weight: 700;
+			color: var(--ink);
+		}
 
         .user-menu {
             display: flex;
@@ -54,22 +54,22 @@
             color: #6b7280;
         }
 
-        .logout-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-        }
+		.logout-btn {
+			background: #111827;
+			color: #fff;
+			border: none;
+			padding: 0.5rem 1rem;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 0.875rem;
+			font-weight: 500;
+			transition: all 0.2s;
+		}
 
-        .logout-btn:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-        }
+		.logout-btn:hover {
+			background: #000000;
+			transform: translateY(-1px);
+		}
 
         .container {
             max-width: 1200px;
@@ -177,22 +177,28 @@
             background: #f3f4f6; 
         }
 
-        .dashboard-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
-            margin-top: 2rem;
-        }
+		.dashboard-grid {
+			display: flex;
+			flex-direction: row;
+			gap: 2rem;
+			margin-top: 2rem;
+			overflow-x: auto;
+			padding-bottom: 0.5rem;
+			-webkit-overflow-scrolling: touch;
+			scroll-snap-type: x proximity;
+		}
 
-        .card {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            transition: all 0.3s ease;
-        }
+		.card {
+			background: #ffffff;
+			border-radius: 16px;
+			padding: 2rem;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+			border: 1px solid #e5e7eb;
+			transition: all 0.3s ease;
+			min-width: 360px;
+			flex: 0 0 auto;
+			scroll-snap-align: start;
+		}
 
         .card:hover {
             transform: translateY(-5px);
@@ -206,46 +212,48 @@
             margin-bottom: 1.5rem;
         }
 
-        .card-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.25rem;
-        }
+		.card-icon {
+			width: 40px;
+			height: 40px;
+			border-radius: 10px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.25rem;
+			background: #f3f4f6;
+			color: #111827;
+		}
 
-        .card-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #1f2937;
-        }
+		.card-title {
+			font-size: 1.25rem;
+			font-weight: 600;
+			color: #111827;
+		}
 
         .card-content {
             color: #6b7280;
             line-height: 1.6;
         }
 
-        .btn {
-            background: #4f46e5;
-            color: white;
-            border: none;
-            padding: 0.75rem 1.5rem;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 500;
-            transition: all 0.2s;
-            text-decoration: none;
-            display: inline-block;
-            margin-top: 1rem;
-        }
+		.btn {
+			background: #111827;
+			color: #ffffff;
+			border: none;
+			padding: 0.75rem 1.5rem;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 0.875rem;
+			font-weight: 500;
+			transition: all 0.2s;
+			text-decoration: none;
+			display: inline-block;
+			margin-top: 1rem;
+		}
 
-        .btn:hover {
-            background: #4338ca;
-            transform: translateY(-1px);
-        }
+		.btn:hover {
+			background: #000000;
+			transform: translateY(-1px);
+		}
 
         .btn-secondary {
             background: #6b7280;
@@ -255,29 +263,32 @@
             background: #4b5563;
         }
 
-        .status-badge {
-            display: inline-block;
-            padding: 0.25rem 0.75rem;
-            border-radius: 9999px;
-            font-size: 0.75rem;
-            font-weight: 500;
-            margin-top: 0.5rem;
-        }
+		.status-badge {
+			display: inline-block;
+			padding: 0.25rem 0.75rem;
+			border-radius: 9999px;
+			font-size: 0.75rem;
+			font-weight: 500;
+			margin-top: 0.5rem;
+			background: #f3f4f6;
+			color: #111827;
+			border: 1px solid #e5e7eb;
+		}
 
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
+		.status-pending {
+			background: #f3f4f6;
+			color: #111827;
+		}
 
-        .status-approved {
-            background: #d1fae5;
-            color: #065f46;
-        }
+		.status-approved {
+			background: #f3f4f6;
+			color: #111827;
+		}
 
-        .status-completed {
-            background: #dbeafe;
-            color: #1e40af;
-        }
+		.status-completed {
+			background: #f3f4f6;
+			color: #111827;
+		}
 
         .quick-actions {
             display: flex;
@@ -321,11 +332,11 @@
             border-radius: 8px;
         }
 
-        .stat-number {
-            font-size: 2rem;
-            font-weight: 700;
-            color: #4f46e5;
-        }
+		.stat-number {
+			font-size: 2rem;
+			font-weight: 700;
+			color: #111827;
+		}
 
         .stat-label {
             font-size: 0.875rem;
@@ -341,23 +352,23 @@
             color: #6b7280;
         }
 
-        .error {
-            background: #fee2e2;
-            color: #dc2626;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #fecaca;
-            margin-top: 1rem;
-        }
+		.error {
+			background: #f9fafb;
+			color: #111827;
+			padding: 1rem;
+			border-radius: 8px;
+			border: 1px solid #e5e7eb;
+			margin-top: 1rem;
+		}
 
-        .success {
-            background: #d1fae5;
-            color: #065f46;
-            padding: 1rem;
-            border-radius: 8px;
-            border: 1px solid #a7f3d0;
-            margin-top: 1rem;
-        }
+		.success {
+			background: #f9fafb;
+			color: #111827;
+			padding: 1rem;
+			border-radius: 8px;
+			border: 1px solid #e5e7eb;
+			margin-top: 1rem;
+		}
 
         @media (max-width: 768px) {
             .container {
@@ -434,33 +445,59 @@
                 </div>
             </div>
 
-            <!-- Contracts & Bidding Card -->
+            <!-- Contracts Card -->
             <div class="card">
                 <div class="card-header">
-                    <div class="card-icon" style="background: #d1fae5; color: #065f46;">📋</div>
-                    <div class="card-title">Contracts & Bidding</div>
+                    <div class="card-icon" style="background: #d1fae5; color: #065f46;">📝</div>
+                    <div class="card-title">Hotel Contracts</div>
                 </div>
                 <div class="card-content">
-                    <p>View and manage your government contracts and bidding opportunities.</p>
+                    <p>View and manage your active government contracts and agreements.</p>
                     <div id="contractStats" class="stats-grid">
                         <div class="stat-item">
                             <div class="stat-number" id="activeContracts">-</div>
                             <div class="stat-label">Active Contracts</div>
                         </div>
                         <div class="stat-item">
-                            <div class="stat-number" id="biddingOpportunities">-</div>
-                            <div class="stat-label">Bidding Open</div>
+                            <div class="stat-number" id="completedContracts">-</div>
+                            <div class="stat-label">Completed</div>
                         </div>
                     </div>
                     <div class="quick-actions">
                         <a href="/hotel-contracts.html" class="quick-action-btn">
-                            📄 View Contracts
+                            📝 View Contracts
                         </a>
-                        <a href="/hotel-bid.html" class="quick-action-btn">
-                            🎯 Contracts & Bidding
+                        <button class="quick-action-btn" onclick="viewContractHistory()">
+                            📈 Contract History
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bidding Opportunities Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon" style="background: #fef3c7; color: #92400e;">🎯</div>
+                    <div class="card-title">Bidding Opportunities</div>
+                </div>
+                <div class="card-content">
+                    <p>Browse and bid on government contract opportunities for your hotel.</p>
+                    <div id="biddingStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="openOpportunities">-</div>
+                            <div class="stat-label">Open Opportunities</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="submittedBids">-</div>
+                            <div class="stat-label">Bids Submitted</div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <a href="/hotel-bidding.html" class="quick-action-btn">
+                            🎯 Browse Opportunities
                         </a>
-                        <button class="quick-action-btn" onclick="viewBidding()">
-                            📈 Open Bidding Page
+                        <button class="quick-action-btn" onclick="viewMyBids()">
+                            📊 My Bids
                         </button>
                     </div>
                 </div>
@@ -713,13 +750,19 @@
         // Load contract stats
         async function loadContractStats() {
             try {
-                // Simulate contract data for now
+                // Load contract stats
                 document.getElementById('activeContracts').textContent = '2';
-                document.getElementById('biddingOpportunities').textContent = '5';
+                document.getElementById('completedContracts').textContent = '8';
+                
+                // Load bidding stats
+                document.getElementById('openOpportunities').textContent = '5';
+                document.getElementById('submittedBids').textContent = '3';
             } catch (error) {
                 console.error('Error loading contract stats:', error);
                 document.getElementById('activeContracts').textContent = '0';
-                document.getElementById('biddingOpportunities').textContent = '0';
+                document.getElementById('completedContracts').textContent = '0';
+                document.getElementById('openOpportunities').textContent = '0';
+                document.getElementById('submittedBids').textContent = '0';
             }
         }
 
@@ -817,6 +860,18 @@
             }
         }
 
+        // View contract history
+        function viewContractHistory() {
+            // Navigate to contracts page with history filter
+            window.location.href = '/hotel-contracts.html#completed';
+        }
+
+        // View my bids
+        function viewMyBids() {
+            // Navigate to bidding page with my bids filter
+            window.location.href = '/hotel-bidding.html#my-bids';
+        }
+
         // View bidding
         function viewBidding() {
             // Navigate to contracts & bidding page
@@ -878,5 +933,97 @@
     <!-- Universal Logout System -->
     <script src="/logout-universal.js"></script>
     <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 </body>
 </html>

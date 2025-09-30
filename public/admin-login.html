@@ -76,34 +76,130 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             min-height: 100vh;
+            color: var(--text);
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .brand-panel {
+            flex: 1.1;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 55%, #0f172a 100%);
+            color: #f9fafb;
             display: flex;
             align-items: center;
             justify-content: center;
+            padding: 3.5rem 3rem;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .login-container {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.35), transparent 45%);
+            opacity: 0.85;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            max-width: 440px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.45);
+            color: #facc15;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-content h1 {
+            font-size: clamp(2rem, 2.8vw, 2.75rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .brand-content p {
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .brand-highlights {
+            list-style: none;
+            margin: 2rem 0 0;
+            padding: 0;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .brand-highlights li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: rgba(226, 232, 240, 0.92);
+            font-size: 0.95rem;
+        }
+
+        .brand-highlights span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.35);
+            color: #facc15;
+            font-size: 0.85rem;
+        }
+
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 3rem;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.0) 35%);
+        }
+
+        .login-card {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 18px;
+            box-shadow: 0 30px 60px -25px rgba(15, 23, 42, 0.35);
+            border: 1px solid rgba(15, 23, 42, 0.05);
         }
-        
-        .logo {
+
+        .card-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-        
-        .logo h1 {
+
+        .card-header h1 {
             color: var(--primary);
             font-size: 2rem;
             font-weight: 700;
+            letter-spacing: 0.05em;
         }
-        
-        .logo p {
-            color: var(--text-light);
+
+        .card-header p {
             margin-top: 0.5rem;
+            color: var(--text-light);
         }
         
         .form-group {
@@ -156,67 +252,154 @@
             cursor: not-allowed;
         }
         
+        #message {
+            min-height: 1.25rem;
+            margin-top: 1rem;
+        }
+
         .error {
             color: var(--error);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
         }
-        
+
         .success {
             color: var(--success);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
         }
-        
+
         .back-link {
             text-align: center;
-            margin-top: 1.5rem;
+            margin-top: 2rem;
         }
-        
+
         .back-link a {
             color: var(--primary);
             text-decoration: none;
-            font-size: 0.875rem;
+            font-size: 0.9rem;
+            font-weight: 500;
         }
-        
+
         .back-link a:hover {
             text-decoration: underline;
         }
-    </style>
+
+        @media (max-width: 1100px) {
+            .brand-panel {
+                padding: 3rem 2.5rem;
+            }
+            
+            .form-panel {
+                padding: 3.5rem 2.5rem;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .brand-panel {
+                flex: none;
+                padding: 3rem 1.75rem 2.5rem;
+                text-align: center;
+            }
+
+            .brand-content {
+                max-width: 520px;
+            }
+
+            .brand-highlights {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+
+            .brand-highlights li {
+                justify-content: center;
+            }
+
+            .form-panel {
+                padding: 2.5rem 1.75rem 3.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+                border-radius: 14px;
+            }
+
+            .form-panel {
+                padding: 2.25rem 1.25rem 3rem;
+            }
+
+            .brand-content h1 {
+                font-size: 2rem;
+            }
+
+            .brand-highlights {
+                gap: 0.6rem;
+            }
+
+            .brand-highlights li {
+                font-size: 0.9rem;
+            }
+        }
+        </style>
 </head>
 <body>
-    <div class="login-container">
-        <div class="logo">
-            <h1>FEDEVENT</h1>
-            <p>Admin Login</p>
-        </div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email</label>
-                <input type="email" id="email" required>
+    <main class="page-wrapper">
+        <section class="brand-panel">
+            <div class="brand-content">
+                <span class="brand-badge">🔐 Secure Admin Portal</span>
+                <h1>Coordinate every mission-critical event from a single command center.</h1>
+                <p>Authorized agency leaders use this portal to approve venue sourcing, monitor procurement compliance, and keep missions on schedule.</p>
+                <ul class="brand-highlights">
+                    <li><span>✔</span> Accelerated acquisition workflows</li>
+                    <li><span>✔</span> Pre-vetted venue intelligence</li>
+                    <li><span>✔</span> Mission readiness dashboards</li>
+                </ul>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" required>
+        </section>
+
+        <section class="form-panel">
+            <div class="login-card">
+                <div class="card-header">
+                    <h1>FEDEVENT</h1>
+                    <p>Admin Command Center</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required>
+                    </div>
+
+                    <button type="submit" class="btn" id="loginBtn">Sign In</button>
+
+                    <div id="message"></div>
+                </form>
+
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
+                </div>
             </div>
-            
-            <button type="submit" class="btn" id="loginBtn">Login</button>
-            
-            <div id="message"></div>
-        </form>
-        
-        <div class="back-link">
-            <a href="/">← Back to Home</a>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <script>
         const API_BASE = '';
         
         // Check if user is already signed in
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof trackPageView === 'function') {
+                trackPageView('Admin Login');
+            }
             const sessionId = localStorage.getItem('sessionId');
             const user = localStorage.getItem('user');
             
@@ -245,7 +428,7 @@
             const message = document.getElementById('message');
             
             loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
+            loginBtn.textContent = 'Signing in...';
             message.innerHTML = '';
             
             try {
@@ -283,10 +466,100 @@
                 message.innerHTML = '<div class="error">Login failed. Please try again.</div>';
             } finally {
                 loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
+                loginBtn.textContent = 'Sign In';
             }
         });
     </script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 </body>
 </html>
-

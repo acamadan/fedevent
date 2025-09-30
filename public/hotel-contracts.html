@@ -3,1125 +3,664 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Available Contracts - FEDEVENT Hotel Portal</title>
+    <title>Hotel Contracts - FEDEVENT</title>
     <link rel="stylesheet" href="/site.css">
-    
-    <!-- Google Analytics 4 (GA4) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
-    <script>
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-XXXXXXXXXX', {
-            // Enhanced ecommerce and event tracking
-            send_page_view: true,
-            custom_map: {
-                'custom_parameter_1': 'fedevent_website'
-            }
-        });
-        
-        // Custom event tracking functions
-        function trackNavigationClick(section) {
-            gtag('event', 'navigation_click', {
-                'event_category': 'Website Navigation',
-                'event_label': section,
-                'custom_parameter_1': 'fedevent_website'
-            });
-        }
-        
-        function trackButtonClick(buttonName) {
-            gtag('event', 'button_click', {
-                'event_category': 'Website Interaction',
-                'event_label': buttonName,
-                'custom_parameter_1': 'fedevent_website'
-            });
-        }
-        
-        function trackFormSubmission(formName) {
-            gtag('event', 'form_submission', {
-                'event_category': 'Website Forms',
-                'event_label': formName,
-                'custom_parameter_1': 'fedevent_website'
-            });
-        }
-        
-        function trackPageView(pageName) {
-            gtag('event', 'page_view', {
-                'event_category': 'Page Views',
-                'event_label': pageName,
-                'custom_parameter_1': 'fedevent_website'
-            });
-        }
-    </script>
-    
     <style>
-        :root {
-            --primary: #1e40af;
-            --primary-dark: #1e3a8a;
-            --secondary: #f59e0b;
-            --text: #1f2937;
-            --text-light: #6b7280;
-            --bg: #f8fafc;
-            --white: #ffffff;
-            --error: #dc2626;
-            --success: #16a34a;
-            --border: #e5e7eb;
-        }
-        
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: var(--bg);
-            color: var(--text);
+            min-height: 100vh;
+            color: var(--ink-2);
         }
-        
-        .header {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-        
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        
-        .logo {
-            font-size: 1.5rem;
-            font-weight: 700;
-            color: var(--primary);
-        }
-        
-        .nav-links {
-            display: flex;
-            gap: 2rem;
-        }
-        
-        .nav-links a {
-            color: var(--text);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .nav-links a:hover {
-            color: var(--primary);
-        }
-        
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-        
-        .user-info {
-            color: var(--text-light);
-            font-size: 0.875rem;
-        }
-        
-        .logout-btn {
-            background: var(--error);
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.875rem;
-        }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
             padding: 2rem;
         }
-        
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
         .page-title {
             font-size: 2rem;
             font-weight: 700;
-            margin-bottom: 2rem;
-            color: var(--text);
+            color: #111827;
         }
-        
+
+        .back-btn {
+            background: #6b7280;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .back-btn:hover {
+            background: #4b5563;
+        }
+
         .contracts-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
             gap: 2rem;
+            margin-top: 2rem;
         }
-        
+
         .contract-card {
-            background: var(--white);
-            border-radius: 8px;
-            border: 1px solid var(--border);
+            background: white;
+            border-radius: 12px;
             padding: 1.5rem;
-            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
         }
-        
+
         .contract-card:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
         }
-        
+
         .contract-header {
             display: flex;
             justify-content: space-between;
             align-items: start;
             margin-bottom: 1rem;
         }
-        
+
         .contract-title {
             font-size: 1.25rem;
             font-weight: 600;
-            color: var(--primary);
-            margin-bottom: 0.25rem;
-        }
-        
-        .contract-deadline {
-            font-size: 0.875rem;
-            color: var(--error);
-            font-weight: 500;
-        }
-        
-        .contract-info {
-            margin-bottom: 1.5rem;
-        }
-        
-        .info-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        .info-label {
-            color: var(--text-light);
-        }
-        
-        .info-value {
-            font-weight: 500;
-        }
-        
-        .rate-limits {
-            background: var(--bg);
-            padding: 1rem;
-            border-radius: 6px;
-            margin-bottom: 1.5rem;
-        }
-        
-        .rate-limits h4 {
-            font-size: 0.875rem;
-            color: var(--text);
+            color: #111827;
             margin-bottom: 0.5rem;
         }
-        
-        .rate-item {
-            display: flex;
-            justify-content: space-between;
+
+        .contract-id {
             font-size: 0.875rem;
-            margin-bottom: 0.25rem;
+            color: #6b7280;
+            font-family: monospace;
         }
-        
-        .current-bid {
-            background: #fef3c7;
-            border: 1px solid #f59e0b;
-            padding: 0.75rem;
-            border-radius: 6px;
-            margin-bottom: 1rem;
-        }
-        
-        .current-bid h4 {
-            font-size: 0.875rem;
-            color: #92400e;
-            margin-bottom: 0.25rem;
-        }
-        
-        .bid-status {
-            display: inline-block;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
             font-size: 0.75rem;
             font-weight: 500;
         }
-        
-        .status-no-bid {
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .status-completed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .status-expired {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .contract-details {
+            margin: 1rem 0;
+        }
+
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .detail-label {
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: #111827;
+            font-weight: 600;
+        }
+
+        .contract-actions {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #1f2937;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #111827;
+        }
+
+        .btn-secondary {
             background: #f3f4f6;
             color: #374151;
+            border: 1px solid #d1d5db;
         }
-        
-        .status-submitted {
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-        
-        .btn {
-            display: inline-block;
-            padding: 0.75rem 1.5rem;
-            background: var(--primary);
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            border: none;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            width: 100%;
-            text-align: center;
-        }
-        
-        .btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        .btn-secondary {
-            background: var(--secondary);
-        }
-        
+
         .btn-secondary:hover {
-            background: #d97706;
+            background: #e5e7eb;
         }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
+
+        .btn-success {
+            background: #10b981;
+            color: white;
         }
-        
-        .modal-content {
-            background: var(--white);
-            margin: 2% auto;
-            padding: 2rem;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 800px;
-            max-height: 90vh;
-            overflow-y: auto;
+
+        .btn-success:hover {
+            background: #059669;
         }
-        
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1.5rem;
-        }
-        
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-        }
-        
-        .close-btn {
-            background: none;
-            border: none;
-            font-size: 1.5rem;
-            cursor: pointer;
-            color: var(--text-light);
-        }
-        
-        .sow-section {
-            background: var(--bg);
-            padding: 1.5rem;
-            border-radius: 6px;
-            margin: 1.5rem 0;
-        }
-        
-        .sow-section h3 {
-            margin-bottom: 1rem;
-            color: var(--text);
-        }
-        
-        .competitors-section {
-            margin: 2rem 0;
-        }
-        
-        .competitor-bid {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 1rem;
-            background: var(--bg);
-            border-radius: 6px;
-            margin-bottom: 0.5rem;
-        }
-        
-        .competitor-info {
-            font-weight: 500;
-        }
-        
-        .competitor-rates {
-            color: var(--text-light);
-            font-size: 0.875rem;
-        }
-        
-        .bid-form {
-            background: var(--white);
-            border: 2px solid var(--primary);
-            padding: 1.5rem;
-            border-radius: 6px;
-            margin-top: 2rem;
-        }
-        
-        .form-group {
-            margin-bottom: 1rem;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-        }
-        
-        input, textarea {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            font-size: 1rem;
-        }
-        
-        input:focus, textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        .rate-hint {
-            font-size: 0.75rem;
-            color: var(--text-light);
-            margin-top: 0.25rem;
-        }
-        
-        .loading {
-            text-align: center;
-            padding: 2rem;
-            color: var(--text-light);
-        }
-        
-        .error {
-            background: #fef2f2;
-            color: var(--error);
-            padding: 1rem;
-            border-radius: 4px;
-            margin: 1rem 0;
-        }
-        
-        .success {
-            background: #f0fdf4;
-            color: var(--success);
-            padding: 1rem;
-            border-radius: 4px;
-            margin: 1rem 0;
-        }
-        
+
         .empty-state {
             text-align: center;
-            padding: 3rem;
-            color: var(--text-light);
+            padding: 4rem 2rem;
+            color: #6b7280;
         }
-        
-        .empty-state h3 {
+
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .filter-select {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.875rem;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 0.875rem;
+            min-width: 200px;
+        }
+
+        .contract-progress {
+            margin-top: 1rem;
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border-left: 4px solid #10b981;
+        }
+
+        .progress-title {
+            font-weight: 600;
+            color: #111827;
             margin-bottom: 0.5rem;
-            color: var(--text);
+        }
+
+        .progress-steps {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.875rem;
+        }
+
+        .progress-step {
+            color: #6b7280;
+        }
+
+        .progress-step.completed {
+            color: #10b981;
+            font-weight: 500;
+        }
+
+        .progress-step.current {
+            color: #1f2937;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .contracts-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: flex-start;
+            }
+            
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
         }
     </style>
 </head>
 <body>
-    
     <div class="container">
-        <h1 class="page-title">Contracts & Bidding</h1>
-
-        <div class="tabs" role="tablist" style="margin: 12px 0; display:flex; gap:8px; border-bottom:1px solid #e5e7eb; flex-wrap:wrap;">
-            <button id="tab-available" class="tab-btn" role="tab" aria-selected="true" style="appearance:none;background:#eef2ff;border:1px solid #c7d2fe;border-bottom:none;padding:.5rem .75rem;border-top-left-radius:.5rem;border-top-right-radius:.5rem;font-weight:600;color:#1e40af;cursor:pointer;">Available</button>
-            <button id="tab-my-active" class="tab-btn" role="tab" aria-selected="false" style="appearance:none;background:#fff;border:1px solid #e5e7eb;border-bottom:none;padding:.5rem .75rem;border-top-left-radius:.5rem;border-top-right-radius:.5rem;font-weight:600;color:#6b7280;cursor:pointer;">My Active Bids</button>
-            <button id="tab-submitted" class="tab-btn" role="tab" aria-selected="false" style="appearance:none;background:#fff;border:1px solid #e5e7eb;border-bottom:none;padding:.5rem .75rem;border-top-left-radius:.5rem;border-top-right-radius:.5rem;font-weight:600;color:#6b7280;cursor:pointer;">Submitted/Drafts</button>
-            <button id="tab-archived" class="tab-btn" role="tab" aria-selected="false" style="appearance:none;background:#fff;border:1px solid #e5e7eb;border-bottom:none;padding:.5rem .75rem;border-top-left-radius:.5rem;border-top-right-radius:.5rem;font-weight:600;color:#6b7280;cursor:pointer;">Archived</button>
+        <div class="page-header">
+            <h1 class="page-title">📝 Hotel Contracts</h1>
+            <a href="/hotel-dashboard.html" class="back-btn">
+                ← Back to Dashboard
+            </a>
         </div>
 
-        <section id="panel-available" class="tab-panel" role="tabpanel" style="display:block;">
-            <div id="contractsContent">
-                <div class="loading">Loading available contracts...</div>
+        <div class="filter-bar">
+            <select class="filter-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="active">Active</option>
+                <option value="pending">Pending</option>
+                <option value="completed">Completed</option>
+                <option value="expired">Expired</option>
+            </select>
+            <select class="filter-select" id="agencyFilter">
+                <option value="">All Agencies</option>
+                <option value="dod">Department of Defense</option>
+                <option value="education">Department of Education</option>
+                <option value="homeland">Department of Homeland Security</option>
+                <option value="veterans">Department of Veterans Affairs</option>
+            </select>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search contracts...">
+            <button class="btn btn-primary" onclick="refreshContracts()">
+                🔄 Refresh
+            </button>
+        </div>
+
+        <div id="contractsContainer">
+            <div class="contracts-grid" id="contractsGrid">
+                <!-- Contracts will be loaded here -->
             </div>
-        </section>
-        <section id="panel-my-active" class="tab-panel" role="tabpanel" style="display:none;">
-            <div id="myActiveBidsContent" class="loading">Loading my active bids...</div>
-        </section>
-        <section id="panel-submitted" class="tab-panel" role="tabpanel" style="display:none;">
-            <div id="submittedBidsContent" class="loading">Loading submitted/drafts...</div>
-        </section>
-        <section id="panel-archived" class="tab-panel" role="tabpanel" style="display:none;">
-            <div id="archivedBidsContent" class="loading">Loading archived bids...</div>
-        </section>
-    </div>
-    
-    <!-- Contract Bidding Modal -->
-    <div id="biddingModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 class="modal-title" id="biddingModalTitle">Contract Details & Bidding</h3>
-                <button class="close-btn" onclick="closeModal()">&times;</button>
-            </div>
-            <div id="biddingModalContent">
-                <!-- Content will be populated by JavaScript -->
-            </div>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display: none;">
+            <div class="empty-state-icon">📝</div>
+            <h3>No Contracts Found</h3>
+            <p>You don't have any active contracts yet. Check the bidding opportunities section for new contract opportunities.</p>
         </div>
     </div>
 
     <script>
-        const API_BASE = '';
-        let currentUser = null;
-        let allContracts = [];
-        let currentContract = null;
-        let myBids = { active: [], submitted: [], archived: [] };
-        
-        // Check authentication
-        async function checkAuth() {
-            const sessionId = localStorage.getItem('fedevent_session');
-            if (!sessionId) { window.location.href = 'hotel-login.html'; return false; }
-            try {
-                const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${sessionId}` } });
-                const data = await res.json();
-                if (!data.ok) { throw new Error('not ok'); }
-                currentUser = data.user;
-                const ui = document.getElementById('userInfo');
-                if (ui) ui.textContent = `${currentUser.first_name||''} ${currentUser.last_name||''}`.trim();
-                return true;
-            } catch (e) {
-                localStorage.removeItem('fedevent_session');
-                localStorage.removeItem('fedevent_user');
-                window.location.href = 'hotel-login.html';
-                return false;
-            }
-        }
-        
-        // API call helper
-        async function apiCall(endpoint, options = {}) {
-            const sessionId = localStorage.getItem('fedevent_session');
-            const response = await fetch(`${API_BASE}${endpoint}`, {
-                ...options,
-                headers: {
-                    'Authorization': `Bearer ${sessionId}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers
+        // Sample contract data - replace with API calls
+        const sampleContracts = [
+            {
+                id: 'CONTRACT-2025-001',
+                title: 'Federal Employee Training Conference',
+                agency: 'Department of Education',
+                status: 'active',
+                startDate: '2025-03-15',
+                endDate: '2025-03-18',
+                value: '$25,000',
+                rooms: 50,
+                nightlyRate: '$120',
+                description: 'Annual training conference for federal education employees',
+                progress: {
+                    current: 'execution',
+                    steps: [
+                        { name: 'Contract Signed', status: 'completed' },
+                        { name: 'Booking Confirmed', status: 'completed' },
+                        { name: 'Service Execution', status: 'current' },
+                        { name: 'Final Payment', status: 'pending' }
+                    ]
                 }
-            });
-            
-            const result = await response.json();
-            
-            if (!result.ok && response.status === 401) {
-                localStorage.removeItem('fedevent_session');
-                localStorage.removeItem('fedevent_user');
-                localStorage.removeItem('fedevent_hotel');
-                window.location.href = 'hotel-login.html';
-                return null;
+            },
+            {
+                id: 'CONTRACT-2025-002',
+                title: 'Military Leadership Summit',
+                agency: 'Department of Defense',
+                status: 'pending',
+                startDate: '2025-04-20',
+                endDate: '2025-04-22',
+                value: '$45,000',
+                rooms: 75,
+                nightlyRate: '$135',
+                description: 'Leadership development summit for military personnel',
+                progress: {
+                    current: 'review',
+                    steps: [
+                        { name: 'Bid Submitted', status: 'completed' },
+                        { name: 'Under Review', status: 'current' },
+                        { name: 'Contract Signing', status: 'pending' },
+                        { name: 'Service Execution', status: 'pending' }
+                    ]
+                }
+            },
+            {
+                id: 'CONTRACT-2024-015',
+                title: 'Veterans Healthcare Conference',
+                agency: 'Department of Veterans Affairs',
+                status: 'completed',
+                startDate: '2024-12-10',
+                endDate: '2024-12-12',
+                value: '$35,000',
+                rooms: 60,
+                nightlyRate: '$115',
+                description: 'Healthcare innovation conference for VA staff',
+                progress: {
+                    current: 'completed',
+                    steps: [
+                        { name: 'Contract Signed', status: 'completed' },
+                        { name: 'Service Delivered', status: 'completed' },
+                        { name: 'Payment Received', status: 'completed' },
+                        { name: 'Contract Closed', status: 'completed' }
+                    ]
+                }
             }
-            
-            return result;
+        ];
+
+        let contracts = [];
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('📝 Hotel Contracts page initializing...');
+            loadContracts();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.getElementById('statusFilter').addEventListener('change', filterContracts);
+            document.getElementById('agencyFilter').addEventListener('change', filterContracts);
+            document.getElementById('searchInput').addEventListener('input', filterContracts);
         }
-        
+
         // Load contracts
         async function loadContracts() {
             try {
-                const result = await apiCall('/api/hotel/contracts');
+                // For now, use sample data
+                contracts = sampleContracts;
+                renderContracts(contracts);
                 
-                if (result && result.ok) {
-                    allContracts = result.contracts;
-                    renderContracts();
+                // TODO: Replace with actual API call
+                /*
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch('/api/hotel/contracts', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    contracts = result.contracts || [];
+                    renderContracts(contracts);
                 } else {
-                    document.getElementById('contractsContent').innerHTML = 
-                        '<div class="error">Failed to load contracts</div>';
+                    showEmptyState();
                 }
+                */
             } catch (error) {
-                console.error('Load contracts error:', error);
-                document.getElementById('contractsContent').innerHTML = 
-                    '<div class="error">Failed to load contracts</div>';
+                console.error('Error loading contracts:', error);
+                showEmptyState();
             }
-        }
-        
-        async function loadBids(status, targetKey) {
-            try {
-                const result = await apiCall(`/api/hotel/bids?status=${encodeURIComponent(status)}`);
-                if (result && result.ok) {
-                    myBids[targetKey] = result.bids || [];
-                    renderBids(targetKey);
-                } else {
-                    setBidsError(targetKey, 'Failed to load bids');
-                }
-            } catch (e) {
-                console.error('Load bids error:', e);
-                setBidsError(targetKey, 'Failed to load bids');
-            }
-        }
-
-        async function loadQnA(contractId){
-            try {
-                const r = await apiCall(`/api/contracts/${contractId}/qna`);
-                const list = document.getElementById('qnaList');
-                if (!r || !r.ok) { list.innerHTML = '<div class="error">Failed to load Q&A</div>'; return; }
-                const qna = r.qna || [];
-                if (qna.length === 0) { list.innerHTML = '<div class="empty-state">No questions yet.</div>'; return; }
-                list.innerHTML = qna.map(item => `
-                    <div style="padding: .75rem; border:1px solid var(--border); border-radius:6px; margin-bottom:.5rem;">
-                        <div style="font-weight:600;">Q: ${escapeHtml(item.question)}</div>
-                        ${item.answer ? `<div style=\"margin-top:.25rem;color:#065f46;background:#ecfdf5;padding:.5rem;border-radius:4px;\">A: ${escapeHtml(item.answer)}</div>` : '<div style="margin-top:.25rem;color:#6b7280;">Awaiting answer</div>'}
-                        <div style="margin-top:.25rem;font-size:.75rem;color:#6b7280;">${item.hotel_name ? `Asked by ${escapeHtml(item.hotel_name)} • ` : ''}${formatDate(item.created_at)}</div>
-                    </div>
-                `).join('');
-            } catch (e) {
-                console.error('Load QnA error', e);
-                const list = document.getElementById('qnaList');
-                list.innerHTML = '<div class="error">Failed to load Q&A</div>';
-            }
-        }
-
-        function escapeHtml(str){
-            if (!str) return '';
-            return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
-        }
-
-        function setBidsError(key, msg){
-            const map = { active: 'myActiveBidsContent', submitted: 'submittedBidsContent', archived: 'archivedBidsContent' };
-            const el = document.getElementById(map[key]);
-            if (el) el.innerHTML = `<div class="error">${msg}</div>`;
         }
 
         // Render contracts
-        function renderContracts() {
-            const content = document.getElementById('contractsContent');
+        function renderContracts(contractList) {
+            const grid = document.getElementById('contractsGrid');
+            const emptyState = document.getElementById('emptyState');
             
-            if (allContracts.length === 0) {
-                content.innerHTML = `
-                    <div class="empty-state">
-                        <h3>No Available Contracts</h3>
-                        <p>You haven't expressed interest in any contracts yet, or there are no active contracts for your location.</p>
-                        <p>Check your email for new contract notifications.</p>
-                    </div>
-                `;
+            if (contractList.length === 0) {
+                showEmptyState();
                 return;
             }
             
-            const contractsHTML = `
-                <div class="contracts-grid">
-                    ${allContracts.map(contract => `
-                        <div class="contract-card">
-                            <div class="contract-header">
-                                <div>
-                                    <h3 class="contract-title">${contract.title}</h3>
-                                    ${contract.bidding_deadline ? `
-                                        <div class="contract-deadline">
-                                            Deadline: ${formatDate(contract.bidding_deadline)}
-                                        </div>
-                                    ` : ''}
-                                </div>
-                                <div>
-                                    ${(contract.notification_response ? '' : '<span class="bid-status status-submitted" style="margin-right:6px;">Advertised</span>')}
-                                    <span class="bid-status status-${(contract.my_bid_status||'').toLowerCase()==='submitted' ? 'submitted' : ((contract.my_contracted_rate||contract.contracted_rate) ? 'submitted' : 'no-bid')}">
-                                        ${(contract.my_bid_status||'').toLowerCase()==='submitted' ? 'Submitted' : ((contract.my_contracted_rate||contract.contracted_rate) ? 'In Progress' : 'No Bid Yet')}
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="contract-info">
-                                <div class="info-item">
-                                    <span class="info-label">Location:</span>
-                                    <span class="info-value">${[contract.location_city, contract.location_state].filter(Boolean).join(', ')}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Duration:</span>
-                                    <span class="info-value">${contract.start_date} to ${contract.end_date}</span>
-                                </div>
-                                <div class="info-item">
-                                    <span class="info-label">Rooms:</span>
-                                    <span class="info-value">${contract.room_count}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="rate-limits">
-                                <h4>Maximum Acceptable Rates:</h4>
-                                <div class="rate-item">
-                                    <span>Contracted Rate:</span>
-                                    <span>$${contract.max_contracted_rate}/night</span>
-                                </div>
-                                <div class="rate-item">
-                                    <span>Self-Pay Rate:</span>
-                                    <span>$${contract.max_self_pay_rate}/night</span>
-                                </div>
-                            </div>
-                            
-                            ${(contract.my_contracted_rate||contract.contracted_rate) ? `
-                                <div class="current-bid">
-                                    <h4>Your Current Bid:</h4>
-                                    <div class="rate-item">
-                                        <span>Contracted:</span>
-                                        <span>$${(contract.my_contracted_rate||contract.contracted_rate)}/night</span>
-                                    </div>
-                                    <div class="rate-item">
-                                        <span>Self-Pay:</span>
-                                        <span>$${(contract.my_self_pay_rate||contract.self_pay_rate)}/night</span>
-                                    </div>
-                                </div>
-                            ` : ''}
-                            
-                            <a class="btn" href="/hotel-bid.html?contractId=${contract.id}">
-                                ${(contract.my_bid_status||'').toLowerCase()==='submitted' ? 'View Bid' : ((contract.my_contracted_rate||contract.contracted_rate) ? 'Update Bid' : 'Start Bid')}
-                            </a>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
+            emptyState.style.display = 'none';
+            grid.innerHTML = '';
             
-            content.innerHTML = contractsHTML;
-        }
-
-        function renderBids(key){
-            const map = { active: 'myActiveBidsContent', submitted: 'submittedBidsContent', archived: 'archivedBidsContent' };
-            const list = myBids[key] || [];
-            const target = document.getElementById(map[key]);
-            if (!target) return;
-            if (list.length === 0){
-                target.innerHTML = `<div class="empty-state">No ${key} bids.</div>`;
-                return;
-            }
-            target.innerHTML = `
-                <div class="contracts-grid">
-                    ${list.map(b => `
-                        <div class="contract-card">
-                            <div class="contract-header">
-                                <div>
-                                    <h3 class="contract-title">${b.title}</h3>
-                                    ${b.bidding_deadline ? `<div class=\"contract-deadline\">Deadline: ${formatDate(b.bidding_deadline)}</div>` : ''}
-                                </div>
-                                <div class="bid-status status-${b.status}">${b.status}</div>
-                            </div>
-                            <div class="contract-info">
-                                <div class="info-item"><span class="info-label">Location:</span><span class="info-value">${[b.location_city, b.location_state].filter(Boolean).join(', ')}</span></div>
-                                <div class="info-item"><span class="info-label">Your Contracted:</span><span class="info-value">$${b.contracted_rate}/night</span></div>
-                                <div class="info-item"><span class="info-label">Your Self-Pay:</span><span class="info-value">$${b.self_pay_rate}/night</span></div>
-                            </div>
-                            <button class="btn" onclick="showBiddingModal(${b.contract_id})">View / Update Bid</button>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        }
-        
-        // Show bidding modal
-        async function showBiddingModal(contractId) {
-            try {
-                const result = await apiCall(`/api/hotel/contracts/${contractId}`);
-                
-                if (result && result.ok) {
-                    currentContract = result.contract;
-                    const { contract, bids, myBid, leadingBid, countdown } = result;
-                    
-                    document.getElementById('biddingModalTitle').textContent = contract.title;
-                    
-                    const content = `
-                        <div class="contract-details">
-                            <h4>Contract Information</h4>
-                            <div class="sow-section">
-                                <div style="margin-bottom: 1rem;">
-                                    <strong>Description:</strong> ${contract.description || 'See Statement of Work below'}
-                                </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <strong>Location:</strong> ${[contract.location_city, contract.location_state, contract.location_country].filter(Boolean).join(', ')}
-                                </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <strong>Duration:</strong> ${contract.start_date} to ${contract.end_date}
-                                </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <strong>Room Count:</strong> ${contract.room_count} rooms
-                                </div>
-                                <div style="margin-bottom: 1rem;">
-                                    <strong>Per Diem Rate:</strong> $${contract.per_diem_rate}/night
-                                </div>
-                                ${contract.bidding_deadline ? `
-                                    <div style="margin-bottom: 1rem; display:flex; gap:1rem; align-items:center;">
-                                        <div><strong>Bidding Deadline:</strong> ${formatDate(contract.bidding_deadline)}</div>
-                                        <div id="countdownTimer" style="background:#1e40af;color:#fff;padding:.25rem .5rem;border-radius:4px;font-weight:600;">
-                                            Calculating time left...
-                                        </div>
-                                    </div>
-                                ` : ''}
-                            </div>
-                            
-                            ${contract.requirements ? `
-                                <div class="sow-section">
-                                    <h3>Requirements</h3>
-                                    <p>${contract.requirements}</p>
-                                </div>
-                            ` : ''}
-                            
-                            ${(contract.sow_summary || contract.sow_redacted) ? `
-                                <div class="sow-section">
-                                    <h3>Statement of Work (Hotel-Facing)</h3>
-                                ${contract.description ? `<div style="margin-bottom:1rem;">${contract.description}</div>` : ''}
-                                ${contract.sow_redacted ? `<div style="white-space: pre-wrap; line-height: 1.6;">${contract.sow_redacted}</div>` : ''}
-                                </div>
-                            ` : ''}
-                        </div>
-                        
-                        <div class="competitors-section">
-                            <h4>Current Bids (${bids.length})</h4>
-                            ${bids.length > 0 ? `
-                                <div style="margin-top: 1rem;">
-                                    ${bids.map((bid, index) => `
-                                        <div class="competitor-bid">
-                                            <div class="competitor-info">
-                                                <strong>Bid #${index + 1}</strong>
-                                                <div class="competitor-rates">
-                                                    Contracted: $${bid.contracted_rate}/night | Self-Pay: $${bid.self_pay_rate}/night
-                                                </div>
-                                            </div>
-                                            <div style="font-size: 0.875rem; color: var(--text-light);">
-                                                ${formatDate(bid.submitted_at)}
-                                            </div>
-                                        </div>
-                                    `).join('')}
-                                </div>
-                                <div style="margin-top: 1rem; padding: 1rem; background: #fef3c7; border-radius: 6px;">
-                                    <strong>Leading (Lowest) Bid:</strong> $${(leadingBid?leadingBid.contracted_rate:bids[0].contracted_rate)}/night (Contracted) | $${(leadingBid?leadingBid.self_pay_rate:bids[0].self_pay_rate)}/night (Self-Pay)
-                                    <div class="rate-hint">Reverse auction: lower prices improve your rank.</div>
-                                </div>
-                            ` : '<p style="color: var(--text-light);">No bids submitted yet. Be the first to bid!</p>'}
-                        </div>
-                        
-                        <div class="bid-form">
-                            <h4>Submit Your Bid</h4>
-                            <form id="bidForm">
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="contracted_rate">Contracted Rate ($/night)</label>
-                                        <input type="number" id="contracted_rate" step="0.01" min="0" max="${contract.max_contracted_rate}" 
-                                               value="${myBid ? myBid.contracted_rate : ''}" required>
-                                        <div class="rate-hint">Maximum: $${contract.max_contracted_rate} (30% off per diem)</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="self_pay_rate">Self-Pay Rate ($/night)</label>
-                                        <input type="number" id="self_pay_rate" step="0.01" min="0" max="${contract.max_self_pay_rate}" 
-                                               value="${myBid ? myBid.self_pay_rate : ''}" required>
-                                        <div class="rate-hint">Maximum: $${contract.max_self_pay_rate} (10% off per diem)</div>
-                                    </div>
-                                </div>
-                                <div class="form-row">
-                                    <div class="form-group">
-                                        <label for="tax_rate">Tax Rate (e.g., 0.085 for 8.5%)</label>
-                                        <input type="number" id="tax_rate" step="0.0001" min="0" max="1" value="${myBid && myBid.tax_rate != null ? myBid.tax_rate : ''}">
-                                        <div class="rate-hint">Used to compute total with tax.</div>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="total_price">Total Price (optional)</label>
-                                        <input type="number" id="total_price" step="0.01" min="0" value="${myBid && myBid.total_price ? myBid.total_price : ''}">
-                                        <div class="rate-hint">If provided, we compute total with tax.</div>
-                                    </div>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label for="breakdown">Breakdown (JSON)</label>
-                                    <textarea id="breakdown" rows="4" placeholder='{"rooms":100,"nights":90,"extras":0}'>${myBid && myBid.breakdown ? myBid.breakdown : ''}</textarea>
-                                    <div class="rate-hint">Provide line items as JSON. We'll validate on submit.</div>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="additional_notes">Additional Notes (Optional)</label>
-                                    <textarea id="additional_notes" rows="3" placeholder="Any additional information about your bid...">${myBid ? (myBid.additional_notes || '') : ''}</textarea>
-                                </div>
-
-                                <div class="form-group">
-                                    <label for="bid_file">Attach File (PDF/DOC)</label>
-                                    <input type="file" id="bid_file" accept=".pdf,.doc,.docx,.txt">
-                                    <div class="rate-hint">Uploading will attach to your current bid draft.</div>
-                                </div>
-                                
-                                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                                    <button type="submit" class="btn" id="saveBidBtn">${myBid && myBid.status !== 'submitted' ? 'Save Draft' : 'Save'}</button>
-                                    <button type="button" class="btn btn-secondary" id="finalSubmitBtn" ${myBid && myBid.status === 'submitted' ? 'disabled' : ''}>Submit Final</button>
-                                    <button type="button" class="btn" onclick="closeModal()" style="background: #6b7280;">
-                                        Close
-                                    </button>
-                                </div>
-                                
-                                <div id="bidMessage"></div>
-                            </form>
-                        </div>
-
-                        <div class="sow-section" id="qnaSection" style="margin-top:2rem;">
-                            <h3>Q&A</h3>
-                            <div id="qnaList" style="margin: 1rem 0;">
-                                <div class="loading">Loading questions...</div>
-                            </div>
-                            <form id="qnaForm" style="margin-top:1rem;">
-                                <label for="qnaQuestion">Ask a question</label>
-                                <textarea id="qnaQuestion" rows="2" placeholder="Type your question about the requirements or SOW..."></textarea>
-                                <div style="display:flex; gap: .75rem; margin-top:.75rem;">
-                                    <button type="submit" class="btn" style="width:auto;">Post Question</button>
-                                    <button type="button" class="btn" style="width:auto;background:#6b7280;" onclick="loadQnA(${contract.id})">Refresh</button>
-                                </div>
-                                <div id="qnaMessage" style="margin-top:.5rem;"></div>
-                            </form>
-                        </div>
-                    `;
-                    
-                    document.getElementById('biddingModalContent').innerHTML = content;
-                    document.getElementById('biddingModal').style.display = 'block';
-                    
-                    // Setup countdown
-                    if (contract.bidding_deadline && countdown) {
-                        startCountdown('countdownTimer', countdown.serverTime, countdown.remainingMs);
-                    }
-
-                    // Setup form handler
-                    setupBidForm(contractId);
-                    // Load Q&A and wire post
-                    loadQnA(contractId);
-                    const qnaForm = document.getElementById('qnaForm');
-                    if (qnaForm) {
-                        qnaForm.addEventListener('submit', async (e) => {
-                            e.preventDefault();
-                            const q = (document.getElementById('qnaQuestion').value||'').trim();
-                            const msg = document.getElementById('qnaMessage');
-                            msg.innerHTML='';
-                            if (!q) { msg.innerHTML = '<div class="error">Please enter a question.</div>'; return; }
-                            try {
-                                const r = await apiCall(`/api/contracts/${contractId}/qna`, { method:'POST', body: JSON.stringify({ question: q })});
-                                if (r && r.ok) {
-                                    document.getElementById('qnaQuestion').value='';
-                                    loadQnA(contractId);
-                                    msg.innerHTML = '<div class="success">Question posted.</div>';
-                                } else {
-                                    msg.innerHTML = `<div class=\"error\">${r?.error||'Failed to post'}</div>`;
-                                }
-                            } catch (err) {
-                                console.error('QnA post error', err);
-                                msg.innerHTML = '<div class="error">Failed to post</div>';
-                            }
-                        });
-                    }
-                } else {
-                    alert('Failed to load contract details');
-                }
-            } catch (error) {
-                console.error('Contract details error:', error);
-                alert('Failed to load contract details');
-            }
-        }
-        
-        // Setup bid form
-        function setupBidForm(contractId) {
-            document.getElementById('bidForm').addEventListener('submit', async (e) => {
-                e.preventDefault();
-                
-                const formData = {
-                    contracted_rate: parseFloat(document.getElementById('contracted_rate').value),
-                    self_pay_rate: parseFloat(document.getElementById('self_pay_rate').value),
-                    additional_notes: document.getElementById('additional_notes').value
-                };
-                const taxRateEl = document.getElementById('tax_rate');
-                if (taxRateEl && taxRateEl.value !== '') {
-                    const tr = parseFloat(taxRateEl.value);
-                    if (!Number.isNaN(tr)) formData.tax_rate = tr;
-                }
-                const breakdownEl = document.getElementById('breakdown');
-                const totalPriceEl = document.getElementById('total_price');
-                if (breakdownEl && breakdownEl.value.trim()) {
-                    try { formData.breakdown = JSON.parse(breakdownEl.value.trim()); } catch (_) {}
-                }
-                if (totalPriceEl && totalPriceEl.value) {
-                    const tp = parseFloat(totalPriceEl.value);
-                    if (!Number.isNaN(tp)) formData.total_price = tp;
-                }
-                
-                const submitBtn = document.getElementById('saveBidBtn');
-                const message = document.getElementById('bidMessage');
-                
-                submitBtn.disabled = true;
-                submitBtn.textContent = 'Saving...';
-                message.innerHTML = '';
-                
-                try {
-                    const result = await apiCall(`/api/hotel/contracts/${contractId}/bid`, {
-                        method: 'POST',
-                        body: JSON.stringify(formData)
-                    });
-                    
-                        if (result && result.ok) {
-                        // upload file if any
-                        const fileInput = document.getElementById('bid_file');
-                        if (fileInput && fileInput.files && fileInput.files[0]) {
-                            const fd = new FormData();
-                            fd.append('file', fileInput.files[0]);
-                            const sessionId = localStorage.getItem('fedevent_session');
-                            await fetch(`/api/hotel/contracts/${contractId}/bid/upload`, {
-                                method: 'POST',
-                                headers: { 'Authorization': `Bearer ${sessionId}` },
-                                body: fd
-                            });
-                        }
-                        message.innerHTML = '<div class="success">Bid saved.</div>';
-                        setTimeout(() => {
-                            closeModal();
-                            loadContracts();
-                        }, 1200);
-                    } else {
-                        message.innerHTML = `<div class=\"error\">${result.error}</div>`;
-                    }
-                } catch (error) {
-                    console.error('Submit bid error:', error);
-                    message.innerHTML = '<div class="error">Failed to save bid</div>';
-                } finally {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = 'Save Draft';
-                }
+            contractList.forEach(contract => {
+                const card = createContractCard(contract);
+                grid.appendChild(card);
             });
+        }
 
-            const finalBtn = document.getElementById('finalSubmitBtn');
-            if (finalBtn) {
-                finalBtn.addEventListener('click', async () => {
-                    finalBtn.disabled = true;
-                    const message = document.getElementById('bidMessage');
-                    message.innerHTML = '';
-                    try {
-                        const result = await apiCall(`/api/hotel/contracts/${contractId}/bid/submit`, { method: 'POST' });
-                        if (result && result.ok) {
-                            message.innerHTML = '<div class="success">Bid submitted. You can still edit until the deadline.</div>';
-                            setTimeout(() => { closeModal(); loadContracts(); }, 1200);
-                        } else {
-                            message.innerHTML = `<div class=\"error\">${result.error}</div>`;
-                            finalBtn.disabled = false;
-                        }
-                    } catch (e) {
-                        console.error('Final submit error:', e);
-                        message.innerHTML = '<div class="error">Failed to submit</div>';
-                        finalBtn.disabled = false;
+        // Create contract card
+        function createContractCard(contract) {
+            const card = document.createElement('div');
+            card.className = 'contract-card';
+            
+            const progressSteps = contract.progress ? contract.progress.steps.map(step => 
+                `<span class="progress-step ${step.status}">${step.name}</span>`
+            ).join(' → ') : '';
+            
+            card.innerHTML = `
+                <div class="contract-header">
+                    <div>
+                        <div class="contract-title">${contract.title}</div>
+                        <div class="contract-id">${contract.id}</div>
+                    </div>
+                    <div class="status-badge status-${contract.status}">
+                        ${contract.status.charAt(0).toUpperCase() + contract.status.slice(1)}
+                    </div>
+                </div>
+                
+                <div class="contract-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Agency:</span>
+                        <span class="detail-value">${contract.agency}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Event Dates:</span>
+                        <span class="detail-value">${formatDate(contract.startDate)} - ${formatDate(contract.endDate)}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Contract Value:</span>
+                        <span class="detail-value">${contract.value}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Room Nights:</span>
+                        <span class="detail-value">${contract.rooms}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Nightly Rate:</span>
+                        <span class="detail-value">${contract.nightlyRate}</span>
+                    </div>
+                </div>
+                
+                <p style="color: #6b7280; font-size: 0.875rem; margin: 1rem 0;">
+                    ${contract.description}
+                </p>
+                
+                ${contract.progress ? `
+                    <div class="contract-progress">
+                        <div class="progress-title">Contract Progress</div>
+                        <div class="progress-steps">${progressSteps}</div>
+                    </div>
+                ` : ''}
+                
+                <div class="contract-actions">
+                    <button class="btn btn-primary" onclick="viewContract('${contract.id}')">
+                        👁️ View Details
+                    </button>
+                    <button class="btn btn-secondary" onclick="downloadContract('${contract.id}')">
+                        📄 Download Contract
+                    </button>
+                    ${contract.status === 'pending' ? 
+                        `<button class="btn btn-success" onclick="signContract('${contract.id}')">
+                            ✍️ Sign Contract
+                        </button>` : ''
                     }
-                });
+                    ${contract.status === 'active' ? 
+                        `<button class="btn btn-secondary" onclick="manageBooking('${contract.id}')">
+                            🏨 Manage Booking
+                        </button>` : ''
+                    }
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Filter contracts
+        function filterContracts() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const agencyFilter = document.getElementById('agencyFilter').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            
+            let filtered = contracts;
+            
+            // Filter by status
+            if (statusFilter) {
+                filtered = filtered.filter(contract => contract.status === statusFilter);
+            }
+            
+            // Filter by agency
+            if (agencyFilter) {
+                filtered = filtered.filter(contract => 
+                    contract.agency.toLowerCase().includes(agencyFilter) ||
+                    contract.agency.toLowerCase().replace(/\s/g, '').includes(agencyFilter)
+                );
+            }
+            
+            // Filter by search query
+            if (searchQuery) {
+                filtered = filtered.filter(contract => 
+                    contract.title.toLowerCase().includes(searchQuery) ||
+                    contract.agency.toLowerCase().includes(searchQuery) ||
+                    contract.id.toLowerCase().includes(searchQuery) ||
+                    contract.description.toLowerCase().includes(searchQuery)
+                );
+            }
+            
+            renderContracts(filtered);
+        }
+
+        // Show empty state
+        function showEmptyState() {
+            document.getElementById('contractsGrid').innerHTML = '';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        // View contract details
+        function viewContract(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (contract) {
+                const progressInfo = contract.progress ? 
+                    `\n\nCurrent Status: ${contract.progress.current}\nProgress: ${contract.progress.steps.map(s => `${s.name} (${s.status})`).join(', ')}` 
+                    : '';
+                
+                alert(`Contract Details:
+
+Title: ${contract.title}
+Agency: ${contract.agency}
+Status: ${contract.status}
+Value: ${contract.value}
+Event Dates: ${contract.startDate} to ${contract.endDate}
+Room Nights: ${contract.rooms}
+Nightly Rate: ${contract.nightlyRate}${progressInfo}
+
+Full contract management interface coming soon!`);
             }
         }
 
-        // Countdown utilities
-        function startCountdown(elementId, serverIso, remainingMs) {
-            const el = document.getElementById(elementId);
-            if (!el) return;
-            const serverNow = new Date(serverIso).getTime();
-            const clientStart = Date.now();
-            const endAt = clientStart + remainingMs + (Date.now() - clientStart) + (serverNow - clientStart);
+        // Download contract
+        function downloadContract(contractId) {
+            alert(`Downloading contract ${contractId}...\n\nDocument download functionality coming soon!`);
+        }
 
-            const update = () => {
-                const now = Date.now();
-                const left = Math.max(0, endAt - now);
-                const h = Math.floor(left / 3600000);
-                const m = Math.floor((left % 3600000) / 60000);
-                const s = Math.floor((left % 60000) / 1000);
-                el.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')} remaining`;
-                if (left <= 0) {
-                    clearInterval(timer);
-                    el.textContent = 'Bidding closed';
+        // Sign contract
+        function signContract(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (contract && confirm(`Sign contract "${contract.title}"?\n\nThis will mark the contract as accepted and begin the service delivery process.`)) {
+                // Update contract status to active
+                contract.status = 'active';
+                if (contract.progress) {
+                    contract.progress.current = 'execution';
+                    contract.progress.steps.forEach(step => {
+                        if (step.name === 'Contract Signing') step.status = 'completed';
+                        if (step.name === 'Service Execution') step.status = 'current';
+                    });
                 }
-            };
-            update();
-            const timer = setInterval(update, 1000);
+                renderContracts(contracts);
+                alert('Contract signed successfully!\n\nYou will receive a confirmation email with next steps.');
+            }
         }
-        
-        // Close modal
-        function closeModal() {
-            document.getElementById('biddingModal').style.display = 'none';
-            currentContract = null;
+
+        // Manage booking
+        function manageBooking(contractId) {
+            const contract = contracts.find(c => c.id === contractId);
+            if (contract) {
+                alert(`Booking Management for "${contract.title}"
+
+Booking management interface coming soon!
+
+Features will include:
+- Room block management
+- Guest services coordination
+- Event logistics support
+- Real-time communication`);
+            }
         }
-        
+
+        // Refresh contracts
+        function refreshContracts() {
+            console.log('🔄 Refreshing contracts...');
+            loadContracts();
+        }
+
         // Format date
         function formatDate(dateString) {
-            if (!dateString) return '-';
             const date = new Date(dateString);
-            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-        }
-        
-        // Logout
-        async function logout() {
-            try {
-                await apiCall('/api/auth/logout', { method: 'POST' });
-            } catch (error) {
-                console.error('Logout error:', error);
-            }
-            
-            localStorage.removeItem('fedevent_session');
-            localStorage.removeItem('fedevent_user');
-            localStorage.removeItem('fedevent_hotel');
-            window.location.href = 'hotel-login.html';
-        }
-        
-        function activateTab(tab){
-            const tabs = [
-                {btn:'tab-available', panel:'panel-available'},
-                {btn:'tab-my-active', panel:'panel-my-active'},
-                {btn:'tab-submitted', panel:'panel-submitted'},
-                {btn:'tab-archived', panel:'panel-archived'},
-            ];
-            tabs.forEach(t => {
-                const isActive = (t.btn === tab);
-                const btn = document.getElementById(t.btn);
-                const panel = document.getElementById(t.panel);
-                if (btn) {
-                    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
-                    btn.style.background = isActive ? '#eef2ff' : '#fff';
-                    btn.style.color = isActive ? '#1e40af' : '#6b7280';
-                    btn.style.borderColor = isActive ? '#c7d2fe' : '#e5e7eb';
-                }
-                if (panel) panel.style.display = isActive ? 'block' : 'none';
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
             });
-            if (tab==='tab-available') {
-                loadContracts();
-            } else if (tab==='tab-my-active') {
-                loadBids('active','active');
-            } else if (tab==='tab-submitted') {
-                loadBids('submitted','submitted');
-            } else if (tab==='tab-archived') {
-                loadBids('archived','archived');
-            }
         }
 
-        // Initialize
-        if (checkAuth()) {
-            // wire tabs
-            document.getElementById('tab-available').addEventListener('click', () => { activateTab('tab-available'); location.hash='available'; });
-            document.getElementById('tab-my-active').addEventListener('click', () => { activateTab('tab-my-active'); location.hash='my-active'; });
-            document.getElementById('tab-submitted').addEventListener('click', () => { activateTab('tab-submitted'); location.hash='submitted'; });
-            document.getElementById('tab-archived').addEventListener('click', () => { activateTab('tab-archived'); location.hash='archived'; });
-
-            const hash = (location.hash||'').replace('#','');
-            if (hash === 'my-active') activateTab('tab-my-active');
-            else if (hash === 'submitted') activateTab('tab-submitted');
-            else if (hash === 'archived') activateTab('tab-archived');
-            else activateTab('tab-available');
-        }
-        
-        // Close modal on outside click
-        window.onclick = function(event) {
-            const modal = document.getElementById('biddingModal');
-            if (event.target === modal) {
-                closeModal();
-            }
-        }
+        console.log('📝 Hotel Contracts page loaded');
     </script>
+    
     <script src="/nav.js"></script>
 </body>
 </html>
-
-

@@ -122,3 +122,5 @@ SMTP_SECURE=false
 - SendGrid Support: https://support.sendgrid.com
 - Check SendGrid Activity log for detailed error messages
 - Verify sender authentication is complete
+
+

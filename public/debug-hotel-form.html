@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Debug Hotel Registration Form</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .debug-section { background: #f0f0f0; padding: 15px; margin: 10px 0; border-radius: 5px; }
+  .error { color: red; }
+  .success { color: green; }
+  .info { color: blue; }
+  button { padding: 10px 15px; margin: 5px; }
+</style>
+</head>
+<body>
+<h1>Debug Hotel Registration Form</h1>
+
+<div class="debug-section">
+  <h3>Step 1: Check LocalStorage</h3>
+  <button onclick="checkLocalStorage()">Check LocalStorage</button>
+  <div id="localStorageResult"></div>
+</div>
+
+<div class="debug-section">
+  <h3>Step 2: Validate Session</h3>
+  <button onclick="validateSession()">Validate Session</button>
+  <div id="sessionValidationResult"></div>
+</div>
+
+<div class="debug-section">
+  <h3>Step 3: Simulate Form Submission</h3>
+  <button onclick="simulateFormSubmission()">Simulate Form Submission</button>
+  <div id="formSubmissionResult"></div>
+</div>
+
+<script>
+  async function checkLocalStorage() {
+    const resultDiv = document.getElementById('localStorageResult');
+    
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      const user = localStorage.getItem('fedevent_user');
+      const hotel = localStorage.getItem('fedevent_hotel');
+      
+      resultDiv.innerHTML = `
+        <p><strong>Session ID:</strong> ${sessionId ? sessionId.substring(0, 30) + '...' : 'NOT FOUND'}</p>
+        <p><strong>User Data:</strong> ${user ? 'FOUND' : 'NOT FOUND'}</p>
+        <p><strong>Hotel Data:</strong> ${hotel ? 'FOUND' : 'NOT FOUND'}</p>
+      `;
+      
+      if (!sessionId) {
+        resultDiv.innerHTML += '<p class="error">ERROR: No session found. Please log in as a hotel user first.</p>';
+      }
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="error">Error checking localStorage: ${error.message}</p>`;
+    }
+  }
+  
+  async function validateSession() {
+    const resultDiv = document.getElementById('sessionValidationResult');
+    
+    try {
+      const sessionId = localStorage.getItem('fedevent_session');
+      
+      if (!sessionId) {
+        resultDiv.innerHTML = '<p class="error">No session found. Please check LocalStorage first.</p>';
+        return;
+      }
+      
+      resultDiv.innerHTML = '<p>Validating session with server...</p>';
+      
+      const response = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      
+      resultDiv.innerHTML += `<p>Server response status: ${response.status}</p>`;
+      
+      if (!response.ok) {
+        resultDiv.innerHTML += `<p class="error">Session validation failed with status ${response.status}</p>`;
+        return;
+      }
+      
+      const data = await response.json();
+      resultDiv.innerHTML += `
+        <p class="success">Session is valid!</p>
+        <p><strong>User Role:</strong> ${data.user.role}</p>
+        <p><strong>User ID:</strong> ${data.user.id}</p>
+        <p><strong>Email:</strong> ${data.user.email}</p>
+        ${data.user.hotel_id ? `<p><strong>Hotel ID:</strong> ${data.user.hotel_id}</p>` : ''}
+      `;
+      
+      if (data.user.role !== 'hotel') {
+        resultDiv.innerHTML += '<p class="error">WARNING: User does not have hotel role!</p>';
+      }
+      
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="error">Session validation error: ${error.message}</p>`;
+    }
+  }
+  
+  async function simulateFormSubmission() {
+    const resultDiv = document.getElementById('formSubmissionResult');
+    
+    try {
+      // Step 1: Get session ID
+      const sessionId = localStorage.getItem('fedevent_session');
+      
+      if (!sessionId) {
+        resultDiv.innerHTML = '<p class="error">No session found. Please check LocalStorage first.</p>';
+        return;
+      }
+      
+      resultDiv.innerHTML = '<p>Simulating form submission process...</p>';
+      
+      // Step 2: Validate session (like the real form does)
+      resultDiv.innerHTML += '<p>Step 1: Validating session...</p>';
+      
+      const sessionCheck = await fetch('/api/auth/me', {
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      
+      if (!sessionCheck.ok) {
+        resultDiv.innerHTML += `<p class="error">Session validation failed with status ${sessionCheck.status}</p>`;
+        return;
+      }
+      
+      resultDiv.innerHTML += '<p class="success">Step 1: Session validation passed</p>';
+      
+      // Step 3: Try to submit (we'll use a simple test)
+      resultDiv.innerHTML += '<p>Step 2: Attempting form submission...</p>';
+      
+      // Create a minimal form data for testing
+      const formData = new FormData();
+      formData.append('test_field', 'test_value');
+      
+      // Try to submit to the API
+      const submitResponse = await fetch('/api/submit', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${sessionId}`
+        }
+      });
+      
+      resultDiv.innerHTML += `<p>Submit response status: ${submitResponse.status}</p>`;
+      
+      if (submitResponse.ok) {
+        resultDiv.innerHTML += '<p class="success">Step 2: Form submission test passed</p>';
+        resultDiv.innerHTML += '<p class="success">CONCLUSION: Form submission should work correctly!</p>';
+      } else {
+        const errorData = await submitResponse.json().catch(() => ({}));
+        resultDiv.innerHTML += `<p class="error">Step 2: Form submission failed - ${errorData.error || 'Unknown error'}</p>`;
+      }
+      
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="error">Form submission simulation error: ${error.message}</p>`;
+    }
+  }
+</script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

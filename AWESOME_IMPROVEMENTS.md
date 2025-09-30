@@ -141,3 +141,5 @@ The system is now prepared for:
 5. **Gamification**: Badges, streaks, and achievements
 
 **This FEDEVENT platform is now a JOY to use! 🎉**
+
+

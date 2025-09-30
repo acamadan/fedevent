@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Hotel Registration Debugger</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  .debug-section { background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin: 15px 0; }
+  .error { color: #dc3545; }
+  .success { color: #28a745; }
+  .info { color: #007bff; }
+  button { background: #007bff; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin: 5px; }
+  button:hover { background: #0056b3; }
+  button:disabled { background: #6c757d; cursor: not-allowed; }
+  .log-entry { margin: 3px 0; padding: 3px; border-radius: 3px; font-size: 0.9em; }
+  .log-error { background: #f8d7da; }
+  .log-success { background: #d4edda; }
+  .log-info { background: #d1ecf1; }
+</style>
+</head>
+<body>
+<h1>Hotel Registration Debugger</h1>
+
+<div class="debug-section">
+  <h3>Step 1: Check Session</h3>
+  <button onclick="checkSession()">Check Session</button>
+  <div id="sessionResult"></div>
+</div>
+
+<div class="debug-section">
+  <h3>Step 2: Validate Session</h3>
+  <button onclick="validateSession()" id="validateBtn" disabled>Validate Session</button>
+  <div id="validationResult"></div>
+</div>
+
+<div class="debug-section">
+  <h3>Step 3: Test Submission</h3>
+  <button onclick="testSubmission()" id="submitBtn" disabled>Test Submission</button>
+  <div id="submissionResult"></div>
+</div>
+
+<div class="debug-section">
+  <h3>Log</h3>
+  <div id="debugLog" style="max-height: 200px; overflow-y: auto; font-size: 0.8em;"></div>
+  <button onclick="clearLog()">Clear Log</button>
+</div>
+
+<script>
+  let sessionId = null;
+  
+  function log(message, type = 'info') {
+    const logDiv = document.getElementById('debugLog');
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-${type}`;
+    entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+    logDiv.appendChild(entry);
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+  
+  function clearLog() {
+    document.getElementById('debugLog').innerHTML = '';
+  }
+  
+  async function checkSession() {
+    log('Checking session...');
+    const resultDiv = document.getElementById('sessionResult');
+    
+    try {
+      sessionId = localStorage.getItem('fedevent_session');
+      
+      if (sessionId) {
+        resultDiv.innerHTML = `<p class="success">Session found: ${sessionId.substring(0, 20)}...</p>`;
+        document.getElementById('validateBtn').disabled = false;
+        log('Session found', 'success');
+      } else {
+        resultDiv.innerHTML = '<p class="error">No session found. Please login first.</p>';
+        log('No session found', 'error');
+      }
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      log(`Error: ${error.message}`, 'error');
+    }
+  }
+  
+  async function validateSession() {
+    if (!sessionId) return;
+    
+    log('Validating session...');
+    const resultDiv = document.getElementById('validationResult');
+    resultDiv.innerHTML = '<p>Validating...</p>';
+    
+    try {
+      const response = await fetch('/api/auth/me', {
+        headers: { 'Authorization': `Bearer ${sessionId}` }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        resultDiv.innerHTML = `<p class="success">Valid session! Role: ${data.user.role}</p>`;
+        document.getElementById('submitBtn').disabled = data.user.role === 'hotel' ? false : true;
+        log('Session valid', 'success');
+      } else {
+        resultDiv.innerHTML = `<p class="error">Invalid session. Status: ${response.status}</p>`;
+        log(`Invalid session. Status: ${response.status}`, 'error');
+      }
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      log(`Error: ${error.message}`, 'error');
+    }
+  }
+  
+  async function testSubmission() {
+    if (!sessionId) return;
+    
+    log('Testing submission...');
+    const resultDiv = document.getElementById('submissionResult');
+    resultDiv.innerHTML = '<p>Testing...</p>';
+    
+    try {
+      // Test which endpoint would be used
+      const urlParams = new URLSearchParams(window.location.search);
+      const editMode = urlParams.get('mode');
+      const endpoint = editMode === 'edit' ? '/api/hotel/profile' : '/api/submit';
+      
+      resultDiv.innerHTML = `<p>Would use endpoint: ${endpoint}</p>`;
+      log(`Would use endpoint: ${endpoint}`, 'info');
+      
+      // Test a simple request to the endpoint
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${sessionId}` }
+      });
+      
+      resultDiv.innerHTML += `<p>Status: ${response.status}</p>`;
+      log(`Endpoint test status: ${response.status}`, 'info');
+      
+      if (response.status === 401) {
+        resultDiv.innerHTML += '<p class="error">Session expired during submission!</p>';
+        log('Session expired during submission', 'error');
+      } else {
+        resultDiv.innerHTML += '<p class="success">Endpoint accessible!</p>';
+        log('Endpoint accessible', 'success');
+      }
+    } catch (error) {
+      resultDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+      log(`Error: ${error.message}`, 'error');
+    }
+  }
+</script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

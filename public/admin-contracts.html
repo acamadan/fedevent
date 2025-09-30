@@ -416,6 +416,21 @@
             border-radius: 4px;
             margin: 1rem 0;
         }
+
+        .info-banner {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #312e81;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+            margin: 1.5rem 0 2rem;
+            line-height: 1.4;
+        }
+
+        .info-banner strong {
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -443,8 +458,12 @@
                 <button class="btn" onclick="showCreateContractModal()">Create New Contract</button>
             </div>
         </div>
-        
-        
+
+        <div class="info-banner">
+            <strong>Reminder:</strong> Launch new live auctions from the <a href="/admin-dashboard.html" style="color:#1d4ed8; font-weight:600;">Create Live Auction</a> button on the admin dashboard. This contracts page is for maintaining supporting documents and access before hotels enter the bidding room.
+        </div>
+
+
 
         <div class="contracts-table">
             <div class="table-header">
@@ -494,6 +513,132 @@
         </div>
     </div>
 
+    <!-- Edit Contract Modal -->
+    <div id="editContractModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Contract</h3>
+                <button class="close-btn" onclick="closeModal('editContractModal')">&times;</button>
+            </div>
+            <form id="editContractForm">
+                <input type="hidden" id="editContractId">
+                <div class="form-group">
+                    <label for="editTitle">Title *</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editLocationCity">City</label>
+                        <input type="text" id="editLocationCity">
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocationState">State</label>
+                        <input type="text" id="editLocationState">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editLocationCountry">Country</label>
+                    <input type="text" id="editLocationCountry">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editStartDate">Start Date</label>
+                        <input type="date" id="editStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEndDate">End Date</label>
+                        <input type="date" id="editEndDate">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editRoomCount">Room Count *</label>
+                        <input type="number" id="editRoomCount" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPerDiemRate">Per Diem Rate *</label>
+                        <input type="number" id="editPerDiemRate" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBidStrategy">Bid Strategy</label>
+                        <select id="editBidStrategy">
+                            <option value="FIRM_FIXED">Firm Fixed – Lowest bid wins</option>
+                            <option value="BPA">BPA – Primary + 2-4 bench partners</option>
+                            <option value="IDIQ">IDIQ – Task order bench</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTargetMin">Target Min Hotels</label>
+                        <input type="number" id="editTargetMin" min="0" placeholder="e.g. 3">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTargetMax">Target Max Hotels</label>
+                        <input type="number" id="editTargetMax" min="0" placeholder="e.g. 5">
+                    </div>
+                    <div class="form-group">
+                        <label style="visibility:hidden;">Guidance</label>
+                        <div style="font-size:0.85rem; color: var(--text-light);">Use min/max to enforce BPA or IDIQ benches.</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editRequirements">Requirements</label>
+                    <textarea id="editRequirements"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBiddingDeadline">Bidding Deadline</label>
+                        <input type="date" id="editBiddingDeadline">
+                    </div>
+                    <div class="form-group">
+                        <label for="editDecisionDate">Decision Date</label>
+                        <input type="date" id="editDecisionDate">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editVisibility">Visibility</label>
+                        <select id="editVisibility">
+                            <option value="PUBLIC">Public</option>
+                            <option value="PRIVATE">Private</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus">
+                            <option value="active">Active</option>
+                            <option value="awarded">Awarded</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" class="btn" onclick="updateContract()">Update Contract</button>
+                    <button type="button" class="btn" style="background: #6b7280;" onclick="closeModal('editContractModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
 
     <script>
         const API_BASE = '';
@@ -519,13 +664,21 @@
         // API call helper
         async function apiCall(endpoint, options = {}) {
             const sessionId = localStorage.getItem('sessionId');
+            
+            // Only set Content-Type header if there's a body
+            const headers = {
+                'Authorization': `Bearer ${sessionId}`,
+                ...options.headers
+            };
+            
+            // Add Content-Type header only if there's a body and it's not already set
+            if (options.body && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
             const response = await fetch(`${API_BASE}${endpoint}`, {
                 ...options,
-                headers: {
-                    'Authorization': `Bearer ${sessionId}`,
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                }
+                headers
             });
             
             const result = await response.json();
@@ -868,12 +1021,12 @@
                                 <td>${contract.bidding_hotels}</td>
                                 <td><span class="status-badge status-${contract.status}">${contract.status}</span></td>
                                 <td>
-                                    <div class=\"actions\" style=\"position:relative; display:inline-block;\">
-                                      <button class=\"btn\" style=\"padding:.4rem .6rem; font-size:.85rem;\" onclick=\"toggleActions(event, ${contract.id})\">Actions ▾</button>
-                                      <div id=\"menu-${contract.id}\" class=\"action-menu\" style=\"display:none; position:absolute; right:0; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,.08); z-index:10; min-width:160px;\">
-                                        <button style=\"display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;\" onclick=\"openContractPage(${contract.id})\">Edit</button>
-                                        <button style=\"display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;\" onclick=\"cancelContract(${contract.id})\">Cancel</button>
-                                        <button style=\"display:block; width:100%; text-align:left; padding:.5rem 1rem; background:#fee2e2; border:0; cursor:pointer;\" onclick=\"deleteContract(${contract.id})\">Delete</button>
+                                    <div class="actions" style="position:relative; display:inline-block;">
+                                      <button class="btn" style="padding:.4rem .6rem; font-size:.85rem;" onclick="toggleActions(event, ${contract.id})">Actions ▾</button>
+                                      <div id="menu-${contract.id}" class="action-menu" style="display:none; position:absolute; right:0; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,.08); z-index:10; min-width:160px;">
+                                        <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;" onclick="showEditContract(${contract.id})">Edit</button>
+                                        <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;" onclick="cancelContract(${contract.id})">Cancel</button>
+                                        <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:#fee2e2; border:0; cursor:pointer;" onclick="deleteContract(${contract.id})">Delete</button>
                                       </div>
                                     </div>
                                 </td>
@@ -1017,22 +1170,162 @@
         
         function toggleActions(e, id) {
             e.stopPropagation();
-            document.querySelectorAll('.action-menu').forEach(m => m.style.display = 'none');
-            const m = document.getElementById(`menu-${id}`);
-            if (m) m.style.display = (m.style.display === 'none' || !m.style.display) ? 'block' : 'none';
-            window.addEventListener('click', () => { if (m) m.style.display = 'none'; }, { once: true });
+            // Hide all other menus first
+            document.querySelectorAll('.action-menu').forEach(m => {
+                if (m.id !== `menu-${id})`) {
+                    m.style.display = 'none';
+                }
+            });
+            
+            // Toggle the clicked menu
+            const menu = document.getElementById(`menu-${id}`);
+            if (menu) {
+                const isCurrentlyVisible = menu.style.display === 'block';
+                menu.style.display = isCurrentlyVisible ? 'none' : 'block';
+                
+                // Add click outside listener if menu is now visible
+                if (!isCurrentlyVisible) {
+                    const closeMenu = (event) => {
+                        if (!menu.contains(event.target) && event.target.closest('.actions') !== menu.closest('.actions')) {
+                            menu.style.display = 'none';
+                            document.removeEventListener('click', closeMenu);
+                        }
+                    };
+                    document.addEventListener('click', closeMenu);
+                }
+            }
         }
 
         async function deleteContract(id) {
             if (!confirm('Delete this contract? This cannot be undone.')) return;
-            await apiCall(`/api/admin/contracts/${id}`, { method: 'DELETE' });
-            loadContracts();
+            
+            try {
+                console.log('Attempting to delete contract with ID:', id);
+                const result = await apiCall(`/api/admin/contracts/${id}`, { method: 'DELETE' });
+                console.log('Delete contract result:', result);
+                
+                if (result && result.ok) {
+                    alert('Contract deleted successfully!');
+                    loadContracts(); // Refresh the table
+                } else {
+                    const errorMessage = result ? (result.message || result.error || 'Unknown error') : 'No response from server';
+                    alert('Failed to delete contract: ' + errorMessage);
+                }
+            } catch (error) {
+                console.error('Delete contract error:', error);
+                alert('Failed to delete contract: ' + error.message);
+            }
         }
 
         async function cancelContract(id) {
             const body = { status: 'closed' };
             await apiCall(`/api/admin/contracts/${id}`, { method: 'PUT', body: JSON.stringify(body) });
             loadContracts();
+        }
+
+        // Show edit contract modal
+        async function showEditContract(contractId) {
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}`);
+                
+                if (result && result.ok) {
+                    const { contract } = result;
+                    
+                    // Populate form fields
+                    document.getElementById('editContractId').value = contract.id;
+                    document.getElementById('editTitle').value = contract.title || '';
+                    document.getElementById('editDescription').value = contract.description || '';
+                    document.getElementById('editLocationCity').value = contract.location_city || '';
+                    document.getElementById('editLocationState').value = contract.location_state || '';
+                    document.getElementById('editLocationCountry').value = contract.location_country || '';
+                    document.getElementById('editStartDate').value = contract.start_date || '';
+                    document.getElementById('editEndDate').value = contract.end_date || '';
+                    document.getElementById('editRoomCount').value = contract.room_count || '';
+                    document.getElementById('editPerDiemRate').value = contract.per_diem_rate || '';
+                    document.getElementById('editBidStrategy').value = (contract.bid_strategy || 'FIRM_FIXED').toUpperCase();
+                    document.getElementById('editTargetMin').value = contract.target_bid_min != null ? contract.target_bid_min : '';
+                    document.getElementById('editTargetMax').value = contract.target_bid_max != null ? contract.target_bid_max : '';
+                    document.getElementById('editRequirements').value = contract.requirements || '';
+                    document.getElementById('editBiddingDeadline').value = contract.bidding_deadline || '';
+                    document.getElementById('editDecisionDate').value = contract.decision_date || '';
+                    document.getElementById('editVisibility').value = contract.visibility || 'PUBLIC';
+                    document.getElementById('editStatus').value = contract.status || 'active';
+                    
+                    // Show modal
+                    document.getElementById('editContractModal').style.display = 'block';
+                } else {
+                    alert('Failed to load contract details');
+                }
+            } catch (error) {
+                console.error('Edit contract error:', error);
+                alert('Failed to load contract details');
+            }
+        }
+
+        // Update contract
+        async function updateContract() {
+            try {
+                const contractId = document.getElementById('editContractId').value;
+                
+                // Get form values
+                const contractData = {
+                    title: document.getElementById('editTitle').value,
+                    description: document.getElementById('editDescription').value,
+                    location_city: document.getElementById('editLocationCity').value,
+                    location_state: document.getElementById('editLocationState').value,
+                    location_country: document.getElementById('editLocationCountry').value,
+                    start_date: document.getElementById('editStartDate').value,
+                    end_date: document.getElementById('editEndDate').value,
+                    room_count: parseInt(document.getElementById('editRoomCount').value),
+                    per_diem_rate: parseFloat(document.getElementById('editPerDiemRate').value),
+                    requirements: document.getElementById('editRequirements').value,
+                    bidding_deadline: document.getElementById('editBiddingDeadline').value,
+                    decision_date: document.getElementById('editDecisionDate').value,
+                    visibility: document.getElementById('editVisibility').value,
+                    status: document.getElementById('editStatus').value,
+                    bid_strategy: document.getElementById('editBidStrategy').value,
+                    target_bid_min: document.getElementById('editTargetMin').value,
+                    target_bid_max: document.getElementById('editTargetMax').value
+                };
+
+                if (contractData.target_bid_min === '') contractData.target_bid_min = null;
+                if (contractData.target_bid_min !== null) {
+                    contractData.target_bid_min = parseInt(contractData.target_bid_min, 10);
+                    if (Number.isNaN(contractData.target_bid_min)) contractData.target_bid_min = null;
+                }
+                if (contractData.target_bid_max === '') contractData.target_bid_max = null;
+                if (contractData.target_bid_max !== null) {
+                    contractData.target_bid_max = parseInt(contractData.target_bid_max, 10);
+                    if (Number.isNaN(contractData.target_bid_max)) contractData.target_bid_max = null;
+                }
+
+                if (contractData.target_bid_min !== null && contractData.target_bid_max !== null && contractData.target_bid_min > contractData.target_bid_max) {
+                    alert('Target minimum hotels cannot exceed the target maximum.');
+                    return;
+                }
+                
+                // Validate required fields
+                if (!contractData.title || !contractData.room_count || !contractData.per_diem_rate) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                const result = await apiCall(`/api/admin/contracts/${contractId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(contractData)
+                });
+                
+                if (result && result.ok) {
+                    alert('Contract updated successfully!');
+                    closeModal('editContractModal');
+                    loadContracts(); // Refresh the table
+                } else {
+                    alert('Failed to update contract: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Update contract error:', error);
+                alert('Failed to update contract');
+            }
         }
 
         // Award contract
@@ -1195,6 +1488,9 @@
                 if (form) form.reset();
                 const msg = document.getElementById('createDirectiveMessage');
                 if (msg) msg.innerHTML = '';
+            } else if (modalId === 'editContractModal') {
+                const form = document.getElementById('editContractForm');
+                if (form) form.reset();
             }
         }
         
@@ -1242,7 +1538,97 @@
             });
         }
     </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
 </body>
 </html>
-
-

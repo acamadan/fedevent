@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Portal Login - FEDEVENT</title>
-    <link rel="stylesheet" href="/site.css">
     
     <!-- Google Analytics 4 (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -13,14 +12,12 @@
         function gtag(){dataLayer.push(arguments);}
         gtag('js', new Date());
         gtag('config', 'G-XXXXXXXXXX', {
-            // Enhanced ecommerce and event tracking
             send_page_view: true,
             custom_map: {
                 'custom_parameter_1': 'fedevent_website'
             }
         });
         
-        // Custom event tracking functions
         function trackNavigationClick(section) {
             gtag('event', 'navigation_click', {
                 'event_category': 'Website Navigation',
@@ -77,74 +74,217 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: var(--bg);
             min-height: 100vh;
+            color: var(--text);
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .brand-panel {
+            flex: 1.1;
+            background: linear-gradient(135deg, #0f766e 0%, #14b8a6 55%, #0f172a 100%);
+            color: #f9fafb;
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-        
-        /* Fix header placement so dropdown anchors under logo */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: var(--white);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0 1rem;
-        }
-        
-        nav {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            padding: 1rem 0;
-            gap: 24px;
-        }
-        
-        .logo {
-            font-size: 1.75rem;
-            font-weight: bold;
-            color: var(--primary);
-            cursor: pointer;
+            padding: 3.5rem 3rem;
             position: relative;
-            user-select: none;
+            overflow: hidden;
         }
-        
-        .logo:hover {
-            color: var(--primary-dark);
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.35), transparent 45%);
+            opacity: 0.85;
         }
-        
-        .login-container {
-            background: var(--white);
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            max-width: 440px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.45);
+            color: #facc15;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-content h1 {
+            font-size: clamp(2rem, 2.8vw, 2.75rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .brand-content p {
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .brand-highlights {
+            list-style: none;
+            margin: 2rem 0 0;
+            padding: 0;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .brand-highlights li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: rgba(226, 232, 240, 0.92);
+            font-size: 0.95rem;
+        }
+
+        .brand-highlights span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.35);
+            color: #facc15;
+            font-size: 0.85rem;
+        }
+
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 3rem;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.0) 35%);
+        }
+
+        .login-card {
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 18px;
+            box-shadow: 0 30px 60px -25px rgba(15, 23, 42, 0.35);
+            border: 1px solid rgba(15, 23, 42, 0.05);
         }
-        
-        .logo {
+
+        .card-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-        
-        .logo h1 {
+
+        .card-header h1 {
             color: var(--primary);
             font-size: 2rem;
             font-weight: 700;
+            letter-spacing: 0.05em;
         }
-        
-        .logo p {
-            color: var(--text-light);
+
+        .card-header p {
             margin-top: 0.5rem;
+            color: var(--text-light);
         }
         
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        #message {
+            min-height: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .error {
+            color: var(--error);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .success {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
         .forgot-password {
             text-align: center;
             margin-top: 1rem;
@@ -199,159 +339,152 @@
             cursor: pointer;
             color: var(--text-light);
         }
-        
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-        
-        .form-row {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1rem;
-        }
-        
-        label {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: var(--text);
-            font-weight: 500;
-        }
-        
-        input[type="email"],
-        input[type="password"],
-        input[type="text"],
-        input[type="tel"] {
-            width: 100%;
-            padding: 0.75rem;
-            border: 1px solid #d1d5db;
-            border-radius: 6px;
-            font-size: 1rem;
-            transition: border-color 0.2s;
-        }
-        
-        input:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
-        }
-        
-        .btn {
-            width: 100%;
-            padding: 0.75rem;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 6px;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        
-        .btn:hover {
-            background: var(--primary-dark);
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .error {
-            color: var(--error);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-        
-        .success {
-            color: var(--success);
-            font-size: 0.875rem;
-            margin-top: 0.5rem;
-        }
-        
-        .back-link {
-            text-align: center;
-            margin-top: 1.5rem;
-        }
-        
-        .back-link a {
-            color: var(--primary);
-            text-decoration: none;
-            font-size: 0.875rem;
-        }
-        
-        .back-link a:hover {
-            text-decoration: underline;
-        }
-        
+
         .help-text {
             font-size: 0.875rem;
             color: var(--text-light);
             margin-top: 0.5rem;
         }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .signup-link p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 1100px) {
+            .brand-panel {
+                padding: 3rem 2.5rem;
+            }
+            
+            .form-panel {
+                padding: 3.5rem 2.5rem;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .brand-panel {
+                flex: none;
+                padding: 3rem 1.75rem 2.5rem;
+                text-align: center;
+            }
+
+            .brand-content {
+                max-width: 520px;
+            }
+
+            .brand-highlights {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+
+            .brand-highlights li {
+                justify-content: center;
+            }
+
+            .form-panel {
+                padding: 2.5rem 1.75rem 3.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+                border-radius: 14px;
+            }
+
+            .form-panel {
+                padding: 2.25rem 1.25rem 3rem;
+            }
+
+            .brand-content h1 {
+                font-size: 2rem;
+            }
+
+            .brand-highlights {
+                gap: 0.6rem;
+            }
+
+            .brand-highlights li {
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
-    <header>
-      <nav class="container">
-        <div class="logo-menu" style="position: relative;">
-          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
-          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
-            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
-            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
-            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
-            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
-            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
-            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
-          </div>
-        </div>
-        <ul class="nav-links">
-          <li id="userMenu" class="user-menu" style="display:none;">
-            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
-              <span class="user-avatar" id="userInitial">U</span>
-              <span id="userNameLabel">User</span>
-              <span aria-hidden>▾</span>
-            </a>
-            <div class="user-dropdown" id="userDropdown">
-              <a href="/hotel-dashboard.html">Hotel Portal</a>
-              <a href="/hotel-profile.html">User Settings</a>
-              <button type="button" onclick="logoutUser()">Logout</button>
+    <main class="page-wrapper">
+        <section class="brand-panel">
+            <div class="brand-content">
+                <span class="brand-badge">🏨 Hotel Partner Portal</span>
+                <h1>Access exclusive government contract opportunities with NET30 payment terms.</h1>
+                <p>Join our network of trusted hotel partners delivering exceptional accommodations for federal agencies nationwide.</p>
+                <ul class="brand-highlights">
+                    <li><span>✔</span> NET30 payment terms guaranteed</li>
+                    <li><span>✔</span> Priority placement in federal searches</li>
+                    <li><span>✔</span> No upfront costs or hidden fees</li>
+                    <li><span>✔</span> Revenue growth from government contracts</li>
+                </ul>
             </div>
-          </li>
-        </ul>
-      </nav>
-    </header>
-    
-    <div class="login-container" style="margin-top: 80px;">
-        <div class="logo">
-            <h1>FEDEVENT</h1>
-            <p>Hotel Portal</p>
-        </div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="loginEmail">Email or Username</label>
-                <input type="text" id="loginEmail" required>
+        </section>
+
+        <section class="form-panel">
+            <div class="login-card">
+                <div class="card-header">
+                    <h1>FEDEVENT</h1>
+                    <p>Hotel Partner Portal</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email or Username</label>
+                        <input type="text" id="loginEmail" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Password</label>
+                        <input type="password" id="loginPassword" required>
+                    </div>
+
+                    <button type="submit" class="btn" id="loginBtn">Sign In</button>
+
+                    <div class="forgot-password">
+                        <a href="#" onclick="showForgotPasswordModal(); return false;">Forgot Password?</a>
+                    </div>
+
+                    <div id="message"></div>
+                </form>
+
+                <div class="signup-link">
+                    <p>Don't have an account yet?</p>
+                    <a href="/hotel-signup.html">Register Your Hotel →</a>
+                </div>
+
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <input type="password" id="loginPassword" required>
-            </div>
-            
-            <button type="submit" class="btn" id="loginBtn">Login</button>
-            
-            <div class="forgot-password">
-                <a href="#" onclick="showForgotPasswordModal()">Forgot Password?</a>
-            </div>
-            
-            <div id="loginMessage"></div>
-        </form>
-        
-        <div class="back-link">
-            <a href="/">← Back to Home</a>
-        </div>
-    </div>
+        </section>
+    </main>
 
     <!-- Forgot Password Modal -->
     <div id="forgotPasswordModal" class="modal">
@@ -379,8 +512,12 @@
         
         // Check if user is already signed in
         document.addEventListener('DOMContentLoaded', () => {
-            const sessionId = localStorage.getItem('sessionId');
-            const user = localStorage.getItem('user');
+            if (typeof trackPageView === 'function') {
+                trackPageView('Hotel Login');
+            }
+            
+            const sessionId = localStorage.getItem('fedevent_session');
+            const user = localStorage.getItem('fedevent_user');
             
             if (sessionId && user) {
                 try {
@@ -392,14 +529,17 @@
                     }
                 } catch (e) {
                     // Invalid user data, clear it
-                    localStorage.removeItem('sessionId');
-                    localStorage.removeItem('user');
+                    localStorage.removeItem('fedevent_session');
+                    localStorage.removeItem('fedevent_user');
+                    localStorage.removeItem('fedevent_hotel');
                 }
             }
         });
         
         function showForgotPasswordModal() {
-            document.getElementById('forgotPasswordModal').style.display = 'block';
+            document.getElementById('forgotPasswordModal').style.display = 'flex';
+            document.getElementById('forgotPasswordModal').style.alignItems = 'center';
+            document.getElementById('forgotPasswordModal').style.justifyContent = 'center';
         }
         
         function closeForgotPasswordModal() {
@@ -415,10 +555,10 @@
             const emailOrUsername = document.getElementById('loginEmail').value;
             const password = document.getElementById('loginPassword').value;
             const loginBtn = document.getElementById('loginBtn');
-            const message = document.getElementById('loginMessage');
+            const message = document.getElementById('message');
             
             loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
+            loginBtn.textContent = 'Signing in...';
             message.innerHTML = '';
             
             try {
@@ -428,7 +568,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        email: emailOrUsername, // Backend will handle email or username
+                        email: emailOrUsername,
                         password 
                     })
                 });
@@ -437,7 +577,9 @@
                 
                 if (result.ok) {
                     if (result.user.role !== 'hotel') {
-                        message.innerHTML = '<div class="error">Hotel access required</div>';
+                        message.innerHTML = '<div class="error">❌ Hotel access required. Please use the correct portal for your account type.</div>';
+                        loginBtn.disabled = false;
+                        loginBtn.textContent = 'Sign In';
                         return;
                     }
                     
@@ -446,21 +588,26 @@
                     localStorage.setItem('fedevent_user', JSON.stringify(result.user));
                     localStorage.setItem('fedevent_hotel', JSON.stringify(result.hotel));
                     
-                    message.innerHTML = '<div class="success">Login successful! Redirecting...</div>';
+                    message.innerHTML = '<div class="success">✅ Login successful! Redirecting to your dashboard...</div>';
+                    
+                    if (typeof trackFormSubmission === 'function') {
+                        trackFormSubmission('Hotel Login');
+                    }
                     
                     // Redirect to hotel dashboard
                     setTimeout(() => {
                         window.location.href = '/hotel-dashboard.html';
                     }, 1000);
                 } else {
-                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                    message.innerHTML = `<div class="error">❌ ${result.error || 'Invalid credentials'}</div>`;
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = 'Sign In';
                 }
             } catch (error) {
                 console.error('Login error:', error);
-                message.innerHTML = '<div class="error">Login failed. Please try again.</div>';
-            } finally {
+                message.innerHTML = '<div class="error">❌ Login failed. Please try again.</div>';
                 loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
+                loginBtn.textContent = 'Sign In';
             }
         });
         
@@ -483,23 +630,23 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ 
-                        email: emailOrUsername // Backend will handle email or username lookup
+                        email: emailOrUsername
                     })
                 });
                 
                 const result = await response.json();
                 
                 if (result.ok) {
-                    message.innerHTML = '<div class="success">Password reset link sent to your email address.</div>';
+                    message.innerHTML = '<div class="success">✅ Password reset link sent to your email address.</div>';
                     setTimeout(() => {
                         closeForgotPasswordModal();
                     }, 3000);
                 } else {
-                    message.innerHTML = `<div class="error">${result.error}</div>`;
+                    message.innerHTML = `<div class="error">❌ ${result.error || 'Failed to send reset link'}</div>`;
                 }
             } catch (error) {
                 console.error('Password reset error:', error);
-                message.innerHTML = '<div class="error">Failed to send reset link. Please try again.</div>';
+                message.innerHTML = '<div class="error">❌ Failed to send reset link. Please try again.</div>';
             } finally {
                 resetBtn.disabled = false;
                 resetBtn.textContent = 'Send Reset Link';
@@ -513,53 +660,103 @@
                 closeForgotPasswordModal();
             }
         }
-
-        function toggleUserDropdown(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dd = document.getElementById('userDropdown');
-            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function toggleLogoDropdown(e) {
-            e.preventDefault();
-            e.stopPropagation();
-            const dd = document.getElementById('logoDropdown');
-            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
-        }
-
-        function logoutUser() {
-            localStorage.removeItem('fedevent_session');
-            localStorage.removeItem('fedevent_user');
-            window.location.href = '/hotel-login.html';
-        }
-
-        function loadUserMenu() {
-            try {
-                const sessionId = localStorage.getItem('fedevent_session');
-                const userRaw = localStorage.getItem('fedevent_user');
-                if (!sessionId || !userRaw) return;
-                const user = JSON.parse(userRaw);
-                let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
-                name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
-                const initial = (name || 'U').trim().charAt(0).toUpperCase();
-                document.getElementById('userNameLabel').textContent = name;
-                document.getElementById('userInitial').textContent = initial;
-                document.getElementById('userMenu').style.display = 'list-item';
-            } catch (e) { /* noop */ }
-        }
-
-        document.addEventListener('DOMContentLoaded', loadUserMenu);
-
-        document.addEventListener('click', function(evt){
-            const userDd = document.getElementById('userDropdown');
-            const logoDd = document.getElementById('logoDropdown');
-            const um = document.getElementById('userMenu');
-            const logoMenu = document.querySelector('.logo-menu');
-            
-            if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
-            if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
-        });
     </script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+</style>
 </body>
 </html>
