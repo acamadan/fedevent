@@ -4602,22 +4602,23 @@ app.get('/api/hotel/contracts/:id', requireAuth, (req, res) => {
       return fail(res, 404, 'Contract not found');
     }
 
-    // Get all active bids for this contract (for bid war visibility)
-    const bids = db.prepare(`
-      SELECT cb.contracted_rate, cb.self_pay_rate, cb.submitted_at, h.name as hotel_name
-      FROM contract_bids cb
-      JOIN hotels h ON cb.hotel_id = h.id
-      WHERE cb.contract_id = ? AND cb.status = 'active'
-      ORDER BY cb.contracted_rate ASC
-    `).all(contractId);
-
-    // Get hotel's current bid if exists
+    // Sealed-bid: do NOT expose competitor bids to hotels
+    // Only return the requesting hotel's bid and minimal meta
     const myBid = db.prepare(`
       SELECT * FROM contract_bids 
       WHERE contract_id = ? AND hotel_id = ? AND status IN ('active','submitted')
     `).get(contractId, req.user.hotel_id);
 
-    return ok(res, { contract, bids, myBid });
+    // Provide countdown metadata for client-side timer without leaking server clock repeatedly
+    let countdown = null;
+    if (contract.bidding_deadline) {
+      const serverTime = new Date();
+      const endTime = new Date(contract.bidding_deadline);
+      const remainingMs = Math.max(0, endTime.getTime() - serverTime.getTime());
+      countdown = { serverTime: serverTime.toISOString(), remainingMs };
+    }
+
+    return ok(res, { contract, myBid, countdown });
   } catch (error) {
     console.error('Get contract details error:', error);
     return fail(res, 500, 'Failed to fetch contract details');
