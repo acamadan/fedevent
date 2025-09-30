@@ -1,1 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sealed Bid - FEDEVENT Hotel Portal</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: var(--bg); color: var(--text); }
+        .container { max-width: 1100px; margin: 0 auto; padding: 1rem; }
+        .crumbs { font-size: .9rem; color: var(--text-light); margin: .5rem 0 1rem; }
+        .page-title { font-size: 1.75rem; font-weight: 800; margin: .25rem 0 1rem; color: var(--text); }
+        .meta { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1rem 0; }
+        @media (min-width: 900px) { .meta { grid-template-columns: 2fr 1fr; } }
+        .card { background: var(--white); border: 1px solid var(--border); border-radius: 10px; padding: 1.25rem; }
+        .section-title { font-size: 1rem; font-weight: 700; color: var(--text); margin-bottom: .75rem; }
+        .kv { display: grid; grid-template-columns: 1fr 1fr; gap: .5rem 1rem; }
+        .kv div { font-size: .95rem; }
+        .kv .k { color: var(--text-light); }
+        .deadline { display: flex; gap: .5rem; align-items: center; margin-top: .5rem; }
+        .timer { background: var(--primary); color: #fff; padding: .25rem .5rem; border-radius: 6px; font-weight: 700; }
+        .hint { font-size: .85rem; color: var(--text-light); margin-top: .25rem; }
+        .grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+        label { display: block; font-weight: 600; margin-bottom: .35rem; }
+        input, textarea { width: 100%; padding: .7rem; border: 1px solid var(--border); border-radius: 6px; font-size: 1rem; }
+        input:focus, textarea:focus { outline: none; border-color: var(--primary); }
+        .actions { display: flex; gap: .75rem; margin-top: 1rem; flex-wrap: wrap; }
+        .btn { appearance: none; background: var(--primary); color: #fff; border: 0; padding: .75rem 1.25rem; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        .btn:hover { background: var(--primary-dark); }
+        .btn.secondary { background: var(--secondary); }
+        .btn.muted { background: #6b7280; }
+        .msg { margin-top: .75rem; }
+        .error { background: #fef2f2; color: var(--error); padding: .75rem; border-radius: 6px; }
+        .success { background: #f0fdf4; color: var(--success); padding: .75rem; border-radius: 6px; }
+        .badge { display: inline-block; padding: .2rem .5rem; border-radius: 999px; font-size: .75rem; font-weight: 700; }
+        .badge.draft { background: #e5e7eb; color: #374151; }
+        .badge.submitted { background: #dbeafe; color: #1d4ed8; }
+        .file { display: block; }
+        .sr { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+        .empty { text-align: center; color: var(--text-light); padding: 1rem; }
+    </style>
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+        let currentContract = null;
+        let myBid = null;
+
+        function qs(key){
+            const u = new URL(window.location.href);
+            return u.searchParams.get(key);
+        }
+
+        async function apiCall(endpoint, options = {}){
+            const sessionId = localStorage.getItem('fedevent_session');
+            const res = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`,
+                    'Content-Type': 'application/json',
+                    ...options.headers
+                }
+            });
+            let data;
+            try { data = await res.json(); } catch (_) { data = null; }
+            if (!res.ok || !data || data.ok === false){
+                if (res.status === 401){
+                    localStorage.removeItem('fedevent_session');
+                    localStorage.removeItem('fedevent_user');
+                    window.location.href = '/hotel-login.html';
+                    return null;
+                }
+            }
+            return data;
+        }
+
+        async function checkAuth(){
+            const sessionId = localStorage.getItem('fedevent_session');
+            if (!sessionId){ window.location.href = '/hotel-login.html'; return false; }
+            try {
+                const me = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${sessionId}` } });
+                const data = await me.json();
+                if (!data.ok) throw new Error('not ok');
+                currentUser = data.user;
+                const ui = document.getElementById('userInfo');
+                if (ui) ui.textContent = `${currentUser.first_name||''} ${currentUser.last_name||''}`.trim();
+                return true;
+            } catch (e){
+                localStorage.removeItem('fedevent_session');
+                localStorage.removeItem('fedevent_user');
+                window.location.href = '/hotel-login.html';
+                return false;
+            }
+        }
+
+        function formatDate(d){
+            if (!d) return '-';
+            const dt = new Date(d);
+            return dt.toLocaleDateString() + ' ' + dt.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function startCountdown(elId, serverIso, remainingMs){
+            const el = document.getElementById(elId);
+            if (!el) return;
+            const serverNow = new Date(serverIso).getTime();
+            const clientStart = Date.now();
+            const endAt = clientStart + remainingMs + (Date.now() - clientStart) + (serverNow - clientStart);
+            const update = () => {
+                const now = Date.now();
+                const left = Math.max(0, endAt - now);
+                const d = Math.floor(left / 86400000);
+                const h = Math.floor((left % 86400000) / 3600000);
+                const m = Math.floor((left % 3600000) / 60000);
+                const s = Math.floor((left % 60000) / 1000);
+                const parts = [];
+                if (d > 0) parts.push(String(d).padStart(2,'0'));
+                parts.push(String(h).padStart(2,'0'));
+                parts.push(String(m).padStart(2,'0'));
+                parts.push(String(s).padStart(2,'0'));
+                el.textContent = parts.join(':');
+                if (left <= 0){ clearInterval(timer); el.textContent = 'Bidding closed'; disableForm(); }
+            };
+            update();
+            const timer = setInterval(update, 1000);
+        }
+
+        function disableForm(){
+            ['contracted_rate','self_pay_rate','tax_rate','total_price','breakdown','additional_notes','bid_file','saveBtn','finalBtn']
+                .forEach(id => { const el = document.getElementById(id); if (el) el.disabled = true; });
+        }
+
+        function setMsg(type, text){
+            const m = document.getElementById('msg');
+            if (!m) return;
+            m.innerHTML = `<div class="${type}">${text}</div>`;
+        }
+
+        function escapeHtml(str){
+            if (!str) return '';
+            return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;','\'':'&#39;'}[c]));
+        }
+
+        async function loadContract(){
+            const contractId = qs('contractId');
+            const wrap = document.getElementById('contentWrap');
+            if (!contractId){
+                wrap.innerHTML = '<div class="card error">Missing contractId.</div>';
+                return;
+            }
+            wrap.innerHTML = '<div class="card" style="text-align:center;color:var(--text-light)">Loading…</div>';
+            try {
+                const data = await apiCall(`/api/hotel/contracts/${contractId}`);
+                if (!data || data.ok === false){
+                    wrap.innerHTML = `<div class="card error">${escapeHtml(data?.error||'Failed to load')}</div>`;
+                    return;
+                }
+                currentContract = data.contract;
+                myBid = data.myBid || null;
+                render(data);
+                if (data.countdown && currentContract.bidding_deadline){
+                    startCountdown('countdown', data.countdown.serverTime, data.countdown.remainingMs);
+                }
+            } catch (e){
+                console.error(e);
+                wrap.innerHTML = '<div class="card error">Failed to load contract.</div>';
+            }
+        }
+
+        function render(data){
+            const c = data.contract;
+            const wrap = document.getElementById('contentWrap');
+            const statusBadge = myBid && myBid.status ? `<span class="badge ${myBid.status}">${myBid.status}</span>` : '<span class="badge draft">no bid</span>';
+            wrap.innerHTML = `
+                <div class="crumbs"><a href="/hotel-contracts.html">← Back to Contracts</a></div>
+                <h1 class="page-title">${escapeHtml(c.title || 'Contract')}</h1>
+                <div class="meta">
+                    <div class="card">
+                        <div class="section-title">Contract Information</div>
+                        <div class="kv">
+                            <div class="k">Location</div><div>${escapeHtml([c.location_city, c.location_state, c.location_country].filter(Boolean).join(', ')||'-')}</div>
+                            <div class="k">Duration</div><div>${escapeHtml(c.start_date||'-')} to ${escapeHtml(c.end_date||'-')}</div>
+                            <div class="k">Rooms</div><div>${escapeHtml(String(c.room_count||'-'))}</div>
+                            <div class="k">Per Diem</div><div>$${escapeHtml(String(c.per_diem_rate||'-'))}/night</div>
+                        </div>
+                        <div class="deadline">
+                            ${c.bidding_deadline ? `<div><strong>Deadline:</strong> ${formatDate(c.bidding_deadline)}</div><div class="timer" id="countdown">…</div>` : '<div><strong>Deadline:</strong> Not set</div>'}
+                        </div>
+                        <div class="hint" style="margin-top:.5rem;">Sealed-bid: competitor bids are hidden until award.</div>
+                        ${(c.sow_redacted || c.sow_summary) ? `
+                        <div style="margin-top:1rem;">
+                            <div class="section-title">Statement of Work (Hotel-Facing)</div>
+                            ${c.sow_summary ? `<div style="margin:.25rem 0 1rem;">${escapeHtml(c.sow_summary)}</div>` : ''}
+                            ${c.sow_redacted ? `<div style="white-space:pre-wrap;line-height:1.55">${escapeHtml(c.sow_redacted)}</div>` : ''}
+                        </div>` : ''}
+                    </div>
+                    <div class="card">
+                        <div class="section-title">Rate Limits</div>
+                        <div class="kv">
+                            <div class="k">Max Contracted</div><div>$${escapeHtml(String(c.max_contracted_rate))}/night</div>
+                            <div class="k">Max Self-Pay</div><div>$${escapeHtml(String(c.max_self_pay_rate))}/night</div>
+                        </div>
+                        <div style="margin-top:1rem;">
+                            <div class="section-title">Your Bid ${statusBadge}</div>
+                            ${myBid ? `
+                            <div class="kv">
+                                <div class="k">Contracted</div><div>$${escapeHtml(String(myBid.contracted_rate))}/night</div>
+                                <div class="k">Self-Pay</div><div>$${escapeHtml(String(myBid.self_pay_rate))}/night</div>
+                                ${myBid.submitted_at ? `<div class="k">Submitted</div><div>${formatDate(myBid.submitted_at)}</div>` : ''}
+                            </div>` : '<div class="empty">No bid yet</div>'}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" style="margin-top:1rem;">
+                    <div class="section-title">Submit Your Sealed Bid</div>
+                    <form id="bidForm">
+                        <div class="grid">
+                            <div>
+                                <label for="contracted_rate">Contracted Rate ($/night)</label>
+                                <input id="contracted_rate" type="number" step="0.01" min="0" max="${c.max_contracted_rate}" value="${myBid? (myBid.contracted_rate ?? '') : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
+                                <div class="hint">Maximum: $${c.max_contracted_rate} (30% off per diem)</div>
+                            </div>
+                            <div>
+                                <label for="self_pay_rate">Self-Pay Rate ($/night)</label>
+                                <input id="self_pay_rate" type="number" step="0.01" min="0" max="${c.max_self_pay_rate}" value="${myBid? (myBid.self_pay_rate ?? '') : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
+                                <div class="hint">Maximum: $${c.max_self_pay_rate} (10% off per diem)</div>
+                            </div>
+                            <div>
+                                <label for="tax_rate">Tax Rate (0 - 1)</label>
+                                <input id="tax_rate" type="number" step="0.0001" min="0" max="1" value="${myBid && myBid.tax_rate != null ? myBid.tax_rate : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
+                                <div class="hint">Used to compute totals (optional)</div>
+                            </div>
+                            <div>
+                                <label for="total_price">Total Price (optional)</label>
+                                <input id="total_price" type="number" step="0.01" min="0" value="${myBid && myBid.total_price ? myBid.total_price : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
+                            </div>
+                        </div>
+                        <div style="margin-top:1rem;">
+                            <label for="breakdown">Breakdown (JSON)</label>
+                            <textarea id="breakdown" rows="4" placeholder='{"rooms":100,"nights":90,"extras":0}' ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>${myBid && myBid.breakdown ? myBid.breakdown : ''}</textarea>
+                            <div class="hint">JSON line items, validated on submit</div>
+                        </div>
+                        <div style="margin-top:1rem;">
+                            <label for="additional_notes">Additional Notes</label>
+                            <textarea id="additional_notes" rows="3" placeholder="Any additional info" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>${myBid ? (myBid.additional_notes || '') : ''}</textarea>
+                        </div>
+                        <div style="margin-top:1rem;">
+                            <label for="bid_file">Attach File (PDF/DOC)</label>
+                            <input class="file" id="bid_file" type="file" accept=".pdf,.doc,.docx,.txt" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
+                            <div class="hint">File attaches to your current bid draft</div>
+                        </div>
+                        <div class="actions">
+                            <button id="saveBtn" type="submit" class="btn" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>${myBid && myBid.status!=='draft' ? 'Save' : 'Save Draft'}</button>
+                            <button id="finalBtn" type="button" class="btn secondary" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>Submit Final</button>
+                            <a class="btn muted" href="/hotel-contracts.html">Close</a>
+                        </div>
+                        <div id="msg" class="msg"></div>
+                    </form>
+                </div>
+            `;
+            wireForm(c.id);
+        }
+
+        function parseJsonSafe(txt){
+            try { return JSON.parse(txt); } catch (_) { return null; }
+        }
+
+        function wireForm(contractId){
+            const form = document.getElementById('bidForm');
+            const saveBtn = document.getElementById('saveBtn');
+            const finalBtn = document.getElementById('finalBtn');
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                setMsg('', '');
+                saveBtn.disabled = true; saveBtn.textContent = 'Saving…';
+                const body = {
+                    contracted_rate: Number(document.getElementById('contracted_rate').value),
+                    self_pay_rate: Number(document.getElementById('self_pay_rate').value),
+                    additional_notes: document.getElementById('additional_notes').value
+                };
+                const tr = document.getElementById('tax_rate').value;
+                const tp = document.getElementById('total_price').value;
+                const breakdownTxt = document.getElementById('breakdown').value.trim();
+                if (tr !== '') { const v = Number(tr); if (!Number.isNaN(v)) body.tax_rate = v; }
+                if (tp !== '') { const v = Number(tp); if (!Number.isNaN(v)) body.total_price = v; }
+                if (breakdownTxt) { const j = parseJsonSafe(breakdownTxt); if (j) body.breakdown = j; }
+                try {
+                    const r = await apiCall(`/api/hotel/contracts/${contractId}/bid`, { method:'POST', body: JSON.stringify(body) });
+                    if (!r || r.ok === false){ setMsg('error', r?.error||'Failed to save'); saveBtn.disabled = false; saveBtn.textContent = 'Save Draft'; return; }
+                    const fileInput = document.getElementById('bid_file');
+                    if (fileInput && fileInput.files && fileInput.files[0]){
+                        const fd = new FormData();
+                        fd.append('file', fileInput.files[0]);
+                        const sessionId = localStorage.getItem('fedevent_session');
+                        await fetch(`/api/hotel/contracts/${contractId}/bid/upload`, { method:'POST', headers:{ 'Authorization': `Bearer ${sessionId}` }, body: fd });
+                    }
+                    setMsg('success','Bid saved.');
+                    setTimeout(() => { window.location.href = '/hotel-contracts.html#my-active'; }, 1000);
+                } catch (err){
+                    console.error('save bid', err);
+                    setMsg('error','Failed to save bid');
+                } finally {
+                    saveBtn.disabled = false; saveBtn.textContent = 'Save Draft';
+                }
+            });
+            if (finalBtn){
+                finalBtn.addEventListener('click', async () => {
+                    setMsg('', '');
+                    finalBtn.disabled = true; finalBtn.textContent = 'Submitting…';
+                    try {
+                        const r = await apiCall(`/api/hotel/contracts/${contractId}/bid/submit`, { method:'POST' });
+                        if (!r || r.ok === false){ setMsg('error', r?.error||'Failed to submit'); finalBtn.disabled = false; finalBtn.textContent = 'Submit Final'; return; }
+                        setMsg('success','Bid submitted. You can still edit until the deadline.');
+                        setTimeout(() => { window.location.href = '/hotel-contracts.html#submitted'; }, 900);
+                    } catch (e){
+                        console.error('final submit', e);
+                        setMsg('error','Failed to submit');
+                        finalBtn.disabled = false; finalBtn.textContent = 'Submit Final';
+                    }
+                });
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (await checkAuth()){
+                loadContract();
+            }
+        });
+    </script>
+</head>
+<body>
+    <div class="container">
+        <div id="contentWrap"></div>
+    </div>
+    <script src="/nav.js"></script>
+</body>
+</html>
+
 
