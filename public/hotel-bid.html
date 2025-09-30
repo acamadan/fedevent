@@ -207,20 +207,13 @@
                         </div>` : ''}
                     </div>
                     <div class="card">
-                        <div class="section-title">Rate Limits</div>
+                        <div class="section-title">Your Bid ${statusBadge}</div>
+                        ${myBid ? `
                         <div class="kv">
-                            <div class="k">Max Contracted</div><div>$${escapeHtml(String(c.max_contracted_rate))}/night</div>
-                            <div class="k">Max Self-Pay</div><div>$${escapeHtml(String(c.max_self_pay_rate))}/night</div>
-                        </div>
-                        <div style="margin-top:1rem;">
-                            <div class="section-title">Your Bid ${statusBadge}</div>
-                            ${myBid ? `
-                            <div class="kv">
-                                <div class="k">Contracted</div><div>$${escapeHtml(String(myBid.contracted_rate))}/night</div>
-                                <div class="k">Self-Pay</div><div>$${escapeHtml(String(myBid.self_pay_rate))}/night</div>
-                                ${myBid.submitted_at ? `<div class="k">Submitted</div><div>${formatDate(myBid.submitted_at)}</div>` : ''}
-                            </div>` : '<div class="empty">No bid yet</div>'}
-                        </div>
+                            <div class="k">Contracted</div><div>$${escapeHtml(String(myBid.contracted_rate))}/night</div>
+                            <div class="k">Self-Pay</div><div>$${escapeHtml(String(myBid.self_pay_rate))}/night</div>
+                            ${myBid.submitted_at ? `<div class="k">Submitted</div><div>${formatDate(myBid.submitted_at)}</div>` : ''}
+                        </div>` : '<div class="empty">No bid yet</div>'}
                     </div>
                 </div>
 
@@ -230,13 +223,11 @@
                         <div class="grid">
                             <div>
                                 <label for="contracted_rate">Contracted Rate ($/night)</label>
-                                <input id="contracted_rate" type="number" step="0.01" min="0" max="${c.max_contracted_rate}" value="${myBid? (myBid.contracted_rate ?? '') : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
-                                <div class="hint">Maximum: $${c.max_contracted_rate} (30% off per diem)</div>
+                                <input id="contracted_rate" type="number" step="0.01" min="0" value="${myBid? (myBid.contracted_rate ?? '') : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
                             </div>
                             <div>
                                 <label for="self_pay_rate">Self-Pay Rate ($/night)</label>
-                                <input id="self_pay_rate" type="number" step="0.01" min="0" max="${c.max_self_pay_rate}" value="${myBid? (myBid.self_pay_rate ?? '') : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
-                                <div class="hint">Maximum: $${c.max_self_pay_rate} (10% off per diem)</div>
+                                <input id="self_pay_rate" type="number" step="0.01" min="0" value="${myBid? (myBid.self_pay_rate ?? '') : ''}" ${myBid && myBid.status==='submitted' ? 'disabled' : ''}>
                             </div>
                             <div>
                                 <label for="tax_rate">Tax Rate (0 - 1)</label>
@@ -338,6 +329,14 @@
             if (await checkAuth()){
                 loadContract();
             }
+        });
+
+        // Display any uncaught error in-page to avoid blank view
+        window.addEventListener('error', function(evt){
+            try {
+                const wrap = document.getElementById('contentWrap');
+                if (wrap) wrap.innerHTML = `<div class="card error">An error occurred loading this page.<div class="hint" style="margin-top:.25rem;">${escapeHtml(String(evt.error || evt.message || 'Unknown error'))}</div></div>`;
+            } catch (_) {}
         });
     </script>
 </head>
