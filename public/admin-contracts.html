@@ -198,7 +198,7 @@
             background: var(--white);
             border-radius: 8px;
             border: 1px solid var(--border);
-            overflow: hidden;
+            overflow: visible;
         }
         
         .table-header {
@@ -1023,7 +1023,7 @@
                                 <td>
                                     <div class="actions" style="position:relative; display:inline-block;">
                                       <button class="btn" style="padding:.4rem .6rem; font-size:.85rem;" onclick="toggleActions(event, ${contract.id})">Actions ▾</button>
-                                      <div id="menu-${contract.id}" class="action-menu" style="display:none; position:absolute; right:0; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,.08); z-index:10; min-width:160px;">
+                                      <div id="menu-${contract.id}" class="action-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:0.25rem; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,.08); z-index:999; min-width:160px;">
                                         <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;" onclick="showEditContract(${contract.id})">Edit</button>
                                         <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;" onclick="cancelContract(${contract.id})">Cancel</button>
                                         <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:#fee2e2; border:0; cursor:pointer;" onclick="deleteContract(${contract.id})">Delete</button>
@@ -1466,9 +1466,11 @@
                 const resp = await fetch('/api/admin/contracts/create-from-sow', { method:'POST', headers:{ 'Authorization': `Bearer ${sessionId}` }, body: fd });
                 const data = await resp.json();
                 if (!data.ok) { msg.innerHTML = `<div class=\"error\">${data.error||'Create from SOW failed'}</div>`; return; }
-                msg.innerHTML = '<div class="success">Contract created from SOW.</div>';
-                closeModal('createContractModal');
-                loadContracts();
+                msg.innerHTML = '<div class="success">Contract draft created! Please review and update details before publishing.</div>';
+                setTimeout(() => {
+                    closeModal('createContractModal');
+                    loadContracts();
+                }, 1500);
             } catch (e) {
                 console.error('create-from-sow error', e);
                 msg.innerHTML = '<div class="error">Create from SOW failed.</div>';

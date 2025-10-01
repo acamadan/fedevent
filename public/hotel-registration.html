@@ -1125,7 +1125,7 @@
             <div class="col-6">
               <label>Name <span class="required">*</span></label><input type="text" name="sign_contacts[0][name]" required autocomplete="section-contacts-0 name" />
               <label>Role</label>
-              <select name="sign_contacts[0][role]" required onchange="checkRoleConflict(this, 0)">
+              <select name="sign_contacts[0][role]" required>
                 <option value="">Select a role</option>
                 <option value="Signer">Signer</option>
                 <option value="Approver">Approver</option>
@@ -1150,7 +1150,7 @@
             <div class="col-6">
               <label>Name <span class="required">*</span></label><input type="text" name="sign_contacts[1][name]" required autocomplete="section-contacts-1 name" />
               <label>Role</label>
-              <select name="sign_contacts[1][role]" required onchange="checkRoleConflict(this, 1)">
+              <select name="sign_contacts[1][role]" required>
                 <option value="">Select a role</option>
                 <option value="Signer">Signer</option>
                 <option value="Approver">Approver</option>
@@ -1793,8 +1793,8 @@
           <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
             Please correct this before proceeding.
           </p>
-          <button onclick="document.getElementById('roleConflictModal').remove();" style="
-            background: #dc2626;
+          <button id="correctionNeededBtn" style="
+            background: #059669;
             color: white;
             border: none;
             padding: 12px 24px;
@@ -1802,26 +1802,54 @@
             font-weight: 600;
             cursor: pointer;
             margin-top: 15px;
-          ">OK, I'll Fix This</button>
+          ">Correction Needed</button>
         </div>
       `;
       
       document.body.appendChild(modal);
       
-      // Focus on the first role field
-      setTimeout(() => {
-        role0.focus();
-        role0.style.border = '2px solid #dc2626';
-        role1.style.border = '2px solid #dc2626';
-        
-        // Clear highlights when changed
-        const clearHighlight = () => {
-          role0.style.border = '';
-          role1.style.border = '';
-        };
-        role0.addEventListener('change', clearHighlight, { once: true });
-        role1.addEventListener('change', clearHighlight, { once: true });
-      }, 500);
+      // Add proper event listener to correction button
+      const correctionBtn = document.getElementById('correctionNeededBtn');
+      if (correctionBtn) {
+        correctionBtn.addEventListener('click', function() {
+          console.log('Navigating to role conflict fields...');
+          
+          // Close modal
+          const modalToRemove = document.getElementById('roleConflictModal');
+          if (modalToRemove) {
+            modalToRemove.remove();
+            console.log('Role conflict modal removed successfully');
+          }
+          
+          // Scroll to first role field
+          setTimeout(() => {
+            role0.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            
+            // Focus and highlight fields after scroll
+            setTimeout(() => {
+              role0.focus();
+              
+              // Highlight both role fields with red border
+              role0.style.border = '2px solid #dc2626';
+              role0.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.1)';
+              role1.style.border = '2px solid #dc2626';
+              role1.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.1)';
+              
+              // Clear highlights when user changes either field
+              const clearHighlight = () => {
+                role0.style.border = '';
+                role0.style.boxShadow = '';
+                role1.style.border = '';
+                role1.style.boxShadow = '';
+              };
+              role0.addEventListener('change', clearHighlight, { once: true });
+              role1.addEventListener('change', clearHighlight, { once: true });
+              
+              console.log('Role fields highlighted for correction');
+            }, 500);
+          }, 100);
+        });
+      }
       
       return false; // Prevent proceeding
     }
@@ -1876,8 +1904,13 @@
   window.showUnfilledFieldNotice = function(missingFields) {
     console.log('Showing unfilled field notice for:', missingFields.length, 'fields');
     
+    // Remove any existing modal first
+    const existingModal = document.getElementById('unfilledFieldModal');
+    if (existingModal) existingModal.remove();
+    
     // Create modal
     const modal = document.createElement('div');
+    modal.id = 'unfilledFieldModal';
     modal.style.cssText = `
       position: fixed;
       top: 0;
@@ -1916,7 +1949,7 @@
           All required fields must be completed before proceeding to the next page.
         </p>
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
-          <button onclick="window.goToFirstMissingField()" style="
+          <button id="goToFirstFieldBtn" style="
             background: #059669;
             color: white;
             border: none;
@@ -1925,7 +1958,7 @@
             font-weight: 600;
             cursor: pointer;
           ">Go to First Field</button>
-          <button onclick="this.closest('div').remove()" style="
+          <button id="closeUnfilledModalBtn" style="
             background: #6b7280;
             color: white;
             border: none;
@@ -1940,6 +1973,26 @@
     
     document.body.appendChild(modal);
     
+    // Add proper event listeners
+    const closeBtn = document.getElementById('closeUnfilledModalBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function() {
+        console.log('Closing unfilled field modal...');
+        const modalToRemove = document.getElementById('unfilledFieldModal');
+        if (modalToRemove) {
+          modalToRemove.remove();
+          console.log('Unfilled field modal removed successfully');
+        }
+      });
+    }
+    
+    const goToBtn = document.getElementById('goToFirstFieldBtn');
+    if (goToBtn) {
+      goToBtn.addEventListener('click', function() {
+        window.goToFirstMissingField();
+      });
+    }
+    
     // Store missing fields for navigation
     window.currentMissingFields = missingFields;
   };
@@ -1949,8 +2002,13 @@
     if (window.currentMissingFields && window.currentMissingFields.length > 0) {
       const firstField = window.currentMissingFields[0].element;
       
-      // Close modal
-      document.querySelector('div[style*="position: fixed"]')?.remove();
+      // Close modal properly by ID
+      console.log('Closing unfilled field modal from goToFirstMissingField...');
+      const modal = document.getElementById('unfilledFieldModal');
+      if (modal) {
+        modal.remove();
+        console.log('Modal removed successfully');
+      }
       
       // Scroll to and focus field
       firstField.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -3924,6 +3982,13 @@ Thank you!`;
   }
   
   document.addEventListener('DOMContentLoaded', async function() {
+    // IMMEDIATE: Clean up any lingering overlays from previous sessions
+    console.log('🧹 Initial cleanup: Removing any existing overlays...');
+    const existingSubmitting = document.getElementById('submitting');
+    const existingThanks = document.getElementById('thanks');
+    if (existingSubmitting) existingSubmitting.classList.remove('show');
+    if (existingThanks) existingThanks.classList.remove('show');
+    
     // Initialize DOM elements
     form = document.getElementById('hotel-form');
     pages = Array.from(document.querySelectorAll('.page'));
@@ -4558,6 +4623,39 @@ Thank you!`;
       
       toggleES(); updateSubmitState(); toggleAaaDiamond(); toggleBankSections(); setActiveStep(0); thanks.classList.remove('show');
     });
+    
+    // CRITICAL: Ensure all overlays are hidden after initialization completes
+    console.log('🧹 Final cleanup: Removing any stray overlays...');
+    setTimeout(() => {
+      // Remove submitting overlay if it's somehow stuck
+      if (submitting) {
+        submitting.classList.remove('show');
+        console.log('✅ Submitting overlay cleaned up');
+      }
+      
+      // Remove thanks overlay if it's somehow stuck
+      if (thanks) {
+        thanks.classList.remove('show');
+        console.log('✅ Thanks overlay cleaned up');
+      }
+      
+      // Remove any dynamically created modals that might be stuck
+      const strayModals = document.querySelectorAll('div[style*="position: fixed"][style*="rgba(0,0,0,0.5)"]');
+      strayModals.forEach(modal => {
+        if (!modal.id || (modal.id !== 'submitting' && modal.id !== 'thanks')) {
+          modal.remove();
+          console.log('✅ Removed stray modal:', modal);
+        }
+      });
+      
+      // Ensure the form is visible and not blocked
+      if (form) {
+        form.style.opacity = '1';
+        form.style.pointerEvents = 'auto';
+      }
+      
+      console.log('🎉 Page initialization and cleanup complete!');
+    }, 500);
   });
 </script>
 
@@ -4854,10 +4952,24 @@ setTimeout(() => {
     console.log('💾 IMMEDIATE: Attempting to restore draft data...');
     
     try {
+      // Safely get userId
+      let userId = 'anonymous';
+      try {
+        if (typeof currentUserId !== 'undefined' && currentUserId) {
+          userId = currentUserId;
+        } else {
+          const userData = localStorage.getItem('fedevent_user');
+          if (userData) {
+            const user = JSON.parse(userData);
+            userId = user.id || user.userId || user.fedevent_account_number || 'anonymous';
+          }
+        }
+      } catch (e) {}
+      
       // Try multiple sources
       const sources = [
         'hotel_registration_draft',
-        `hotel_registration_draft_${currentUserId || 'anonymous'}`,
+        `hotel_registration_draft_${userId}`,
         'hotel_registration_draft_temp'
       ];
       
@@ -4910,11 +5022,32 @@ setTimeout(() => {
   function attemptAutoRestore() {
     console.log('🔄 Attempting auto-restore...');
     
+    // Ensure currentUserId is set from localStorage if available
+    let localUserId = (typeof currentUserId !== 'undefined' && currentUserId) ? currentUserId : null;
+    
+    if (!localUserId) {
+      try {
+        const userData = localStorage.getItem('fedevent_user');
+        if (userData) {
+          const user = JSON.parse(userData);
+          localUserId = user.id || user.userId || user.fedevent_account_number || null;
+          console.log('🔄 Set localUserId from localStorage:', localUserId);
+          
+          // Try to update global if it exists
+          if (typeof currentUserId !== 'undefined') {
+            currentUserId = localUserId;
+          }
+        }
+      } catch (e) {
+        console.warn('🔄 Could not extract userId:', e);
+      }
+    }
+    
     try {
       // Try multiple localStorage keys
       const restoreKeys = [
         'hotel_registration_draft',
-        `hotel_registration_draft_${currentUserId || 'anonymous'}`,
+        `hotel_registration_draft_${localUserId || 'anonymous'}`,
         ...Object.keys(localStorage).filter(key => key.startsWith('hotel_registration_backup_')).sort().slice(-1)
       ];
       

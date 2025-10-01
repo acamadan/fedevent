@@ -32,13 +32,13 @@
             months.forEach(m => {
                 const fiscalYear = getFiscalYear(testYear, m);
                 const explanation = parseInt(m) >= 10 ? 
-                    `Oct-Dec belong to next FY (${testYear} + 1)` : 
-                    `Jan-Sep belong to current FY (${testYear})`;
+                    `Oct-Dec ${testYear} belong to FY ${testYear + 1} (shown as FY ${String(testYear + 1).slice(-2)})` : 
+                    `Jan-Sep ${testYear} belong to FY ${testYear} (shown as FY ${String(testYear).slice(-2)})`;
                 
                 html += '<tr>';
                 html += `<td class="py-2 px-4 border-b">${getMonthLabel(m)}</td>`;
                 html += `<td class="py-2 px-4 border-b">${m}</td>`;
-                html += `<td class="py-2 px-4 border-b">${fiscalYear}</td>`;
+                html += `<td class="py-2 px-4 border-b">FY ${fiscalYear}</td>`;
                 html += `<td class="py-2 px-4 border-b">${explanation}</td>`;
                 html += '</tr>';
             });
@@ -55,13 +55,15 @@
         // Get fiscal year based on month - October (10) through September (09) of next year
         function getFiscalYear(year, month) {
             const monthNum = parseInt(month, 10);
+            const calendarYear = parseInt(year);
             // Federal fiscal year starts October 1st
-            // October-December belong to the next fiscal year
-            // January-September belong to the current fiscal year
+            // For calendar year 2025:
+            // - Oct 2025, Nov 2025, Dec 2025 = FY 2026
+            // - Jan 2025, Feb 2025, ..., Sep 2025 = FY 2025
             if (monthNum >= 10) {
-                return parseInt(year) + 1; // October-December belong to next fiscal year
+                return calendarYear + 1; // October-December belong to next fiscal year
             } else {
-                return parseInt(year); // January-September belong to current fiscal year
+                return calendarYear; // January-September belong to current fiscal year
             }
         }
     </script>

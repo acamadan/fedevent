@@ -409,16 +409,6 @@ const __dirname  = path.dirname(__filename);
 fs.mkdirSync(path.join(__dirname, 'uploads'), { recursive: true });
 fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
 
-// For Render deployment - create production directories if possible
-if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-  try {
-    fs.mkdirSync('/opt/render/project/src/uploads', { recursive: true });
-    console.log('Render production directories created');
-  } catch (e) {
-    console.log('Using local directories for uploads');
-  }
-}
-
 console.log('Server directories initialized');
 console.log('Current directory:', __dirname);
 console.log('Public directory exists:', fs.existsSync(path.join(__dirname, 'public')));
@@ -453,8 +443,16 @@ if (process.env.MAINTENANCE === '1' || process.env.MAINTENANCE === 'true') {
     return res.status(503).json({ error: 'Service temporarily unavailable for maintenance' });
   });
 }
-// Serve static files from public directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve static files from public directory with no cache
+app.use(express.static(path.join(__dirname, 'public'), {
+  setHeaders: (res, path) => {
+    if (path.endsWith('.html')) {
+      res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+      res.setHeader('Pragma', 'no-cache');
+      res.setHeader('Expires', '0');
+    }
+  }
+}));
 
 // Serve landing page as main page
 app.get('/', (req, res) => {
@@ -491,17 +489,7 @@ function sanitizeFilename(name) {
 }
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => {
-    // Use Render persistent disk if available, fallback to local
-    let uploadDir = path.join(__dirname, 'uploads');
-    
-    // Check for Render production environment
-    if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-      const renderUploadDir = '/opt/render/project/src/uploads';
-      if (fs.existsSync(renderUploadDir)) {
-        uploadDir = renderUploadDir;
-      }
-    }
-    
+    const uploadDir = path.join(__dirname, 'uploads');
     cb(null, uploadDir);
   },
   filename: (_req, file, cb) => cb(null, `${Date.now()}-${sanitizeFilename(file.originalname)}`)
@@ -3882,12 +3870,8 @@ app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
       return fail(res, 400, 'No file uploaded');
     }
 
-    // Prefer Render uploads path if present; otherwise local uploads
-    const uploadsBase = (process.env.NODE_ENV === 'production' || process.env.RENDER)
-      ? '/opt/render/project/src/uploads'
-      : path.join(__dirname, 'uploads');
-
     // Build a public URL for the file
+    const uploadsBase = path.join(__dirname, 'uploads');
     const relativePath = path.relative(uploadsBase, req.file.path);
     const fileUrl = `/uploads/${relativePath}`.replace(/\\/g, '/');
 
@@ -5012,6 +4996,79 @@ app.post('/api/admin/contracts', requireAuth, requireAdmin, async (req, res) => 
   } catch (error) {
     console.error('Create contract error:', error);
     return fail(res, 500, 'Failed to create contract');
+  }
+});
+
+// Create contract from SOW file upload (admin only)
+app.post('/api/admin/contracts/create-from-sow', requireAuth, requireAdmin, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return fail(res, 400, 'No SOW file uploaded');
+    }
+
+    // Store the uploaded file info
+    const sowDocument = req.file.filename;
+    
+    // Default contract values - can be enhanced with OpenAI extraction later
+    const title = `Contract from SOW - ${new Date().toLocaleDateString()}`;
+    const description = `Contract created from uploaded SOW document: ${req.file.originalname}`;
+    const perDiemRate = 150; // Default value
+    const roomCount = 50; // Default value
+    const maxContractedRate = perDiemRate * 0.7;
+    const maxSelfPayRate = perDiemRate * 0.9;
+    
+    // Set default dates (start: 30 days from now, end: 60 days after start)
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() + 30);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 60);
+    
+    const biddingDeadline = new Date();
+    biddingDeadline.setDate(biddingDeadline.getDate() + 14); // 14 days to bid
+    
+    const decisionDate = new Date();
+    decisionDate.setDate(decisionDate.getDate() + 21); // Decision in 21 days
+
+    const result = db.prepare(`
+      INSERT INTO contracts (
+        title, description, location_city, location_state, location_country,
+        start_date, end_date, room_count, per_diem_rate, max_contracted_rate,
+        max_self_pay_rate, requirements, sow_document, bidding_deadline,
+        decision_date, created_by, visibility, bid_strategy, target_bid_min, target_bid_max
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      title,
+      description,
+      null, // location_city
+      null, // location_state
+      'USA', // location_country
+      startDate.toISOString().split('T')[0],
+      endDate.toISOString().split('T')[0],
+      roomCount,
+      perDiemRate,
+      maxContractedRate,
+      maxSelfPayRate,
+      'Please review and update contract requirements based on the uploaded SOW document.',
+      sowDocument,
+      biddingDeadline.toISOString().split('T')[0],
+      decisionDate.toISOString().split('T')[0],
+      req.user.id,
+      'DRAFT', // Set as DRAFT so admin can review before publishing
+      'FIRM_FIXED',
+      null,
+      null
+    );
+
+    const contractId = result.lastInsertRowid;
+
+    return ok(res, { 
+      contractId, 
+      message: 'Contract created from SOW. Please review and update details before publishing.',
+      sowFile: sowDocument
+    });
+  } catch (error) {
+    console.error('Create contract from SOW error:', error);
+    return fail(res, 500, 'Failed to create contract from SOW');
   }
 });
 
@@ -7444,15 +7501,7 @@ app.post('/submit-request', upload.array('attachments', 10), async (req, res) =>
     
     // Handle file attachments
     if (req.files && req.files.length > 0) {
-      // Determine upload directory (same logic as multer storage)
-      let uploadsDir = path.join(__dirname, 'uploads');
-      if (process.env.NODE_ENV === 'production' || process.env.RENDER) {
-        const renderUploadDir = '/opt/render/project/src/uploads';
-        if (fs.existsSync(renderUploadDir)) {
-          uploadsDir = renderUploadDir;
-        }
-      }
-      
+      const uploadsDir = path.join(__dirname, 'uploads');
       const attachmentDir = path.join(uploadsDir, 'requests', requestId);
       fs.mkdirSync(attachmentDir, { recursive: true });
       

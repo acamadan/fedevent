@@ -26,6 +26,7 @@ window.checkSignerInfo = function() {
     
     // Show entrance notice modal
     const modal = document.createElement('div');
+    modal.id = 'roleConflictModal';
     modal.style.cssText = `
       position: fixed;
       top: 0;
@@ -62,7 +63,7 @@ window.checkSignerInfo = function() {
         <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
           Please correct this before proceeding.
         </p>
-        <button onclick="this.closest('div').remove()" style="
+        <button onclick="document.getElementById('roleConflictModal') && document.getElementById('roleConflictModal').remove()" style="
           background: #dc2626;
           color: white;
           border: none;

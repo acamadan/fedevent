@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Auto-Save Status Checker</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 16px;
+    }
+    h1 { color: #0a58ca; margin-top: 0; }
+    h2 { color: #333; margin-top: 0; font-size: 1.2rem; }
+    .status { 
+      padding: 12px;
+      border-radius: 8px;
+      margin: 8px 0;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 0.9rem;
+    }
+    .success { background: #dcfce7; color: #065f46; }
+    .error { background: #fee2e2; color: #991b1b; }
+    .info { background: #dbeafe; color: #1e40af; }
+    button {
+      background: #0a58ca;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 8px 8px 8px 0;
+    }
+    button:hover { background: #084298; }
+    pre {
+      background: #1e293b;
+      color: #e2e8f0;
+      padding: 16px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🔍 Auto-Save Status Checker</h1>
+    <p>This tool helps diagnose auto-save functionality on the hotel registration page.</p>
+    <button onclick="checkStatus()">🔄 Check Status</button>
+    <button onclick="viewDraft()">👁️ View Saved Draft</button>
+    <button onclick="clearDraft()">🗑️ Clear Draft</button>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    function checkStatus() {
+      const results = document.getElementById('results');
+      results.innerHTML = '';
+
+      // Check session
+      const sessionId = localStorage.getItem('fedevent_session');
+      addResult('Session Token', sessionId ? '✅ Found' : '❌ Not found', sessionId ? 'success' : 'error');
+
+      // Check user data
+      const userData = localStorage.getItem('fedevent_user');
+      if (userData) {
+        try {
+          const user = JSON.parse(userData);
+          addResult('User Data', `✅ Found: ${user.username || user.email || 'Unknown'}`, 'success');
+          addResult('User ID', user.id || user.userId || user.fedevent_account_number || 'Not set', 'info');
+        } catch (e) {
+          addResult('User Data', '⚠️ Found but invalid JSON', 'error');
+        }
+      } else {
+        addResult('User Data', '❌ Not found', 'error');
+      }
+
+      // Check draft data
+      const draftKeys = [
+        'hotel_registration_draft',
+        'hotel_registration_draft_anonymous',
+        'hotel_registration_current_page',
+        'hotel_registration_last_save'
+      ];
+
+      draftKeys.forEach(key => {
+        const value = localStorage.getItem(key);
+        if (value) {
+          if (key === 'hotel_registration_last_save') {
+            const date = new Date(value);
+            addResult(key, `✅ Last saved: ${date.toLocaleString()}`, 'success');
+          } else if (key === 'hotel_registration_current_page') {
+            addResult(key, `✅ Current page: ${value}`, 'success');
+          } else {
+            try {
+              const data = JSON.parse(value);
+              const fieldCount = data.formData ? Object.keys(data.formData).length : 0;
+              addResult(key, `✅ ${fieldCount} fields saved`, 'success');
+            } catch (e) {
+              addResult(key, '⚠️ Found but invalid', 'error');
+            }
+          }
+        } else {
+          addResult(key, '❌ Not found', 'info');
+        }
+      });
+
+      // Check backup drafts
+      const backupKeys = Object.keys(localStorage).filter(k => k.startsWith('hotel_registration_backup_'));
+      addResult('Backup Drafts', `${backupKeys.length} backup(s) found`, backupKeys.length > 0 ? 'success' : 'info');
+
+      // Check URL parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      addResult('URL continue param', urlParams.get('continue') || 'Not set', 'info');
+      addResult('URL signedIn param', urlParams.get('signedIn') || 'Not set', 'info');
+    }
+
+    function addResult(label, value, type) {
+      const results = document.getElementById('results');
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <h2>${label}</h2>
+        <div class="status ${type}">${value}</div>
+      `;
+      results.appendChild(card);
+    }
+
+    function viewDraft() {
+      const draftData = localStorage.getItem('hotel_registration_draft');
+      const results = document.getElementById('results');
+      
+      if (draftData) {
+        try {
+          const data = JSON.parse(draftData);
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <h2>📄 Draft Contents</h2>
+            <div class="status info">
+              Current Step: ${data.currentStep || 'Unknown'}<br>
+              Timestamp: ${new Date(data.timestamp).toLocaleString()}<br>
+              Fields: ${data.formData ? Object.keys(data.formData).length : 0}
+            </div>
+            <pre>${JSON.stringify(data, null, 2)}</pre>
+          `;
+          results.appendChild(card);
+        } catch (e) {
+          alert('Error parsing draft data: ' + e.message);
+        }
+      } else {
+        alert('No draft data found');
+      }
+    }
+
+    function clearDraft() {
+      if (confirm('Are you sure you want to clear all draft data? This cannot be undone.')) {
+        const keys = [
+          'hotel_registration_draft',
+          'hotel_registration_current_page',
+          'hotel_registration_last_save',
+          ...Object.keys(localStorage).filter(k => 
+            k.startsWith('hotel_registration_draft_') || 
+            k.startsWith('hotel_registration_backup_')
+          )
+        ];
+        
+        keys.forEach(key => localStorage.removeItem(key));
+        alert(`Cleared ${keys.length} draft-related items from localStorage`);
+        checkStatus();
+      }
+    }
+
+    // Auto-run on load
+    window.onload = checkStatus;
+  </script>
+</body>
+</html>
+
