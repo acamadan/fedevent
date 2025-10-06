@@ -540,14 +540,37 @@
                         window.location.href = '/hotel-login.html';
                     }, 3000);
                 } else {
-                    // Friendlier messaging for existing accounts
-                    const messageText = (response.status === 400 && /already registered|already exists/i.test(result.message || ''))
-                      ? 'This email is already registered. Please Sign In to continue.'
-                      : (result.message || 'Failed to create account. Please try again.');
+                    // Handle specific error cases with better messaging
+                    const errorText = result.error || result.message || '';
+                    let messageText = 'Registration failed. Please try again.';
+                    let showSignInLink = false;
+                    
+                    if (response.status === 400) {
+                        // Check for duplicate hotel name
+                        if (/hotel.*already exists/i.test(errorText)) {
+                            messageText = '⚠️ This hotel name is already registered. Please contact support if this is your property.';
+                        }
+                        // Check for duplicate email
+                        else if (/email.*already|already registered/i.test(errorText)) {
+                            messageText = '⚠️ This email address is already registered. Please sign in to continue.';
+                            showSignInLink = true;
+                        }
+                        // Generic 400 error with specific message from server
+                        else if (errorText) {
+                            messageText = errorText;
+                        }
+                    } else if (response.status === 500) {
+                        messageText = '❌ Server error occurred. Please try again later or contact support.';
+                    } else if (errorText) {
+                        messageText = errorText;
+                    }
+                    
                     const alert = document.getElementById('alert');
-                    alert.innerHTML = `${messageText} ${response.status === 400 && /already/i.test(result.message || '') ? '<a href="/hotel-login.html" style="color: var(--primary); font-weight: 600; text-decoration: none; margin-left: 6px;">Sign In</a>' : ''}`;
+                    alert.innerHTML = `${messageText} ${showSignInLink ? '<a href="/hotel-login.html" style="color: var(--primary); font-weight: 600; text-decoration: none; margin-left: 6px;">Sign In</a>' : ''}`;
                     alert.className = 'alert alert-error';
                     alert.style.display = 'block';
+                    // Scroll to top to show the error message
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
                 }
             } catch (error) {
                 console.error('Signup error:', error);
@@ -562,6 +585,8 @@
             alert.textContent = message;
             alert.className = `alert alert-${type}`;
             alert.style.display = 'block';
+            // Scroll to top to show the message
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         
         function hideAlert() {

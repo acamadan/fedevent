@@ -11,7 +11,7 @@
   *{box-sizing:border-box} body{margin:0;font-family:ui-sans-serif,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--ink)}
   .wrap{max-width:1100px;margin:24px auto 64px;padding:0 16px} .card{background:var(--card);border-radius:16px;box-shadow:0 10px 24px rgba(0,0,0,.06);padding:20px}
   h1{font-size:1.6rem;margin:0 0 6px} p.lead{margin:0 0 16px;color:var(--muted)}
-  fieldset{border:1px solid #e6ecf2;border-radius:12px;padding:14px;margin:16px 0} legend{padding:0 8px;color:var(--muted);font-size:.95rem}
+  fieldset{border:1px solid #e6ecf2;border-radius:12px;padding:14px;margin:16px 0} legend{padding:0 8px;color:var(--ink);font-size:1.1rem;font-weight:700}
   label{font-weight:600;font-size:.92rem;display:block;margin:8px 0 4px}
   .row{display:grid;grid-template-columns:repeat(12,1fr);gap:12px}
   .col-12{grid-column:span 12}.col-8{grid-column:span 8}.col-6{grid-column:span 6}.col-4{grid-column:span 4}.col-3{grid-column:span 3}.col-2{grid-column:span 2}
@@ -24,7 +24,9 @@
   .hr{height:1px;background:#e6ecf2;margin:12px 0} .item{border:1px solid #e6ecf2;border-radius:12px;padding:12px;margin-top:8px;background:#fafcff}
   .right{text-align:right} .required{color:var(--danger)}
   .steps{display:flex;gap:10px;align-items:center;margin:8px 0 4px;flex-wrap:wrap}
-  .step{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:600;transition:all 0.3s ease}
+  .step{display:flex;align-items:center;gap:8px;color:var(--muted);font-weight:600;transition:all 0.3s ease;cursor:pointer;padding:4px 8px;border-radius:8px}
+  .step:hover{background:#f8fafc;color:var(--ink)}
+  .step:hover .dot{transform:scale(1.1)}
   .dot{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;background:#eef4ff;color:#0a58ca;font-weight:800;transition:all 0.3s ease}
   .step.active{color:var(--ink)} .step.active .dot{background:#0a58ca;color:#fff}
   .step.completed{color:#10b981} .step.completed .dot{background:#10b981;color:#fff}
@@ -166,11 +168,27 @@
     border: 1px solid #d7dee6;
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    z-index: 1000;
+    z-index: 10001;
     max-height: 300px;
     overflow-y: auto;
     display: none;
     width: 100%;
+  }
+  
+  .autocomplete-suggestions .suggestion-item {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e6ecf2;
+    cursor: pointer;
+    font-size: 0.95rem;
+    transition: background-color 0.2s ease;
+  }
+  
+  .autocomplete-suggestions .suggestion-item:hover {
+    background-color: #f8fafc;
+  }
+  
+  .autocomplete-suggestions .suggestion-item:last-child {
+    border-bottom: none;
   }
 </style>
 
@@ -179,6 +197,207 @@
     <!-- Add Google Places API - Will be configured with API key from server -->
     <script>
       let googlePlacesApiKey = null;
+      
+      // IMMEDIATE TEST FUNCTIONS - Available right away
+      window.testAutocomplete = function() {
+        console.log('🧪 Testing autocomplete functions...');
+        
+        // Test if functions exist
+        console.log('populateHotelNameOnly exists:', typeof populateHotelNameOnly);
+        console.log('populateHotelAddressFields exists:', typeof populateHotelAddressFields);
+        console.log('selectPlace exists:', typeof selectPlace);
+        
+        // Test if autocomplete is initialized
+        console.log('Google Places API key:', googlePlacesApiKey ? 'Available' : 'Not available');
+        
+        // Test if input fields exist
+        const hotelNameField = document.querySelector('input[name="hotel_name"]');
+        const addressField = document.querySelector('input[name="address"]');
+        console.log('Hotel name field found:', !!hotelNameField);
+        console.log('Address field found:', !!addressField);
+        
+        // Test a simple place selection
+        if (typeof populateHotelNameOnly === 'function') {
+          const testPlace = {
+            displayName: { text: 'Test Hotel' },
+            id: 'test123'
+          };
+          console.log('Testing populateHotelNameOnly with test place...');
+          populateHotelNameOnly(testPlace);
+        }
+      };
+      
+      window.testClickHandler = function() {
+        console.log('🧪 Testing click handler...');
+        
+        // Find all autocomplete suggestions
+        const suggestions = document.querySelectorAll('.autocomplete-suggestions .suggestion-item');
+        console.log('Found suggestions:', suggestions.length);
+        
+        if (suggestions.length > 0) {
+          console.log('Testing click on first suggestion...');
+          const firstSuggestion = suggestions[0];
+          firstSuggestion.click();
+        } else {
+          console.log('No suggestions found. Try typing in a field first.');
+        }
+      };
+      
+      window.testFieldPopulation = function() {
+        console.log('🧪 Testing field population...');
+        
+        const testPlace = {
+          displayName: { text: 'Test Hotel Name' },
+          formattedAddress: '123 Test Street, Test City, Test State',
+          addressComponents: [
+            { types: ['street_number'], longText: '123' },
+            { types: ['route'], longText: 'Test Street' },
+            { types: ['locality'], longText: 'Test City' },
+            { types: ['administrative_area_level_1'], longText: 'Test State' }
+          ],
+          id: 'test123'
+        };
+        
+        console.log('Testing populateHotelFields with test place...');
+        if (typeof populateHotelFields === 'function') {
+          populateHotelFields(testPlace);
+        } else {
+          console.log('populateHotelFields function not found');
+        }
+      };
+      
+      window.testSave = function() {
+        console.log('🧪 Testing save...');
+        console.log('🧪 Document ready state:', document.readyState);
+        console.log('🧪 Document body exists:', !!document.body);
+        
+        try {
+          const form = document.getElementById('hotel-form');
+          console.log('🧪 Form found:', !!form);
+          if (!form) {
+            console.log('🚨 Form not found for save');
+            return;
+          }
+          
+          const formData = new FormData(form);
+          const data = {};
+          
+          for (const [key, value] of formData.entries()) {
+            data[key] = value;
+          }
+          
+          console.log('🧪 Form data collected:', Object.keys(data).length, 'fields');
+          console.log('🧪 Sample data:', Object.keys(data).slice(0, 3));
+          
+          localStorage.setItem('hotel_draft', JSON.stringify(data));
+          console.log('🚨 SAVED:', Object.keys(data).length, 'fields to localStorage');
+          
+          // Show save notification
+          console.log('🧪 Creating toast notification...');
+          const toast = document.createElement('div');
+          toast.style.cssText = 'position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:8px 12px; border-radius:6px; z-index:10000; font-weight:600;';
+          toast.textContent = '✓ Saved';
+          console.log('🧪 Toast created, adding to body...');
+          document.body.appendChild(toast);
+          console.log('🧪 Toast added to body');
+          setTimeout(() => {
+            console.log('🧪 Removing toast...');
+            toast.remove();
+          }, 1500);
+          
+        } catch (e) {
+          console.error('🚨 Save error:', e);
+          console.error('🚨 Error stack:', e.stack);
+        }
+      };
+      
+      window.testInput = function() {
+        console.log('🧪 Testing input...');
+        const hotelName = document.querySelector('[name="hotel_name"]');
+        if (hotelName) {
+          hotelName.value = 'Test Hotel ' + Date.now();
+          console.log('🧪 Set hotel name to:', hotelName.value);
+          window.testSave(); // Auto-save after setting
+        } else {
+          console.error('🧪 Hotel name field not found!');
+        }
+      };
+      
+      // SIMPLE POPUP TEST - Just shows a popup
+      window.testPopup = function() {
+        console.log('🧪 Testing popup...');
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed; top:20px; right:20px; background:#ef4444; color:white; padding:8px 12px; border-radius:6px; z-index:10000; font-weight:600;';
+        toast.textContent = '🚨 TEST POPUP';
+        document.body.appendChild(toast);
+        console.log('🧪 Popup added to body');
+        setTimeout(() => {
+          toast.remove();
+          console.log('🧪 Popup removed');
+        }, 3000);
+      };
+      
+      // AUTO-SAVE EVERY 10 SECONDS
+      window.startAutoSave = function() {
+        console.log('⏰ Starting auto-save every 10 seconds...');
+        
+        // Clear any existing interval
+        if (window.autoSaveInterval) {
+          clearInterval(window.autoSaveInterval);
+        }
+        
+        // Start new interval
+        window.autoSaveInterval = setInterval(function() {
+          console.log('⏰ Auto-save triggered (10s interval)');
+          try {
+            const form = document.getElementById('hotel-form');
+            if (!form) {
+              console.log('⏰ Form not found for auto-save');
+              return;
+            }
+            
+            const formData = new FormData(form);
+            const data = {};
+            
+            for (const [key, value] of formData.entries()) {
+              data[key] = value;
+            }
+            
+            // Only save if there's actual data
+            if (Object.keys(data).length > 0) {
+              localStorage.setItem('hotel_draft', JSON.stringify(data));
+              console.log('⏰ Auto-saved:', Object.keys(data).length, 'fields');
+              
+              // Show subtle notification
+              const existingToast = document.querySelector('.autosave-toast');
+              if (existingToast) existingToast.remove();
+              
+              const toast = document.createElement('div');
+              toast.className = 'autosave-toast';
+              toast.style.cssText = 'position:fixed; top:20px; right:20px; background:#10b981; color:white; padding:6px 10px; border-radius:4px; z-index:10000; font-size:0.8rem; font-weight:600; opacity:0.8;';
+              toast.textContent = '✓ Auto-saved';
+              document.body.appendChild(toast);
+              setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+              }, 1000);
+            }
+          } catch (e) {
+            console.error('⏰ Auto-save error:', e);
+          }
+        }, 10000); // 10 seconds
+        
+        console.log('⏰ Auto-save started successfully');
+      };
+      
+      // STOP AUTO-SAVE
+      window.stopAutoSave = function() {
+        console.log('⏰ Stopping auto-save...');
+        if (window.autoSaveInterval) {
+          clearInterval(window.autoSaveInterval);
+          window.autoSaveInterval = null;
+          console.log('⏰ Auto-save stopped');
+        }
+      };
       
       // Function to load Google Places API key from server
       async function loadGooglePlacesAPI() {
@@ -206,8 +425,10 @@
             googlePlacesApiKey = data.apiKey;
             console.log('Google Places API key loaded successfully');
             showToast('✅ Google Places API loaded');
-            // Initialize autocomplete functionality
-            initAutocomplete();
+            // Initialize autocomplete functionality with a small delay
+            setTimeout(() => {
+              initAutocomplete();
+            }, 200);
           } else {
             console.log('Google Places API key not available');
             showToast('⚠️ Google Places API key not available');
@@ -221,6 +442,7 @@
       // Initialize Google Places Autocomplete using direct HTTP requests
       async function initAutocomplete() {
         console.log('Initializing Google Places Autocomplete...');
+        console.log('Google Places API key available:', !!googlePlacesApiKey);
         
         if (!googlePlacesApiKey) {
           console.error('Google Places API key not available');
@@ -230,18 +452,20 @@
         
         // Set up autocomplete for hotel name field
         const hotelNameInput = document.querySelector('input[name="hotel_name"]');
+        console.log('Hotel name input found:', !!hotelNameInput);
         if (hotelNameInput) {
           console.log('Setting up autocomplete for hotel name field');
-          setupAutocompleteForField(hotelNameInput, 'hotel');
+          setupAutocompleteForField(hotelNameInput, 'hotel_name');
         } else {
           console.log('Hotel name input not found');
         }
         
         // Set up autocomplete for hotel address field
         const addressInput = document.querySelector('input[name="address"]');
+        console.log('Address input found:', !!addressInput);
         if (addressInput) {
           console.log('Setting up autocomplete for hotel address field');
-          setupAutocompleteForField(addressInput, 'hotel');
+          setupAutocompleteForField(addressInput, 'hotel_address');
         } else {
           console.log('Hotel address input not found');
         }
@@ -276,13 +500,18 @@
           border: 1px solid #d7dee6;
           border-radius: 10px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-          z-index: 1000;
+          z-index: 10001;
           max-height: 300px;
           overflow-y: auto;
           display: none;
           width: 100%;
+          top: 100%;
+          left: 0;
         `;
-        inputField.parentNode.style.position = 'relative';
+        // Ensure the input field's parent has relative positioning
+        if (inputField.parentNode.style.position !== 'relative') {
+          inputField.parentNode.style.position = 'relative';
+        }
         inputField.parentNode.appendChild(suggestionsContainer);
         
         let debounceTimer;
@@ -300,12 +529,17 @@
           }, 300);
         });
         
-        // Hide suggestions when clicking outside
-        document.addEventListener('click', function(event) {
+        // Hide suggestions when clicking outside (use once flag to prevent duplicates)
+        const clickOutsideHandler = function(event) {
           if (!inputField.contains(event.target) && !suggestionsContainer.contains(event.target)) {
             suggestionsContainer.style.display = 'none';
+            suggestionsContainer.innerHTML = '';
           }
-        });
+        };
+        
+        // Remove any existing handler before adding new one
+        document.removeEventListener('click', clickOutsideHandler);
+        document.addEventListener('click', clickOutsideHandler);
       }
       
       // Search for places using the new Google Places API
@@ -358,20 +592,32 @@
         
         places.forEach(place => {
           const suggestionItem = document.createElement('div');
-          suggestionItem.style.cssText = `
-            padding: 10px 12px;
-            border-bottom: 1px solid #e6ecf2;
-            cursor: pointer;
-            font-size: 0.95rem;
-          `;
+          suggestionItem.className = 'suggestion-item';
           suggestionItem.innerHTML = `
             <div style="font-weight: 600;">${place.displayName.text}</div>
             <div style="font-size: 0.85rem; color: #5b6b7b;">${place.formattedAddress || ''}</div>
           `;
           
-          suggestionItem.addEventListener('click', () => {
-            selectPlace(place, type);
-            suggestionsContainer.style.display = 'none';
+          // Use mousedown instead of click for more reliable event handling
+          suggestionItem.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('🧪 Autocomplete item clicked:', place.displayName.text);
+            console.log('🧪 Click type:', type);
+            console.log('🧪 Place object:', place);
+            
+            // Hide ALL autocomplete suggestions to prevent stuck dropdowns
+            document.querySelectorAll('.autocomplete-suggestions').forEach(container => {
+              container.style.display = 'none';
+              container.innerHTML = '';
+            });
+            
+            // Then select the place
+            console.log('🧪 Calling selectPlace with type:', type);
+            setTimeout(() => {
+              selectPlace(place, type);
+              console.log('✅ Place selected and autocomplete hidden');
+            }, 50);
           });
           
           suggestionsContainer.appendChild(suggestionItem);
@@ -382,16 +628,166 @@
       
       // Handle place selection
       function selectPlace(place, type) {
-        console.log('Selected place:', place, 'Type:', type);
-        if (type === 'hotel') {
+        console.log('🧪 selectPlace called with:', { place, type });
+        console.log('🧪 Place display name:', place.displayName?.text);
+        console.log('🧪 Place formatted address:', place.formattedAddress);
+        
+        if (type === 'hotel_name') {
+          // Populate full hotel fields when selecting from Hotel Name autocomplete
+          console.log('🧪 Type is hotel_name, populating full hotel fields...');
+          populateHotelFields(place);
+          const hid = document.getElementById('hotel_place_id');
+          if (hid) hid.value = place.id || '';
+        } else if (type === 'hotel_address') {
+          console.log('Populating hotel address fields...');
+          populateHotelAddressFields(place);
+          const hid = document.getElementById('hotel_place_id');
+          if (hid) hid.value = place.id || '';
+        } else if (type === 'hotel') {
+          console.log('Populating all hotel fields...');
           populateHotelFields(place);
           const hid = document.getElementById('hotel_place_id');
           if (hid) hid.value = place.id || '';
         } else if (type === 'management') {
+          console.log('Populating management company fields...');
           populateManagementCompanyFields(place);
           const mid = document.getElementById('management_company_place_id');
           if (mid) mid.value = place.id || '';
         }
+      }
+      
+      // Populate only hotel name field
+      function populateHotelNameOnly(place) {
+        console.log('🧪 populateHotelNameOnly called with place:', place);
+        console.log('🧪 Place display name:', place.displayName?.text);
+        
+        const hotelNameField = document.querySelector('input[name="hotel_name"]');
+        const offName = document.getElementById('hotel_official_name');
+        
+        console.log('🧪 Hotel name field found:', !!hotelNameField);
+        console.log('🧪 Official name field found:', !!offName);
+        
+        if (place.displayName && place.displayName.text && hotelNameField) {
+          console.log('🧪 Setting hotel name to:', place.displayName.text);
+          hotelNameField.value = place.displayName.text;
+          console.log('🧪 Hotel name field value set to:', hotelNameField.value);
+          
+          if (offName) {
+            offName.value = place.displayName.text;
+            console.log('🧪 Official name field value set to:', offName.value);
+          }
+          showToast('✅ Hotel name updated!');
+        } else {
+          console.log('🧪 Could not set hotel name - missing data or field');
+          console.log('🧪 Place display name exists:', !!place.displayName);
+          console.log('🧪 Place display name text exists:', !!place.displayName?.text);
+          console.log('🧪 Hotel name field exists:', !!hotelNameField);
+        }
+      }
+      
+      // Populate hotel address fields only
+      function populateHotelAddressFields(place) {
+        console.log('Populating hotel address fields only');
+        showToast('🔄 Auto-populating address information...');
+        
+        // Extract address components
+        const addressComponents = {};
+        if (place.addressComponents) {
+          for (const component of place.addressComponents) {
+            const types = component.types;
+            for (const type of types) {
+              addressComponents[type] = component.longText || component.shortText;
+            }
+          }
+        }
+        
+        // Populate only address-related fields
+        const addressField = document.querySelector('input[name="address"]');
+        const cityField = document.querySelector('input[name="city"]');
+        const stateField = document.querySelector('input[name="state"]');
+        const zipField = document.querySelector('input[name="zip"]');
+        const countryField = document.querySelector('input[name="country"]');
+        const phoneField = document.querySelector('input[name="hotel_phone"]');
+        const websiteField = document.querySelector('input[name="website"]');
+        
+        // Fill address field - extract street address intelligently
+        if (place.formattedAddress && addressField) {
+          let streetAddress = '';
+          
+          // Try to build street address from components first (more reliable)
+          const streetNumber = addressComponents['street_number'] || '';
+          const route = addressComponents['route'] || '';
+          const sublocality = addressComponents['sublocality'] || '';
+          const neighborhood = addressComponents['neighborhood'] || '';
+          
+          // Build street address from components
+          // US format: street number FIRST, then street name (e.g., "123 Main St")
+          if (route) {
+            streetAddress = streetNumber ? `${streetNumber} ${route}` : route;
+          } else if (neighborhood && route) {
+            streetAddress = `${neighborhood}, ${route}`;
+          } else if (sublocality && route) {
+            streetAddress = `${sublocality}, ${route}`;
+          } else {
+            // Fallback: extract from formatted address
+            const addressParts = place.formattedAddress.split(',').map(p => p.trim());
+            
+            // For international addresses, take first 2 parts if they look like street info
+            if (addressParts.length >= 2) {
+              const firstPart = addressParts[0];
+              const secondPart = addressParts[1];
+              
+              // Check if second part looks like a street (contains "Cd", "St", "Ave", "Rd", "No:", etc.)
+              if (secondPart && /\b(Cd\.|St\.|Ave\.|Rd\.|No:|Street|Avenue|Road|Boulevard|Blvd)\b/i.test(secondPart)) {
+                streetAddress = `${firstPart}, ${secondPart}`;
+              } else {
+                streetAddress = firstPart;
+              }
+            } else {
+              streetAddress = addressParts[0];
+            }
+          }
+          
+          addressField.value = streetAddress;
+          console.log('📍 Address field set to:', streetAddress);
+        }
+        
+        // Fill other address fields
+        if (addressComponents['locality'] && cityField) {
+          cityField.value = addressComponents['locality'];
+        } else if (addressComponents['sublocality'] && cityField) {
+          cityField.value = addressComponents['sublocality'];
+        } else if (addressComponents['administrative_area_level_2'] && cityField) {
+          cityField.value = addressComponents['administrative_area_level_2'].replace(' County', '');
+        }
+        
+        if (addressComponents['administrative_area_level_1'] && stateField) {
+          stateField.value = addressComponents['administrative_area_level_1'];
+        }
+        
+        if (addressComponents['postal_code'] && zipField) {
+          zipField.value = addressComponents['postal_code'];
+        }
+        
+        if (addressComponents['country'] && countryField) {
+          countryField.value = addressComponents['country'];
+        }
+        
+        // Fill phone number if available
+        if (place.internationalPhoneNumber && phoneField) {
+          phoneField.value = place.internationalPhoneNumber;
+        }
+        
+        // Fill website if available and not already filled
+        if (place.websiteUri && websiteField && !websiteField.value) {
+          const cleanUrl = cleanWebsiteUrl(place.websiteUri);
+          websiteField.value = cleanUrl;
+        }
+        
+        const offAddr = document.getElementById('hotel_official_address');
+        if (offAddr && place.formattedAddress) offAddr.value = place.formattedAddress;
+        
+        showToast('✅ Address information updated!');
       }
       
       // Populate hotel form fields with place data
@@ -419,11 +815,47 @@
         const hotelNameField = document.querySelector('input[name="hotel_name"]');
         const websiteField = document.querySelector('input[name="website"]');
         
-        // Fill address field
+        // Fill address field - extract street address intelligently
         if (place.formattedAddress && addressField) {
-          // Extract just the street address part (first line)
-          const addressParts = place.formattedAddress.split(',');
-          addressField.value = addressParts[0]; // Just the street address part
+          let streetAddress = '';
+          
+          // Try to build street address from components first (more reliable)
+          const streetNumber = addressComponents['street_number'] || '';
+          const route = addressComponents['route'] || '';
+          const sublocality = addressComponents['sublocality'] || '';
+          const neighborhood = addressComponents['neighborhood'] || '';
+          
+          // Build street address from components
+          // US format: street number FIRST, then street name (e.g., "123 Main St")
+          if (route) {
+            streetAddress = streetNumber ? `${streetNumber} ${route}` : route;
+          } else if (neighborhood && route) {
+            streetAddress = `${neighborhood}, ${route}`;
+          } else if (sublocality && route) {
+            streetAddress = `${sublocality}, ${route}`;
+          } else {
+            // Fallback: extract from formatted address
+            // Take everything before the city/postal code
+            const addressParts = place.formattedAddress.split(',').map(p => p.trim());
+            
+            // For international addresses, take first 2 parts if they don't contain numbers suggesting postal code
+            if (addressParts.length >= 2) {
+              const firstPart = addressParts[0];
+              const secondPart = addressParts[1];
+              
+              // Check if second part looks like a street (contains "Cd", "St", "Ave", "Rd", "No:", etc.)
+              if (secondPart && /\b(Cd\.|St\.|Ave\.|Rd\.|No:|Street|Avenue|Road|Boulevard|Blvd)\b/i.test(secondPart)) {
+                streetAddress = `${firstPart}, ${secondPart}`;
+              } else {
+                streetAddress = firstPart;
+              }
+            } else {
+              streetAddress = addressParts[0];
+            }
+          }
+          
+          addressField.value = streetAddress;
+          console.log('📍 Street address set to:', streetAddress);
         }
         
         // Fill other fields
@@ -453,10 +885,27 @@
         }
         
         // Always fill/replace hotel name with the selected place's official name
+        console.log('Hotel name field found:', !!hotelNameField);
+        console.log('Place display name:', place.displayName?.text);
         if (place.displayName && place.displayName.text && hotelNameField) {
+          console.log('Setting hotel name to:', place.displayName.text);
           hotelNameField.value = place.displayName.text;
+          
+          // Force the value to persist by triggering change event
+          const changeEvent = new Event('change', { bubbles: true });
+          hotelNameField.dispatchEvent(changeEvent);
+          
           const offName = document.getElementById('hotel_official_name');
-          if (offName) offName.value = place.displayName.text;
+          if (offName) {
+            offName.value = place.displayName.text;
+            console.log('Set official name to:', place.displayName.text);
+          }
+          
+          // Mark that autocomplete was used (to prevent clearing)
+          hotelNameField.dataset.autocompleteUsed = 'true';
+          console.log('✅ Hotel name set successfully via autocomplete');
+        } else {
+          console.log('Could not set hotel name - missing data or field');
         }
         
         // Fill website if available and not already filled
@@ -474,17 +923,29 @@
         showToast('✅ Hotel information auto-populated successfully!');
         console.log('Hotel place details:', place);
         
-        // Auto-save after Places API fills the form
-        if (signedIn || window.signedIn) {
-          setTimeout(() => {
-            handleSaveDraft('places-api-auto');
-          }, 500); // Small delay to ensure all fields are updated
-        }
+        // FORCE SAVE after Places API fills the form
+        console.log('🔴🔴🔴 HOTEL ADDRESS AUTOCOMPLETE COMPLETED 🔴🔴🔴');
+        
+        setTimeout(() => {
+          try {
+            if (typeof window.handleSaveDraft === 'function') {
+              if (window.isPopulatingForm) {
+                window.isPopulatingForm = false;
+              }
+              window.handleSaveDraft('places-api-auto');
+            } else {
+              console.warn('handleSaveDraft not available after autocomplete selection');
+            }
+          } catch (saveError) {
+            console.error('Failed to auto-save after Places selection:', saveError);
+          }
+        }, 600);
       }
-      
+
       // Populate management company form fields with place data
       function populateManagementCompanyFields(place) {
-        showToast('🔄 Auto-populating management company information...');
+        // Don't show toast to avoid scroll
+        console.log('🔄 Auto-populating management company information...');
         
         // Extract address components
         const addressComponents = {};
@@ -499,7 +960,6 @@
         
         // Populate the management company form fields
         const managementCompanyField = document.querySelector('input[name="management_company"]');
-        const managementCompanyAddressField = document.querySelector('input[name="management_company_address"]');
         const managementCompanyStreetField = document.querySelector('input[name="management_company_street"]');
         const managementCompanyCityField = document.querySelector('input[name="management_company_city"]');
         const managementCompanyStateField = document.querySelector('input[name="management_company_state"]');
@@ -514,18 +974,14 @@
           if (offName) offName.value = place.displayName.text;
         }
         
-        // Fill management company address
-        if (place.formattedAddress && managementCompanyAddressField) {
-          managementCompanyAddressField.value = place.formattedAddress;
-          const offAddr = document.getElementById('management_company_official_address');
-          if (offAddr) offAddr.value = place.formattedAddress;
-        }
-        
-        // Fill street address field
+        // Fill street address field - extract street address only
         if (place.formattedAddress && managementCompanyStreetField) {
-          // Extract just the street address part (first line)
+          // Extract just the street address part (building number + street name)
           const addressParts = place.formattedAddress.split(',');
-          managementCompanyStreetField.value = addressParts[0]; // Just the street address part
+          managementCompanyStreetField.value = addressParts[0].trim(); // Just the street address part
+          
+          const offAddr = document.getElementById('management_company_official_address');
+          if (offAddr) offAddr.value = place.formattedAddress; // Keep full address in hidden field
         }
         
         // Fill other fields
@@ -562,16 +1018,18 @@
         const mid = document.getElementById('management_company_place_id');
         if (mid) mid.value = place.id || '';
         
-        // Show success message
-        showToast('✅ Management company information auto-populated successfully!');
+        // Log success (no toast to avoid scroll)
+        console.log('✅ Management company information auto-populated successfully!');
         console.log('Management company place details:', place);
         
-        // Auto-save after Places API fills the management company form
-        if (signedIn || window.signedIn) {
-          setTimeout(() => {
+        // Auto-save after Places API fills the management company form (always save)
+        setTimeout(() => {
+          if (typeof handleSaveDraft === 'function') {
             handleSaveDraft('places-api-auto');
-          }, 500); // Small delay to ensure all fields are updated
-        }
+          } else if (typeof simpleSave === 'function') {
+            simpleSave();
+          }
+        }, 500); // Small delay to ensure all fields are updated
         
         // Update visibility to show the fields now that they have data
         setTimeout(() => {
@@ -634,6 +1092,11 @@
       
       // Function to show a toast message
       function showToast(message) {
+        // Only scroll to top for important messages, not autocomplete
+        if (!message.includes('autocomplete') && !message.includes('suggestion')) {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
         // Remove any existing toast
         const existingToast = document.querySelector('.toast');
         if (existingToast) {
@@ -672,7 +1135,11 @@
       // Load the API when the page loads
       document.addEventListener('DOMContentLoaded', function() {
         console.log('DOM loaded, initializing Google Places API...');
-        loadGooglePlacesAPI();
+        
+        // Add a small delay to ensure all form elements are loaded
+        setTimeout(() => {
+          loadGooglePlacesAPI();
+        }, 100);
         
         // Initialize FDIC Bank Lookup
         initializeFDICLookup();
@@ -1080,7 +1547,7 @@
                 <strong>📷 Photo Requirements:</strong><br>
                 • <strong>Exterior view only:</strong> Take the photo as if you're standing across from the hotel looking directly at the main entrance/facade<br>
                 • <strong>One photo only:</strong> Upload your best exterior shot<br>
-                • <strong>File size:</strong> Maximum 5MB (recommended: 1-3MB for optimal quality)<br>
+                • <strong>File size:</strong> Maximum 2MB (auto-optimized for quality - images over 2MB will be compressed automatically)<br>
                 • <strong>Format:</strong> JPG, JPEG, or PNG<br>
                 • <strong>Quality:</strong> Clear, well-lit photo showing the hotel's exterior architecture and signage
               </div>
@@ -1106,7 +1573,6 @@
           <div id="managementCompanyFields" style="display:none; margin-top:8px;">
             <div class="row">
               <div class="col-6"><label>Management/Franchise Company Name</label><input name="management_company" autocomplete="section-management organization" autocapitalize="off" autocorrect="off" spellcheck="false" /></div>
-              <div class="col-6"><label>Company Address</label><input name="management_company_address" autocomplete="section-management address-line1" autocapitalize="off" autocorrect="off" spellcheck="false" /></div>
               <div class="col-6"><label>Company Street Address</label><input name="management_company_street" autocomplete="section-management address-line1" autocapitalize="off" autocorrect="off" spellcheck="false" /></div>
               <div class="col-3"><label>Company City</label><input name="management_company_city" autocomplete="section-management address-level2" autocapitalize="off" autocorrect="off" spellcheck="false" /></div>
               <div class="col-3"><label>Company State/Province</label><input name="management_company_state" autocomplete="section-management address-level1" autocapitalize="off" autocorrect="off" spellcheck="false" /></div>
@@ -1119,60 +1585,29 @@
         </fieldset>
 
         <fieldset>
-          <legend>3) Primary Contacts</legend>
-          <div class="hint" style="margin-top:6px">Please assign one role for one user.</div>
-          <div class="row sign-contact" data-index="0" style="margin-top:8px">
+          <legend>3) Primary Contact</legend>
+          <div class="hint" style="margin-top:6px">This information will be used for your user profile and hotel contact.</div>
+          <div class="row" style="margin-top:8px">
             <div class="col-6">
-              <label>Name <span class="required">*</span></label><input type="text" name="sign_contacts[0][name]" required autocomplete="section-contacts-0 name" />
-              <label>Role</label>
-              <select name="sign_contacts[0][role]" required>
-                <option value="">Select a role</option>
-                <option value="Signer">Signer</option>
-                <option value="Approver">Approver</option>
-              </select>
-              <label>Title</label>
-              <select name="sign_contacts[0][title]">
-                <option value="Sales Coordinator">Sales Coordinator</option>
-                <option value="Sales Manager">Sales Manager</option>
-                <option value="Director of Sales">Director of Sales</option>
+              <label>Name <span class="required">*</span></label><input type="text" name="primary_contact_name" required autocomplete="name" />
+              <label>Title <span class="required">*</span></label>
+              <select name="primary_contact_title" required>
+                <option value="">Select a title</option>
                 <option value="Owner">Owner</option>
                 <option value="General Manager">General Manager</option>
-                <option value="Corporate Director">Corporate Director</option>
-                <option value="Hotel Director of Sales">Hotel Director of Sales</option>
-              </select>
-            </div>
-            <div class="col-6">
-              <label>Email <span class="required">*</span></label><input type="email" name="sign_contacts[0][email]" required autocomplete="section-contacts-0 email" />
-              <label>Phone</label><input type="tel" name="sign_contacts[0][phone]" autocomplete="section-contacts-0 tel" />
-            </div>
-          </div>
-          <div class="row sign-contact" data-index="1" style="margin-top:8px">
-            <div class="col-6">
-              <label>Name <span class="required">*</span></label><input type="text" name="sign_contacts[1][name]" required autocomplete="section-contacts-1 name" />
-              <label>Role</label>
-              <select name="sign_contacts[1][role]" required>
-                <option value="">Select a role</option>
-                <option value="Signer">Signer</option>
-                <option value="Approver">Approver</option>
-              </select>
-              <label>Title</label>
-              <select name="sign_contacts[1][title]">
-                <option value="Sales Coordinator">Sales Coordinator</option>
-                <option value="Sales Manager">Sales Manager</option>
                 <option value="Director of Sales">Director of Sales</option>
-                <option value="Owner">Owner</option>
-                <option value="General Manager">General Manager</option>
-                <option value="Corporate Director">Corporate Director</option>
-                <option value="Hotel Director of Sales">Hotel Director of Sales</option>
+                <option value="Sales Manager">Sales Manager</option>
+                <option value="Sales Coordinator">Sales Coordinator</option>
+                <option value="Area Director of Sales">Area Director of Sales</option>
+                <option value="Regional Director of Sales">Regional Director of Sales</option>
+                <option value="Director of National Accounts">Director of National Accounts</option>
               </select>
             </div>
             <div class="col-6">
-              <label>Email <span class="required">*</span></label><input type="email" name="sign_contacts[1][email]" required autocomplete="section-contacts-1 email" />
-              <label>Phone</label><input type="tel" name="sign_contacts[1][phone]" autocomplete="section-contacts-1 tel" />
+              <label>Email <span class="required">*</span></label><input type="email" name="primary_contact_email" required autocomplete="email" />
+              <label>Phone</label><input type="tel" name="primary_contact_phone" autocomplete="tel" />
             </div>
           </div>
-          <div class="hint" style="margin-top:6px">Approver signs after signer and has higher authority. Signatures apply to important documents that need to be signed.</div>
-          <div class="alert err" id="signContactsError" style="display:none; margin-top:8px"></div>
         </fieldset>
 
         <fieldset>
@@ -1319,20 +1754,43 @@
         <fieldset>
           <legend>Sleeping Rooms Inventory</legend>
           <div class="row">
-            <div class="col-3"><label>Total Guest Rooms</label><input type="number" name="total_rooms" min="0" /></div>
-            <div class="col-3"><label>Kings</label><input type="number" name="king_rooms" min="0" /></div>
-            <div class="col-3"><label>Doubles / Queens</label><input type="number" name="double_rooms" min="0" /></div>
-            <div class="col-3"><label>Suites</label><input type="number" name="suites" min="0" /></div>
-            <div class="col-3"><label>Accessible (ADA) Rooms</label><input type="number" name="ada_rooms" min="0" /></div>
-            <div class="col-3"><label>Max Group Block (rooms)</label><input type="number" name="max_group_block" min="0" /></div>
-            <div class="col-3"><label>Comp Room Ratio</label><input name="comp_ratio" placeholder="e.g., 1:30" /></div>
-            <div class="col-3"><label>Cutoff (days)</label><input type="number" name="cutoff_days" min="0" /></div>
+            <div class="col-3"><label>Total Guest Rooms <span class="required">*</span></label><input type="number" name="total_rooms" id="total_rooms" min="0" required readonly style="background:#f9fafb;" /></div>
+            <div class="col-3"><label>Single Occupancy <span class="required">*</span></label><input type="number" name="king_rooms" id="king_rooms" class="room-count" min="0" required /></div>
+            <div class="col-3"><label>Double Occupancy <span class="required">*</span></label><input type="number" name="double_rooms" id="double_rooms" class="room-count" min="0" required /></div>
             <div class="col-12">
-              <label>Breakfast Included?</label>
-              <select name="breakfast_included"><option value="">Select…</option><option>Yes – Full</option><option>Yes – Continental</option><option>No</option></select>
+              <div class="hint" style="margin-top:8px; font-style:italic; color:#6b7280;">
+                <strong>Note:</strong> Sofa beds and rollaways are not considered as real beds.
+              </div>
             </div>
           </div>
         </fieldset>
+
+        <fieldset>
+          <legend>Suites</legend>
+          <div class="row">
+            <div class="col-12">
+              <label>Does your property have suites? <span class="required">*</span></label>
+              <select name="has_suites" id="has_suites" required>
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="suites_section" style="display:none; margin-top:16px;">
+            <h4 style="margin-bottom:12px;">Suite Information</h4>
+            <div id="suites_container">
+              <!-- Suite rows will be added here -->
+            </div>
+            <button type="button" id="addSuiteBtn" class="btn ghost" style="margin-top:12px;">+ Add Suite Type</button>
+            <div id="suites_total" style="margin-top:12px; font-weight:600; display:none;">
+              Total Suites: <span id="suites_total_count">0</span>
+            </div>
+          </div>
+        </fieldset>
+
+        
 
         <fieldset>
           <legend>Extended Stay</legend>
@@ -1360,8 +1818,9 @@
             <div class="col-6"><label>Laundry Details / Cost</label><input name="ext_laundry_cost_notes" /></div>
             <div class="col-6"><label>Housekeeping Frequency</label><input name="ext_housekeeping_frequency" /></div>
             <div class="col-6"><label>Long-Stay Rate Options</label><input name="ext_long_stay_rates" /></div>
-            <div class="col-3"><label>Pet Friendly</label><select name="ext_pet_friendly"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
-            <div class="col-9"><label>Pet Policy/Fees</label><input name="ext_pet_notes" placeholder="Pet policy and applicable fees" /></div>
+            <div class="col-4"><label>Pet Friendly</label><select name="ext_pet_friendly"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
+            <div class="col-4"><label>Pet Policy</label><input name="ext_pet_policy" placeholder="Pet policy details" /></div>
+            <div class="col-4"><label>Pet Fees</label><input name="ext_pet_fees" placeholder="Applicable fees" /></div>
             <div class="col-4"><label>On-site Market/Pantry</label><select name="ext_market_pantry"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
             <div class="col-4"><label>Grocery Delivery Partnership</label><select name="ext_grocery_delivery"><option value="">Select…</option><option>Yes</option><option>No</option></select></div>
             <div class="col-4"><label>Grocery Partner</label><input name="ext_grocery_partner" /></div>
@@ -1371,6 +1830,48 @@
             <div class="col-12"><label>Notes (Extended Stay)</label><textarea name="ext_extended_stay_notes"></textarea></div>
           </div>
         </fieldset>
+
+        <fieldset>
+          <legend>Breakfast</legend>
+          <div class="row">
+            <div class="col-12">
+              <label>Breakfast Included? <span class="required">*</span></label>
+              <select name="breakfast_included" id="breakfast_included" required><option value="">Select…</option><option>Yes – Full</option><option>Yes – Continental</option><option>No</option></select>
+            </div>
+            <div class="col-12" id="breakfast_cost_section" style="display:none;">
+              <label>Breakfast Buffet Cost (per person) <span class="required">*</span></label>
+              <input type="number" name="breakfast_buffet_cost" id="breakfast_buffet_cost" min="0" step="0.01" placeholder="Enter cost per person" />
+              <div class="hint">Please enter the cost per person for the breakfast buffet service.</div>
+            </div>
+          </div>
+        </fieldset>
+        <fieldset>
+          <legend>Accessible (ADA) Rooms</legend>
+          <div class="row">
+            <div class="col-12">
+              <label>Does your property have ADA accessible rooms? <span class="required">*</span></label>
+              <select name="has_ada_rooms" id="has_ada_rooms" required>
+                <option value="">Select…</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+          </div>
+          
+          <div id="ada_rooms_section" style="display:none; margin-top:16px;">
+            <h4 style="margin-bottom:12px;">ADA Room Information</h4>
+            <div id="ada_rooms_container">
+              <!-- ADA room rows will be added here -->
+            </div>
+            <button type="button" id="addAdaRoomBtn" class="btn ghost" style="margin-top:12px;">+ Add ADA Room Type</button>
+            <div id="ada_rooms_total" style="margin-top:12px; font-weight:600; display:none;">
+              Total ADA Rooms: <span id="ada_rooms_total_count">0</span>
+            </div>
+          </div>
+        </fieldset>
+
+
+
 
         <fieldset>
           <legend>Meeting Spaces</legend>
@@ -1425,6 +1926,15 @@
 
       <!-- PAGE 3 (Terms & Uploads) -->
       <div class="page" data-page="3">
+        <fieldset>
+          <legend>Group Block & Policies</legend>
+          <div class="row">
+            <div class="col-3"><label>Max Group Block (rooms) <span class="required">*</span></label><input type="number" name="max_group_block" min="0" required /></div>
+            <div class="col-3"><label>Comp Room Ratio <span class="required">*</span></label><input name="comp_ratio" placeholder="e.g., 1:30" required /></div>
+            <div class="col-3"><label>Cutoff (days) <span class="required">*</span></label><input type="number" name="cutoff_days" min="0" required /></div>
+          </div>
+        </fieldset>
+
         <fieldset>
           <legend>Payment & Compliance</legend>
           <div class="row">
@@ -1610,7 +2120,7 @@
         <div class="hint" id="navHint">Submit is enabled only when NET30 and PO acceptance are set to Yes.</div>
         <div class="hint" id="guestHint" style="display:none; color:#059669; font-weight:500;">Guest Mode: You can navigate freely between pages without filling required fields.</div>
         <div class="inline">
-          <button type="button" class="btn subtle" id="saveDraftBtn" onclick="handleSaveDraft()" style="display:inline-block;">💾 Save Draft</button>
+          <button type="button" class="btn subtle" id="saveDraftBtn" onclick="simpleSave();" style="display:inline-block;">💾 Save Draft</button>
           <button type="button" class="btn" id="nextBtn" onclick="handleNextClick()">Next →</button>
           <button class="btn" id="submitBtn" type="submit" disabled>
             <span class="btn-label">Submit Profile</span>
@@ -1651,25 +2161,9 @@
   const signupBox = document.getElementById('signupBox');
   const btnSignup = document.getElementById('btnSignup');
 
-  let current = 0, submittingFlag = false, signedIn = false, currentUserId = null, hasDraft = false, autoSaveTimeout = null;
+  let current = 0, submittingFlag = false, signedIn = false, currentUserId = null, hasDraft = false, autoSaveTimeout = null, autoRestoreCompleted = false;
 
-  // SIMPLE ROLE CONFLICT CHECK - INLINE FUNCTION
-  window.checkRoleConflict = function(changedSelect, index) {
-    console.log('INLINE: checkRoleConflict called for index', index, 'value:', changedSelect.value);
-    
-    const role0 = document.querySelector('[name="sign_contacts[0][role]"]').value;
-    const role1 = document.querySelector('[name="sign_contacts[1][role]"]').value;
-    
-    console.log('INLINE: Current roles - role0:', role0, 'role1:', role1);
-    
-    if (role0 && role1 && role0 === role1) {
-      console.log('INLINE: DUPLICATE DETECTED!');
-      alert('ROLE CONFLICT!\n\nYou cannot assign the same role to both contacts.\n\nPlease select different roles.');
-      changedSelect.value = '';
-      return false;
-    }
-    return true;
-  };
+  // Role validation removed - no longer needed
 
   // ENHANCED NEXT BUTTON HANDLER WITH FIELD NAVIGATION
   window.handleNextClick = function() {
@@ -1682,10 +2176,6 @@
       return;
     }
     
-    // Check for signer dual info entrance notice
-    if (!checkSignerInfo()) {
-      return; // Stop if signer info is invalid
-    }
     
     // Check for unfilled required fields
     if (!validateRequiredFields()) {
@@ -1733,130 +2223,7 @@
     }
   };
 
-  // SIGNER DUAL INFO VALIDATION FUNCTION
-  window.checkSignerInfo = function() {
-    console.log('Checking signer dual info...');
-    
-    const role0 = document.querySelector('[name="sign_contacts[0][role]"]');
-    const role1 = document.querySelector('[name="sign_contacts[1][role]"]');
-    
-    if (!role0 || !role1) {
-      console.log('Role selectors not found');
-      return true; // Skip validation if elements don't exist
-    }
-    
-    const roleValue0 = role0.value;
-    const roleValue1 = role1.value;
-    
-    console.log('Signer roles check:', { role0: roleValue0, role1: roleValue1 });
-    
-    // Check if both roles are filled and they're the same
-    if (roleValue0 && roleValue1 && roleValue0 === roleValue1) {
-      console.log('DUPLICATE ROLES DETECTED!');
-      
-      // Show entrance notice modal
-      const modal = document.createElement('div');
-      modal.id = 'roleConflictModal';
-      modal.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0,0,0,0.5);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        z-index: 10000;
-      `;
-      
-      modal.innerHTML = `
-        <div style="
-          background: white;
-          padding: 30px;
-          border-radius: 15px;
-          max-width: 500px;
-          box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-          text-align: center;
-        ">
-          <div style="font-size: 3rem; margin-bottom: 15px;">⚠️</div>
-          <h3 style="color: #dc2626; margin-bottom: 15px;">SIGNER DUAL INFO ENTRANCE NOTICE</h3>
-          <p style="margin-bottom: 20px; line-height: 1.5;">
-            <strong>Role Conflict Detected!</strong><br><br>
-            You cannot assign the same role to both contacts.<br>
-            Each contact must have a different role:
-          </p>
-          <ul style="text-align: left; margin: 15px 0; padding-left: 20px;">
-            <li><strong>Contact 1:</strong> Select "Signer" or "Approver"</li>
-            <li><strong>Contact 2:</strong> Select the other role</li>
-          </ul>
-          <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">
-            Please correct this before proceeding.
-          </p>
-          <button id="correctionNeededBtn" style="
-            background: #059669;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            margin-top: 15px;
-          ">Correction Needed</button>
-        </div>
-      `;
-      
-      document.body.appendChild(modal);
-      
-      // Add proper event listener to correction button
-      const correctionBtn = document.getElementById('correctionNeededBtn');
-      if (correctionBtn) {
-        correctionBtn.addEventListener('click', function() {
-          console.log('Navigating to role conflict fields...');
-          
-          // Close modal
-          const modalToRemove = document.getElementById('roleConflictModal');
-          if (modalToRemove) {
-            modalToRemove.remove();
-            console.log('Role conflict modal removed successfully');
-          }
-          
-          // Scroll to first role field
-          setTimeout(() => {
-            role0.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            
-            // Focus and highlight fields after scroll
-            setTimeout(() => {
-              role0.focus();
-              
-              // Highlight both role fields with red border
-              role0.style.border = '2px solid #dc2626';
-              role0.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.1)';
-              role1.style.border = '2px solid #dc2626';
-              role1.style.boxShadow = '0 0 0 3px rgba(220, 38, 38, 0.1)';
-              
-              // Clear highlights when user changes either field
-              const clearHighlight = () => {
-                role0.style.border = '';
-                role0.style.boxShadow = '';
-                role1.style.border = '';
-                role1.style.boxShadow = '';
-              };
-              role0.addEventListener('change', clearHighlight, { once: true });
-              role1.addEventListener('change', clearHighlight, { once: true });
-              
-              console.log('Role fields highlighted for correction');
-            }, 500);
-          }, 100);
-        });
-      }
-      
-      return false; // Prevent proceeding
-    }
-    
-    console.log('Signer info validation passed');
-    return true;
-  };
+  // Signer role validation removed - no longer needed
 
   // UNFILLED FIELD VALIDATION FUNCTION
   window.validateRequiredFields = function() {
@@ -2033,20 +2400,24 @@
 
   // ENHANCED SAVE DRAFT HANDLER - ALWAYS WORKS
   window.handleSaveDraft = function(type = 'manual') {
-    console.log('ENHANCED: Save draft called, type:', type);
+    console.log('🔴 ENHANCED: Save draft called, type:', type);
+    console.log('🔴 Current user ID:', currentUserId);
+    console.log('🔴 Signed in status:', signedIn, window.signedIn);
     
     try {
       // Get all form data
       const form = document.getElementById('hotel-form');
       if (!form) {
-        console.error('ENHANCED: Form not found!');
+        console.error('🔴 ENHANCED: Form not found!');
         return false;
       }
+      
+      console.log('🔴 Form found, collecting data...');
       
       const formData = new FormData(form);
       const data = {};
       
-      // Convert FormData to object
+      // Convert FormData to object - capture ALL fields including empty ones
       for (const [key, value] of formData.entries()) {
         if (data[key]) {
           if (Array.isArray(data[key])) {
@@ -2059,6 +2430,26 @@
         }
       }
       
+      // ALSO capture all input fields manually to ensure nothing is missed
+      const allInputs = form.querySelectorAll('input, select, textarea');
+      allInputs.forEach(input => {
+        const name = input.name || input.id;
+        if (name && !data[name]) {
+          if (input.type === 'checkbox') {
+            data[name] = input.checked ? input.value : '';
+          } else if (input.type === 'radio') {
+            if (input.checked) {
+              data[name] = input.value;
+            }
+          } else {
+            data[name] = input.value || '';
+          }
+        }
+      });
+      
+      console.log('🔴 Total fields captured:', Object.keys(data).length);
+      console.log('🔴 Sample fields:', Object.keys(data).slice(0, 20));
+      
       const draftData = {
         formData: data,
         currentStep: current,
@@ -2066,22 +2457,30 @@
         userId: currentUserId || 'anonymous'
       };
       
+      console.log('🔴 Saving to localStorage...');
+      console.log('🔴 Draft data keys:', Object.keys(draftData.formData).length);
+      
       // Always save to localStorage first (most reliable)
       localStorage.setItem('hotel_registration_draft', JSON.stringify(draftData));
+      console.log('🔴 Saved to hotel_registration_draft');
       
       // ALSO save with user-specific key for better reliability
       const userSpecificKey = `hotel_registration_draft_${currentUserId || 'anonymous'}`;
       localStorage.setItem(userSpecificKey, JSON.stringify(draftData));
+      console.log('🔴 Saved to user-specific key:', userSpecificKey);
       
       // ALSO save current page location
       localStorage.setItem('hotel_registration_current_page', current.toString());
+      console.log('🔴 Saved current page:', current);
       
       // ALSO save with timestamp for debugging
       localStorage.setItem('hotel_registration_last_save', new Date().toISOString());
+      console.log('🔴 Saved timestamp');
       
       // ALSO save a backup with current timestamp
       const timestampKey = `hotel_registration_backup_${Date.now()}`;
       localStorage.setItem(timestampKey, JSON.stringify(draftData));
+      console.log('🔴 Saved backup with key:', timestampKey);
       
       // Clean up old backups (keep only last 3)
       const allKeys = Object.keys(localStorage).filter(key => key.startsWith('hotel_registration_backup_'));
@@ -2101,17 +2500,22 @@
       
       // Try to save to server if user is signed in
       if ((signedIn || window.signedIn) && currentUserId) {
+        console.log('🔴 Attempting server save - userId:', currentUserId, 'fields:', Object.keys(data).length);
         saveDraftToServer(data, current).catch(err => {
           console.warn('Server save failed but localStorage succeeded:', err);
         });
+      } else {
+        console.log('🔴 Skipping server save - signedIn:', signedIn || window.signedIn, 'userId:', currentUserId);
       }
       
       // Only show success toast for manual saves
       if (type === 'manual') {
+        console.log('🔴 Showing success toast for manual save');
         const toast = document.createElement('div');
         toast.style.cssText = 'position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#10b981; color:white; padding:12px 20px; border-radius:8px; z-index:10000; font-weight:600;';
         toast.textContent = '✅ Draft saved successfully!';
         document.body.appendChild(toast);
+        console.log('🔴 Toast added to DOM');
         
         setTimeout(() => {
           toast.remove();
@@ -2134,7 +2538,8 @@
       return true;
       
     } catch (error) {
-      console.error('ENHANCED: Save draft error:', error);
+      console.error('🔴 ENHANCED: Save draft error:', error);
+      console.error('🔴 Error details:', error.message, error.stack);
       
       if (type === 'manual') {
         const toast = document.createElement('div');
@@ -2180,103 +2585,290 @@
     }
   }
 
-  // AUTO-SAVE SETUP - COMPREHENSIVE APPROACH
+  // AUTO-SAVE SETUP - UNIFIED COMPREHENSIVE APPROACH
   window.setupAutoSave = function() {
-    console.log('COMPREHENSIVE: Setting up auto-save');
+    console.log('🔄 Setting up unified auto-save system');
     
     const form = document.getElementById('hotel-form');
     if (!form) {
-      console.error('COMPREHENSIVE: Form not found for auto-save!');
+      console.error('❌ Form not found for auto-save!');
       return;
     }
+    
+    // Prevent duplicate setup
+    if (window.autoSaveInitialized) {
+      console.log('⚠️ Auto-save already initialized, skipping duplicate setup');
+      return;
+    }
+    window.autoSaveInitialized = true;
     
     let autoSaveTimer;
     let isAutoSaveActive = true;
     
     // Add listeners to all form inputs
     const inputs = form.querySelectorAll('input, select, textarea');
-    console.log('COMPREHENSIVE: Found', inputs.length, 'inputs for auto-save');
+    console.log('✅ Found', inputs.length, 'inputs for auto-save');
+    console.log('✅ Signed-in status:', signedIn || window.signedIn);
     
     // Clear any existing auto-save timers
     if (window.autoSaveTimer) clearTimeout(window.autoSaveTimer);
     if (window.inputChangeTimeout) clearTimeout(window.inputChangeTimeout);
+    if (window.periodicAutoSaveInterval) clearInterval(window.periodicAutoSaveInterval);
     
-    inputs.forEach((input, index) => {
-      // Remove existing listeners to prevent duplicates
-      input.removeEventListener('input', window.autoSaveInputHandler);
-      input.removeEventListener('change', window.autoSaveChangeHandler);
+    // Single unified handler for all input changes
+    const unifiedAutoSaveHandler = function(e) {
+      if (!isAutoSaveActive) return;
+      if (!signedIn && !window.signedIn) return;
       
-      // Define handlers
-      window.autoSaveInputHandler = function(e) {
-        if (!isAutoSaveActive) return;
-        console.log('COMPREHENSIVE: Input changed, scheduling auto-save:', e.target.name || e.target.id);
-        clearTimeout(autoSaveTimer);
-        autoSaveTimer = setTimeout(() => {
-          if (signedIn || window.signedIn) {
-            console.log('COMPREHENSIVE: Auto-save triggered by input change');
-            handleSaveDraft('auto-input');
-          }
-        }, 2000); // Save 2 seconds after typing stops
-      };
+      // CRITICAL: Skip auto-save if form is being populated to prevent conflicts
+      if (window.isPopulatingForm) {
+        console.log('⏸️ Auto-save skipped - form is being populated');
+        return;
+      }
       
-      window.autoSaveChangeHandler = function(e) {
-        if (!isAutoSaveActive) return;
-        console.log('COMPREHENSIVE: Field changed, auto-saving:', e.target.name || e.target.id);
-        clearTimeout(autoSaveTimer);
-        setTimeout(() => {
-          if (signedIn || window.signedIn) {
-            console.log('COMPREHENSIVE: Auto-save triggered by field change');
-            handleSaveDraft('auto-change');
-          }
-        }, 300); // Quick save for select/checkbox changes
-      };
+      const fieldName = e.target.name || e.target.id || 'unknown';
+      console.log('💾 Input changed:', fieldName, '- scheduling auto-save');
       
-      input.addEventListener('input', window.autoSaveInputHandler);
-      input.addEventListener('change', window.autoSaveChangeHandler);
+      clearTimeout(autoSaveTimer);
+      autoSaveTimer = setTimeout(() => {
+        // Double-check the flag isn't stuck
+        if (window.isPopulatingForm) {
+          console.log('⚠️ isPopulatingForm still true - forcing to false');
+          window.isPopulatingForm = false;
+        }
+        console.log('💾 Auto-save triggered by:', fieldName);
+        handleSaveDraft('auto-input');
+      }, 2000); // Save 2 seconds after typing stops
+    };
+    
+    // Attach unified handler to all inputs
+    inputs.forEach((input) => {
+      input.addEventListener('input', unifiedAutoSaveHandler);
+      input.addEventListener('change', unifiedAutoSaveHandler);
     });
     
     // Set up periodic auto-save (every 2 minutes)
-    function startPeriodicAutoSave() {
-      if (window.periodicAutoSaveInterval) clearInterval(window.periodicAutoSaveInterval);
-      window.periodicAutoSaveInterval = setInterval(() => {
-        if ((signedIn || window.signedIn) && isAutoSaveActive) {
-          console.log('COMPREHENSIVE: Periodic auto-save triggered');
-          handleSaveDraft('auto-periodic');
-        }
-      }, 120000); // 2 minutes
-    }
-    
-    startPeriodicAutoSave();
+    window.periodicAutoSaveInterval = setInterval(() => {
+      if ((signedIn || window.signedIn) && isAutoSaveActive) {
+        console.log('⏰ Periodic auto-save triggered (2 min interval)');
+        handleSaveDraft('auto-periodic');
+      }
+    }, 120000); // 2 minutes
     
     // Store reference for cleanup
     window.cleanupAutoSave = function() {
       isAutoSaveActive = false;
       clearTimeout(autoSaveTimer);
       if (window.periodicAutoSaveInterval) clearInterval(window.periodicAutoSaveInterval);
+      window.autoSaveInitialized = false;
     };
     
-    console.log('COMPREHENSIVE: Auto-save listeners attached with periodic backup');
+    console.log('✅ Unified auto-save system active (2s debounce + 2min periodic)');
+    
+    // Safeguard: Reset isPopulatingForm flag after 3 seconds if it gets stuck
+    setTimeout(() => {
+      if (window.isPopulatingForm) {
+        console.log('⚠️ Safeguard: Resetting stuck isPopulatingForm flag');
+        window.isPopulatingForm = false;
+      }
+    }, 3000);
   };
 
   // Enhanced auto-save that works in all scenarios
   window.ensureAutoSaveActive = function() {
-    console.log('Ensuring auto-save is active...');
+    console.log('🔄 Ensuring auto-save is active...');
     
-    // Multiple initialization attempts
-    setTimeout(() => setupAutoSave(), 500);
-    setTimeout(() => setupAutoSave(), 1500);
-    setTimeout(() => setupAutoSave(), 3000);
-    
-    // Also set up the older method as backup
+    // Single delayed initialization (prevents duplicate setup due to flag check)
     setTimeout(() => {
-      if (typeof setupAutoSaveOnInput === 'function') {
-        setupAutoSaveOnInput();
+      if (!window.autoSaveInitialized) {
+        console.log('🔄 Initializing auto-save system');
+        setupAutoSave();
+      } else {
+        console.log('✅ Auto-save already initialized');
       }
     }, 1000);
   };
 
   // Initialize auto-save immediately and with delays
   ensureAutoSaveActive();
+  
+  // DEBUG: Add global test functions for manual testing
+  window.testAutoSave = function() {
+    console.log('🧪 Testing auto-save manually...');
+    console.log('🧪 signedIn:', signedIn, 'window.signedIn:', window.signedIn);
+    console.log('🧪 currentUserId:', currentUserId);
+    console.log('🧪 sessionId:', !!localStorage.getItem('fedevent_session'));
+    
+    // Fill a test field
+    const hotelName = document.querySelector('[name="hotel_name"]');
+    if (hotelName) {
+      hotelName.value = 'Test Hotel ' + Date.now();
+      console.log('🧪 Set hotel name to:', hotelName.value);
+      
+      // Trigger auto-save
+      if (typeof handleSaveDraft === 'function') {
+        handleSaveDraft('manual-test');
+        console.log('🧪 Called handleSaveDraft');
+      } else {
+        console.error('🧪 handleSaveDraft function not found!');
+      }
+    } else {
+      console.error('🧪 Hotel name field not found!');
+    }
+  };
+  
+  window.testDraftLoad = function() {
+    console.log('🧪 Testing draft load manually...');
+    if (typeof loadExistingDraft === 'function') {
+      loadExistingDraft();
+      console.log('🧪 Called loadExistingDraft');
+    } else {
+      console.error('🧪 loadExistingDraft function not found!');
+    }
+  };
+  
+  window.checkLocalStorage = function() {
+    console.log('🧪 Checking localStorage...');
+    const keys = Object.keys(localStorage);
+    console.log('🧪 All keys:', keys);
+    keys.forEach(key => {
+      if (key.includes('hotel') || key.includes('draft')) {
+        console.log('🧪', key, ':', localStorage.getItem(key));
+      }
+    });
+  };
+  
+  // Function to populate Primary Contact from user data
+  function populatePrimaryContactFromUser(user) {
+    if (!user) {
+      console.log('❌ No user data to populate Primary Contact');
+      return;
+    }
+    
+    const contactName = document.querySelector('[name="primary_contact_name"]');
+    const contactEmail = document.querySelector('[name="primary_contact_email"]');
+    
+    console.log('🔍 Attempting to populate Primary Contact:', {
+      nameFieldExists: !!contactName,
+      emailFieldExists: !!contactEmail,
+      currentNameValue: contactName?.value,
+      currentEmailValue: contactEmail?.value,
+      userName: user.first_name,
+      userEmail: user.email
+    });
+    
+    // Always populate if field exists, even if it has a value (to override any cleared values)
+    if (contactName) {
+      const fullName = user.first_name && user.last_name 
+        ? `${user.first_name} ${user.last_name}` 
+        : (user.first_name || user.username || '');
+      if (fullName && (!contactName.value || contactName.value.trim() === '')) {
+        contactName.value = fullName;
+        // Mark field as user-populated to prevent clearing
+        contactName.setAttribute('data-user-populated', 'true');
+        console.log('✅ Pre-populated Primary Contact name:', fullName);
+      }
+    }
+    
+    if (contactEmail && user.email) {
+      if (!contactEmail.value || contactEmail.value.trim() === '') {
+        contactEmail.value = user.email;
+        // Mark field as user-populated to prevent clearing
+        contactEmail.setAttribute('data-user-populated', 'true');
+        console.log('✅ Pre-populated Primary Contact email:', user.email);
+      }
+    }
+  }
+  
+  // Retry population after delays to ensure fields are loaded
+  function retryPopulatePrimaryContact() {
+    const userData = localStorage.getItem('fedevent_user');
+    if (!userData) return;
+    
+    try {
+      const user = JSON.parse(userData);
+      
+      // Try immediately
+      populatePrimaryContactFromUser(user);
+      
+      // Retry after 1000ms (after form restoration)
+      setTimeout(() => {
+        console.log('🔄 Retry 1: Populating Primary Contact...');
+        populatePrimaryContactFromUser(user);
+      }, 1000);
+      
+      // Retry after 2000ms
+      setTimeout(() => {
+        console.log('🔄 Retry 2: Populating Primary Contact...');
+        populatePrimaryContactFromUser(user);
+      }, 2000);
+      
+      // Retry after 4000ms
+      setTimeout(() => {
+        console.log('🔄 Retry 3: Populating Primary Contact...');
+        populatePrimaryContactFromUser(user);
+      }, 4000);
+      
+      // Final retry after 6000ms
+      setTimeout(() => {
+        console.log('🔄 Final retry: Populating Primary Contact...');
+        populatePrimaryContactFromUser(user);
+      }, 6000);
+    } catch (e) {
+      console.error('Error in retryPopulatePrimaryContact:', e);
+    }
+  }
+  
+  // SIMPLE TEST FUNCTIONS
+  window.testSave = function() {
+    console.log('🧪 Testing save...');
+    simpleSave();
+  };
+  
+  window.testPrimaryContact = function() {
+    console.log('🧪 Testing Primary Contact population...');
+    const userData = localStorage.getItem('fedevent_user');
+    console.log('🧪 User data:', userData);
+    if (userData) {
+      const user = JSON.parse(userData);
+      console.log('🧪 Parsed user:', user);
+      populatePrimaryContactFromUser(user);
+    } else {
+      console.log('❌ No user data in localStorage');
+    }
+  };
+  
+  window.checkSavedData = function() {
+    console.log('🧪 Checking what data is saved...');
+    const draft = localStorage.getItem('hotel_registration_draft');
+    if (draft) {
+      const parsed = JSON.parse(draft);
+      console.log('🧪 Total fields saved:', Object.keys(parsed.formData || {}).length);
+      console.log('🧪 Field names:', Object.keys(parsed.formData || {}));
+      console.log('🧪 Sample data (first 10 fields):');
+      Object.entries(parsed.formData || {}).slice(0, 10).forEach(([key, value]) => {
+        console.log(`  ${key}: ${value}`);
+      });
+    } else {
+      console.log('❌ No draft found in localStorage');
+    }
+  };
+  
+  window.testRestore = function() {
+    console.log('🧪 Testing restore...');
+    simpleRestore();
+  };
+  
+  window.testInput = function() {
+    console.log('🧪 Testing input...');
+    const hotelName = document.querySelector('[name="hotel_name"]');
+    if (hotelName) {
+      hotelName.value = 'Test Hotel ' + Date.now();
+      console.log('🧪 Set hotel name to:', hotelName.value);
+    } else {
+      console.error('🧪 Hotel name field not found!');
+    }
+  };
 
   // Check if user is continuing from dashboard (approved user) or editing
   async function checkContinueMode() {
@@ -2314,21 +2906,19 @@
       if (userData) {
         try {
           const user = JSON.parse(userData);
-          let displayText = user.username || 'User';
-          if (user.fedevent_account_number) {
-            displayText += ` (${user.fedevent_account_number})`;
+          console.log('Pre-populating user info from stored data:', user);
+          
+          // Pre-populate email if available
+          const emailField = document.querySelector('[name="sales_director_email"]');
+          if (emailField && user.email && !emailField.value) {
+            emailField.value = user.email;
+            console.log('Pre-populated email:', user.email);
           }
-          const userInfoDiv = document.getElementById('userInfo');
-          const userDisplayName = document.getElementById('userDisplayName');
-          if (userDisplayName) {
-            userDisplayName.textContent = displayText;
-          }
-          if (userInfoDiv) {
-            userInfoDiv.style.display = 'block';
-          }
+          
+          // Auto-populate first Primary Contact with user info
+          populatePrimaryContactFromUser(user);
         } catch (e) {
           console.error('Error parsing user data:', e);
-          const userInfoDiv = document.getElementById('userInfo');
           const userDisplayName = document.getElementById('userDisplayName');
           if (userDisplayName) userDisplayName.textContent = 'User';
           if (userInfoDiv) userInfoDiv.style.display = 'block';
@@ -2377,29 +2967,13 @@
       
       // Show loading message
       showToast('🔄 Loading your saved progress...');
-      
-      // Load existing draft for this user first
-      await loadExistingDraft();
-        
-      // ALSO try to load from multiple sources for reliability
-      const userSpecificKey = `hotel_registration_draft_${currentUserId || 'anonymous'}`;
-      const userSpecificDraft = localStorage.getItem(userSpecificKey);
-      const savedPage = localStorage.getItem('hotel_registration_current_page');
-        
-      if (userSpecificDraft) {
-        try {
-          const draftData = JSON.parse(userSpecificDraft);
-          console.log('Loading user-specific draft with', Object.keys(draftData.formData || {}).length, 'fields');
-          setFormData(draftData.formData || {});
-          if (draftData.currentStep !== undefined) {
-            current = draftData.currentStep;
-            setActiveStep(current);
-          }
-        } catch (e) {
-          console.error('Error loading user-specific draft:', e);
-        }
+
+      const draftLoaded = await loadExistingDraft();
+      if (!draftLoaded) {
+        console.log('No existing draft was applied by loadExistingDraft.');
       }
-        
+
+      const savedPage = localStorage.getItem('hotel_registration_current_page');
       if (savedPage) {
         try {
           const pageNum = parseInt(savedPage);
@@ -2452,103 +3026,271 @@
   
   // Populate hotel form with existing data
   function populateHotelForm(hotel) {
-    // Hotel basic information
-    if (hotel.name) document.getElementById('hotelName').value = hotel.name;
-    if (hotel.email) document.getElementById('hotelEmail').value = hotel.email;
-    if (hotel.phone) document.getElementById('hotelPhone').value = hotel.phone;
-    if (hotel.website) document.getElementById('hotelWebsite').value = hotel.website;
-    if (hotel.address) document.getElementById('hotelAddress').value = hotel.address;
-    if (hotel.city) document.getElementById('hotelCity').value = hotel.city;
-    if (hotel.state) document.getElementById('hotelState').value = hotel.state;
-    if (hotel.zip) document.getElementById('hotelZip').value = hotel.zip;
-    if (hotel.country) document.getElementById('hotelCountry').value = hotel.country;
+    console.log('🔄 Populating hotel form with data:', hotel);
     
-    // Hotel details
-    if (hotel.rooms_total) document.getElementById('totalRooms').value = hotel.rooms_total;
-    if (hotel.rooms_suites) document.getElementById('suites').value = hotel.rooms_suites;
-    if (hotel.rooms_double) document.getElementById('doubleRooms').value = hotel.rooms_double;
-    if (hotel.rooms_single) document.getElementById('singleRooms').value = hotel.rooms_single;
-    if (hotel.rooms_accessible) document.getElementById('accessibleRooms').value = hotel.rooms_accessible;
+    // CRITICAL: Disable auto-save during form population
+    window.isPopulatingForm = true;
     
-    // Amenities
-    if (hotel.amenities) {
-      const amenities = JSON.parse(hotel.amenities);
-      amenities.forEach(amenity => {
-        const checkbox = document.getElementById(`amenity_${amenity}`);
-        if (checkbox) checkbox.checked = true;
-      });
+    // Hotel basic information - use name attribute selectors
+    if (hotel.name) {
+      const field = document.querySelector('[name="hotel_name"]');
+      if (field) field.value = hotel.name;
     }
+    if (hotel.email) {
+      const field = document.querySelector('[name="sales_director_email"]');
+      if (field) field.value = hotel.email;
+    }
+    if (hotel.phone) {
+      const field = document.querySelector('[name="hotel_phone"]');
+      if (field) field.value = hotel.phone;
+    }
+    if (hotel.website) {
+      const field = document.querySelector('[name="website"]');
+      if (field) field.value = hotel.website;
+    }
+    if (hotel.address) {
+      const field = document.querySelector('[name="address"]');
+      if (field) field.value = hotel.address;
+    }
+    if (hotel.city) {
+      const field = document.querySelector('[name="city"]');
+      if (field) field.value = hotel.city;
+    }
+    if (hotel.state) {
+      const field = document.querySelector('[name="state"]');
+      if (field) field.value = hotel.state;
+    }
+    if (hotel.zip) {
+      const field = document.querySelector('[name="zip"]');
+      if (field) field.value = hotel.zip;
+    }
+    if (hotel.country) {
+      const field = document.querySelector('[name="country"]');
+      if (field) field.value = hotel.country;
+    }
+    
+    console.log('✅ Hotel form populated successfully');
     
     // Update the page title to indicate edit mode
     const titleElement = document.querySelector('h1');
     if (titleElement) {
       titleElement.textContent = 'Update Hotel Registration';
     }
+    
+    // CRITICAL: Re-enable auto-save after population
+    setTimeout(() => {
+      window.isPopulatingForm = false;
+      console.log('✅ Hotel form population complete - auto-save re-enabled');
+    }, 500);
+  }
+
+  function toDraftTimestamp(value) {
+    if (!value) return 0;
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+
+  function resolveDraftUserIds() {
+    const ids = new Set();
+    if (typeof currentUserId !== 'undefined' && currentUserId) {
+      ids.add(currentUserId);
+    }
+    try {
+      const storedUser = localStorage.getItem('fedevent_user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        const possibleId = user?.id || user?.userId || user?.fedevent_account_number;
+        if (possibleId) {
+          ids.add(possibleId);
+        }
+      }
+    } catch (err) {
+      console.warn('Failed to resolve draft user IDs:', err);
+    }
+    ids.add('anonymous');
+    return Array.from(ids);
+  }
+
+  function getLatestLocalDraft() {
+    try {
+      const candidateKeys = new Set(['hotel_registration_draft']);
+      resolveDraftUserIds().forEach(id => {
+        candidateKeys.add(`hotel_registration_draft_${id || 'anonymous'}`);
+      });
+      Object.keys(localStorage).forEach((key) => {
+        if (key.startsWith('hotel_registration_backup_')) {
+          candidateKeys.add(key);
+        }
+      });
+
+      const fallbackTimestamp = localStorage.getItem('hotel_registration_last_save');
+      let latest = null;
+
+      candidateKeys.forEach(key => {
+        const raw = localStorage.getItem(key);
+        if (!raw) return;
+        try {
+          const parsed = JSON.parse(raw);
+          if (!parsed.formData || Object.keys(parsed.formData).length === 0) return;
+          const timestamp = toDraftTimestamp(parsed.timestamp || parsed.updatedAt || fallbackTimestamp);
+          if (!latest || timestamp > latest.timestamp) {
+            latest = { key, timestamp, draft: parsed };
+          }
+        } catch (error) {
+          console.warn('Failed to parse draft from', key, error);
+        }
+      });
+
+      return latest;
+    } catch (error) {
+      console.error('getLatestLocalDraft error:', error);
+      return null;
+    }
+  }
+
+  function applyDraftToForm(draft, toastMessage) {
+    if (!draft || !draft.formData || Object.keys(draft.formData).length === 0) {
+      return false;
+    }
+
+    if (!currentUserId && draft.userId) {
+      currentUserId = draft.userId;
+    }
+
+    setFormData(draft.formData);
+
+    if (draft.currentStep !== undefined && draft.currentStep >= 1) {
+      current = draft.currentStep;
+      setActiveStep(current);
+    }
+
+    hasDraft = true;
+    updateDraftStatus();
+
+    if (toastMessage && typeof showToast === 'function') {
+      try {
+        showToast(toastMessage);
+      } catch (toastError) {
+        console.warn('Toast display failed:', toastError);
+      }
+    }
+
+    autoRestoreCompleted = true;
+
+    return true;
+  }
+
+  function persistDraftLocally(draft) {
+    if (!draft || !draft.formData) return;
+    const payload = {
+      formData: draft.formData,
+      currentStep: draft.currentStep !== undefined ? draft.currentStep : current,
+      timestamp: draft.timestamp || new Date().toISOString(),
+      userId: draft.userId || currentUserId || 'anonymous'
+    };
+    const userKey = `hotel_registration_draft_${payload.userId || 'anonymous'}`;
+    localStorage.setItem('hotel_registration_draft', JSON.stringify(payload));
+    localStorage.setItem(userKey, JSON.stringify(payload));
+    localStorage.setItem('hotel_registration_current_page', String(payload.currentStep || current || 1));
+    localStorage.setItem('hotel_registration_last_save', payload.timestamp);
+  }
+
+  function ensureCurrentUserIdFromStorage() {
+    if (currentUserId) return currentUserId;
+    try {
+      const storedUser = localStorage.getItem('fedevent_user');
+      if (storedUser) {
+        const user = JSON.parse(storedUser);
+        const possibleId = user?.id || user?.userId || user?.fedevent_account_number;
+        if (possibleId) {
+          currentUserId = possibleId;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to ensure currentUserId from storage:', error);
+    }
+    return currentUserId;
   }
   
   // Load existing draft for continuing users
   async function loadExistingDraft() {
+    const latestLocal = getLatestLocalDraft();
     try {
-      // First try to load from server using session
       const sessionId = localStorage.getItem('fedevent_session');
       if (!sessionId) {
-        console.log('No session available for draft loading');
-        // For continue mode without session, start at page 1
-        current = 1;
-        setActiveStep(1);
-        return;
+        console.log('🔄 No session available for draft loading, trying localStorage fallback');
+        return await loadFromLocalStorage(latestLocal);
       }
-      
-      // Try to load draft with or without user ID
+
       const url = currentUserId ? `/api/draft/load/${currentUserId}` : '/api/draft/load';
+      console.log('🔄 Attempting to load draft from server:', url);
+
       const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${sessionId}`
         }
       });
       const result = await response.json();
-      
-      if (result.ok && result.draft) {
-        console.log('Loading server draft for user:', currentUserId);
-        setFormData(result.draft.formData);
-        if (result.draft.currentPage !== undefined) {
-          current = result.draft.currentPage;
-          setActiveStep(current);
-        }
-        hasDraft = true;
-        updateDraftStatus();
-        showToast('✅ Previous draft loaded successfully');
-        return;
-      } else {
-        console.log('No server draft found for user:', currentUserId);
-      }
-      
-      // Fallback to localStorage
-      const localDraft = localStorage.getItem('hotel_registration_draft');
-      if (localDraft) {
-        const draftData = JSON.parse(localDraft);
-        if (draftData.userId === currentUserId) {
-          console.log('Loading local draft for user:', currentUserId);
-          setFormData(draftData.formData);
-          if (draftData.currentStep !== undefined) {
-            current = draftData.currentStep;
-            setActiveStep(current);
+
+      if (result.ok && result.draft && result.draft.formData) {
+        const localDraftUserId = latestLocal && latestLocal.draft ? (latestLocal.draft.userId || null) : null;
+        const serverDraft = {
+          formData: result.draft.formData,
+          currentStep: result.draft.currentPage,
+          timestamp: result.draft.updatedAt,
+          userId: currentUserId || localDraftUserId || 'anonymous'
+        };
+
+        const serverTimestamp = toDraftTimestamp(serverDraft.timestamp);
+        const localTimestamp = latestLocal ? latestLocal.timestamp : 0;
+
+        if (latestLocal && localTimestamp > serverTimestamp) {
+          console.log('⬆️ Local draft newer than server copy, using local draft.');
+          applyDraftToForm(latestLocal.draft, '✅ Loaded your latest local changes');
+          if ((signedIn || window.signedIn) && currentUserId) {
+            try {
+              const localStep = latestLocal.draft.currentStep !== undefined ? latestLocal.draft.currentStep : current;
+              await saveDraftToServer(latestLocal.draft.formData, localStep);
+            } catch (syncError) {
+              console.warn('Failed to sync newer local draft to server:', syncError);
+            }
           }
-          hasDraft = true;
-          updateDraftStatus();
-          showToast('✅ Previous draft loaded from local storage');
-          return;
+          return true;
         }
+
+        console.log('⬇️ Using server draft data (same or newer timestamp).');
+        applyDraftToForm(serverDraft, '✅ Previous draft loaded successfully');
+        persistDraftLocally(serverDraft);
+        return true;
       }
-      
-      // If no draft found, start at page 1 (Company Information) for continue mode
-      // since user has already signed up and is continuing their registration
-      console.log('No existing draft found, starting at page 1 for continue mode');
-      current = 1;
-      setActiveStep(1);
-      console.log('loadExistingDraft: Set page to 1, current:', current);
+
+      console.log('❌ No server draft found, falling back to local storage');
+      return await loadFromLocalStorage(latestLocal);
     } catch (error) {
       console.error('Error loading existing draft:', error);
+      return await loadFromLocalStorage(latestLocal);
+    }
+  }
+  
+  // Helper function to load from localStorage
+  async function loadFromLocalStorage(precomputedDraft) {
+    try {
+      console.log('🔄 Attempting localStorage fallback...');
+      const latest = precomputedDraft || getLatestLocalDraft();
+
+      if (latest && applyDraftToForm(latest.draft, '✅ Previous draft loaded from local storage')) {
+        console.log('✅ Loaded draft from local key:', latest.key, 'timestamp:', latest.timestamp);
+        return true;
+      }
+
+      console.log('❌ No valid draft found in localStorage');
+      current = 1;
+      setActiveStep(1);
+      console.log('loadFromLocalStorage: Set page to 1, current:', current);
+      return false;
+    } catch (error) {
+      console.error('Error loading from localStorage:', error);
+      return false;
     }
   }
   
@@ -2633,9 +3375,11 @@
     try {
       const sessionId = localStorage.getItem('fedevent_session');
       if (!sessionId) {
-        console.warn('No session ID available for draft save');
+        console.warn('❌ No session ID available for draft save');
         return;
       }
+      
+      console.log('📤 Saving draft to server - userId:', currentUserId, 'page:', currentPage, 'fields:', Object.keys(formData).length);
       
       const response = await fetch('/api/draft/save', {
         method: 'POST',
@@ -2651,12 +3395,14 @@
       });
       
       if (!response.ok) {
-        console.warn('Server draft save failed, but local save succeeded');
+        const errorText = await response.text();
+        console.warn('❌ Server draft save failed:', response.status, errorText);
       } else {
-        console.log('Draft saved to server successfully');
+        const result = await response.json();
+        console.log('✅ Draft saved to server successfully:', result);
       }
     } catch (error) {
-      console.warn('Server draft save error:', error);
+      console.warn('❌ Server draft save error:', error);
     }
   }
   
@@ -2763,7 +3509,16 @@
     }
   }
 
-  function showToast(msg){ toast.textContent = msg; toast.style.display = 'block'; setTimeout(()=>toast.style.display='none', 2600); }
+  function showToast(msg){ 
+    // Don't scroll for auto-population messages
+    if (!msg.includes('auto-populat') && !msg.includes('Draft saved') && !msg.includes('Auto-save')) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    toast.textContent = msg; 
+    toast.style.display = 'block'; 
+    setTimeout(()=>toast.style.display='none', 2600); 
+  }
   function localLogout(){
     try{
       localStorage.removeItem('fedevent_session');
@@ -2954,50 +3709,58 @@ Thank you!`;
       }, 500);
     }
   }
+  
+  // Update step indicators
+  function updateStepIndicators() {
     steps = Array.from(document.querySelectorAll('.step'));
     steps.forEach((step, index) => {
-      const stepElement = step;
-      const isCompleted = index < current;
-      const isCurrent = index === current;
-      
+      const isCompleted = (index + 1) < current;
+      const isCurrent = (index + 1) === current;
+
+      step.classList.toggle('completed', isCompleted);
+      step.classList.toggle('active', isCurrent);
+
+      const dot = step.querySelector('.dot');
+      if (!dot) return;
+
       if (isCompleted) {
-        stepElement.classList.add('completed');
-        stepElement.classList.remove('active');
-        const dot = stepElement.querySelector('.dot');
-        if (dot) {
-          dot.innerHTML = '✓';
-          dot.style.background = '#10b981';
-          dot.style.color = '#fff';
-        }
-      } else if (isCurrent) {
-        stepElement.classList.add('active');
-        stepElement.classList.remove('completed');
-        const dot = stepElement.querySelector('.dot');
-        if (dot) {
-          dot.innerHTML = index + 1;
-          dot.style.background = '#0a58ca';
-          dot.style.color = '#fff';
-        }
+        dot.textContent = '✓';
+        dot.style.background = '#10b981';
+        dot.style.color = '#fff';
       } else {
-        stepElement.classList.remove('active', 'completed');
-        const dot = stepElement.querySelector('.dot');
-        if (dot) {
-          dot.innerHTML = index + 1;
-          dot.style.background = '#eef4ff';
-          dot.style.color = '#0a58ca';
-        }
+        dot.textContent = String(index + 1);
+        dot.style.background = isCurrent ? '#0a58ca' : '#eef4ff';
+        dot.style.color = isCurrent ? '#fff' : '#0a58ca';
       }
     });
   }
+
+  function updateProgressIndicator() {
+    updateStepIndicators();
+  }
   function setActiveStep(i){
-    console.log('Setting active step to:', i, 'pages available:', pages ? pages.length : 'undefined');
+    console.log('🎯 setActiveStep called with i =', i, 'pages available:', pages ? pages.length : 'undefined');
     if (!pages || !steps) {
       console.error('Pages or steps not initialized!');
       return;
     }
     current = i;
-    pages.forEach((p,idx)=>p.classList.toggle('active', idx===current));
-    steps.forEach((s,idx)=>s.classList.toggle('active', idx===current));
+    console.log('🎯 Current page set to:', current);
+    
+    // Pages are indexed 0-4 (with page 0 being empty), steps are indexed 0-3 (representing steps 1-4)
+    pages.forEach((p,idx)=> {
+      const isActive = idx === current;
+      p.classList.toggle('active', isActive);
+      if (isActive) console.log('🎯 Page', idx, 'set to ACTIVE');
+    });
+    
+    steps.forEach((s,idx)=> {
+      const isActive = idx === (current - 1);
+      s.classList.toggle('active', isActive);
+      if (isActive) console.log('🎯 Step', idx, '(visual step', idx+1, ') set to ACTIVE');
+    });
+    
+    updateStepIndicators();
     updateWizardNav(); 
     
     // Generate completion summary when reaching the final page
@@ -3006,7 +3769,7 @@ Thank you!`;
     }
     
     window.scrollTo(0,0);
-    console.log('Active step set to:', i, 'Pages with active class:', document.querySelectorAll('.page.active').length);
+    console.log('🎯 Final state - current:', current, 'Active pages:', document.querySelectorAll('.page.active').length, 'Active steps:', document.querySelectorAll('.step.active').length);
   }
   
   function generateCompletionSummary() {
@@ -3299,38 +4062,13 @@ Thank you!`;
       }
     }
     
-    // Validate primary contacts roles: must be different and include exactly one Approver
-    if (!validatePrimaryContacts()) return false;
     
     return true;
   }
   
+  // Primary contacts role validation removed - no longer needed
   function validatePrimaryContacts() {
-    const role0 = (document.querySelector('[name="sign_contacts[0][role]"]')||{}).value || '';
-    const role1 = (document.querySelector('[name="sign_contacts[1][role]"]')||{}).value || '';
-    const err = document.getElementById('signContactsError');
-    if (err) { err.style.display='none'; err.textContent=''; }
-    
-    // Only validate when both roles are selected (required will handle empties)
-    if (!role0 || !role1) return true;
-    
-    // Enforce different roles and exactly one Approver
-    const rolesSet = new Set([role0, role1]);
-    const hasApprover = (role0 === 'Approver') ^ (role1 === 'Approver');
-    const hasSigner = rolesSet.has('Signer');
-    const differentRoles = rolesSet.size === 2;
-    
-    if (!(differentRoles && hasApprover && hasSigner)) {
-      const message = 'Each contact must have a different role, and exactly one must be Approver (higher authority). The other must be Signer.';
-      if (err) { 
-        err.style.display='block'; 
-        err.style.color = '#b91c1c';
-        err.textContent = message; 
-      }
-      alert(message);
-      return false;
-    }
-    return true;
+    return true; // Always pass - role validation removed
   }
   
   function validateRoomsAndSpaces() {
@@ -3555,6 +4293,33 @@ Thank you!`;
       });
     } else {
       console.error('🏨 Extended Stay section not found!');
+    }
+  }
+  function toggleBreakfastCost(){
+    const sec = document.getElementById('breakfast_cost_section');
+    const breakfastSelect = document.getElementById('breakfast_included');
+    const costInput = document.getElementById('breakfast_buffet_cost');
+    // Show cost section when "No" is selected (breakfast NOT included)
+    const on = (breakfastSelect && breakfastSelect.value === 'No');
+    
+    console.log('🍳 toggleBreakfastCost called:', {
+      section: !!sec,
+      select: !!breakfastSelect,
+      value: breakfastSelect?.value,
+      shouldShow: on
+    });
+    
+    if (sec) {
+      sec.style.display = on ? 'block' : 'none';
+      console.log('🍳 Breakfast cost section display set to:', sec.style.display);
+      
+      // Set required field
+      if (costInput) {
+        costInput.required = on;
+        console.log('🍳 Breakfast cost field required set to:', on);
+      }
+    } else {
+      console.error('🍳 Breakfast cost section not found!');
     }
   }
   function toggleAaaDiamond(){
@@ -3783,6 +4548,17 @@ Thank you!`;
   }
   
   function setFormData(data) {
+    console.log('🔄 setFormData called with', Object.keys(data).length, 'fields');
+    
+    // Ensure form is available
+    if (!form) {
+      console.error('🔄 Form not available for setFormData');
+      return;
+    }
+    
+    // CRITICAL: Disable auto-save during form population to prevent conflicts
+    window.isPopulatingForm = true;
+    
     // Clear existing form data
     form.reset();
     
@@ -3791,7 +4567,18 @@ Thank you!`;
       if (key === 'form_type') continue; // Skip hidden form type
       
       const elements = form.querySelectorAll(`[name="${key}"]`);
+      if (elements.length === 0) {
+        console.log('🔄 No elements found for field:', key);
+        continue;
+      }
+      
       elements.forEach((el, index) => {
+        // Skip file inputs - they cannot be set programmatically for security reasons
+        if (el.type === 'file') {
+          console.log('🔄 Skipping file input:', key);
+          return;
+        }
+        
         if (Array.isArray(value)) {
           if (index < value.length) {
             if (el.type === 'checkbox' || el.type === 'radio') {
@@ -3845,18 +4632,6 @@ Thank you!`;
       });
     }
     
-    // Update form state
-    toggleES();
-    toggleAaaDiamond();
-    toggleBankSections();
-    // Ensure management company section visibility reflects saved value
-    const managementSelect = document.getElementById('is_management_company_managed');
-    const managementFields = document.getElementById('managementCompanyFields');
-    if (managementSelect) {
-      // Use the existing change handler to ensure consistent behavior and avoid race conditions
-      managementSelect.dispatchEvent(new Event('change'));
-    }
-    
     // If draft has hotel_place_id but current inputs were typed, prefer stored official values
     const hotelPlaceId = document.getElementById('hotel_place_id');
     if (hotelPlaceId && data.hotel_place_id) {
@@ -3866,7 +4641,32 @@ Thank you!`;
     if (mgmtPlaceId && data.management_company_place_id) {
       mgmtPlaceId.value = data.management_company_place_id;
     }
-    updateSubmitState();
+    
+    // Trigger form data loaded event for other components
+    window.dispatchEvent(new CustomEvent('formDataLoaded', { detail: data }));
+    
+    console.log('🔄 setFormData completed successfully');
+    
+    // CRITICAL: Re-enable auto-save and update form state AFTER population is complete
+    setTimeout(() => {
+      window.isPopulatingForm = false;
+      console.log('✅ Form population complete - auto-save re-enabled');
+      
+      // Update form state AFTER population to ensure visibility is correct
+      toggleES();
+      toggleBreakfastCost();
+      toggleAaaDiamond();
+      toggleBankSections();
+      updateSubmitState();
+      
+      // Ensure management company section visibility reflects saved value
+      const managementSelect = document.getElementById('is_management_company_managed');
+      if (managementSelect) {
+        managementSelect.dispatchEvent(new Event('change'));
+      }
+      
+      console.log('✅ Form visibility toggles completed');
+    }, 500); // Small delay to ensure all events have settled
   }
   
   // This function is handled by the enhanced saveDraft function above
@@ -3958,7 +4758,9 @@ Thank you!`;
       
       if (googlePlacesApiKey) {
         console.log('Google Places API key loaded successfully');
-        initAutocomplete();
+        setTimeout(() => {
+          initAutocomplete();
+        }, 200);
       } else {
         console.log('No Google Places API key available');
         showToast('⚠️ Google Places API not configured');
@@ -3981,22 +4783,303 @@ Thank you!`;
     }
   }
   
+  // SIMPLE AUTO-SAVE - WORKS IMMEDIATELY
+  function simpleSave() {
+    console.log('🚨 simpleSave called - delegating to handleSaveDraft');
+    
+    // Delegate to the proper save function that handles both localStorage AND server
+    if (typeof window.handleSaveDraft === 'function') {
+      console.log('🚨 handleSaveDraft exists, calling it...');
+      window.handleSaveDraft('manual');
+    } else {
+      console.error('🚨 handleSaveDraft not available yet');
+    }
+  }
+  
+  // SIMPLE RESTORE - WORKS IMMEDIATELY
+  function simpleRestore() {
+    try {
+      const saved = localStorage.getItem('hotel_draft');
+      if (!saved) {
+        console.log('🚨 No saved data found');
+        return;
+      }
+      
+      const data = JSON.parse(saved);
+      const form = document.getElementById('hotel-form');
+      if (!form) {
+        console.log('🚨 Form not found for restore');
+        return;
+      }
+      
+      console.log('🚨 RESTORING:', Object.keys(data).length, 'fields from localStorage');
+      
+      for (const [key, value] of Object.entries(data)) {
+        const input = form.querySelector(`[name="${key}"]`);
+        if (input) {
+          input.value = value;
+        }
+      }
+      
+      // Show restore notification
+      const toast = document.createElement('div');
+      toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#3b82f6; color:white; padding:12px 20px; border-radius:8px; z-index:10000; font-weight:600;';
+      toast.textContent = '✅ Data restored!';
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+      
+    } catch (e) {
+      console.error('🚨 Restore error:', e);
+    }
+  }
+  
+  // GLOBAL TEST FUNCTIONS - Available immediately
+  window.testSave = function() {
+    console.log('🧪 Testing save...');
+    console.log('🧪 handleSaveDraft exists:', typeof window.handleSaveDraft);
+    console.log('🧪 simpleSave exists:', typeof simpleSave);
+    console.log('🧪 currentUserId:', currentUserId);
+    console.log('🧪 signedIn:', signedIn, 'window.signedIn:', window.signedIn);
+    
+    if (typeof window.handleSaveDraft === 'function') {
+      console.log('🧪 Calling handleSaveDraft directly...');
+      window.handleSaveDraft('manual');
+    } else {
+      console.log('🧪 Calling simpleSave...');
+      simpleSave();
+    }
+  };
+  
+  window.testRestore = function() {
+    console.log('🧪 Testing restore...');
+    simpleRestore();
+  };
+  
+  window.testInput = function() {
+    console.log('🧪 Testing input...');
+    const hotelName = document.querySelector('[name="hotel_name"]');
+    if (hotelName) {
+      hotelName.value = 'Test Hotel ' + Date.now();
+      console.log('🧪 Set hotel name to:', hotelName.value);
+      simpleSave(); // Auto-save after setting
+    } else {
+      console.error('🧪 Hotel name field not found!');
+    }
+  };
+
   document.addEventListener('DOMContentLoaded', async function() {
     // IMMEDIATE: Clean up any lingering overlays from previous sessions
     console.log('🧹 Initial cleanup: Removing any existing overlays...');
     const existingSubmitting = document.getElementById('submitting');
+    
+    // Start retry process for Primary Contact population
+    console.log('🔄 Starting Primary Contact auto-population...');
+    retryPopulatePrimaryContact();
     const existingThanks = document.getElementById('thanks');
     if (existingSubmitting) existingSubmitting.classList.remove('show');
     if (existingThanks) existingThanks.classList.remove('show');
+    
+    // IMMEDIATE DEBUG: Check localStorage and session status
+    console.log('🔍 DEBUG: Checking localStorage and session status...');
+    console.log('🔍 Session ID exists:', !!localStorage.getItem('fedevent_session'));
+    console.log('🔍 User data exists:', !!localStorage.getItem('fedevent_user'));
+    console.log('🔍 Hotel data exists:', !!localStorage.getItem('fedevent_hotel'));
+    console.log('🔍 Draft exists:', !!localStorage.getItem('hotel_registration_draft'));
+    console.log('🔍 All localStorage keys:', Object.keys(localStorage).filter(k => k.includes('hotel') || k.includes('draft')));
+    console.log('🔍 URL params:', window.location.search);
+    
+    // IMMEDIATE FIX: Set up simple auto-save that ALWAYS works
+    setTimeout(() => {
+      console.log('🚀 Setting up IMMEDIATE auto-save...');
+      const form = document.getElementById('hotel-form');
+      if (form) {
+        console.log('🚀 Form found, setting up auto-save...');
+        // Add event listeners to ALL form inputs
+        const allInputs = form.querySelectorAll('input, select, textarea');
+        console.log('🚀 Found', allInputs.length, 'form inputs');
+        
+        // Test if we can find the hotel name field specifically
+        const hotelName = form.querySelector('[name="hotel_name"]');
+        console.log('🚀 Hotel name field found:', !!hotelName);
+        if (hotelName) {
+          console.log('🚀 Hotel name field value:', hotelName.value);
+        }
+        
+        // Define simpleAutoSave ONCE, outside the loop
+        if (!window.simpleAutoSave) {
+          window.simpleAutoSave = function() {
+            console.log('🚀 SIMPLE AUTO-SAVE triggered - delegating to handleSaveDraft');
+            // Delegate to the proper save function
+            if (typeof window.handleSaveDraft === 'function') {
+              window.handleSaveDraft('auto-input');
+            } else {
+              console.error('🚀 handleSaveDraft not available yet - will be called when ready');
+            }
+          };
+        }
+        
+        allInputs.forEach((input, index) => {
+          // Remove any existing listeners
+          input.removeEventListener('input', window.simpleAutoSave);
+          input.removeEventListener('change', window.simpleAutoSave);
+          
+          // Add listeners
+          input.addEventListener('input', window.simpleAutoSave);
+          input.addEventListener('change', window.simpleAutoSave);
+        });
+        
+        console.log('🚀 IMMEDIATE auto-save setup complete!');
+        
+        // ADDITIONAL SETUP: Run auto-save setup multiple times to ensure it works
+        setTimeout(() => {
+          console.log('🚀 Additional auto-save setup attempt...');
+          const form2 = document.getElementById('hotel-form');
+          if (form2) {
+            const inputs2 = form2.querySelectorAll('input, select, textarea');
+            console.log('🚀 Additional setup found', inputs2.length, 'inputs');
+            
+            inputs2.forEach((input, index) => {
+              if (index < 5) { // Only log first 5 for debugging
+                console.log('🚀 Input', index, ':', input.name || input.id, 'type:', input.type);
+              }
+              
+              // Add a simple test listener (but not for address fields)
+              if (!input.name || (!input.name.includes('address') && !input.name.includes('management_company_address'))) {
+                input.addEventListener('input', function() {
+                  console.log('🚀 INPUT EVENT on:', this.name || this.id, 'value:', this.value);
+                  // Show immediate notification
+                  const toast = document.createElement('div');
+                  toast.style.cssText = 'position:fixed; top:20px; right:20px; background:#ef4444; color:white; padding:8px 12px; border-radius:6px; z-index:10000; font-size:0.8rem; font-weight:600;';
+                  toast.textContent = '🚨 INPUT DETECTED';
+                  document.body.appendChild(toast);
+                  setTimeout(() => toast.remove(), 1000);
+                });
+              }
+            });
+          }
+        }, 2000);
+        
+        // IMMEDIATE RESTORATION: Load saved data immediately
+        console.log('🚀 IMMEDIATE RESTORATION: Loading saved data...');
+        const savedDraft = localStorage.getItem('hotel_registration_draft');
+        if (savedDraft) {
+          try {
+            const draftData = JSON.parse(savedDraft);
+            if (draftData.formData && Object.keys(draftData.formData).length > 0) {
+              console.log('🚀 IMMEDIATE RESTORATION: Found saved data with', Object.keys(draftData.formData).length, 'fields');
+              
+              // Restore form data
+              for (const [key, value] of Object.entries(draftData.formData)) {
+                if (key === 'form_type') continue;
+                
+                const elements = form.querySelectorAll(`[name="${key}"]`);
+                elements.forEach((el, index) => {
+                  if (Array.isArray(value)) {
+                    if (index < value.length) {
+                      if (el.type === 'checkbox' || el.type === 'radio') {
+                        el.checked = el.value === value[index];
+                      } else {
+                        el.value = value[index];
+                      }
+                    }
+                  } else {
+                    if (el.type === 'checkbox' || el.type === 'radio') {
+                      el.checked = el.value === value;
+                    } else {
+                      el.value = value;
+                    }
+                  }
+                });
+              }
+              
+              // Restore page location
+              if (draftData.currentStep && draftData.currentStep >= 1) {
+                current = draftData.currentStep;
+                setActiveStep(current);
+                console.log('🚀 IMMEDIATE RESTORATION: Restored to page', current);
+              }
+              
+              console.log('🚀 IMMEDIATE RESTORATION: Data restored successfully!');
+              
+              // Show restoration notification
+              const toast = document.createElement('div');
+              toast.style.cssText = 'position:fixed; top:20px; left:50%; transform:translateX(-50%); background:#3b82f6; color:white; padding:12px 20px; border-radius:8px; z-index:10000; font-weight:600;';
+              toast.textContent = '✅ Your data has been restored!';
+              document.body.appendChild(toast);
+              
+              setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+              }, 3000);
+              
+            } else {
+              console.log('🚀 IMMEDIATE RESTORATION: No valid form data found');
+            }
+          } catch (e) {
+            console.error('🚀 IMMEDIATE RESTORATION error:', e);
+          }
+        } else {
+          console.log('🚀 IMMEDIATE RESTORATION: No saved draft found');
+        }
+        
+      } else {
+        console.error('🚀 Form not found for immediate auto-save!');
+      }
+    }, 1000);
     
     // Initialize DOM elements
     form = document.getElementById('hotel-form');
     pages = Array.from(document.querySelectorAll('.page'));
     steps = Array.from(document.querySelectorAll('.step'));
+    updateStepIndicators();
+    
+    // SIMPLE AUTO-SAVE SETUP - WORKS IMMEDIATELY
+    if (form) {
+      console.log('🚀 Setting up SIMPLE auto-save...');
+      
+      // Add event listeners to all inputs
+      const inputs = form.querySelectorAll('input, select, textarea');
+      console.log('🚀 Found', inputs.length, 'inputs');
+      
+      inputs.forEach(input => {
+        input.addEventListener('input', simpleSave);
+        input.addEventListener('change', simpleSave);
+      });
+      
+      // Restore data immediately
+      setTimeout(simpleRestore, 500);
+      
+      // Start 10-second auto-save
+      setTimeout(() => {
+        if (typeof window.startAutoSave === 'function') {
+          window.startAutoSave();
+        }
+      }, 2000);
+      
+      console.log('🚀 SIMPLE auto-save setup complete!');
+    }
     backBtn = document.getElementById('backBtn');
     nextBtn = document.getElementById('nextBtn');
     submitBtn = document.getElementById('submitBtn');
     navHint = document.getElementById('navHint');
+    
+    // Make steps clickable for navigation
+    const stepElements = document.querySelectorAll('.step');
+    stepElements.forEach((stepEl, index) => {
+      stepEl.style.cursor = 'pointer';
+      stepEl.addEventListener('click', () => {
+        const targetPage = index + 1; // Steps are 1-indexed, pages are 1-4
+        console.log('Step clicked:', targetPage, 'Current page:', current);
+        // Allow navigation to any previous or current step (going back is always allowed)
+        // Only prevent jumping forward to incomplete sections
+        if (targetPage < current || targetPage === current || !signedIn) {
+          autoRestoreCompleted = true;
+          setActiveStep(targetPage);
+        } else {
+          showToast('⚠️ Please complete the current section first');
+        }
+      });
+    });
+    console.log('✅ Steps are now clickable');
     
     // Initialize other DOM elements
     addRoomBtn = document.getElementById('addRoomBtn');
@@ -4017,6 +5100,40 @@ Thank you!`;
       console.log('🟢 Meeting Spaces button listener attached successfully');
     } else {
       console.error('🟢 Add Room button not found!');
+    }
+    
+    // A/V Services conditional fields
+    const avInHouse = document.getElementById('av_in_house');
+    const avProviderSection = document.getElementById('av_provider_section');
+    const avOutsideAllowed = document.getElementById('av_outside_allowed');
+    const avOutsideFeesSection = document.getElementById('av_outside_fees_section');
+    
+    if (avInHouse && avProviderSection) {
+      avInHouse.addEventListener('change', function() {
+        if (this.value === 'Yes') {
+          avProviderSection.style.display = 'block';
+        } else {
+          avProviderSection.style.display = 'none';
+        }
+      });
+      // Trigger on page load if already selected
+      if (avInHouse.value === 'Yes') {
+        avProviderSection.style.display = 'block';
+      }
+    }
+    
+    if (avOutsideAllowed && avOutsideFeesSection) {
+      avOutsideAllowed.addEventListener('change', function() {
+        if (this.value === 'Yes') {
+          avOutsideFeesSection.style.display = 'block';
+        } else {
+          avOutsideFeesSection.style.display = 'none';
+        }
+      });
+      // Trigger on page load if already selected
+      if (avOutsideAllowed.value === 'Yes') {
+        avOutsideFeesSection.style.display = 'block';
+      }
     }
     
     rooms = document.getElementById('rooms');
@@ -4049,6 +5166,384 @@ Thank you!`;
     } else {
       console.error('🏨 Extended Stay select not found!');
     }
+    
+    // Set up breakfast cost listener
+    const breakfastSelect = document.getElementById('breakfast_included');
+    if (breakfastSelect) {
+      console.log('🍳 Setting up breakfast cost listener');
+      
+      // Remove existing listeners
+      const newBreakfastSelect = breakfastSelect.cloneNode(true);
+      breakfastSelect.parentNode.replaceChild(newBreakfastSelect, breakfastSelect);
+      
+      newBreakfastSelect.addEventListener('change', function() {
+        console.log('🍳 Breakfast included changed to:', this.value);
+        toggleBreakfastCost();
+        
+        // Auto-save when breakfast selection changes
+        if (signedIn || window.signedIn) {
+          setTimeout(() => {
+            handleSaveDraft('breakfast-change');
+          }, 500);
+        }
+      });
+      
+      // Initialize breakfast cost section based on current value
+      console.log('🍳 Initializing breakfast cost with current value:', newBreakfastSelect.value);
+      setTimeout(() => {
+        toggleBreakfastCost();
+      }, 100);
+    } else {
+      console.error('🍳 Breakfast select not found!');
+    }
+    
+    // Set up suites functionality
+    const hasSuitesSelect = document.getElementById('has_suites');
+    const suitesSection = document.getElementById('suites_section');
+    const suitesContainer = document.getElementById('suites_container');
+    const addSuiteBtn = document.getElementById('addSuiteBtn');
+    const suitesTotalDiv = document.getElementById('suites_total');
+    const suitesTotalCount = document.getElementById('suites_total_count');
+    
+    let suiteIndex = 0;
+    
+    function addSuiteRow() {
+      const row = document.createElement('div');
+      row.className = 'suite-entry-row';
+      row.style.marginBottom = '16px';
+      row.style.padding = '16px';
+      row.style.border = '1px solid #e5e7eb';
+      row.style.borderRadius = '8px';
+      row.style.backgroundColor = '#f9fafb';
+      row.setAttribute('data-suite-index', suiteIndex);
+      row.setAttribute('data-suite-status', 'editing');
+      
+      row.innerHTML = `
+        <div class="suite-form-view">
+          <div class="row">
+            <div class="col-3">
+              <label>Suite Type <span class="required">*</span></label>
+              <select name="suite_type_${suiteIndex}" class="suite-type-select" required>
+                <option value="">Select suite type</option>
+                <option value="Studio Suite">Studio Suite</option>
+                <option value="1 Bedroom Suite">1 Bedroom Suite</option>
+                <option value="2 Bedroom Suite">2 Bedroom Suite</option>
+              </select>
+            </div>
+            <div class="col-2">
+              <label>Quantity <span class="required">*</span></label>
+              <input type="number" name="suite_quantity_${suiteIndex}" class="suite-quantity" min="1" value="1" required />
+            </div>
+            <div class="col-2">
+              <label>Real Beds <span class="required">*</span></label>
+              <input type="number" name="suite_beds_${suiteIndex}" class="suite-beds" min="1" value="1" required />
+            </div>
+            <div class="col-2">
+              <label>Sofa Bed? <span class="required">*</span></label>
+              <select name="suite_sofa_bed_${suiteIndex}" class="suite-sofa-bed" required>
+                <option value="">Select</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
+              </select>
+            </div>
+            <div class="col-3" style="display:flex; align-items:flex-end; gap:8px;">
+              <button type="button" class="btn done-suite-btn" style="background:#10b981; color:white; padding:10px 16px;">Save</button>
+              <button type="button" class="btn ghost remove-suite-btn" style="background:#dc2626; color:white; padding:10px 16px;">Delete</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="suite-display-view" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; gap:12px;">
+            <div class="suite-display-summary" style="font-size:0.95rem; color:#1f2937;">
+              <strong class="suite-display-type"></strong> · 
+              <span class="suite-display-quantity"></span> suite(s) · 
+              <span class="suite-display-beds"></span> bed(s) each · 
+              Sofa bed: <span class="suite-display-sofa-bed"></span>
+            </div>
+            <button type="button" class="btn ghost edit-suite-btn" style="padding:8px 12px;">Edit</button>
+          </div>
+        </div>
+      `;
+      
+      suitesContainer.appendChild(row);
+      
+      const typeSelect = row.querySelector('.suite-type-select');
+      const quantityInput = row.querySelector('.suite-quantity');
+      const bedsInput = row.querySelector('.suite-beds');
+      const sofaBedSelect = row.querySelector('.suite-sofa-bed');
+      const doneBtn = row.querySelector('.done-suite-btn');
+      const editBtn = row.querySelector('.edit-suite-btn');
+      const removeBtn = row.querySelector('.remove-suite-btn');
+      const formView = row.querySelector('.suite-form-view');
+      const displayView = row.querySelector('.suite-display-view');
+      
+      const syncRemoveVisibility = () => {
+        const status = row.getAttribute('data-suite-status') || 'editing';
+        if (status === 'saved') {
+          row.style.padding = '12px 16px';
+          row.style.marginBottom = '10px';
+          row.style.display = 'block';
+        } else {
+          row.style.padding = '16px';
+          row.style.marginBottom = '16px';
+        }
+        if (removeBtn) {
+          removeBtn.style.display = status === 'saved' ? 'none' : 'inline-block';
+        }
+      };
+      syncRemoveVisibility();
+      
+      // Handle Done button
+      doneBtn.addEventListener('click', function() {
+        if (!typeSelect.value || !quantityInput.value || !bedsInput.value || !sofaBedSelect.value) {
+          alert('Please fill in all required fields');
+          return;
+        }
+        
+        // Update display view
+        row.querySelector('.suite-display-type').textContent = typeSelect.value;
+        row.querySelector('.suite-display-quantity').textContent = quantityInput.value;
+        row.querySelector('.suite-display-beds').textContent = bedsInput.value;
+        row.querySelector('.suite-display-sofa-bed').textContent = sofaBedSelect.value;
+        
+        // Switch to display view
+        formView.style.display = 'none';
+        displayView.style.display = 'block';
+        row.setAttribute('data-suite-status', 'saved');
+        row.style.backgroundColor = '#fff';
+        syncRemoveVisibility();
+        
+        updateSuitesTotal();
+      });
+      
+      // Handle Edit button
+      editBtn.addEventListener('click', function() {
+        formView.style.display = 'block';
+        displayView.style.display = 'none';
+        row.setAttribute('data-suite-status', 'editing');
+        row.style.backgroundColor = '#f9fafb';
+        syncRemoveVisibility();
+      });
+      
+      // Handle Remove button (hidden in condensed view but kept for safety)
+      if (removeBtn) {
+        removeBtn.style.display = 'none';
+        removeBtn.addEventListener('click', function() {
+          if (confirm('Are you sure you want to remove this suite entry?')) {
+            row.remove();
+            updateSuitesTotal();
+          }
+        });
+      }
+      
+      // Handle quantity change
+      quantityInput.addEventListener('input', function() {
+        if (row.getAttribute('data-suite-status') === 'saved') {
+          updateSuitesTotal();
+        }
+      });
+      
+      suiteIndex++;
+    }
+    
+    function updateSuitesTotal() {
+      let total = 0;
+      document.querySelectorAll('.suite-quantity').forEach(input => {
+        const val = parseInt(input.value) || 0;
+        total += val;
+      });
+      
+      suitesTotalCount.textContent = total;
+      
+      if (total > 0) {
+        suitesTotalDiv.style.display = 'block';
+      } else {
+        suitesTotalDiv.style.display = 'none';
+      }
+    }
+    
+    if (hasSuitesSelect) {
+      hasSuitesSelect.addEventListener('change', function() {
+        if (this.value === 'Yes') {
+          suitesSection.style.display = 'block';
+          // Add first row if container is empty
+          if (suitesContainer.children.length === 0) {
+            addSuiteRow();
+          }
+        } else {
+          suitesSection.style.display = 'none';
+          // Clear all suite rows
+          suitesContainer.innerHTML = '';
+          suiteIndex = 0;
+        }
+      });
+    }
+    
+    if (addSuiteBtn) {
+      addSuiteBtn.addEventListener('click', addSuiteRow);
+    }
+    
+    // Set up ADA rooms functionality
+    const hasAdaRoomsSelect = document.getElementById('has_ada_rooms');
+    const adaRoomsSection = document.getElementById('ada_rooms_section');
+    const adaRoomsContainer = document.getElementById('ada_rooms_container');
+    const addAdaRoomBtn = document.getElementById('addAdaRoomBtn');
+    const adaRoomsTotalDiv = document.getElementById('ada_rooms_total');
+    const adaRoomsTotalCount = document.getElementById('ada_rooms_total_count');
+    
+    let adaRoomIndex = 0;
+    
+    function addAdaRoomRow() {
+      const row = document.createElement('div');
+      row.className = 'row';
+      row.style.marginBottom = '12px';
+      row.style.padding = '12px';
+      row.style.border = '1px solid #e5e7eb';
+      row.style.borderRadius = '8px';
+      row.style.backgroundColor = '#f9fafb';
+      row.setAttribute('data-ada-room-index', adaRoomIndex);
+      
+      row.innerHTML = `
+        <div class="col-3">
+          <label>ADA Room Type <span class="required">*</span></label>
+          <select name="ada_room_type_${adaRoomIndex}" class="ada-room-type-select" required>
+            <option value="">Select ADA room type</option>
+            <option value="Single Occupancy">Single Occupancy</option>
+            <option value="Double Occupancy">Double Occupancy</option>
+            <option value="Studio">Studio</option>
+            <option value="1 Bedroom Suite">1 Bedroom Suite</option>
+            <option value="2 Bedroom Suite">2 Bedroom Suite</option>
+          </select>
+        </div>
+        <div class="col-2">
+          <label>Quantity <span class="required">*</span></label>
+          <input type="number" name="ada_room_quantity_${adaRoomIndex}" class="ada-room-quantity" min="1" value="1" required />
+        </div>
+        <div class="col-2">
+          <label>Real Beds <span class="required">*</span></label>
+          <input type="number" name="ada_room_beds_${adaRoomIndex}" class="ada-room-beds" min="1" value="1" required />
+        </div>
+        <div class="col-2">
+          <label>Sofa Bed? <span class="required">*</span></label>
+          <select name="ada_room_sofa_bed_${adaRoomIndex}" class="ada-room-sofa-bed" required>
+            <option value="">Select</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+        <div class="col-3" style="display:flex; align-items:flex-end;">
+          <button type="button" class="btn ghost remove-ada-room-btn" style="background:#dc2626; color:white;">Remove</button>
+        </div>
+      `;
+      
+      adaRoomsContainer.appendChild(row);
+      
+      // Handle quantity change
+      const quantityInput = row.querySelector('.ada-room-quantity');
+      quantityInput.addEventListener('input', function() {
+        updateAdaRoomsTotal();
+        updateTotalRooms();
+      });
+      
+      // Handle remove button
+      const removeBtn = row.querySelector('.remove-ada-room-btn');
+      removeBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to remove this ADA room entry?')) {
+          row.remove();
+          updateAdaRoomsTotal();
+          updateTotalRooms();
+        }
+      });
+      
+      adaRoomIndex++;
+      updateAdaRoomsTotal();
+      updateTotalRooms();
+    }
+    
+    function updateAdaRoomsTotal() {
+      let total = 0;
+      document.querySelectorAll('.ada-room-quantity').forEach(input => {
+        const val = parseInt(input.value) || 0;
+        total += val;
+      });
+      
+      adaRoomsTotalCount.textContent = total;
+      
+      if (total > 0) {
+        adaRoomsTotalDiv.style.display = 'block';
+      } else {
+        adaRoomsTotalDiv.style.display = 'none';
+      }
+      
+      return total;
+    }
+    
+    if (hasAdaRoomsSelect) {
+      hasAdaRoomsSelect.addEventListener('change', function() {
+        if (this.value === 'Yes') {
+          adaRoomsSection.style.display = 'block';
+          // Add first row if container is empty
+          if (adaRoomsContainer.children.length === 0) {
+            addAdaRoomRow();
+          }
+        } else {
+          adaRoomsSection.style.display = 'none';
+          // Clear all ADA room rows
+          adaRoomsContainer.innerHTML = '';
+          adaRoomIndex = 0;
+          updateTotalRooms();
+        }
+      });
+    }
+    
+    if (addAdaRoomBtn) {
+      addAdaRoomBtn.addEventListener('click', addAdaRoomRow);
+    }
+    
+    // Function to update total rooms
+    function updateTotalRooms() {
+      const kingRooms = parseInt(document.getElementById('king_rooms')?.value) || 0;
+      const doubleRooms = parseInt(document.getElementById('double_rooms')?.value) || 0;
+      
+      // Get suite totals
+      let suitesTotal = 0;
+      document.querySelectorAll('.suite-quantity').forEach(input => {
+        suitesTotal += parseInt(input.value) || 0;
+      });
+      
+      // Get ADA room totals
+      let adaTotal = 0;
+      document.querySelectorAll('.ada-room-quantity').forEach(input => {
+        adaTotal += parseInt(input.value) || 0;
+      });
+      
+      const total = kingRooms + doubleRooms + suitesTotal + adaTotal;
+      
+      const totalRoomsInput = document.getElementById('total_rooms');
+      if (totalRoomsInput) {
+        totalRoomsInput.value = total;
+      }
+    }
+    
+    // Add listeners to room count inputs
+    const kingRoomsInput = document.getElementById('king_rooms');
+    const doubleRoomsInput = document.getElementById('double_rooms');
+    
+    if (kingRoomsInput) {
+      kingRoomsInput.addEventListener('input', updateTotalRooms);
+    }
+    if (doubleRoomsInput) {
+      doubleRoomsInput.addEventListener('input', updateTotalRooms);
+    }
+    
+    // Update suite total calculation to also update total rooms
+    const originalUpdateSuitesTotal = updateSuitesTotal;
+    updateSuitesTotal = function() {
+      originalUpdateSuitesTotal();
+      updateTotalRooms();
+    };
+    
     acceptsNet30 = document.getElementById('accepts_net30');
     hasOutdoorFacility = document.getElementById('has_outdoor_facility');
     isAaaRated = document.getElementById('is_aaa_rated');
@@ -4203,34 +5698,36 @@ Thank you!`;
       setActiveStep(1);
     }
     
-    // IMMEDIATE AUTO-RESTORE FROM LOCALSTORAGE
-    console.log('🔄 Starting immediate auto-restore from localStorage...');
-    try {
-      // Try multiple localStorage keys for maximum reliability
-      const restoreKeys = [
-        'hotel_registration_draft',
-        `hotel_registration_draft_${currentUserId || 'anonymous'}`,
-        ...Object.keys(localStorage).filter(key => key.startsWith('hotel_registration_backup_')).sort().slice(-1)
-      ];
-      
-      let restored = false;
-      for (const key of restoreKeys) {
-        const savedData = localStorage.getItem(key);
-        if (savedData) {
-          try {
-            const draftData = JSON.parse(savedData);
-            if (draftData.formData && Object.keys(draftData.formData).length > 0) {
-              console.log('🔄 Restoring from key:', key, 'with', Object.keys(draftData.formData).length, 'fields');
-              setFormData(draftData.formData);
-              
-              // Restore page location
-              if (draftData.currentStep !== undefined && draftData.currentStep >= 1) {
-                current = draftData.currentStep;
-                setActiveStep(current);
-                console.log('🔄 Restored to page:', current);
-              }
-              
-              restored = true;
+    // DELAYED AUTO-RESTORE FROM LOCALSTORAGE - Wait for all initialization to complete
+    console.log('🔄 Scheduling delayed auto-restore from localStorage...');
+    setTimeout(() => {
+      console.log('🔄 Starting delayed auto-restore from localStorage...');
+      try {
+        // Try multiple localStorage keys for maximum reliability
+        const restoreKeys = [
+          'hotel_registration_draft',
+          `hotel_registration_draft_${currentUserId || 'anonymous'}`,
+          ...Object.keys(localStorage).filter(key => key.startsWith('hotel_registration_backup_')).sort().slice(-1)
+        ];
+        
+        let restored = false;
+        for (const key of restoreKeys) {
+          const savedData = localStorage.getItem(key);
+          if (savedData) {
+            try {
+              const draftData = JSON.parse(savedData);
+              if (draftData.formData && Object.keys(draftData.formData).length > 0) {
+                console.log('🔄 Restoring from key:', key, 'with', Object.keys(draftData.formData).length, 'fields');
+                setFormData(draftData.formData);
+                
+                // Restore page location
+                if (draftData.currentStep !== undefined && draftData.currentStep >= 1) {
+                  current = draftData.currentStep;
+                  setActiveStep(current);
+                  console.log('🔄 Restored to page:', current);
+                }
+                
+                restored = true;
               
               // Show success message
               if (signedIn || window.signedIn) {
@@ -4272,9 +5769,31 @@ Thank you!`;
         console.log('🔄 No saved data found to restore');
       }
       
-    } catch (error) {
-      console.error('🔄 Auto-restore failed:', error);
-    }
+      } catch (error) {
+        console.error('🔄 Auto-restore failed:', error);
+      }
+    }, 2000); // Wait 2 seconds for all initialization to complete
+    
+    // Additional restoration attempt for server drafts (runs even later)
+    setTimeout(() => {
+      if (signedIn || window.signedIn) {
+        console.log('🔄 Attempting late server draft restoration...');
+        loadExistingDraft().catch(e => console.log('Late draft restoration failed:', e));
+      }
+    }, 3000);
+    
+    // Final restoration attempt with even more delay (for edge cases)
+    setTimeout(() => {
+      if (signedIn || window.signedIn && currentUserId) {
+        console.log('🔄 Final restoration attempt...');
+        // Check if form has any data, if not, try to restore again
+        const hotelName = document.querySelector('[name="hotel_name"]');
+        if (hotelName && !hotelName.value) {
+          console.log('🔄 Form appears empty, attempting final restoration...');
+          loadExistingDraft().catch(e => console.log('Final restoration failed:', e));
+        }
+      }
+    }, 5000);
     
     // Final check - force page 1 to be visible
     setTimeout(() => {
@@ -4318,28 +5837,46 @@ Thank you!`;
     // Wire Next/Back navigation
     if (nextBtn) {
       nextBtn.addEventListener('click', () => {
-        console.log('Next button clicked, current page:', current);
-        console.log('Validating current page...');
+        console.log('🔵 Next button clicked');
+        console.log('🔵 Current page:', current);
+        console.log('🔵 Total pages:', pages.length);
+        console.log('🔵 Pages array:', pages.map((p, i) => `${i}:data-page=${p.getAttribute('data-page')}`));
+        console.log('🔵 Validating current page...');
         if (!validateCurrentPage()) {
-          console.log('Validation failed');
+          console.log('🔵 Validation failed');
           return;
         }
-        console.log('Validation passed, moving to next page');
+        console.log('🔵 Validation passed');
         const last = pages.length - 1;
+        const nextPage = current + 1;
+        console.log('🔵 Next page will be:', nextPage);
         if (current < last) {
-          setActiveStep(current + 1);
+          autoRestoreCompleted = true;
+          setActiveStep(nextPage);
+        } else {
+          console.log('🔵 Already at last page');
         }
       });
     }
     
     if (backBtn) {
+      // Remove existing listeners to prevent duplicates
+      const newBackBtn = backBtn.cloneNode(true);
+      backBtn.parentNode.replaceChild(newBackBtn, backBtn);
+      backBtn = newBackBtn;
+      
       backBtn.addEventListener('click', () => {
         console.log('Back button clicked, current page:', current);
-        if (current > 1) { // Start from page 1 (Company Information)
+        if (current > 0) { // Allow going back from any page
+          autoRestoreCompleted = true;
           setActiveStep(current - 1);
         }
       });
+      console.log('✅ Back button initialized');
     }
+
+    const initialStep = current && current >= 1 ? current : 1;
+    setActiveStep(initialStep);
     
     // Live validation for Primary Contacts roles to prevent duplicate or invalid combinations
     const roleSel0 = document.querySelector('[name="sign_contacts[0][role]"]');
@@ -4430,30 +5967,79 @@ Thank you!`;
       }
     }, 1000);
     
-    // Hotel main photo preview and validation
+    // Hotel main photo preview and validation with smart compression
     const hotelPhotoInput = document.getElementById('hotel_main_photo');
     const photoPreview = document.getElementById('photo_preview');
     const previewImage = document.getElementById('preview_image');
     const photoInfo = document.getElementById('photo_info');
     
+    // Image compression function
+    async function compressImage(file, maxSizeMB = 2, maxWidth = 2400, quality = 0.85) {
+      return new Promise((resolve, reject) => {
+        // If file is already small enough, return it as-is
+        if (file.size <= maxSizeMB * 1024 * 1024) {
+          resolve(file);
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            // Calculate new dimensions maintaining aspect ratio
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxWidth) {
+              height = (height * maxWidth) / width;
+              width = maxWidth;
+            }
+            
+            // Create canvas for compression
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            // Convert to blob with compression
+            canvas.toBlob(
+              function(blob) {
+                if (!blob) {
+                  reject(new Error('Compression failed'));
+                  return;
+                }
+                
+                // Create new file from blob
+                const compressedFile = new File([blob], file.name, {
+                  type: 'image/jpeg',
+                  lastModified: Date.now()
+                });
+                
+                resolve(compressedFile);
+              },
+              'image/jpeg',
+              quality
+            );
+          };
+          img.onerror = () => reject(new Error('Failed to load image'));
+          img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+      });
+    }
+    
     if (hotelPhotoInput) {
-      hotelPhotoInput.addEventListener('change', function(e) {
+      hotelPhotoInput.addEventListener('change', async function(e) {
         const file = e.target.files[0];
         if (!file) {
           photoPreview.style.display = 'none';
           return;
         }
         
-        // Validate file size (5MB max)
-        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
-        if (file.size > maxSize) {
-          alert('⚠️ File too large!\n\nPlease upload a photo smaller than 5MB.\n\nCurrent file size: ' + (file.size / (1024 * 1024)).toFixed(1) + 'MB');
-          e.target.value = '';
-          photoPreview.style.display = 'none';
-          return;
-        }
-        
-        // Validate file type
+        // Validate file type first
         const validTypes = ['image/jpeg', 'image/jpg', 'image/png'];
         if (!validTypes.includes(file.type)) {
           alert('⚠️ Invalid file type!\n\nPlease upload a JPG, JPEG, or PNG image.');
@@ -4462,32 +6048,72 @@ Thank you!`;
           return;
         }
         
+        // Check if file is too large (over 10MB is unreasonable even before compression)
+        const maxInitialSize = 10 * 1024 * 1024; // 10MB
+        if (file.size > maxInitialSize) {
+          alert('⚠️ File too large!\n\nPlease upload a photo smaller than 10MB.\n\nCurrent file size: ' + (file.size / (1024 * 1024)).toFixed(1) + 'MB');
+          e.target.value = '';
+          photoPreview.style.display = 'none';
+          return;
+        }
+        
+        let processedFile = file;
+        const originalSize = file.size;
+        
+        // Show processing message if compression is needed
+        if (file.size > 2 * 1024 * 1024) {
+          photoInfo.innerHTML = '<strong>⏳ Optimizing image...</strong>';
+          photoPreview.style.display = 'block';
+          
+          try {
+            processedFile = await compressImage(file, 2, 2400, 0.85);
+          } catch (error) {
+            console.error('Compression error:', error);
+            alert('⚠️ Failed to optimize image. Please try a different photo.');
+            e.target.value = '';
+            photoPreview.style.display = 'none';
+            return;
+          }
+        }
+        
+        // Final size check
+        const maxSize = 2 * 1024 * 1024; // 2MB
+        if (processedFile.size > maxSize) {
+          alert('⚠️ File too large!\n\nEven after optimization, the file is too large.\nPlease upload a smaller photo.\n\nCurrent size: ' + (processedFile.size / (1024 * 1024)).toFixed(1) + 'MB');
+          e.target.value = '';
+          photoPreview.style.display = 'none';
+          return;
+        }
+        
+        // Replace the file input with compressed version
+        if (processedFile !== file) {
+          const dataTransfer = new DataTransfer();
+          dataTransfer.items.add(processedFile);
+          e.target.files = dataTransfer.files;
+        }
+        
         // Show preview
         const reader = new FileReader();
         reader.onload = function(e) {
           previewImage.src = e.target.result;
           photoPreview.style.display = 'block';
           
-          // Show file info
-          const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
-          const sizeColor = file.size > (3 * 1024 * 1024) ? '#f59e0b' : '#059669'; // Orange if > 3MB, green otherwise
+          // Show file info with compression details
+          const finalSizeInMB = (processedFile.size / (1024 * 1024)).toFixed(2);
+          const wasCompressed = processedFile !== file;
+          const compressionRatio = wasCompressed ? ((1 - processedFile.size / originalSize) * 100).toFixed(0) : 0;
+          
           photoInfo.innerHTML = `
-            <strong>File:</strong> ${file.name}<br>
-            <strong>Size:</strong> <span style="color:${sizeColor}">${sizeInMB}MB</span> 
-            ${file.size > (3 * 1024 * 1024) ? '(⚠️ Large file - consider resizing for faster upload)' : '(✓ Good size)'}<br>
-            <strong>Type:</strong> ${file.type.split('/')[1].toUpperCase()}
+            <strong>File:</strong> ${processedFile.name}<br>
+            <strong>Size:</strong> <span style="color:#059669">${finalSizeInMB}MB</span> ✓ Optimized
+            ${wasCompressed ? `<br><strong>Saved:</strong> ${compressionRatio}% smaller (was ${(originalSize / (1024 * 1024)).toFixed(1)}MB)` : ''}<br>
+            <strong>Type:</strong> JPEG
           `;
         };
-        reader.readAsDataURL(file);
+        reader.readAsDataURL(processedFile);
       });
     }
-    if (backBtn) {
-      backBtn.addEventListener('click', () => {
-        if (current > 0) {
-          setActiveStep(current - 1);
-        }
-      });
-    }
+    // Back button already initialized above - removed duplicate listener
     
     // AAA diamond toggle wiring
     if (isAaaRated) {
@@ -4579,7 +6205,22 @@ Thank you!`;
         try { json = await resp.json(); } catch(parseErr){
           const text = await resp.text(); throw new Error('Submit parse error: ' + text.slice(0,200));
         }
-        if (!json.ok){ showToast(json.error || 'Submit failed.'); return; }
+        if (!json.ok){ 
+          // Handle specific error cases with better messaging
+          let errorMessage = json.error || 'Submit failed.';
+          
+          // Check for duplicate hotel name
+          if (resp.status === 400 && /hotel.*already exists/i.test(json.error || '')) {
+            errorMessage = 'A hotel with this name is already registered by another user. Please contact support if this is an error.';
+          }
+          // Check for duplicate email
+          else if (resp.status === 400 && /email.*already|already registered/i.test(json.error || '')) {
+            errorMessage = 'This email is already registered. Please sign in or use a different email address.';
+          }
+          
+          showToast(errorMessage); 
+          return; 
+        }
         
         // Clear draft after successful submission
         if (currentUserId) {
@@ -4621,7 +6262,7 @@ Thank you!`;
         fetch(`/api/draft/delete/${currentUserId}`, { method: 'DELETE' }).catch(e => console.warn('Failed to clear draft:', e));
       }
       
-      toggleES(); updateSubmitState(); toggleAaaDiamond(); toggleBankSections(); setActiveStep(0); thanks.classList.remove('show');
+      toggleES(); toggleBreakfastCost(); updateSubmitState(); toggleAaaDiamond(); toggleBankSections(); setActiveStep(0); thanks.classList.remove('show');
     });
     
     // CRITICAL: Ensure all overlays are hidden after initialization completes
@@ -4776,33 +6417,35 @@ setTimeout(() => {
     console.log('Emergency fix: signedIn status set to true (both window.signedIn and global signedIn)');
   }
   
-  // Force remove active from all pages
+  // Force initialization to page 1 with correct step highlighting
+  console.log('🔧 Emergency fix: Forcing page 1 initialization');
+  
+  // Set current to 1
+  current = 1;
+  
+  // Remove active from all pages and steps
   document.querySelectorAll('.page').forEach(p => {
     p.classList.remove('active');
     p.style.display = 'none';
   });
   
-  // Force page 1 to be active and visible
+  document.querySelectorAll('.step').forEach(s => {
+    s.classList.remove('active', 'completed');
+  });
+  
+  // Activate page 1
   const page1 = document.querySelector('.page[data-page="1"]');
   if (page1) {
     page1.classList.add('active');
     page1.style.display = 'block';
-    console.log('Page 1 forced visible');
+    console.log('🔧 Page 1 set to active');
   }
   
-  // Force step 1 to be active
-  document.querySelectorAll('.step').forEach((step, index) => {
-    step.classList.remove('active', 'completed');
-    if (index === 1) { // Step 1 (0-indexed, so index 1 = step 2 visually, but we want step 1)
-      step.classList.add('active');
-    }
-  });
-  
-  // Actually, let's make step 0 active (Company Information)
-  const step0 = document.querySelector('.step[data-step="1"]');
-  if (step0) {
-    step0.classList.add('active');
-    console.log('Step 1 forced active');
+  // Activate step 1 (index 0 in the steps array)
+  const allSteps = document.querySelectorAll('.step');
+  if (allSteps.length > 0) {
+    allSteps[0].classList.add('active'); // First step (index 0) = Step 1 visually
+    console.log('🔧 Step 1 (index 0) set to active');
   }
   
   // Ensure navigation buttons are working
@@ -4899,51 +6542,7 @@ setTimeout(() => {
     }
   }, 100);
   
-  // Emergency role validation fix
-  setTimeout(() => {
-    const role0 = document.querySelector('[name="sign_contacts[0][role]"]');
-    const role1 = document.querySelector('[name="sign_contacts[1][role]"]');
-    
-    if (role0 && role1) {
-      console.log('Emergency role validation setup');
-      
-      function emergencyRoleCheck(changedSelect) {
-        const val0 = role0.value;
-        const val1 = role1.value;
-        
-        console.log('Emergency role check:', { val0, val1 });
-        
-        if (val0 && val1 && val0 === val1) {
-          console.log('EMERGENCY: Duplicate roles detected!');
-          alert('⚠️ DUPLICATE ROLE ERROR!\n\nYou selected the same role for both contacts.\n\nPlease choose different roles:\n• One "Signer"\n• One "Approver"');
-          
-          if (changedSelect) {
-            changedSelect.value = '';
-            changedSelect.focus();
-          }
-        }
-      }
-      
-      // Clone and replace to ensure clean listeners
-      const newRole0 = role0.cloneNode(true);
-      const newRole1 = role1.cloneNode(true);
-      
-      role0.parentNode.replaceChild(newRole0, role0);
-      role1.parentNode.replaceChild(newRole1, role1);
-      
-      newRole0.addEventListener('change', function() {
-        console.log('Emergency: Role 0 changed to', this.value);
-        emergencyRoleCheck(this);
-      });
-      
-      newRole1.addEventListener('change', function() {
-        console.log('Emergency: Role 1 changed to', this.value);
-        emergencyRoleCheck(this);
-      });
-      
-      console.log('Emergency role validation listeners attached');
-    }
-  }, 200);
+  // Emergency role validation removed - no longer needed
   
   console.log('Emergency form fix completed');
   
@@ -4982,10 +6581,10 @@ setTimeout(() => {
               console.log('💾 IMMEDIATE: Restoring from', key, 'with', Object.keys(parsed.formData).length, 'fields');
               setFormData(parsed.formData);
               
-              if (parsed.currentStep !== undefined) {
-                current = parsed.currentStep;
-                setActiveStep(current);
-              }
+              // Always start at page 1 when loading the form, ignore saved currentStep
+              // User can navigate to other pages after form loads
+              current = 1;
+              setActiveStep(1);
               
               // Show confirmation
               const toast = document.createElement('div');
@@ -5020,102 +6619,68 @@ setTimeout(() => {
   
   // MULTIPLE AUTO-RESTORE ATTEMPTS FOR MAXIMUM RELIABILITY
   function attemptAutoRestore() {
-    console.log('🔄 Attempting auto-restore...');
-    
-    // Ensure currentUserId is set from localStorage if available
-    let localUserId = (typeof currentUserId !== 'undefined' && currentUserId) ? currentUserId : null;
-    
-    if (!localUserId) {
-      try {
-        const userData = localStorage.getItem('fedevent_user');
-        if (userData) {
-          const user = JSON.parse(userData);
-          localUserId = user.id || user.userId || user.fedevent_account_number || null;
-          console.log('🔄 Set localUserId from localStorage:', localUserId);
-          
-          // Try to update global if it exists
-          if (typeof currentUserId !== 'undefined') {
-            currentUserId = localUserId;
-          }
-        }
-      } catch (e) {
-        console.warn('🔄 Could not extract userId:', e);
-      }
-    }
-    
-    try {
-      // Try multiple localStorage keys
-      const restoreKeys = [
-        'hotel_registration_draft',
-        `hotel_registration_draft_${localUserId || 'anonymous'}`,
-        ...Object.keys(localStorage).filter(key => key.startsWith('hotel_registration_backup_')).sort().slice(-1)
-      ];
-      
-      let restored = false;
-      for (const key of restoreKeys) {
-        const savedData = localStorage.getItem(key);
-        if (savedData) {
-          try {
-            const draftData = JSON.parse(savedData);
-            if (draftData.formData && Object.keys(draftData.formData).length > 0) {
-              console.log('🔄 Restoring from key:', key, 'with', Object.keys(draftData.formData).length, 'fields');
-              setFormData(draftData.formData);
-              
-              // Restore page location
-              if (draftData.currentStep !== undefined && draftData.currentStep >= 1) {
-                current = draftData.currentStep;
-                setActiveStep(current);
-                console.log('🔄 Restored to page:', current);
-              }
-              
-              restored = true;
-              
-              // Update status indicators
-              const autoSaveStatus = document.getElementById('autoSaveStatus');
-              if (autoSaveStatus) {
-                const saveDate = draftData.timestamp ? new Date(draftData.timestamp) : new Date();
-                autoSaveStatus.textContent = `Restored from: ${saveDate.toLocaleTimeString()}`;
-              }
-              
-              break; // Stop after first successful restore
-            }
-          } catch (e) {
-            console.warn('Failed to restore from key:', key, e);
-          }
-        }
-      }
-      
-      return restored;
-    } catch (error) {
-      console.error('🔄 Auto-restore failed:', error);
+    if (autoRestoreCompleted) {
+      console.log('🔄 Auto-restore skipped — already completed for this session');
       return false;
     }
+
+    console.log('🔄 Attempting auto-restore...');
+    ensureCurrentUserIdFromStorage();
+
+    const latest = getLatestLocalDraft();
+    if (!latest) {
+      console.log('❌ No valid draft found in localStorage');
+      return false;
+    }
+
+    console.log('🔄 Restoring from key:', latest.key, 'with', Object.keys(latest.draft.formData || {}).length, 'fields');
+    const toastMessage = (signedIn || window.signedIn) ? '✅ Previous draft loaded from local storage' : null;
+    if (!applyDraftToForm(latest.draft, toastMessage)) {
+      return false;
+    }
+
+    autoRestoreCompleted = true;
+
+    const autoSaveStatus = document.getElementById('autoSaveStatus');
+    if (autoSaveStatus && latest.timestamp) {
+      const saveDate = new Date(latest.timestamp);
+      if (!Number.isNaN(saveDate.getTime())) {
+        autoSaveStatus.textContent = `Restored from: ${saveDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`;
+      }
+    }
+
+    return true;
   }
   
   // Multiple restore attempts
   setTimeout(() => {
+    if (autoRestoreCompleted) return;
     console.log('🔄 Auto-restore attempt 1...');
     if (attemptAutoRestore()) {
       console.log('🔄 Auto-restore successful on attempt 1');
-    } else {
-      setTimeout(() => {
-        console.log('🔄 Auto-restore attempt 2...');
-        if (attemptAutoRestore()) {
-          console.log('🔄 Auto-restore successful on attempt 2');
-        } else {
-          setTimeout(() => {
-            console.log('🔄 Auto-restore attempt 3 (final)...');
-            if (attemptAutoRestore()) {
-              console.log('🔄 Auto-restore successful on attempt 3');
-            } else {
-              console.log('🔄 No saved data found to restore after 3 attempts');
-            }
-          }, 2000);
-        }
-      }, 1000);
+      return;
     }
+
+    setTimeout(() => {
+      if (autoRestoreCompleted) return;
+      console.log('🔄 Auto-restore attempt 2...');
+      if (attemptAutoRestore()) {
+        console.log('🔄 Auto-restore successful on attempt 2');
+        return;
+      }
+
+      setTimeout(() => {
+        if (autoRestoreCompleted) return;
+        console.log('🔄 Auto-restore attempt 3 (final)...');
+        if (attemptAutoRestore()) {
+          console.log('🔄 Auto-restore successful on attempt 3');
+        } else {
+          console.log('🔄 No saved data found to restore after 3 attempts');
+        }
+      }, 2000);
+    }, 1000);
   }, 100);
-  
+
   // Run immediately if signed in
   if (signedIn || window.signedIn) {
     console.log('🔄 Running immediate restore for signed-in user...');
@@ -5123,6 +6688,7 @@ setTimeout(() => {
     
     // Also run after a short delay in case DOM isn't ready
     setTimeout(() => {
+      if (autoRestoreCompleted) return;
       console.log('🔄 Running delayed restore...');
       attemptAutoRestore();
     }, 500);

@@ -48,6 +48,16 @@
               <input id="email" name="email" type="email" autocomplete="email">
             </div>
             <div class="form-row">
+              <label for="title">Title</label>
+              <input id="title" name="title" type="text" readonly style="background:#f9fafb">
+              <div class="note" style="margin-top:4px;font-size:0.8rem">From hotel registration</div>
+            </div>
+            <div class="form-row">
+              <label for="phone">Phone</label>
+              <input id="phone" name="phone" type="tel" readonly style="background:#f9fafb">
+              <div class="note" style="margin-top:4px;font-size:0.8rem">From hotel registration</div>
+            </div>
+            <div class="form-row">
               <label for="propertyCode">Property Code (optional)</label>
               <input id="propertyCode" name="propertyCode" type="text">
             </div>
@@ -98,6 +108,20 @@
         document.getElementById('username').value = user.username || '';
         document.getElementById('email').value = user.email || '';
         document.getElementById('propertyCode').value = user.property_code || '';
+        
+        // Load title and phone from hotel registration draft
+        try {
+          const draftData = localStorage.getItem('hotel_registration_draft');
+          if (draftData) {
+            const draft = JSON.parse(draftData);
+            if (draft.formData) {
+              document.getElementById('title').value = draft.formData.primary_contact_title || '';
+              document.getElementById('phone').value = draft.formData.primary_contact_phone || '';
+            }
+          }
+        } catch (e) {
+          console.error('Failed to load registration data:', e);
+        }
       } catch (e){
         showMessage('Failed to load profile. Please refresh.', true);
       }

@@ -61,7 +61,7 @@
             --secondary: #3b82f6;
             --text: #374151;
             --text-light: #6b7280;
-            --bg: #f9fafb;
+            --bg: #f8fafc;
             --white: #ffffff;
             --error: #dc2626;
             --success: #16a34a;
@@ -77,58 +77,140 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            background: var(--bg);
             min-height: 100vh;
+            color: var(--text);
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .brand-panel {
+            flex: 1.1;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 55%, #0f172a 100%);
+            color: #f9fafb;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: var(--text);
+            padding: 3.5rem 3rem;
+            position: relative;
+            overflow: hidden;
         }
-        
-        /* Keep sitewide header fixed at the very top so dropdown anchors correctly */
-        header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1000;
-            background: var(--white);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.25), transparent 45%);
+            opacity: 0.85;
         }
-        
-        .login-container {
-            background: var(--white);
-            border-radius: 16px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-            padding: 3rem;
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            max-width: 440px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.45);
+            color: #facc15;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-content h1 {
+            font-size: clamp(2rem, 2.8vw, 2.75rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .brand-content p {
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .brand-highlights {
+            list-style: none;
+            margin: 2rem 0 0;
+            padding: 0;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .brand-highlights li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: rgba(226, 232, 240, 0.92);
+            font-size: 0.95rem;
+        }
+
+        .brand-highlights span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.35);
+            color: #facc15;
+            font-size: 0.85rem;
+        }
+
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 3rem;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.0) 35%);
+        }
+
+        .login-card {
             width: 100%;
-            max-width: 480px;
-            margin: 2rem;
+            max-width: 420px;
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 18px;
+            box-shadow: 0 30px 60px -25px rgba(15, 23, 42, 0.35);
+            border: 1px solid rgba(15, 23, 42, 0.05);
         }
-        
-        .logo {
+
+        .card-header {
             text-align: center;
             margin-bottom: 2rem;
         }
-        
-        .logo h1 {
+
+        .card-header h1 {
+            color: var(--primary);
             font-size: 2rem;
             font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
+            letter-spacing: 0.05em;
         }
-        
-        .logo p {
+
+        .card-header p {
+            margin-top: 0.5rem;
             color: var(--text-light);
-            font-size: 1rem;
         }
-        
+
         .security-notice {
             background: #fef3c7;
             border: 1px solid #f59e0b;
             border-radius: 8px;
             padding: 1rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.5rem;
             font-size: 0.875rem;
         }
         
@@ -139,76 +221,67 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            font-size: 0.875rem;
         }
         
         .security-notice p {
             color: #92400e;
             line-height: 1.5;
+            margin: 0;
         }
         
         .form-group {
             margin-bottom: 1.5rem;
         }
         
-        .form-group label {
+        label {
             display: block;
-            font-weight: 600;
             margin-bottom: 0.5rem;
             color: var(--text);
+            font-weight: 500;
         }
         
-        .form-group input {
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
             width: 100%;
-            padding: 0.875rem;
-            border: 2px solid var(--border);
-            border-radius: 8px;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
             font-size: 1rem;
             transition: border-color 0.2s;
         }
         
-        .form-group input:focus {
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
             outline: none;
-            border-color: var(--secondary);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
         }
         
-        .login-button {
+        .btn {
             width: 100%;
+            padding: 0.75rem;
             background: var(--primary);
             color: white;
             border: none;
-            padding: 1rem;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 1rem;
             font-weight: 600;
             cursor: pointer;
             transition: background-color 0.2s;
-            margin-bottom: 1.5rem;
         }
         
-        .login-button:hover {
+        .btn:hover {
             background: var(--primary-dark);
         }
         
-        .login-button:disabled {
-            background: var(--text-light);
+        .btn:disabled {
+            opacity: 0.6;
             cursor: not-allowed;
         }
-        
-        .links {
-            text-align: center;
-            font-size: 0.875rem;
-        }
-        
-        .links a {
-            color: var(--secondary);
-            text-decoration: none;
-            font-weight: 500;
-        }
-        
-        .links a:hover {
-            text-decoration: underline;
-        }
-        
+
         .error-message {
             background: #fef2f2;
             color: var(--error);
@@ -218,34 +291,125 @@
             font-size: 0.875rem;
             display: none;
         }
-        
-        .home-link {
-            position: absolute;
-            top: 2rem;
-            left: 2rem;
-            color: white;
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .signup-link p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-link a {
+            color: var(--primary);
             text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
             font-weight: 500;
-            opacity: 0.8;
-            transition: opacity 0.2s;
         }
-        
-        .home-link:hover {
-            opacity: 1;
+
+        .back-link a:hover {
+            text-decoration: underline;
         }
-        
-        @media (max-width: 768px) {
-            .login-container {
-                padding: 2rem;
-                margin: 1rem;
+
+        .test-account {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .test-account h4 {
+            color: #0369a1;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .test-account p {
+            color: #0c4a6e;
+            margin: 0.25rem 0;
+        }
+
+        @media (max-width: 1100px) {
+            .brand-panel {
+                padding: 3rem 2.5rem;
             }
             
-            .home-link {
-                position: static;
-                display: block;
+            .form-panel {
+                padding: 3.5rem 2.5rem;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .brand-panel {
+                flex: none;
+                padding: 3rem 1.75rem 2.5rem;
                 text-align: center;
-                margin-bottom: 2rem;
-                color: var(--secondary);
+            }
+
+            .brand-content {
+                max-width: 520px;
+            }
+
+            .brand-highlights {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+
+            .brand-highlights li {
+                justify-content: center;
+            }
+
+            .form-panel {
+                padding: 2.5rem 1.75rem 3.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+                border-radius: 14px;
+            }
+
+            .form-panel {
+                padding: 2.25rem 1.25rem 3rem;
+            }
+
+            .brand-content h1 {
+                font-size: 2rem;
+            }
+
+            .brand-highlights {
+                gap: 0.6rem;
+            }
+
+            .brand-highlights li {
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -281,50 +445,71 @@
       </nav>
     </header>
     
-    <div class="login-container" style="margin-top: 80px;">
-        <div class="logo">
-            <h1>🏛️ Government Portal</h1>
-            <p>Secure access for government personnel</p>
-        </div>
-        
-        <div class="security-notice">
-            <h3>🔒 Security Notice</h3>
-            <p>This portal is for <strong>UNCLASSIFIED</strong> information only. Do not upload or submit any classified, confidential, or sensitive materials. FEDEVENT does not hold security clearance for classified information.</p>
-        </div>
-        
-        <div id="errorMessage" class="error-message"></div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Government Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="firstname.lastname@agency.gov">
+    <main class="page-wrapper">
+        <section class="brand-panel">
+            <div class="brand-content">
+                <span class="brand-badge">🏛️ Government Portal</span>
+                <h1>Secure access to mission-critical event planning and hotel sourcing services.</h1>
+                <p>Your trusted partner for government event coordination, lodging solutions, and logistics support across all federal agencies.</p>
+                <ul class="brand-highlights">
+                    <li><span>✔</span> Secure UNCLASSIFIED portal access</li>
+                    <li><span>✔</span> Mission support request forms</li>
+                    <li><span>✔</span> Emergency support available 24/7</li>
+                    <li><span>✔</span> Government-qualified hotel network</li>
+                </ul>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <div style="position: relative;">
-                    <input type="password" id="password" name="password" required style="padding-right: 50px;">
-                    <button type="button" onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: #666;">👁️</button>
+        </section>
+
+        <section class="form-panel">
+            <div class="login-card">
+                <div class="card-header">
+                    <h1>FEDEVENT</h1>
+                    <p>Government Portal</p>
+                </div>
+
+                <div class="security-notice">
+                    <h3>🔒 Security Notice</h3>
+                    <p>This portal is for <strong>UNCLASSIFIED</strong> information only. Do not upload or submit any classified, confidential, or sensitive materials.</p>
+                </div>
+
+                <div id="errorMessage" class="error-message"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Government Email Address</label>
+                        <input type="email" id="email" name="email" required placeholder="firstname.lastname@agency.gov">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="password" name="password" required style="padding-right: 50px;">
+                            <button type="button" onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: #666;">👁️</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="loginButton">
+                        Sign In to Government Portal
+                    </button>
+                </form>
+
+                <div class="signup-link">
+                    <p>New to FEDEVENT Government Portal?</p>
+                    <a href="/government-registration.html">Request Government Account →</a>
+                </div>
+
+                <div class="test-account">
+                    <h4>🧪 Test Account</h4>
+                    <p><strong>Email:</strong> test@fedevent.mil</p>
+                    <p><strong>Password:</strong> Atakanc1$</p>
+                </div>
+
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
                 </div>
             </div>
-            
-            <button type="submit" class="login-button" id="loginButton">
-                Sign In to Government Portal
-            </button>
-        </form>
-        
-        <div class="links">
-            <p>New to FEDEVENT Government Portal?</p>
-            <a href="/government-registration.html">Request Government Account</a>
-        </div>
-        
-        <div style="background: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 1rem; margin-top: 2rem; font-size: 0.9rem;">
-            <h4 style="color: #0369a1; margin-top: 0;">🧪 Test Accounts</h4>
-            <p style="color: #0c4a6e; margin-bottom: 0.5rem;"><strong>Email:</strong> test@fedevent.mil</p>
-            <p style="color: #0c4a6e; margin-bottom: 0.5rem;"><strong>Password:</strong> Atakanc1$</p>
-            <p style="color: #0c4a6e; margin: 0; font-size: 0.8rem;">Use these credentials to test the government portal functionality.</p>
-        </div>
-    </div>
+        </section>
+    </main>
     
     <script>
         // Check if user is already signed in

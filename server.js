@@ -3708,20 +3708,32 @@ app.post('/api/auth/login', async (req, res) => {
 // Register endpoint (for hotel users)
 app.post('/api/auth/register', async (req, res) => {
   try {
+    console.log('🔐 Registration attempt:', { 
+      email: req.body.email, 
+      hasPassword: !!req.body.password, 
+      username: req.body.username, 
+      hotelName: req.body.hotelName, 
+      contactName: req.body.contactName 
+    });
+    
     const { email, password, username, hotelName, contactName } = req.body;
     
     // Use contactName as username if provided, otherwise fall back to username
     const displayName = contactName || username || hotelName;
     
     if (!email || !password || !displayName) {
+      console.log('❌ Registration failed: Missing required fields', { email: !!email, password: !!password, displayName: !!displayName });
       return fail(res, 400, 'Email, password, and contact name are required');
     }
     
     // Check if user already exists
+    console.log('🔍 Checking if user exists for email:', email);
     const existingUser = db.prepare(`SELECT id, email FROM users WHERE email = ?`).get(email);
     if (existingUser) {
-      return fail(res, 400, 'A user with this email already exists. Please use the sign-in option or try a different email address.');
+      console.log('❌ Registration failed: User already exists', { id: existingUser.id, email: existingUser.email });
+      return fail(res, 400, 'This email is already registered. Please sign in instead or use a different email address.');
     }
+    console.log('✅ Email is available for registration');
     
     // Generate FEDEVENT account number (State+Year+Sequence)
     const currentYear = new Date().getFullYear();
@@ -3740,13 +3752,30 @@ app.post('/api/auth/register', async (req, res) => {
     const fedeventAccountNumber = `${stateCode}${yearSuffix}${sequenceNumber}`;
 
     // Create user with FEDEVENT account number
+    console.log('🔐 Creating user with account number:', fedeventAccountNumber);
     const passwordHash = hashPassword(password);
-    const userResult = db.prepare(`
-      INSERT INTO users (email, password_hash, first_name, last_name, role, fedevent_account_number)
-      VALUES (?, ?, ?, ?, 'hotel', ?)
-    `).run(email, passwordHash, displayName, '', fedeventAccountNumber);
     
-    const sessionId = createSession(userResult.lastInsertRowid);
+    let userResult;
+    let sessionId;
+    
+    try {
+      userResult = db.prepare(`
+        INSERT INTO users (email, password_hash, first_name, last_name, role, fedevent_account_number)
+        VALUES (?, ?, ?, ?, 'hotel', ?)
+      `).run(email, passwordHash, displayName, '', fedeventAccountNumber);
+      
+      console.log('✅ User created successfully:', { 
+        id: userResult.lastInsertRowid, 
+        email, 
+        accountNumber: fedeventAccountNumber 
+      });
+      
+      sessionId = createSession(userResult.lastInsertRowid);
+      console.log('✅ Session created:', sessionId);
+    } catch (dbError) {
+      console.error('❌ Database error during user creation:', dbError);
+      return fail(res, 500, 'Failed to create user account. Please try again.');
+    }
     
     // Send welcome email if SMTP is configured
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
@@ -4894,6 +4923,27 @@ app.put('/api/hotel/profile', requireAuth, (req, res) => {
       SET name = ?, city = ?, state = ?, country = ?
       WHERE id = ?
     `).run(name, city, state, country, req.user.hotel_id);
+    
+    // Also update user profile if primary contact information is provided
+    const primaryContactName = req.body['sign_contacts[0][name]'] || '';
+    const primaryContactTitle = req.body['sign_contacts[0][title]'] || '';
+    const primaryContactPhone = req.body['sign_contacts[0][phone]'] || '';
+    
+    if (primaryContactName || primaryContactTitle || primaryContactPhone) {
+      // Parse name into first and last name
+      const nameParts = primaryContactName.trim().split(' ');
+      const firstName = nameParts[0] || req.user.first_name || '';
+      const lastName = nameParts.slice(1).join(' ') || req.user.last_name || '';
+      
+      // Update user profile with primary contact information
+      db.prepare(`
+        UPDATE users 
+        SET first_name = ?, last_name = ?, phone = ?, job_title = ?
+        WHERE id = ?
+      `).run(firstName, lastName, primaryContactPhone, primaryContactTitle, req.user.id);
+      
+      console.log(`Updated user profile for user ${req.user.id} with primary contact info`);
+    }
     
     return ok(res, { message: 'Hotel profile updated successfully' });
   } catch (error) {
@@ -6435,6 +6485,37 @@ app.post('/api/submit', upload.any(), async (req, res) => {
       INSERT INTO hotel_profiles (hotel_id, profile_data, files_data, status, submitted_at, updated_at) 
       VALUES (?, ?, ?, ?, datetime('now'), datetime('now'))
     `).run(profileHotelId, JSON.stringify(profileData), JSON.stringify(files), 'pending');
+
+    // Update user profile with primary contact information if user is logged in
+    const sessionId = req.headers.authorization?.replace('Bearer ', '');
+    if (sessionId) {
+      try {
+        const sessionUser = preparedQueries.getSessionUser.get(sessionId);
+        if (sessionUser) {
+          // Extract primary contact information (use first contact as primary)
+          const primaryContactName = data['sign_contacts[0][name]'] || '';
+          const primaryContactTitle = data['sign_contacts[0][title]'] || '';
+          const primaryContactPhone = data['sign_contacts[0][phone]'] || '';
+          
+          // Parse name into first and last name
+          const nameParts = primaryContactName.trim().split(' ');
+          const firstName = nameParts[0] || '';
+          const lastName = nameParts.slice(1).join(' ') || '';
+          
+          // Update user profile with primary contact information
+          db.prepare(`
+            UPDATE users 
+            SET first_name = ?, last_name = ?, phone = ?, job_title = ?, hotel_id = ?
+            WHERE id = ?
+          `).run(firstName, lastName, primaryContactPhone, primaryContactTitle, profileHotelId, sessionUser.id);
+          
+          console.log(`Updated user profile for user ${sessionUser.id} with primary contact info`);
+        }
+      } catch (userUpdateError) {
+        console.error('Failed to update user profile:', userUpdateError);
+        // Don't fail the entire submission if user update fails
+      }
+    }
 
     // Send notification email
     if (process.env.NOTIFY_TO && process.env.SMTP_HOST) {

@@ -130,10 +130,12 @@
     (function initDropdowns(){
       stateSelect.innerHTML = '<option value="">Select state…</option>' + STATES.map(([ab,n])=>`<option value="${ab}">${n}</option>`).join('');
       const now = new Date();
-      const fy = now.getFullYear();
-      const years = [fy-1, fy, fy+1, fy+2];
-      yearSelect.innerHTML = years.map(y=>`<option value="${y}">${y}</option>`).join('');
-      yearSelect.value = fy;
+      // Calculate current fiscal year (FY starts October 1st)
+      // If we're in October-December, we're in the next calendar year's FY
+      const currentFY = now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+      const years = [currentFY-1, currentFY, currentFY+1, currentFY+2];
+      yearSelect.innerHTML = years.map(y=>`<option value="${y}">FY${String(y).slice(-2)} (${y-1}-${y})</option>`).join('');
+      yearSelect.value = currentFY;
       citySelect.innerHTML = '<option value="">(Select state first)</option>';
     })();
 
@@ -276,7 +278,9 @@
       citySelect.innerHTML = '<option value="">(Select state first)</option>';
       zipInput.value = '';
       const now = new Date();
-      yearSelect.value = now.getFullYear();
+      // Calculate current fiscal year (FY starts October 1st)
+      const currentFY = now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+      yearSelect.value = currentFY;
       resultCard.classList.add('hidden');
       document.getElementById('cityListCard').classList.add('hidden');
     });
@@ -311,7 +315,9 @@
     // Populate city dropdown from GSA-backed endpoint when state changes
     stateSelect.addEventListener('change', async () => {
       const state = stateSelect.value;
-      const year = yearSelect.value || String(new Date().getFullYear());
+      const now = new Date();
+      const currentFY = now.getMonth() >= 9 ? now.getFullYear() + 1 : now.getFullYear();
+      const year = yearSelect.value || String(currentFY);
       citySelect.innerHTML = '<option value="">Loading cities…</option>';
       if (!state) {
         citySelect.innerHTML = '<option value="">(Select state first)</option>';
