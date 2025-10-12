@@ -604,6 +604,7 @@
             <div class="nav-links">
                 <a href="#" class="nav-tab active" onclick="showTab('dashboard')">Dashboard</a>
                 <a href="#" class="nav-tab" onclick="showTab('hotels')">Hotels</a>
+                <a href="#" class="nav-tab" onclick="showTab('waitlist')">Waitlist</a>
                 <a href="/admin-contracts.html" class="nav-tab">Contracts</a>
                 <a href="/sam-search-admin.html" class="nav-tab">SAM Search</a>
             </div>
@@ -1168,10 +1169,72 @@ You can use these placeholders:
             </div>
         </div>
     </div>
+    
+    <div id="waitlistTab" class="tab-content">
+        <!-- Hotel Waitlist Management -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">🎯 Prelaunch Hotel Waitlist</h2>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalLeads">-</div>
+                    <div class="stat-label">Total Signups</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="todayLeads">-</div>
+                    <div class="stat-label">Today's Signups</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="thisWeekLeads">-</div>
+                    <div class="stat-label">This Week</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="priorityLeads">-</div>
+                    <div class="stat-label">Priority Hotels (30% Discount)</div>
+                </div>
+            </div>
+            
+            <!-- Filter Options -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="waitlistSearch" placeholder="Search by hotel name, email, city..." 
+                       style="flex: 1; min-width: 300px; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;"
+                       oninput="filterWaitlist()">
+                
+                <select id="countryFilter" onchange="filterWaitlist()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All Countries</option>
+                </select>
+                
+                <select id="discountFilter" onchange="filterWaitlist()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All Hotels</option>
+                    <option value="Yes">30% Discount Accepted</option>
+                    <option value="No">Standard Rate Only</option>
+                </select>
+                
+                <button onclick="exportWaitlistToExcel()" 
+                        style="background: #16a34a; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    📊 Export to Excel
+                </button>
+                
+                <button onclick="loadWaitlist()" 
+                        style="background: #0891b2; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    🔄 Refresh
+                </button>
+            </div>
+            
+            <!-- Waitlist Table -->
+            <div id="waitlistTableContainer" style="overflow-x: auto;">
+                <div class="loading">Loading waitlist data...</div>
+            </div>
+        </div>
+    </div>
 
     <script>
         const API_BASE = '';
         let allHotels = [];
+        let allWaitlist = [];
         let currentUser = null;
         
         // Tab switching functionality
@@ -1193,6 +1256,11 @@ You can use these placeholders:
             // Add active class to clicked nav tab
             const clickedTab = event.target;
             clickedTab.classList.add('active');
+            
+            // Load data based on tab
+            if (tabName === 'waitlist') {
+                loadWaitlist();
+            }
             
             // Update page title
             const pageTitle = document.getElementById('pageTitle');
@@ -2521,6 +2589,195 @@ This action cannot be undone.`)) {
                 if (modalId === 'hotelModal') {
                     hideHotelHover();
                 }
+            }
+        }
+        
+        // Waitlist Functions
+        async function loadWaitlist() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/waitlist`, {
+                    headers: { 'Authorization': `Bearer ${sessionId}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load waitlist');
+                }
+                
+                const data = await response.json();
+                allWaitlist = data.leads || [];
+                updateWaitlistStats(allWaitlist);
+                populateCountryFilter(allWaitlist);
+                displayWaitlist(allWaitlist);
+            } catch (error) {
+                console.error('Load waitlist error:', error);
+                document.getElementById('waitlistTableContainer').innerHTML = 
+                    '<div style="text-align: center; padding: 2rem; color: #dc2626;">Failed to load waitlist data</div>';
+            }
+        }
+        
+        function updateWaitlistStats(leads) {
+            const total = leads.length;
+            const today = new Date().toDateString();
+            const todayCount = leads.filter(l => new Date(l.created_at).toDateString() === today).length;
+            
+            const weekAgo = new Date();
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const weekCount = leads.filter(l => new Date(l.created_at) >= weekAgo).length;
+            
+            const priorityCount = leads.filter(l => l.accepts_discount === 'Yes').length;
+            
+            document.getElementById('totalLeads').textContent = total;
+            document.getElementById('todayLeads').textContent = todayCount;
+            document.getElementById('thisWeekLeads').textContent = weekCount;
+            document.getElementById('priorityLeads').textContent = priorityCount;
+        }
+        
+        function populateCountryFilter(leads) {
+            const countries = [...new Set(leads.map(l => l.country).filter(Boolean))].sort();
+            const select = document.getElementById('countryFilter');
+            select.innerHTML = '<option value="">All Countries</option>';
+            countries.forEach(country => {
+                select.innerHTML += `<option value="${country}">${country}</option>`;
+            });
+        }
+        
+        function filterWaitlist() {
+            const searchTerm = document.getElementById('waitlistSearch').value.toLowerCase();
+            const countryFilter = document.getElementById('countryFilter').value;
+            const discountFilter = document.getElementById('discountFilter').value;
+            
+            let filtered = allWaitlist.filter(lead => {
+                const matchesSearch = !searchTerm || 
+                    (lead.hotel_name || '').toLowerCase().includes(searchTerm) ||
+                    (lead.email || '').toLowerCase().includes(searchTerm) ||
+                    (lead.city || '').toLowerCase().includes(searchTerm) ||
+                    (lead.contact_name || '').toLowerCase().includes(searchTerm);
+                
+                const matchesCountry = !countryFilter || lead.country === countryFilter;
+                const matchesDiscount = !discountFilter || lead.accepts_discount === discountFilter;
+                
+                return matchesSearch && matchesCountry && matchesDiscount;
+            });
+            
+            displayWaitlist(filtered);
+        }
+        
+        function displayWaitlist(leads) {
+            const container = document.getElementById('waitlistTableContainer');
+            
+            if (leads.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">No waitlist entries found</div>';
+                return;
+            }
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb;">
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">User Code</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Hotel Name</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Contact</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Location</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Email</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Phone</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">30% Discount</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Registered</th>
+                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            leads.forEach(lead => {
+                const location = [lead.city, lead.state, lead.country].filter(Boolean).join(', ');
+                const registeredDate = new Date(lead.created_at).toLocaleDateString();
+                const discountBadge = lead.accepts_discount === 'Yes' 
+                    ? '<span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">✓ YES</span>'
+                    : '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">NO</span>';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #e5e7eb;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <td style="padding: 1rem;">
+                            <span style="font-family: monospace; background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600;">
+                                ${lead.user_code || '—'}
+                            </span>
+                        </td>
+                        <td style="padding: 1rem; font-weight: 600;">${lead.hotel_name || '—'}</td>
+                        <td style="padding: 1rem;">${lead.contact_name || '—'}<br><span style="font-size: 0.75rem; color: #6b7280;">${lead.title || ''}</span></td>
+                        <td style="padding: 1rem; font-size: 0.875rem;">${location}</td>
+                        <td style="padding: 1rem;"><a href="mailto:${lead.email}" style="color: #2563eb;">${lead.email}</a></td>
+                        <td style="padding: 1rem; font-size: 0.875rem;">${lead.phone || '—'}</td>
+                        <td style="padding: 1rem;">${discountBadge}</td>
+                        <td style="padding: 1rem; font-size: 0.875rem; color: #6b7280;">${registeredDate}</td>
+                        <td style="padding: 1rem;">
+                            <button onclick="viewLeadDetails(${lead.id})" 
+                                    style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                                View Details
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        function viewLeadDetails(leadId) {
+            const lead = allWaitlist.find(l => l.id === leadId);
+            if (!lead) return;
+            
+            const details = `
+Hotel: ${lead.hotel_name}
+Address: ${lead.hotel_address || 'N/A'}
+Phone: ${lead.hotel_phone || 'N/A'}
+City: ${lead.city || 'N/A'}
+State: ${lead.state || 'N/A'}
+Country: ${lead.country || 'N/A'}
+Zip: ${lead.zip_code || 'N/A'}
+
+Contact Person: ${lead.contact_name}
+Title: ${lead.title || 'N/A'}
+Email: ${lead.email}
+Phone: ${lead.phone || 'N/A'}
+
+User Code: ${lead.user_code}
+Indoor Property: ${lead.indoor_property}
+Accepts NET30: ${lead.accepts_net30}
+Accepts Direct Bill (No Application): ${lead.accepts_po}
+Accepts 30% Discount: ${lead.accepts_discount || 'No'}
+
+Interests: ${lead.interests || 'N/A'}
+Registered: ${new Date(lead.created_at).toLocaleString()}
+            `;
+            
+            alert(details);
+        }
+        
+        async function exportWaitlistToExcel() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/waitlist/export`, {
+                    headers: { 'Authorization': `Bearer ${sessionId}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to export waitlist');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `hotel-waitlist-${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export waitlist data');
             }
         }
         

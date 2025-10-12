@@ -1,5 +1,4 @@
 import 'dotenv/config';
-console.log('SAM key prefix:', (process.env.SAM_API_KEY || '').slice(0, 12) + '…');
 import express from 'express';
 import cors from 'cors';
 import multer from 'multer';
@@ -8,14 +7,25 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
 import nodemailer from 'nodemailer';
-import mammoth from 'mammoth';
-import unzipper from 'unzipper';
+// Lazy load heavy libraries to improve startup time
+// import mammoth from 'mammoth';
+// import unzipper from 'unzipper';
+// import * as pdfjsLib from 'pdfjs-dist';
+// import Tesseract from 'tesseract.js';
+// import OpenAI from 'openai';
 import bcrypt from 'bcryptjs';
 import { randomBytes } from 'crypto';
-import OpenAI from 'openai';
 // guessFields will be imported dynamically in the autofill endpoint
 import { spawnSync } from 'child_process';
 import { rotateLogs } from './scripts/log-rotation.js';
+import QRCode from 'qrcode';
+// QuickBooks integration available but using payment link for now
+// import OAuthClient from 'intuit-oauth';
+// import QuickBooks from 'node-quickbooks';
+
+// Startup logging
+console.log('CWD:', process.cwd());
+console.log('SAM key prefix:', (process.env.SAM_API_KEY || '').slice(0, 12) + '…');
 
 const fsp = fs.promises;
 
@@ -40,24 +50,50 @@ async function ocrPdfText(pdfPath) {
       // fall through to fallback
     }
   }
-  if (!hasBin('pdftoppm') || !hasBin('tesseract')) {
-    throw new Error('OCR fallback requires pdftoppm and tesseract in PATH');
+  // If system tools present, use them
+  if (hasBin('pdftoppm') && hasBin('tesseract')) {
+    const tmpDir = fs.mkdtempSync(path.join(path.dirname(pdfPath), 'ocr-'));
+    const prefix = path.join(tmpDir, 'page');
+    run('pdftoppm', ['-r', '300', '-png', pdfPath, prefix]);
+    const pages = fs.readdirSync(tmpDir)
+      .filter(f => f.startsWith('page') && f.endsWith('.png'))
+      .sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
+    let all = '';
+    for (const f of pages) {
+      const p = path.join(tmpDir, f);
+      all += run('tesseract', [p, 'stdout', '-l', 'eng']);
+      all += '\n';
+    }
+    return all.trim();
   }
-  const tmpDir = fs.mkdtempSync(path.join(path.dirname(pdfPath), 'ocr-'));
-  const prefix = path.join(tmpDir, 'page');
-  run('pdftoppm', ['-r', '300', '-png', pdfPath, prefix]);
 
-  const pages = fs.readdirSync(tmpDir)
-    .filter(f => f.startsWith('page') && f.endsWith('.png'))
-    .sort((a,b) => a.localeCompare(b, undefined, { numeric: true }));
+  // Pure JS fallback using pdfjs + canvas + tesseract.js (lazy loaded)
+  try {
+    const pdfjsLib = await import('pdfjs-dist');
+    const Tesseract = await import('tesseract.js');
+    const { createCanvas } = await import('canvas');
+    
+    const data = new Uint8Array(fs.readFileSync(pdfPath));
+    const loadingTask = pdfjsLib.getDocument({ data });
+    const pdf = await loadingTask.promise;
+    let all = '';
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2.0 });
 
-  let all = '';
-  for (const f of pages) {
-    const p = path.join(tmpDir, f);
-    all += run('tesseract', [p, 'stdout', '-l', 'eng']);
-    all += '\n';
+      const canvas = createCanvas(viewport.width, viewport.height);
+      const ctx = canvas.getContext('2d');
+      const renderContext = { canvasContext: ctx, viewport };
+      await page.render(renderContext).promise;
+      const pngBuffer = canvas.toBuffer('image/png');
+      const { data: ocr } = await Tesseract.recognize(pngBuffer, 'eng');
+      all += (ocr && ocr.text) ? ocr.text + '\n' : '';
+    }
+    return all.trim();
+  } catch (error) {
+    console.log('OCR fallback failed:', error.message);
+    return '';
   }
-  return all.trim();
 }
 async function ocrImageText(imgPath) {
   if (!hasBin('tesseract')) throw new Error('tesseract not found');
@@ -65,6 +101,68 @@ async function ocrImageText(imgPath) {
 }
 function extOf(name) {
   return (name.split('.').pop() || '').toLowerCase();
+}
+
+// ---------- PDF to PNG conversion for hybrid OCR ----------
+async function convertPdfToPngPages(pdfPath) {
+  try {
+    // Try using system tools first (faster)
+    if (hasBin('pdftoppm')) {
+      const tmpDir = fs.mkdtempSync(path.join(path.dirname(pdfPath), 'pdf2png-'));
+      const prefix = path.join(tmpDir, 'page');
+      run('pdftoppm', ['-r', '300', '-png', pdfPath, prefix]);
+      
+      const pages = fs.readdirSync(tmpDir)
+        .filter(f => f.startsWith('page') && f.endsWith('.png'))
+        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
+        .map(f => path.join(tmpDir, f));
+      
+      return pages;
+    }
+  } catch (e) {
+    console.log('System pdftoppm failed, trying pure JS approach:', e.message);
+  }
+
+  // Fallback to pure JavaScript approach using pdf-lib and sharp
+  try {
+    const { PDFDocument } = await import('pdf-lib');
+    const sharp = (await import('sharp')).default;
+    const pdfjsLib = await import('pdfjs-dist');
+    const { createCanvas } = await import('canvas');
+    
+    const data = new Uint8Array(fs.readFileSync(pdfPath));
+    const loadingTask = pdfjsLib.getDocument({ data });
+    const pdf = await loadingTask.promise;
+    
+    const pageImages = [];
+    const tmpDir = fs.mkdtempSync(path.join(path.dirname(pdfPath), 'pdf2png-'));
+    
+    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+      const page = await pdf.getPage(pageNum);
+      const viewport = page.getViewport({ scale: 2.0 });
+      
+      const canvas = createCanvas(viewport.width, viewport.height);
+      const ctx = canvas.getContext('2d');
+      const renderContext = { canvasContext: ctx, viewport };
+      await page.render(renderContext).promise;
+      
+      const pngBuffer = canvas.toBuffer('image/png');
+      const outPath = path.join(tmpDir, `page_${pageNum}.png`);
+      
+      // Optionally enhance with sharp for better OCR
+      await sharp(pngBuffer)
+        .greyscale()
+        .normalize()
+        .toFile(outPath);
+      
+      pageImages.push(outPath);
+    }
+    
+    return pageImages;
+  } catch (error) {
+    console.error('PDF to PNG conversion failed:', error.message);
+    throw new Error('Failed to convert PDF to images: ' + error.message);
+  }
 }
 function stripXml(xml) {
   return xml
@@ -443,6 +541,12 @@ if (process.env.MAINTENANCE === '1' || process.env.MAINTENANCE === 'true') {
     return res.status(503).json({ error: 'Service temporarily unavailable for maintenance' });
   });
 }
+
+// Redirect root to prelaunch page (MUST be before static middleware)
+app.get('/', (req, res) => {
+  res.redirect(301, '/prelaunch.html');
+});
+
 // Serve static files from public directory with no cache
 app.use(express.static(path.join(__dirname, 'public'), {
   setHeaders: (res, path) => {
@@ -453,16 +557,6 @@ app.use(express.static(path.join(__dirname, 'public'), {
     }
   }
 }));
-
-// Serve landing page as main page
-app.get('/', (req, res) => {
-  const indexPath = path.join(__dirname, 'public', 'index.html');
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send('Index page not found');
-  }
-});
 
 // ---------- uploads (moved earlier to ensure initialization before usage) ----------
 const allowed = new Set([
@@ -692,6 +786,11 @@ app.get('/hotel-signup.html', (req, res) => {
 
 app.get('/hotel-profile-form.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'hotel-profile-form.html'));
+});
+
+// Serve hotel profile page
+app.get('/hotel-profile.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'hotel-profile.html'));
 });
 // Serve SAM search page
 app.get('/sam-search.html', (req, res) => {
@@ -1025,21 +1124,33 @@ for (const p of staticPages) {
     else res.status(200).send(`<!doctype html><meta charset="utf-8"><title>${p.replace('.html','')}</title><div style="font-family:system-ui;padding:24px"><h1>${p.replace('.html','')}</h1><p>Coming soon.</p><p><a href="/">Home</a></p></div>`);
   });
 }
+// ---------- Data dir & DB path ----------
+const isRender = !!process.env.RENDER;
+const DATA_DIR = process.env.DATA_DIR || (isRender ? '/app/data' : path.join(process.cwd(), 'data'));
+const DB_PATH  = process.env.DB_PATH  || path.join(DATA_DIR, 'creata.db');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ensure data directory exists before opening SQLite
+fs.mkdirSync(DATA_DIR, { recursive: true });
+
+console.log('Resolved DATA_DIR:', DATA_DIR);
+console.log('Resolved DB_PATH:', DB_PATH);
 
 // ---------- database ----------
 // Use local data directory (persists in Render's container filesystem)
-const db = new Database(path.join(__dirname, 'data', 'creata.db'));
+const db = new Database(DB_PATH);
 
-// ---------- OpenAI client ----------
+// ---------- OpenAI client (lazy loaded) ----------
 let openai = null;
-if (process.env.OPENAI_API_KEY) {
-  openai = new OpenAI({
-    apiKey: process.env.OPENAI_API_KEY,
-  });
-  console.log('OpenAI client initialized');
-} else {
-  console.log('OpenAI API key not found - OpenAI features disabled');
+async function getOpenAI() {
+  if (!openai && process.env.OPENAI_API_KEY) {
+    const OpenAI = await import('openai');
+    openai = new OpenAI.default({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    console.log('OpenAI client initialized');
+  }
+  return openai;
 }
 
 db.exec(`
@@ -1104,6 +1215,75 @@ try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_active INTEGER DEFA
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_floor REAL`); } catch (e) {}
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_step REAL DEFAULT 1`); } catch (e) {}
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN auto_bid_last_adjusted_at TEXT`); } catch (e) {}
+
+// Payment tracking migrations for $49.99 setup fee
+try { db.exec(`ALTER TABLE users ADD COLUMN account_status TEXT DEFAULT 'active'`); } catch (e) {}
+try { db.exec(`ALTER TABLE users ADD COLUMN setup_fee_paid INTEGER DEFAULT 0`); } catch (e) {}
+try { db.exec(`CREATE TABLE IF NOT EXISTS payments (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER,
+  amount DECIMAL(10,2) NOT NULL DEFAULT 49.99,
+  status TEXT DEFAULT 'pending',
+  payment_method TEXT DEFAULT 'quickbooks',
+  quickbooks_invoice_id TEXT,
+  quickbooks_payment_id TEXT,
+  transaction_note TEXT,
+  paid_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+)`); console.log('✅ Payments table created'); } catch (e) {
+  if (!e.message.includes('already exists')) console.log('Payments table already exists');
+}
+
+// Hotel leads table for prelaunch waitlist
+try { db.exec(`CREATE TABLE IF NOT EXISTS hotel_leads (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_code TEXT UNIQUE NOT NULL,
+  hotel_name TEXT NOT NULL,
+  hotel_address TEXT,
+  hotel_phone TEXT,
+  hotel_place_id TEXT,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  contact_name TEXT NOT NULL,
+  title TEXT NOT NULL,
+  email TEXT NOT NULL,
+  phone TEXT,
+  interests TEXT,
+  accepts_net30 TEXT,
+  accepts_po TEXT,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  notified INTEGER DEFAULT 0
+)`); console.log('✅ Hotel leads table created'); } catch (e) {
+  if (!e.message.includes('already exists')) console.log('Hotel leads table already exists');
+}
+
+// Add new columns if they don't exist (migrations)
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN user_code TEXT UNIQUE`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN hotel_address TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN hotel_phone TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN hotel_place_id TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN accepts_net30 TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN accepts_po TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN indoor_property TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN accepts_discount TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN country TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN zip_code TEXT`); } catch (e) {}
+
+// Link prelaunch codes to main hotel accounts (migration)
+try {
+  db.exec(`ALTER TABLE hotels ADD COLUMN prelaunch_code TEXT UNIQUE`);
+  console.log('✅ Added prelaunch_code column to hotels table');
+} catch (e) {
+  // Column already exists
+}
+
+try {
+  db.exec(`ALTER TABLE hotels ADD COLUMN is_early_adopter INTEGER DEFAULT 0`);
+  console.log('✅ Added is_early_adopter flag to hotels table');
+} catch (e) {
+  // Column already exists
+}
 try { db.exec(`ALTER TABLE contract_bids ADD COLUMN last_known_rank INTEGER`); } catch (e) {}
 try { db.exec(`ALTER TABLE live_auctions ADD COLUMN requirement_summary TEXT`); } catch (e) {}
 try { db.exec(`ALTER TABLE live_auctions ADD COLUMN sow_document TEXT`); } catch (e) {}
@@ -1896,6 +2076,27 @@ app.get('/api/sam/search', async (req, res) => {
   }
 });
 
+// QR Code generation endpoint
+app.get('/api/qr/:data', async (req, res) => {
+  try {
+    const data = decodeURIComponent(req.params.data);
+    const qrCodeDataURL = await QRCode.toDataURL(data, {
+      width: 256,
+      margin: 2,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      }
+    });
+    
+    res.set('Content-Type', 'image/png');
+    res.send(Buffer.from(qrCodeDataURL.split(',')[1], 'base64'));
+  } catch (error) {
+    console.error('QR Code generation error:', error);
+    res.status(500).json({ error: 'Failed to generate QR code' });
+  }
+});
+
 // Unified SAM.gov proxy matching Next.js example
 app.get('/api/opps', async (req, res) => {
   try {
@@ -2045,7 +2246,7 @@ app.get('/api/sam/notice/:id', async (req, res) => {
 app.get('/api/admin/solicitation/:id', async (req, res) => {
   // Delegate to the SAM notice endpoint
   try {
-    const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/notice/${encodeURIComponent(req.params.id)}`);
+    const r = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/notice/${encodeURIComponent(req.params.id)}`);
     const data = await r.json();
     if (!data || data.error) return fail(res, 404, data?.error || 'Not found');
 
@@ -2091,7 +2292,7 @@ app.get('/api/opps', async (req, res) => {
 
     if (noticeid) {
       // Delegate to our notice lookup
-      const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/notice/${encodeURIComponent(noticeid)}`);
+      const r = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/notice/${encodeURIComponent(noticeid)}`);
       const data = await r.json();
       if (!data || data.error) return fail(res, 404, data?.error || 'Not found', { detail: data?.detail, raw: data?.raw });
       return ok(res, { ok: true, totalRecords: 1, results: [data.notice] });
@@ -2103,7 +2304,7 @@ app.get('/api/opps', async (req, res) => {
     if (postedTo) params.set('postedTo', postedTo);
     params.set('limit', limit);
 
-    const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/search?${params.toString()}`);
+    const r = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/search?${params.toString()}`);
     const data = await r.json();
     if (!data || data.error) return fail(res, 400, data?.error || 'Search failed', { detail: data?.detail });
     return ok(res, data);
@@ -2120,7 +2321,7 @@ app.post('/api/sam/search-and-email', async (req, res) => {
     const q = (Array.isArray(keywords) ? keywords : String(keywords||'').split(',')).map(s=>String(s||'').trim()).filter(Boolean).join(' OR ') || 'lodging OR hotel OR conference';
 
     // Fetch real results via our search endpoint
-    const searchResponse = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/search?${new URLSearchParams({ q, naics, limit: '20' })}`);
+    const searchResponse = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/search?${new URLSearchParams({ q, naics, limit: '20' })}`);
     const searchData = await searchResponse.json();
     const results = searchData.results || [];
 
@@ -3188,6 +3389,291 @@ app.post('/api/chat', async (req, res) => {
   }
 });
 
+// ---------- Hotel Prelaunch Waitlist API ----------
+app.post('/api/leads', async (req, res) => {
+  try {
+    const {
+      hotelName, hotelAddress, hotelPhone, hotelPlaceId,
+      city, state, zipCode, country, contactName, title, email, phone, interests,
+      indoorProperty, acceptsNet30, acceptsPo, acceptsDiscount
+    } = req.body;
+
+    // Validate required fields (state is optional for international addresses)
+    if (!hotelName || !city || !contactName || !title || !email) {
+      return fail(res, 400, 'Required fields missing');
+    }
+    
+    // Validate eligibility questions
+    if (!indoorProperty || !acceptsNet30 || !acceptsPo) {
+      return fail(res, 400, 'Please answer all required Property Eligibility and Policy questions');
+    }
+
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return fail(res, 400, 'Invalid email address');
+    }
+
+    // Generate unique user code (FEV-XXXXX format)
+    let userCode = '';
+    let attempts = 0;
+    const maxAttempts = 10;
+    
+    while (attempts < maxAttempts) {
+      // Generate 5-digit code
+      const randomNum = Math.floor(10000 + Math.random() * 90000);
+      userCode = `FEV-${randomNum}`;
+      
+      // Check if it already exists
+      const existing = db.prepare(`SELECT id FROM hotel_leads WHERE user_code = ?`).get(userCode);
+      if (!existing) break;
+      
+      attempts++;
+    }
+    
+    if (attempts >= maxAttempts) {
+      return fail(res, 500, 'Failed to generate unique user code');
+    }
+
+    // Insert into database with all fields
+    const result = db.prepare(`
+      INSERT INTO hotel_leads (
+        user_code, hotel_name, hotel_address, hotel_phone, hotel_place_id,
+        city, state, zip_code, country, contact_name, title, email, phone, interests,
+        indoor_property, accepts_net30, accepts_po, accepts_discount
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(
+      userCode, hotelName, hotelAddress || '', hotelPhone || '', hotelPlaceId || '',
+      city, state || '', zipCode || '', country || '', contactName, title, email, phone || '', interests || '',
+      indoorProperty, acceptsNet30, acceptsPo, acceptsDiscount || 'No'
+    );
+
+    const leadId = Number(result.lastInsertRowid);
+    
+    console.log(`✅ New prelaunch lead: ${userCode} - ${hotelName} (${city}, ${state})`);
+
+    // Send notification email if configured
+    if (process.env.NOTIFY_TO && process.env.SMTP_HOST) {
+      const subject = '🎯 New FEDEVENT Hotel Waitlist Signup';
+      
+      const html = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0071e3 0%, #8e44ad 100%); padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800;">FEDEVENT</h1>
+            <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px;">New Waitlist Registration</p>
+          </div>
+          
+          <div style="padding: 30px; background: #f8f9fa;">
+            <div style="background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+              <h2 style="color: #1a1a1a; margin: 0 0 20px 0; font-size: 22px;">Hotel Information</h2>
+              
+              <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563; width: 40%;">Hotel Name:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${hotelName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Location:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${city}, ${state}, ${country}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Contact Name:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${contactName}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Title:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${title}</td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Email:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">
+                    <a href="mailto:${email}" style="color: #0071e3; text-decoration: none;">${email}</a>
+                  </td>
+                </tr>
+                ${phone ? `
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Phone:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">
+                    <a href="tel:${phone}" style="color: #0071e3; text-decoration: none;">${phone}</a>
+                  </td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563; vertical-align: top;">Interests:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${interests || 'Not specified'}</td>
+                </tr>
+                ${hotelAddress ? `
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Hotel Address:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${hotelAddress}</td>
+                </tr>
+                ` : ''}
+                ${hotelPhone ? `
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Hotel Phone:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;">${hotelPhone}</td>
+                </tr>
+                ` : ''}
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Indoor Property:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;"><strong>${indoorProperty === 'Yes' ? '✅ Yes' : '❌ No'}</strong></td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Accepts NET30:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;"><strong>${acceptsNet30 === 'Yes' ? '✅ Yes' : '❌ No'}</strong></td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; font-weight: 600; color: #4b5563;">Government PO:</td>
+                  <td style="padding: 12px 0; border-bottom: 1px solid #e5e7eb; color: #1a1a1a;"><strong>${acceptsPo === 'Acceptable' ? '✅ Acceptable' : '❌ Unacceptable'}</strong></td>
+                </tr>
+                <tr>
+                  <td style="padding: 12px 0; font-weight: 600; color: #4b5563;">30% Discount:</td>
+                  <td style="padding: 12px 0; color: #1a1a1a;"><strong>${acceptsDiscount === 'Yes' ? '✅ Yes' : '❌ No'}</strong></td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="margin-top: 20px; padding: 20px; background: #f0f9ff; border-left: 4px solid #0071e3; border-radius: 8px;">
+              <p style="margin: 0; color: #1e40af; font-size: 14px;">
+                <strong>User Code:</strong> <span style="font-size: 18px; font-weight: 700; color: #0071e3;">${userCode}</span><br>
+                <strong>Lead ID:</strong> #${leadId}<br>
+                <strong>Submitted:</strong> ${new Date().toLocaleString('en-US', { 
+                  weekday: 'long', 
+                  year: 'numeric', 
+                  month: 'long', 
+                  day: 'numeric', 
+                  hour: '2-digit', 
+                  minute: '2-digit',
+                  timeZoneName: 'short'
+                })}
+              </p>
+            </div>
+          </div>
+          
+          <div style="padding: 20px; text-align: center; background: #f8f9fa; border-top: 1px solid #e5e7eb;">
+            <p style="margin: 0; color: #6b7280; font-size: 12px;">
+              CREATA Global Event Agency LLC | UEI: CNN2T3673V51 | CAGE: 8D4P1
+            </p>
+          </div>
+        </div>
+      `;
+
+      try {
+        await sendMail({
+          to: process.env.NOTIFY_TO,
+          subject,
+          html,
+          replyTo: email
+        });
+        
+        // Mark as notified
+        db.prepare(`UPDATE hotel_leads SET notified = 1 WHERE id = ?`).run(leadId);
+      } catch (emailError) {
+        console.error('Failed to send notification email:', emailError);
+        // Continue anyway - lead is saved
+      }
+    }
+
+    // Send confirmation email to the hotel contact
+    if (process.env.SMTP_HOST) {
+      const confirmationHtml = `
+        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
+          <div style="background: linear-gradient(135deg, #0071e3 0%, #8e44ad 100%); padding: 40px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800;">FEDEVENT</h1>
+            <p style="color: #ffffff; margin: 15px 0 0 0; font-size: 16px; opacity: 0.95;">Government Contracts Simplified</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; font-size: 60px; margin-bottom: 20px;">✅</div>
+            
+            <h2 style="color: #1a1a1a; margin: 0 0 15px 0; font-size: 28px; text-align: center;">Welcome to the Waitlist!</h2>
+            
+            <div style="background: linear-gradient(135deg, #0071e3 0%, #8e44ad 100%); padding: 20px; border-radius: 12px; text-align: center; margin: 20px 0;">
+              <p style="color: #ffffff; margin: 0 0 8px 0; font-size: 14px; opacity: 0.9;">Your Unique User Code</p>
+              <p style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: 2px;">${userCode}</p>
+              <p style="color: #ffffff; margin: 8px 0 0 0; font-size: 12px; opacity: 0.8;">Save this code for future reference</p>
+            </div>
+            
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Dear ${contactName},
+            </p>
+            
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 20px;">
+              Thank you for joining the FEDEVENT waitlist! <strong>${hotelName}</strong> will be among the first hotels invited when our platform launches in <strong>2026</strong>.
+            </p>
+            
+            <div style="background: linear-gradient(135deg, #f0f9ff 0%, #faf5ff 100%); padding: 25px; border-radius: 12px; margin: 30px 0;">
+              <h3 style="color: #1a1a1a; margin: 0 0 15px 0; font-size: 18px;">What Happens Next?</h3>
+              <ul style="color: #4b5563; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li>You'll receive priority access when FEDEVENT launches</li>
+                <li>Free featured placement as one of the first 1,000 hotels</li>
+                <li>Early invitations to RFPs from U.S. Government agencies</li>
+                <li>Dedicated onboarding support from our team</li>
+              </ul>
+            </div>
+            
+            <div style="background: #ffffff; padding: 20px; border: 2px solid #e5e7eb; border-radius: 12px; margin: 30px 0;">
+              <h3 style="color: #1a1a1a; margin: 0 0 12px 0; font-size: 18px;">Your Registration Details</h3>
+              <p style="color: #6b7280; margin: 0; line-height: 1.6;">
+                <strong>User Code:</strong> <span style="color: #0071e3; font-weight: 700; font-size: 16px;">${userCode}</span><br>
+                <strong>Hotel:</strong> ${hotelName}<br>
+                <strong>Location:</strong> ${city}, ${state}, ${country}<br>
+                <strong>Contact:</strong> ${contactName} (${title})<br>
+                <strong>Email:</strong> ${email}
+                ${phone ? `<br><strong>Phone:</strong> ${phone}` : ''}
+              </p>
+            </div>
+            
+            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+              If you have any questions in the meantime, please don't hesitate to reach out to us at 
+              <a href="mailto:info@Fedevent.com" style="color: #0071e3; text-decoration: none;">info@Fedevent.com</a>.
+            </p>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <p style="color: #4b5563; font-size: 14px; margin: 0 0 10px 0;">Follow us for updates:</p>
+              <p style="margin: 0;">
+                <a href="#" style="color: #0071e3; text-decoration: none; margin: 0 10px;">LinkedIn</a>
+                <span style="color: #d1d5db;">|</span>
+                <a href="#" style="color: #0071e3; text-decoration: none; margin: 0 10px;">Instagram</a>
+              </p>
+            </div>
+          </div>
+          
+          <div style="padding: 30px; text-align: center; background: #f8f9fa; border-top: 1px solid #e5e7eb;">
+            <p style="margin: 0 0 10px 0; color: #1a1a1a; font-weight: 600;">CREATA Global Event Agency LLC</p>
+            <p style="margin: 0; color: #6b7280; font-size: 12px;">
+              UEI: CNN2T3673V51 | CAGE: 8D4P1<br>
+              © 2025 CREATA Global Event Agency LLC. All rights reserved.
+            </p>
+          </div>
+        </div>
+      `;
+
+      try {
+        await sendMail({
+          to: email,
+          subject: '✅ Welcome to FEDEVENT - You\'re on the Waitlist!',
+          html: confirmationHtml
+        });
+      } catch (emailError) {
+        console.error('Failed to send confirmation email:', emailError);
+        // Continue anyway - lead is saved
+      }
+    }
+
+    return ok(res, { 
+      success: true,
+      message: 'Thank you for joining the waitlist!',
+      leadId,
+      userCode
+    });
+
+  } catch (error) {
+    console.error('Lead submission error:', error);
+    return fail(res, 500, 'Failed to submit waitlist registration');
+  }
+});
+
 // ---------- simple hotel search (stubbed from stored hotels table) ----------
 app.get('/api/search', (req, res) => {
   try {
@@ -3316,6 +3802,234 @@ const validation = {
     return missing;
   }
 };
+
+// ========== QUICKBOOKS OAUTH & PAYMENT INTEGRATION ==========
+
+// Create table to store QuickBooks OAuth tokens
+try {
+  db.exec(`CREATE TABLE IF NOT EXISTS quickbooks_tokens (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    access_token TEXT,
+    refresh_token TEXT,
+    realm_id TEXT,
+    token_expires_at INTEGER,
+    refresh_expires_at INTEGER,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+  )`);
+  console.log('✅ QuickBooks tokens table ready');
+} catch (e) {
+  if (!e.message.includes('already exists')) console.log('QB tokens table exists');
+}
+
+// Initialize QuickBooks OAuth Client (commented out - using payment link instead)
+// const qbOAuthClient = process.env.QB_CLIENT_ID && process.env.QB_CLIENT_SECRET ? new OAuthClient({
+//   clientId: process.env.QB_CLIENT_ID,
+//   clientSecret: process.env.QB_CLIENT_SECRET,
+//   environment: process.env.QB_ENVIRONMENT || 'production',
+//   redirectUri: process.env.QB_REDIRECT_URI || 'https://fedevent.com/api/quickbooks/callback',
+// }) : null;
+
+const qbOAuthClient = null; // Using payment link approach
+
+// if (qbOAuthClient) {
+//   console.log('✅ QuickBooks OAuth client initialized');
+// } else {
+//   console.log('⚠️  QuickBooks not configured - set QB_CLIENT_ID and QB_CLIENT_SECRET in .env');
+// }
+console.log('💳 QuickBooks Payment Link configured');
+
+// Get stored QB tokens from database
+function getQuickBooksTokens() {
+  try {
+    const tokens = db.prepare('SELECT * FROM quickbooks_tokens WHERE id = 1').get();
+    if (!tokens) return null;
+    
+    // Check if tokens are expired
+    const now = Math.floor(Date.now() / 1000);
+    if (tokens.token_expires_at && tokens.token_expires_at < now) {
+      console.log('⚠️  QuickBooks access token expired, needs refresh');
+      return null;
+    }
+    
+    return tokens;
+  } catch (error) {
+    console.error('Error getting QB tokens:', error);
+    return null;
+  }
+}
+
+// Save QB tokens to database
+function saveQuickBooksTokens(tokenData) {
+  try {
+    const now = Math.floor(Date.now() / 1000);
+    const expiresIn = tokenData.expires_in || 3600; // 1 hour default
+    const refreshExpiresIn = tokenData.x_refresh_token_expires_in || 8726400; // 101 days default
+    
+    db.prepare(`
+      INSERT OR REPLACE INTO quickbooks_tokens (
+        id, access_token, refresh_token, realm_id, 
+        token_expires_at, refresh_expires_at, updated_at
+      ) VALUES (1, ?, ?, ?, ?, ?, datetime('now'))
+    `).run(
+      tokenData.access_token,
+      tokenData.refresh_token,
+      tokenData.realmId || process.env.QB_REALM_ID,
+      now + expiresIn,
+      now + refreshExpiresIn
+    );
+    
+    console.log('✅ QuickBooks tokens saved');
+    return true;
+  } catch (error) {
+    console.error('Error saving QB tokens:', error);
+    return false;
+  }
+}
+
+// Refresh QB access token if needed
+async function ensureFreshQuickBooksToken() {
+  const tokens = getQuickBooksTokens();
+  if (!tokens) return null;
+  
+  const now = Math.floor(Date.now() / 1000);
+  
+  // If token expires in less than 10 minutes, refresh it
+  if (tokens.token_expires_at - now < 600) {
+    try {
+      console.log('🔄 Refreshing QuickBooks token...');
+      qbOAuthClient.setToken({
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        realmId: tokens.realm_id,
+      });
+      
+      const authResponse = await qbOAuthClient.refresh();
+      const newTokens = authResponse.getJson();
+      saveQuickBooksTokens(newTokens);
+      
+      return newTokens.access_token;
+    } catch (error) {
+      console.error('❌ Failed to refresh QB token:', error);
+      return null;
+    }
+  }
+  
+  return tokens.access_token;
+}
+
+// Create QuickBooks invoice for hotel registration
+async function createQuickBooksInvoice(email, name, amount, accountNumber, userId) {
+  try {
+    if (!qbOAuthClient) {
+      console.log('⚠️  QuickBooks not configured, skipping invoice creation');
+      return null;
+    }
+    
+    const accessToken = await ensureFreshQuickBooksToken();
+    if (!accessToken) {
+      console.log('⚠️  No valid QuickBooks token, skipping invoice creation');
+      return null;
+    }
+    
+    const tokens = getQuickBooksTokens();
+    const realmId = tokens.realm_id || process.env.QB_REALM_ID;
+    
+    if (!realmId) {
+      console.error('❌ QuickBooks Realm ID not found');
+      return null;
+    }
+    
+    const qbo = new QuickBooks(
+      process.env.QB_CLIENT_ID,
+      process.env.QB_CLIENT_SECRET,
+      accessToken,
+      false,
+      realmId,
+      process.env.QB_ENVIRONMENT !== 'production',
+      true,
+      null,
+      '2.0'
+    );
+    
+    console.log(`📝 Creating QuickBooks customer for ${name}...`);
+    
+    // Create customer first
+    const customer = await new Promise((resolve, reject) => {
+      qbo.createCustomer({
+        DisplayName: `${name} (${accountNumber})`,
+        PrimaryEmailAddr: { Address: email },
+        Notes: `FEDEVENT Account: ${accountNumber}\nUser ID: ${userId}`,
+        CompanyName: name,
+      }, (err, customer) => {
+        if (err) {
+          console.error('QB Customer creation error:', err);
+          reject(err);
+        } else {
+          console.log(`✅ QB Customer created: ${customer.Id}`);
+          resolve(customer);
+        }
+      });
+    });
+    
+    console.log(`📄 Creating QuickBooks invoice...`);
+    
+    // Get item ID from env or use default
+    const itemId = process.env.QB_ITEM_ID || '1';
+    
+    // Create invoice
+    const dueDate = new Date();
+    dueDate.setDate(dueDate.getDate() + 7); // Due in 7 days
+    
+    const invoice = await new Promise((resolve, reject) => {
+      qbo.createInvoice({
+        CustomerRef: { value: customer.Id },
+        Line: [{
+          Amount: amount,
+          DetailType: 'SalesItemLineDetail',
+          Description: 'FEDEVENT Hotel Registration - One-time setup fee for platform access and government contract opportunities',
+          SalesItemLineDetail: {
+            ItemRef: { value: itemId },
+            UnitPrice: amount,
+            Qty: 1,
+          },
+        }],
+        BillEmail: { Address: email },
+        CustomerMemo: { value: `Thank you for joining FEDEVENT! Account: ${accountNumber}` },
+        TxnDate: new Date().toISOString().split('T')[0],
+        DueDate: dueDate.toISOString().split('T')[0],
+      }, (err, invoice) => {
+        if (err) {
+          console.error('QB Invoice creation error:', err);
+          reject(err);
+        } else {
+          console.log(`✅ QB Invoice created: ${invoice.Id}`);
+          resolve(invoice);
+        }
+      });
+    });
+    
+    // Send invoice email
+    console.log(`📧 Sending QuickBooks invoice to ${email}...`);
+    await new Promise((resolve, reject) => {
+      qbo.sendInvoicePdf(invoice.Id, email, (err) => {
+        if (err) {
+          console.error('QB Invoice send error:', err);
+          reject(err);
+        } else {
+          console.log(`✅ QB Invoice emailed to ${email}`);
+          resolve();
+        }
+      });
+    });
+    
+    return invoice.Id;
+    
+  } catch (error) {
+    console.error('❌ QuickBooks invoice creation failed:', error);
+    return null;
+  }
+}
 
 // ---------- Authentication helpers ----------
 function generateSessionId() {
@@ -3447,7 +4161,7 @@ async function sendMail({ to, subject, html, attachments = [], replyTo, from }) 
     });
     
     const mailOptions = {
-      from: from || process.env.NOTIFY_FROM || process.env.SMTP_USER || 'noreply@example.com',
+      from: from || process.env.NOTIFY_FROM || 'noreply@fedevent.com',
       to, subject, html, attachments
     };
     
@@ -3760,15 +4474,48 @@ app.post('/api/auth/register', async (req, res) => {
     
     try {
       userResult = db.prepare(`
-        INSERT INTO users (email, password_hash, first_name, last_name, role, fedevent_account_number)
-        VALUES (?, ?, ?, ?, 'hotel', ?)
+        INSERT INTO users (email, password_hash, first_name, last_name, role, fedevent_account_number, account_status, setup_fee_paid)
+        VALUES (?, ?, ?, ?, 'hotel', ?, 'pending', 0)
       `).run(email, passwordHash, displayName, '', fedeventAccountNumber);
       
-      console.log('✅ User created successfully:', { 
+      console.log('✅ User created successfully (PENDING payment):', { 
         id: userResult.lastInsertRowid, 
         email, 
         accountNumber: fedeventAccountNumber 
       });
+      
+      // Create payment record for $49.99 setup fee
+      const paymentResult = db.prepare(`
+        INSERT INTO payments (user_id, amount, status, payment_method)
+        VALUES (?, 49.99, 'pending', 'quickbooks')
+      `).run(userResult.lastInsertRowid);
+      
+      console.log('✅ Payment record created:', { paymentId: paymentResult.lastInsertRowid });
+      
+      // Create QuickBooks invoice and send automatically
+      try {
+        const qbInvoiceId = await createQuickBooksInvoice(
+          email,
+          hotelName || displayName,
+          49.99,
+          fedeventAccountNumber,
+          userResult.lastInsertRowid
+        );
+        
+        if (qbInvoiceId) {
+          // Update payment record with QB invoice ID
+          db.prepare(`
+            UPDATE payments 
+            SET quickbooks_invoice_id = ? 
+            WHERE id = ?
+          `).run(qbInvoiceId, paymentResult.lastInsertRowid);
+          
+          console.log(`✅ QuickBooks invoice ${qbInvoiceId} created and emailed to ${email}`);
+        }
+      } catch (qbError) {
+        console.error('⚠️  QuickBooks invoice creation failed, but registration continues:', qbError.message);
+        // Don't fail registration if QB fails - hotel can still pay manually
+      }
       
       sessionId = createSession(userResult.lastInsertRowid);
       console.log('✅ Session created:', sessionId);
@@ -3779,7 +4526,7 @@ app.post('/api/auth/register', async (req, res) => {
     
     // Send welcome email if SMTP is configured
     if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-      const welcomeSubject = 'Welcome to FEDEVENT - Your Account is Ready';
+      const welcomeSubject = 'Complete Your FEDEVENT Registration - $49.99 Setup Fee Required';
       const welcomeHtml = `
         <div style="font-family:system-ui,Segoe UI,Roboto,Arial; max-width:600px; margin:0 auto;">
           <div style="background:#1f2937; padding:2rem; text-align:center;">
@@ -3790,37 +4537,79 @@ app.post('/api/auth/register', async (req, res) => {
           <div style="padding:2rem; background:#ffffff;">
             <h2 style="color:#1f2937; margin-top:0;">Hello ${displayName}!</h2>
             
-            <p>Thank you for joining FEDEVENT! Your account is now active and ready to use. Here's what you can do:</p>
+            <p>Thank you for registering with FEDEVENT! Your account has been created and is pending activation.</p>
             
-            <ul style="color:#374151; line-height:1.6;">
-              <li>Complete your hotel profile to get matched with government contracts</li>
-              <li>Access the hotel dashboard to manage your profile and bids</li>
-              <li>Receive notifications about relevant contract opportunities</li>
-              <li>Track your submissions and responses</li>
-            </ul>
+            <div style="margin:2rem 0; padding:1.5rem; background:#f0f9ff; border:2px solid #3b82f6; border-radius:8px;">
+              <h3 style="color:#1e40af; margin:0 0 1rem 0; font-size:1.1rem;">⚠️ Action Required: Setup Fee Payment</h3>
+              <p style="margin:0 0 1rem 0; color:#1f2937; font-size:1.1rem;">
+                <strong style="font-size:1.3rem; color:#1e40af;">$49.99</strong> one-time setup fee
+              </p>
+              <p style="margin:0 0 1rem 0; color:#374151; line-height:1.6;">
+                This fee covers account activation, profile optimization, and access to government contract opportunities.
+              </p>
+              
+              <div style="background:#fff; padding:1.5rem; border-radius:6px; margin-top:1.5rem; text-align:center;">
+                <a href="https://connect.intuit.com/portal/app/CommerceNetwork/view/scs-v1-0cc3965f22444bd9af8bf6e2e2929bc8bcc1f3c6a2934617a3b81e48133f74bc9f6279559efa43f79e3adb5b1a2954d7?locale=EN_US" 
+                   style="background:#10b981; color:white; padding:16px 32px; text-decoration:none; border-radius:8px; display:inline-block; font-weight:700; font-size:1.1rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom:1rem;">
+                  💳 Pay $49.99 Now →
+                </a>
+                
+                <div style="margin:1rem 0; padding:1rem; border:2px dashed #e5e7eb; border-radius:8px; background:#f9fafb;">
+                  <p style="margin:0 0 0.5rem 0; color:#374151; font-size:0.875rem; font-weight:600;">
+                    📱 Or scan QR code to pay:
+                  </p>
+                  <img src="http://${req.get('host')}/api/qr/https%3A%2F%2Fconnect.intuit.com%2Fportal%2Fapp%2FCommerceNetwork%2Fview%2Fscs-v1-0cc3965f22444bd9af8bf6e2e2929bc8bcc1f3c6a2934617a3b81e48133f74bc9f6279559efa43f79e3adb5b1a2954d7%3Flocale%3DEN_US" 
+                       alt="Payment QR Code" 
+                       style="width:150px; height:150px; border:1px solid #e5e7eb; border-radius:8px;">
+                  <p style="margin:0.5rem 0 0; color:#6b7280; font-size:0.75rem;">
+                    Scan with your phone camera
+                  </p>
+                </div>
+                
+                <p style="margin:1rem 0 0; color:#6b7280; font-size:0.875rem;">
+                  Secure payment via QuickBooks
+                </p>
+              </div>
+              
+              <div style="background:#fff; padding:1rem; border-radius:6px; margin-top:1rem; border-top:1px solid #e5e7eb;">
+                <p style="margin:0 0 0.5rem 0; color:#6b7280; font-size:0.875rem; text-align:center;">Or contact us:</p>
+                <p style="margin:0; color:#6b7280; font-size:0.875rem; text-align:center;">
+                  📧 <a href="mailto:billing@fedevent.com">billing@fedevent.com</a> | 
+                  📞 (305) 850-7848
+                </p>
+              </div>
+            </div>
+            
+            <div style="background:#d1fae5; border-left:4px solid #10b981; padding:1rem; margin:1.5rem 0; border-radius:4px;">
+              <p style="margin:0; color:#065f46; line-height:1.6;">
+                <strong>✓ Your account will be activated within 24 hours</strong> of payment receipt. You'll receive a confirmation email with dashboard access.
+              </p>
+            </div>
             
             <div style="margin:2rem 0; padding:1rem; background:#f3f4f6; border-radius:8px;">
               <p style="margin:0; color:#374151;"><strong>Your Account Details:</strong></p>
               <p style="margin:0.5rem 0 0; color:#6b7280;">Email: ${email}</p>
               <p style="margin:0.5rem 0 0; color:#6b7280;">Contact Name: ${displayName}</p>
               <p style="margin:0.5rem 0 0; color:#1f2937; font-weight:600;">FEDEVENT Account #: ${fedeventAccountNumber}</p>
+              <p style="margin:0.5rem 0 0; color:#dc2626; font-weight:600;">Status: PENDING PAYMENT</p>
             </div>
             
-            <div style="text-align:center; margin:2rem 0;">
-              <a href="https://fedevent.com/hotel-dashboard.html" 
-                 style="background:#3b82f6; color:white; padding:12px 24px; text-decoration:none; border-radius:8px; display:inline-block;">
-                Access Your Dashboard
-              </a>
-            </div>
+            <h3 style="color:#1f2937; font-size:1rem; margin:1.5rem 0 0.5rem;">What Happens Next:</h3>
+            <ol style="color:#374151; line-height:1.8; padding-left:1.5rem;">
+              <li>Complete your $49.99 setup fee payment</li>
+              <li>Receive account activation confirmation within 24 hours</li>
+              <li>Complete your hotel profile in the dashboard</li>
+              <li>Start receiving government contract opportunities</li>
+            </ol>
             
-            <p style="color:#6b7280; font-size:0.875rem;">
-              Need help? Contact us at <a href="mailto:info@fedevent.com">info@fedevent.com</a> or call (305) 850-7848.
+            <p style="color:#6b7280; font-size:0.875rem; margin-top:2rem;">
+              <strong>Questions?</strong> Contact us at <a href="mailto:info@fedevent.com">info@fedevent.com</a> or call (305) 850-7848.
             </p>
           </div>
           
           <div style="background:#f9fafb; padding:1rem; text-align:center; color:#6b7280; font-size:0.875rem;">
             <p style="margin:0;">
-              This email was sent because you created an account on FEDEVENT.
+              This email was sent because you registered on FEDEVENT.
               <br>FEDEVENT - A service of CREATA Global Event Agency LLC
             </p>
           </div>
@@ -3837,6 +4626,98 @@ app.post('/api/auth/register', async (req, res) => {
       } catch (emailError) {
         console.error('Welcome email failed:', emailError?.message || emailError);
         // Don't fail the registration if email fails, but log the issue
+      }
+      
+      // Send admin notification email about new registration
+      const adminEmail = process.env.ADMIN_EMAIL || 'info@fedevent.com';
+      const adminSubject = `🔔 New Hotel Registration - Payment Required: ${hotelName || displayName}`;
+      const adminHtml = `
+        <div style="font-family:system-ui,Segoe UI,Roboto,Arial; max-width:600px; margin:0 auto;">
+          <div style="background:#dc2626; padding:1.5rem; text-align:center;">
+            <h1 style="color:white; margin:0; font-size:1.3rem;">⚠️ ACTION REQUIRED</h1>
+            <p style="color:#fee2e2; margin:0.5rem 0 0;">New Hotel Registration - Setup Fee Payment Needed</p>
+          </div>
+          
+          <div style="padding:2rem; background:#ffffff;">
+            <h2 style="color:#1f2937; margin-top:0;">New Hotel Registration</h2>
+            
+            <div style="background:#fef2f2; border-left:4px solid #dc2626; padding:1rem; margin:1rem 0;">
+              <p style="margin:0; color:#991b1b; font-weight:600;">⚠️ COLLECT $49.99 SETUP FEE</p>
+            </div>
+            
+            <div style="background:#f9fafb; padding:1.5rem; border-radius:8px; margin:1.5rem 0;">
+              <h3 style="margin:0 0 1rem 0; color:#1f2937;">Hotel Information:</h3>
+              <table style="width:100%; border-collapse: collapse;">
+                <tr>
+                  <td style="padding:0.5rem 0; color:#6b7280; font-weight:600;">Hotel Name:</td>
+                  <td style="padding:0.5rem 0; color:#1f2937;">${hotelName || 'N/A'}</td>
+                </tr>
+                <tr>
+                  <td style="padding:0.5rem 0; color:#6b7280; font-weight:600;">Contact Person:</td>
+                  <td style="padding:0.5rem 0; color:#1f2937;">${displayName}</td>
+                </tr>
+                <tr>
+                  <td style="padding:0.5rem 0; color:#6b7280; font-weight:600;">Email:</td>
+                  <td style="padding:0.5rem 0; color:#1f2937;"><a href="mailto:${email}">${email}</a></td>
+                </tr>
+                <tr>
+                  <td style="padding:0.5rem 0; color:#6b7280; font-weight:600;">Phone:</td>
+                  <td style="padding:0.5rem 0; color:#1f2937;">${req.body.phone || 'Not provided'}</td>
+                </tr>
+                <tr>
+                  <td style="padding:0.5rem 0; color:#6b7280; font-weight:600;">Account Number:</td>
+                  <td style="padding:0.5rem 0; color:#1f2937; font-weight:600;">${fedeventAccountNumber}</td>
+                </tr>
+                <tr>
+                  <td style="padding:0.5rem 0; color:#6b7280; font-weight:600;">Registered:</td>
+                  <td style="padding:0.5rem 0; color:#1f2937;">${new Date().toLocaleString()}</td>
+                </tr>
+              </table>
+            </div>
+            
+            <div style="background:#f0f9ff; border:2px solid #3b82f6; padding:1.5rem; border-radius:8px; margin:1.5rem 0;">
+              <h3 style="margin:0 0 1rem 0; color:#1e40af;">📋 Next Steps:</h3>
+              <ol style="margin:0; padding-left:1.5rem; color:#374151; line-height:1.8;">
+                <li><strong>Contact the hotel</strong> to collect $49.99 setup fee</li>
+                <li><strong>Process payment</strong> via QuickBooks</li>
+                <li><strong>Mark as paid</strong> in admin dashboard</li>
+                <li>System will <strong>automatically activate</strong> the account and send confirmation</li>
+              </ol>
+            </div>
+            
+            <div style="text-align:center; margin:2rem 0;">
+              <a href="https://fedevent.com/admin-dashboard.html" 
+                 style="background:#3b82f6; color:white; padding:12px 24px; text-decoration:none; border-radius:8px; display:inline-block;">
+                Open Admin Dashboard
+              </a>
+            </div>
+            
+            <div style="background:#d1fae5; padding:1rem; border-radius:6px; margin-top:1.5rem;">
+              <p style="margin:0; color:#065f46; font-size:0.9rem;">
+                <strong>✓ Customer has been notified</strong> about payment requirements and will expect contact within 24 hours.
+              </p>
+            </div>
+          </div>
+          
+          <div style="background:#f9fafb; padding:1rem; text-align:center; color:#6b7280; font-size:0.875rem;">
+            <p style="margin:0;">
+              FEDEVENT Admin Notification System
+              <br>CREATA Global Event Agency LLC
+            </p>
+          </div>
+        </div>
+      `;
+      
+      try {
+        await sendMail({
+          to: adminEmail,
+          subject: adminSubject,
+          html: adminHtml
+        });
+        console.log(`Admin notification sent successfully to ${adminEmail}`);
+      } catch (emailError) {
+        console.error('Admin notification email failed:', emailError?.message || emailError);
+        // Don't fail the registration if admin email fails
       }
     } else {
       console.warn('SMTP not configured - welcome emails disabled. Set SMTP_HOST, SMTP_USER, and SMTP_PASS environment variables to enable.');
@@ -3892,6 +4773,510 @@ app.get('/api/auth/me', requireAuth, (req, res) => {
   });
 });
 
+// ========== QUICKBOOKS OAUTH ENDPOINTS ==========
+
+// Step 1: Initiate QuickBooks OAuth (Admin only)
+app.get('/quickbooks/auth', requireAuth, requireAdmin, (req, res) => {
+  try {
+    if (!qbOAuthClient) {
+      return res.status(500).send('QuickBooks not configured. Set QB_CLIENT_ID and QB_CLIENT_SECRET in .env');
+    }
+    
+    const authUri = qbOAuthClient.authorizeUri({
+      scope: [OAuthClient.scopes.Accounting, OAuthClient.scopes.Payment],
+      state: 'FEDEVENT-QB-Connect',
+    });
+    
+    console.log('🔐 Redirecting to QuickBooks OAuth...');
+    res.redirect(authUri);
+  } catch (error) {
+    console.error('QB OAuth initiation error:', error);
+    res.status(500).send('Failed to initiate QuickBooks connection');
+  }
+});
+
+// Step 2: OAuth Callback from QuickBooks
+app.get('/api/quickbooks/callback', async (req, res) => {
+  try {
+    if (!qbOAuthClient) {
+      return res.status(500).send('QuickBooks not configured');
+    }
+    
+    console.log('📥 Received QuickBooks OAuth callback');
+    
+    const authResponse = await qbOAuthClient.createToken(req.url);
+    const tokenData = authResponse.getJson();
+    
+    // Save tokens to database
+    saveQuickBooksTokens(tokenData);
+    
+    console.log('✅ QuickBooks connected successfully!');
+    console.log(`   Realm ID: ${tokenData.realmId}`);
+    console.log(`   Token expires in: ${tokenData.expires_in} seconds`);
+    
+    res.send(`
+      <html>
+        <head>
+          <title>QuickBooks Connected</title>
+          <style>
+            body { font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center; }
+            .success { background: #d1fae5; color: #065f46; padding: 20px; border-radius: 8px; margin: 20px 0; }
+            .btn { background: #3b82f6; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; margin-top: 20px; }
+          </style>
+        </head>
+        <body>
+          <h1>✅ QuickBooks Connected!</h1>
+          <div class="success">
+            <p><strong>Your FEDEVENT system is now connected to QuickBooks!</strong></p>
+            <p>Realm ID: ${tokenData.realmId}</p>
+            <p>Invoices will now be created automatically when hotels register.</p>
+          </div>
+          <a href="/admin-payments.html" class="btn">Go to Admin Dashboard</a>
+          <p style="color: #6b7280; margin-top: 30px;">You can close this window.</p>
+        </body>
+      </html>
+    `);
+  } catch (error) {
+    console.error('❌ QuickBooks OAuth callback error:', error);
+    res.status(500).send(`
+      <html>
+        <body style="font-family: system-ui; max-width: 600px; margin: 50px auto; padding: 20px; text-align: center;">
+          <h1>❌ Connection Failed</h1>
+          <p style="color: #ef4444;">${error.message}</p>
+          <p>Please try again or contact support.</p>
+        </body>
+      </html>
+    `);
+  }
+});
+
+// QuickBooks Webhook - Receive payment notifications
+app.post('/api/quickbooks/webhook', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    console.log('📥 QuickBooks webhook received');
+    
+    const payload = typeof req.body === 'string' ? JSON.parse(req.body) : req.body;
+    const events = payload.eventNotifications || [];
+    
+    for (const event of events) {
+      const entities = event.dataChangeEvent?.entities || [];
+      
+      for (const entity of entities) {
+        if (entity.name === 'Payment' && entity.operation === 'Create') {
+          console.log(`💰 Payment received notification: ${entity.id}`);
+          
+          try {
+            // Get payment details from QuickBooks to find the invoice
+            const accessToken = await ensureFreshQuickBooksToken();
+            if (!accessToken) continue;
+            
+            const tokens = getQuickBooksTokens();
+            const qbo = new QuickBooks(
+              process.env.QB_CLIENT_ID,
+              process.env.QB_CLIENT_SECRET,
+              accessToken,
+              false,
+              tokens.realm_id,
+              process.env.QB_ENVIRONMENT !== 'production',
+              true,
+              null,
+              '2.0'
+            );
+            
+            // Get payment details
+            const payment = await new Promise((resolve, reject) => {
+              qbo.getPayment(entity.id, (err, payment) => {
+                if (err) reject(err);
+                else resolve(payment);
+              });
+            });
+            
+            console.log(`✅ QB Payment details retrieved: ${payment.Id}`);
+            
+            // Find associated invoice
+            if (payment.Line && payment.Line.length > 0) {
+              for (const line of payment.Line) {
+                if (line.LinkedTxn && line.LinkedTxn.length > 0) {
+                  for (const linkedTxn of line.LinkedTxn) {
+                    if (linkedTxn.TxnType === 'Invoice') {
+                      const invoiceId = linkedTxn.TxnId;
+                      console.log(`📄 Found linked invoice: ${invoiceId}`);
+                      
+                      // Find payment record in our database
+                      const dbPayment = db.prepare(`
+                        SELECT p.*, u.email, u.first_name, u.last_name
+                        FROM payments p
+                        JOIN users u ON p.user_id = u.id
+                        WHERE p.quickbooks_invoice_id = ?
+                        AND p.status = 'pending'
+                      `).get(invoiceId);
+                      
+                      if (dbPayment) {
+                        console.log(`🎯 Found matching payment record for ${dbPayment.email}`);
+                        
+                        // Mark as paid
+                        db.prepare(`
+                          UPDATE payments
+                          SET status = 'paid',
+                              paid_at = datetime('now'),
+                              quickbooks_payment_id = ?,
+                              transaction_note = 'Paid via QuickBooks (auto-detected)'
+                          WHERE id = ?
+                        `).run(payment.Id, dbPayment.id);
+                        
+                        // Activate account
+                        db.prepare(`
+                          UPDATE users
+                          SET account_status = 'active',
+                              setup_fee_paid = 1
+                          WHERE id = ?
+                        `).run(dbPayment.user_id);
+                        
+                        console.log(`✅ Account auto-activated for ${dbPayment.email}`);
+                        
+                        // Send activation email
+                        if (process.env.SMTP_HOST) {
+                          const activationHtml = `
+                            <div style="font-family:system-ui; max-width:600px; margin:0 auto;">
+                              <div style="background:#10b981; padding:2rem; text-align:center;">
+                                <h1 style="color:white; margin:0;">🎉 Payment Received!</h1>
+                                <p style="color:#d1fae5; margin:0.5rem 0 0;">Your FEDEVENT account is now active</p>
+                              </div>
+                              
+                              <div style="padding:2rem; background:#ffffff;">
+                                <h2 style="color:#1f2937; margin-top:0;">Hello ${dbPayment.first_name}!</h2>
+                                
+                                <div style="background:#d1fae5; border-left:4px solid #10b981; padding:1rem; margin:1.5rem 0; border-radius:4px;">
+                                  <p style="margin:0; color:#065f46; line-height:1.6;">
+                                    <strong>✓ Payment confirmed!</strong> Your $49.99 setup fee has been processed and your account is now fully active.
+                                  </p>
+                                </div>
+                                
+                                <p>You can now access your dashboard and complete your hotel profile.</p>
+                                
+                                <div style="text-align:center; margin:2rem 0;">
+                                  <a href="https://fedevent.com/hotel-dashboard.html" 
+                                     style="background:#3b82f6; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; display:inline-block; font-weight:600;">
+                                    Access Your Dashboard →
+                                  </a>
+                                </div>
+                              </div>
+                            </div>
+                          `;
+                          
+                          try {
+                            await sendMail({
+                              to: dbPayment.email,
+                              subject: '🎉 Payment Confirmed - Your FEDEVENT Account is Active!',
+                              html: activationHtml
+                            });
+                            console.log(`✅ Activation email sent to ${dbPayment.email}`);
+                          } catch (emailErr) {
+                            console.error('Email send failed:', emailErr);
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          } catch (paymentError) {
+            console.error('Error processing payment notification:', paymentError);
+          }
+        }
+      }
+    }
+    
+    res.sendStatus(200);
+  } catch (error) {
+    console.error('❌ Webhook processing error:', error);
+    res.sendStatus(500);
+  }
+});
+
+// Check QuickBooks connection status (Admin only)
+app.get('/api/quickbooks/status', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const tokens = getQuickBooksTokens();
+    
+    if (!tokens) {
+      return ok(res, {
+        connected: false,
+        message: 'Not connected to QuickBooks'
+      });
+    }
+    
+    const now = Math.floor(Date.now() / 1000);
+    const expiresIn = tokens.token_expires_at - now;
+    
+    return ok(res, {
+      connected: true,
+      realmId: tokens.realm_id,
+      tokenExpiresIn: expiresIn > 0 ? expiresIn : 0,
+      tokenExpired: expiresIn <= 0,
+      lastUpdated: tokens.updated_at
+    });
+  } catch (error) {
+    return fail(res, 500, 'Failed to check QuickBooks status');
+  }
+});
+
+// ========== PAYMENT MANAGEMENT ENDPOINTS ==========
+
+// Get pending payments (Admin only)
+app.get('/api/admin/payments/pending', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const pendingPayments = db.prepare(`
+      SELECT 
+        p.*,
+        u.email,
+        u.first_name,
+        u.last_name,
+        u.fedevent_account_number,
+        h.hotel_name
+      FROM payments p
+      JOIN users u ON p.user_id = u.id
+      LEFT JOIN hotels h ON u.hotel_id = h.id
+      WHERE p.status = 'pending'
+      ORDER BY p.created_at DESC
+    `).all();
+    
+    return ok(res, { payments: pendingPayments });
+  } catch (error) {
+    console.error('Error fetching pending payments:', error);
+    return fail(res, 500, 'Failed to fetch pending payments');
+  }
+});
+
+// Get hotel waitlist data (Admin only)
+app.get('/api/admin/waitlist', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const leads = db.prepare(`
+      SELECT * FROM hotel_leads
+      ORDER BY created_at DESC
+    `).all();
+    
+    return ok(res, { leads });
+  } catch (error) {
+    console.error('Error fetching waitlist:', error);
+    return fail(res, 500, 'Failed to fetch waitlist data');
+  }
+});
+
+// Export hotel waitlist to Excel (Admin only)
+app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const leads = db.prepare(`
+      SELECT * FROM hotel_leads
+      ORDER BY created_at DESC
+    `).all();
+    
+    // Import ExcelJS
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Hotel Waitlist');
+    
+    // Define columns
+    worksheet.columns = [
+      { header: 'User Code', key: 'user_code', width: 15 },
+      { header: 'Hotel Name', key: 'hotel_name', width: 30 },
+      { header: 'Address', key: 'hotel_address', width: 40 },
+      { header: 'City', key: 'city', width: 20 },
+      { header: 'State', key: 'state', width: 15 },
+      { header: 'Zip Code', key: 'zip_code', width: 12 },
+      { header: 'Country', key: 'country', width: 15 },
+      { header: 'Contact Name', key: 'contact_name', width: 25 },
+      { header: 'Title', key: 'title', width: 25 },
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Phone', key: 'phone', width: 15 },
+      { header: 'Hotel Phone', key: 'hotel_phone', width: 15 },
+      { header: 'Indoor Property', key: 'indoor_property', width: 15 },
+      { header: 'Accepts NET30', key: 'accepts_net30', width: 15 },
+      { header: 'Accepts Direct Bill (No App)', key: 'accepts_po', width: 20 },
+      { header: '30% Discount', key: 'accepts_discount', width: 15 },
+      { header: 'Interests', key: 'interests', width: 40 },
+      { header: 'Registered Date', key: 'created_at', width: 20 }
+    ];
+    
+    // Style header row
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    
+    // Add data rows
+    leads.forEach(lead => {
+      worksheet.addRow({
+        user_code: lead.user_code,
+        hotel_name: lead.hotel_name,
+        hotel_address: lead.hotel_address,
+        city: lead.city,
+        state: lead.state,
+        zip_code: lead.zip_code,
+        country: lead.country,
+        contact_name: lead.contact_name,
+        title: lead.title,
+        email: lead.email,
+        phone: lead.phone,
+        hotel_phone: lead.hotel_phone,
+        indoor_property: lead.indoor_property,
+        accepts_net30: lead.accepts_net30,
+        accepts_po: lead.accepts_po,
+        accepts_discount: lead.accepts_discount || 'No',
+        interests: lead.interests,
+        created_at: lead.created_at
+      });
+    });
+    
+    // Set response headers
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=hotel-waitlist-${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    // Write to response
+    await workbook.xlsx.write(res);
+    res.end();
+    
+  } catch (error) {
+    console.error('Error exporting waitlist:', error);
+    return fail(res, 500, 'Failed to export waitlist data');
+  }
+});
+
+// Mark payment as paid (Admin only)
+app.post('/api/admin/payments/:paymentId/mark-paid', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { paymentId } = req.params;
+    const { quickbooksInvoiceId, quickbooksPaymentId, note } = req.body;
+    
+    // Get payment and user details
+    const payment = db.prepare(`
+      SELECT p.*, u.email, u.first_name, u.last_name, u.fedevent_account_number
+      FROM payments p
+      JOIN users u ON p.user_id = u.id
+      WHERE p.id = ?
+    `).get(paymentId);
+    
+    if (!payment) {
+      return fail(res, 404, 'Payment not found');
+    }
+    
+    if (payment.status === 'paid') {
+      return fail(res, 400, 'Payment already marked as paid');
+    }
+    
+    // Update payment record
+    db.prepare(`
+      UPDATE payments
+      SET status = 'paid',
+          paid_at = datetime('now'),
+          quickbooks_invoice_id = ?,
+          quickbooks_payment_id = ?,
+          transaction_note = ?
+      WHERE id = ?
+    `).run(quickbooksInvoiceId || null, quickbooksPaymentId || null, note || null, paymentId);
+    
+    // Update user account status
+    db.prepare(`
+      UPDATE users
+      SET account_status = 'active',
+          setup_fee_paid = 1
+      WHERE id = ?
+    `).run(payment.user_id);
+    
+    console.log(`✅ Payment marked as paid for user ${payment.email} (Payment ID: ${paymentId})`);
+    
+    // Send activation email to hotel
+    if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+      const activationSubject = '🎉 Your FEDEVENT Account is Now Active!';
+      const activationHtml = `
+        <div style="font-family:system-ui,Segoe UI,Roboto,Arial; max-width:600px; margin:0 auto;">
+          <div style="background:#10b981; padding:2rem; text-align:center;">
+            <h1 style="color:white; margin:0;">🎉 Account Activated!</h1>
+            <p style="color:#d1fae5; margin:0.5rem 0 0;">Welcome to FEDEVENT</p>
+          </div>
+          
+          <div style="padding:2rem; background:#ffffff;">
+            <h2 style="color:#1f2937; margin-top:0;">Hello ${payment.first_name}!</h2>
+            
+            <div style="background:#d1fae5; border-left:4px solid #10b981; padding:1rem; margin:1.5rem 0; border-radius:4px;">
+              <p style="margin:0; color:#065f46; line-height:1.6;">
+                <strong>✓ Payment received!</strong> Your FEDEVENT account is now active and ready to use.
+              </p>
+            </div>
+            
+            <p style="color:#374151; line-height:1.6;">
+              Thank you for completing your setup fee payment of <strong>$49.99</strong>. Your account has been fully activated!
+            </p>
+            
+            <h3 style="color:#1f2937; font-size:1.1rem; margin:1.5rem 0 0.5rem;">What's Next:</h3>
+            <ol style="color:#374151; line-height:1.8; padding-left:1.5rem;">
+              <li><strong>Complete your hotel profile</strong> in the dashboard</li>
+              <li><strong>Upload required documents</strong> (W-9, insurance, etc.)</li>
+              <li><strong>Review and accept</strong> government contract terms</li>
+              <li><strong>Start receiving</strong> government event opportunities</li>
+            </ol>
+            
+            <div style="background:#f3f4f6; padding:1rem; border-radius:8px; margin:1.5rem 0;">
+              <p style="margin:0 0 0.5rem; color:#374151;"><strong>Your Account Details:</strong></p>
+              <p style="margin:0.25rem 0; color:#6b7280;">Email: ${payment.email}</p>
+              <p style="margin:0.25rem 0; color:#6b7280;">Account #: ${payment.fedevent_account_number}</p>
+              <p style="margin:0.25rem 0; color:#10b981; font-weight:600;">Status: ✓ ACTIVE</p>
+            </div>
+            
+            <div style="text-align:center; margin:2rem 0;">
+              <a href="https://fedevent.com/hotel-dashboard.html" 
+                 style="background:#3b82f6; color:white; padding:14px 28px; text-decoration:none; border-radius:8px; display:inline-block; font-weight:600;">
+                Access Your Dashboard →
+              </a>
+            </div>
+            
+            <p style="color:#6b7280; font-size:0.875rem; margin-top:2rem;">
+              <strong>Need assistance?</strong> Our team is here to help!<br>
+              📧 Email: <a href="mailto:info@fedevent.com">info@fedevent.com</a><br>
+              📞 Phone: (305) 850-7848
+            </p>
+          </div>
+          
+          <div style="background:#f9fafb; padding:1rem; text-align:center; color:#6b7280; font-size:0.875rem;">
+            <p style="margin:0;">
+              FEDEVENT - Professional Government Event Solutions
+              <br>A service of CREATA Global Event Agency LLC
+            </p>
+          </div>
+        </div>
+      `;
+      
+      try {
+        await sendMail({
+          to: payment.email,
+          subject: activationSubject,
+          html: activationHtml
+        });
+        console.log(`✅ Activation email sent to ${payment.email}`);
+      } catch (emailError) {
+        console.error('Activation email failed:', emailError?.message || emailError);
+      }
+    }
+    
+    return ok(res, { 
+      message: 'Payment marked as paid and account activated',
+      payment: {
+        id: paymentId,
+        status: 'paid',
+        user_email: payment.email
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error marking payment as paid:', error);
+    return fail(res, 500, 'Failed to mark payment as paid');
+  }
+});
+
 // Authenticated file upload for hotel profile registration
 app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
   try {
@@ -3913,6 +5298,823 @@ app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
   } catch (error) {
     console.error('Upload error:', error);
     return fail(res, 500, 'File upload failed');
+  }
+});
+
+// ---------- AI Document Processing for Meeting Layouts ----------
+
+// Process meeting layout documents with OpenAI
+app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return fail(res, 400, 'No file uploaded');
+    }
+
+    const { fileType } = req.body;
+    const file = req.file;
+    
+    console.log('🤖 Processing meeting layout document:', {
+      fileName: file.originalname,
+      fileType: fileType,
+      mimeType: file.mimetype,
+      size: file.size
+    });
+
+    // Initialize OpenAI client
+    const openai = await getOpenAI();
+
+    if (!openai) {
+      return fail(res, 500, 'OpenAI API key not configured on server');
+    }
+
+    // Determine handling based on MIME type
+    const fileBuffer = fs.readFileSync(file.path);
+    let mimeType = file.mimetype || '';
+    let useImageInput = mimeType.startsWith('image/');
+    let extractedText = '';
+
+    // File size guard (25MB)
+    const MAX_BYTES = 25 * 1024 * 1024;
+    if (file.size > MAX_BYTES) {
+      fs.unlinkSync(file.path);
+      return fail(res, 400, 'File too large. Please upload a file 25MB or smaller.');
+    }
+    
+    // Normalize by declared fileType if provided by client, but DO NOT override
+    // to image mode unless the actual uploaded file is an image. This prevents
+    // accidentally sending non-image bytes (e.g., PDF) as an image to the AI API.
+    if (!useImageInput && fileType === 'image') {
+      if (file.mimetype && file.mimetype.startsWith('image/')) {
+        useImageInput = true;
+        mimeType = file.mimetype; // preserve actual image mime type
+      } else {
+        // Ignore client-declared image type if the file is not an image
+        useImageInput = false;
+      }
+    }
+    
+    if (!useImageInput) {
+      // Text-based pipeline for PDFs/DOCX
+      if (mimeType.includes('pdf') || fileType === 'pdf') {
+        try {
+          extractedText = await ocrPdfText(file.path);
+        } catch (e) {
+          console.error('🤖 OCR failed, continuing with empty text:', e.message);
+          extractedText = '';
+        }
+        if (!extractedText || !extractedText.trim()) {
+          // One more attempt to hint at scanned/empty
+          console.warn('🤖 PDF text empty after OCR');
+        }
+      } else if (mimeType.includes('wordprocessingml') || /\.docx$/i.test(file.originalname) || fileType === 'docx') {
+        try {
+          const result = await mammoth.extractRawText({ path: file.path });
+          extractedText = (result && result.value) || '';
+        } catch (e) {
+          console.error('🤖 DOCX extraction failed:', e.message);
+          extractedText = '';
+        }
+      } else if (mimeType === 'application/msword' || /\.doc$/i.test(file.originalname) || fileType === 'doc') {
+        fs.unlinkSync(file.path);
+        return fail(res, 400, 'Legacy .DOC files are not supported. Please upload PDF, DOCX, JPG, or PNG.');
+      } else if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || fileType === 'excel') {
+        fs.unlinkSync(file.path);
+        return fail(res, 400, 'Excel parsing not yet supported. Please upload PDF, DOCX, JPG, or PNG.');
+      } else {
+        fs.unlinkSync(file.path);
+        return fail(res, 400, 'Unsupported file type. Please upload PDF, DOCX, JPG, or PNG.');
+      }
+    }
+
+    // Create the prompt for meeting room data extraction
+    const systemPrompt = `You are an expert at extracting meeting room information from hotel layout documents. 
+    
+    Extract meeting room data from the provided document and return it as a JSON array. Each room should include:
+    - name: Room name (e.g., "Grand Ballroom", "Conference Room A")
+    - level: Floor/level (e.g., "1st Floor", "2nd Floor")
+    - area_sqft: Area in square feet (number)
+    - length_ft: Length in feet (number)
+    - width_ft: Width in feet (number)
+    - ceiling_ft: Ceiling height in feet (number)
+    - pillar_free: "Yes" or "No"
+    - natural_light: "Yes" or "No"
+    - divisible: "Yes" or "No"
+    - banquet_rounds: Number of banquet round tables (number)
+    - theater: Theater-style seating capacity (number)
+    - classroom: Classroom-style seating capacity (number)
+    - ushape: U-shape seating capacity (number)
+    - cocktail_rounds: Cocktail reception capacity (number)
+    - crescent_rounds: Crescent round seating capacity (number)
+    - hollow_square: Hollow square seating capacity (number)
+    - built_in_av: Description of built-in audio/visual equipment
+    - power: Power/electrical information
+    - loadin: Load-in door information
+    
+    If information is not available, use reasonable estimates or leave empty. Return only the JSON array, no other text.`;
+    
+    const userPrompt = `Please extract meeting room information from this ${fileType} document: ${file.originalname}. 
+    
+    Return the data as a JSON array of room objects with the exact field names specified above.`;
+
+    // Helper: safe JSON parse or extract JSON substring
+    function tryParseRooms(jsonLike) {
+      try {
+        const v = JSON.parse(jsonLike);
+        return Array.isArray(v) ? v : [];
+      } catch (_) {
+        const match = String(jsonLike).match(/\[([\s\S]*?)\]/);
+        if (match) {
+          try {
+            const v2 = JSON.parse(match[0]);
+            return Array.isArray(v2) ? v2 : [];
+          } catch (_) { /* ignore */ }
+        }
+        return [];
+      }
+    }
+
+    // Helper: normalize one room record
+    function normalizeRoom(room) {
+      const toInt = v => {
+        if (v == null) return null;
+        const m = String(v).match(/-?\d[\d,]*/);
+        return m ? parseInt(m[0].replace(/,/g,''), 10) : null;
+      };
+      const out = { ...room };
+      out.area_sqft = toInt(out.area_sqft);
+      out.length_ft = toInt(out.length_ft);
+      out.width_ft = toInt(out.width_ft);
+      out.ceiling_ft = toInt(out.ceiling_ft);
+      out.banquet_rounds = toInt(out.banquet_rounds);
+      out.theater = toInt(out.theater);
+      out.classroom = toInt(out.classroom);
+      out.ushape = toInt(out.ushape);
+      out.cocktail_rounds = toInt(out.cocktail_rounds);
+      out.crescent_rounds = toInt(out.crescent_rounds);
+      out.hollow_square = toInt(out.hollow_square);
+      if (typeof out.pillar_free === 'string') out.pillar_free = /yes/i.test(out.pillar_free) ? 'Yes' : /no/i.test(out.pillar_free) ? 'No' : '';
+      if (typeof out.natural_light === 'string') out.natural_light = /yes/i.test(out.natural_light) ? 'Yes' : /no/i.test(out.natural_light) ? 'No' : '';
+      if (typeof out.divisible === 'string') out.divisible = /yes/i.test(out.divisible) ? 'Yes' : /no/i.test(out.divisible) ? 'No' : '';
+      return out;
+    }
+
+    // Build and execute model calls
+    let consolidatedRooms = [];
+    if (useImageInput) {
+      // Single vision call for image input
+      const base64Data = fileBuffer.toString('base64');
+      const messages = [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: [
+          { type: 'text', text: userPrompt },
+          { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } }
+        ] }
+      ];
+      const response = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages,
+        max_tokens: 4000,
+        temperature: 0.1
+      });
+      if (!response.choices || !response.choices[0] || !response.choices[0].message) {
+        return fail(res, 500, 'Invalid response from OpenAI API');
+      }
+      const content = response.choices[0].message.content || '';
+      consolidatedRooms = tryParseRooms(content);
+    } else {
+      const text = (extractedText || '').trim();
+      if (!text) {
+        fs.unlinkSync(file.path);
+        return fail(res, 400, 'No readable text found. If this is a scanned PDF/image, please upload a higher-quality scan or try an image.');
+      }
+      const CHUNK_SIZE = 8000;
+      const chunks = [];
+      for (let i = 0; i < text.length; i += CHUNK_SIZE) chunks.push(text.slice(i, i + CHUNK_SIZE));
+      for (let i = 0; i < chunks.length; i++) {
+        const chunk = chunks[i];
+        const messages = [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: [{ type: 'text', text: `${userPrompt}\n\nDocument text (chunk ${i+1}/${chunks.length}):\n\n${chunk}` }] }
+        ];
+        let content = '';
+        for (let attempt = 1; attempt <= 2; attempt++) {
+          try {
+            const resp = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages, max_tokens: 4000, temperature: 0.1 });
+            content = (resp && resp.choices && resp.choices[0] && resp.choices[0].message && resp.choices[0].message.content) || '';
+            break;
+          } catch (e) {
+            if (attempt === 2) throw e;
+          }
+        }
+        const rooms = tryParseRooms(content).map(normalizeRoom);
+        consolidatedRooms.push(...rooms);
+      }
+      // Deduplicate by name + level
+      const seen = new Set();
+      consolidatedRooms = consolidatedRooms.filter(r => {
+        const key = `${(r.name||'').trim().toLowerCase()}|${(r.level||'').trim().toLowerCase()}`;
+        if (seen.has(key)) return false;
+        seen.add(key); return true;
+      });
+    }
+
+    // Clean up the uploaded file
+    try { fs.unlinkSync(file.path); } catch (_) {}
+
+    if (!Array.isArray(consolidatedRooms)) {
+      return fail(res, 500, 'AI returned an unexpected result. Please try a clearer document.');
+    }
+
+    return ok(res, {
+      success: true,
+      rooms: consolidatedRooms,
+      message: `Successfully extracted ${consolidatedRooms.length} meeting rooms`
+    });
+
+  } catch (error) {
+    console.error('🤖 Document processing error:', error);
+    
+    // Clean up the uploaded file if it exists
+    if (req.file && req.file.path) {
+      try {
+        fs.unlinkSync(req.file.path);
+      } catch (cleanupError) {
+        console.error('🤖 Error cleaning up file:', cleanupError);
+      }
+    }
+    
+    return fail(res, 500, `Document processing failed: ${error.message}`);
+  }
+});
+
+// ---------- OCR-based Fact Sheet Processing Endpoint ----------
+app.post('/uploadFactSheet', upload.single('factSheet'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+
+  try {
+    console.log('📄 Processing fact sheet:', req.file.originalname);
+    
+    // Determine file type and extract text using appropriate method
+    const ext = extOf(req.file.originalname);
+    let text = '';
+    
+    if (ext === 'pdf') {
+      // Use the existing ocrPdfText function
+      text = await ocrPdfText(req.file.path);
+    } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
+      // Use Tesseract for images
+      const { default: Tesseract } = await import('tesseract.js');
+      const { data: { text: extractedText } } = await Tesseract.recognize(req.file.path, 'eng', { 
+        logger: m => console.log('📄 OCR Progress:', m) 
+      });
+      text = extractedText;
+    } else {
+      // Clean up and return error
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+      return res.status(400).json({ error: 'Unsupported file type. Please upload PDF, PNG, or JPG.' });
+    }
+
+    console.log('📄 Extracted text length:', text.length);
+
+    // Simple parser – look for room names with numbers
+    const lines = text.split('\n');
+    const meetingRooms = [];
+
+    lines.forEach(line => {
+      const trimmed = line.trim();
+      if (!trimmed) return;
+      
+      // Skip headers
+      const lower = trimmed.toLowerCase();
+      if (lower.includes('meeting space') || lower.includes('room name')) return;
+      if (lower.includes('capacity') || lower.includes('setup') || lower.includes('style')) return;
+      if (lower.includes('square feet') || lower.includes('sq ft') || lower.includes('dimensions')) return;
+      
+      // Match patterns like: "Room Name   1000   50"
+      // Room name should be at least 3 chars, followed by 2+ numbers
+      const match = trimmed.match(/^([A-Za-z0-9\s&\-'()\/]{3,}?)\s+(\d{3,})\s+/);
+      if (match) {
+        const name = match[1].trim();
+        
+        // Skip if name is just numbers or too generic
+        if (/^\d+$/.test(name)) return;
+        if (name.length < 3) return;
+        
+        // Extract numbers from line
+        const numbers = trimmed.match(/\d+/g)?.map(n => parseInt(n)) || [];
+        
+        // First number should be sqft (100-50000), second might be capacity
+        const sqFt = numbers.find(n => n >= 100 && n <= 50000);
+        const capacity = numbers.find(n => n !== sqFt && n >= 10 && n <= 5000);
+        
+        if (sqFt) {
+          meetingRooms.push({
+            name: name,
+            sqFt: sqFt,
+            capacity: capacity || null
+          });
+        }
+      }
+    });
+
+    console.log('📄 Extracted meeting rooms:', meetingRooms.length);
+
+    // Clean up the uploaded file
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+
+    res.json({ meetingRooms });
+  } catch (err) {
+    console.error('📄 Error processing fact sheet:', err);
+    
+    // Clean up the uploaded file
+    if (req.file && req.file.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    
+    res.status(500).json({ error: 'Failed to process file: ' + err.message });
+  }
+});
+
+// ---------- Hybrid OCR + OpenAI Extraction Endpoint ----------
+app.post('/uploadFactSheetHybrid', upload.single('factSheet'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+
+  let tmpFiles = [];
+  
+  try {
+    console.log('🔄 Hybrid extraction starting for:', req.file.originalname);
+    
+    const ext = extOf(req.file.originalname);
+    let rawText = '';
+    
+    // Step 1 & 2: Extract text using the BEST method for each type
+    if (ext === 'pdf') {
+      console.log('📄 Using direct PDF OCR (better quality than PNG conversion)...');
+      // Use the existing ocrPdfText which gives better results
+      rawText = await ocrPdfText(req.file.path);
+    } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
+      console.log('📄 Using Tesseract on image...');
+      const { default: Tesseract } = await import('tesseract.js');
+      const { data: { text } } = await Tesseract.recognize(req.file.path, 'eng', {
+        logger: m => {
+          if (m.status === 'recognizing text') {
+            console.log(`   Progress: ${Math.round(m.progress * 100)}%`);
+          }
+        }
+      });
+      rawText = text;
+    } else {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+      return res.status(400).json({ error: 'Unsupported file type. Please upload PDF, PNG, or JPG.' });
+    }
+
+    console.log('✅ OCR complete. Extracted text length:', rawText.length);
+    console.log('📄 First 1000 chars of OCR text:', rawText.substring(0, 1000));
+
+    // Step 3: Pre-parse basic table rows with regex (more lenient)
+    const candidateRooms = [];
+    const lines = rawText.split('\n');
+    
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line || line.length < 5) continue;
+      
+      // Skip obvious headers (but be less aggressive)
+      const lowerLine = line.toLowerCase();
+      if (lowerLine.includes('name') && lowerLine.includes('location')) continue; // Header row
+      if (lowerLine === 'meeting spaces' || lowerLine === 'meeting rooms') continue;
+      if (lowerLine.startsWith('room name') || lowerLine.startsWith('space name')) continue;
+      
+      // Match lines with text followed by numbers (very lenient)
+      // This catches: "Ballroom A  2nd  50  100  20  5000  300  500"
+      const match = line.match(/^([A-Za-z0-9\s&\-'()\/,]+?)(\s+\d+)/);
+      if (match) {
+        const name = match[1].trim();
+        
+        // Skip if name is just a number or too short
+        if (/^\d+$/.test(name) || name.length < 2) continue;
+        
+        // Extract all numbers from the line
+        const numbers = line.match(/\d+/g)?.map(n => parseInt(n.replace(/,/g, ''))) || [];
+        
+        if (numbers.length >= 1) {
+          candidateRooms.push({
+            name: name,
+            rawLine: line,
+            allNumbers: numbers
+          });
+        }
+      }
+    }
+
+    console.log(`🎯 Pre-parsed ${candidateRooms.length} candidate room(s)`);
+    if (candidateRooms.length > 0) {
+      console.log(`🎯 Sample candidates:`, candidateRooms.slice(0, 5).map(r => ({ name: r.name, numbers: r.allNumbers })));
+    }
+
+    // Step 4: Send to OpenAI for validation and JSON normalization
+    const openai = await getOpenAI();
+    
+    if (!openai) {
+      // If OpenAI is not available, return the candidate rooms as-is
+      console.log('⚠️  OpenAI not available, returning candidate rooms without validation');
+      return res.json({ meetingRooms: candidateRooms });
+    }
+
+    console.log('🤖 Sending to OpenAI for validation and normalization...');
+    console.log('🤖 Candidates found:', candidateRooms.length);
+    console.log('🤖 OCR text length:', rawText.length);
+    
+    const systemPrompt = `You are an expert at extracting comprehensive meeting space data from hotel fact sheets. 
+
+IMPORTANT: You must parse the OCR text directly and extract ALL meeting rooms, regardless of preliminary data.
+
+${candidateRooms.length > 0 ? `Preliminary OCR hints (${candidateRooms.length} possible rooms): ${JSON.stringify(candidateRooms.slice(0, 10), null, 2)}` : 'No preliminary data found - parse directly from OCR text below.'}
+
+The fact sheet likely has a TABLE format with columns like:
+- Room Name | Location/Level | Length | Width | Height | Area (sqft) | Classroom | Theater | Conference | Banquet | U-Shape | Hollow Square | Reception/Cocktail | Exhibit
+
+Extract and return a JSON object with this EXACT structure:
+{
+  "meetingRooms": [
+    {
+      "name": "string (required)",
+      "level": "string (floor/level like '1st Floor', 'Mezzanine', '2')",
+      "sqFt": number,
+      "lengthFt": number,
+      "widthFt": number,
+      "ceilingFt": number,
+      "pillarFree": boolean,
+      "naturalLight": boolean,
+      "divisible": boolean,
+      "seating": {
+        "banquet": number,
+        "theater": number,
+        "classroom": number,
+        "uShape": number,
+        "cocktail": number,
+        "crescent": number,
+        "hollowSquare": number,
+        "conference": number
+      },
+      "notes": "string (any corrections or assumptions)"
+    }
+  ]
+}
+
+CRITICAL RULES FOR EXTRACTION:
+- Extract EVERY meeting room mentioned (20-30+ rooms expected)
+- Fix OCR errors (O→0, I→1, S→5, l→1, etc.)
+- Look for dimensions: "50x100", "50 x 100", "L 50 W 100", etc.
+- Validate numbers (sqFt: 100-50000, ceiling: 8-30, capacities: 1-5000)
+
+SEATING TYPE STANDARDIZATION - normalize fact sheet columns to our field names:
+- "Banquet", "Banquet Rounds", "Rounds", "Round Tables", "Banq" → seating.banquet
+- "Theater", "Theatre", "Auditorium", "Thtr" → seating.theater  
+- "Classroom", "Class Room", "Class", "Classrm" → seating.classroom
+- "U-Shape", "U Shape", "Hollow U", "U Shp" → seating.uShape
+- "Reception", "Cocktail", "Cocktail Rounds", "Recep", "Cktl" → seating.cocktail
+- "Crescent", "Crescent Rounds", "Cres" → seating.crescent
+- "Hollow Square", "Square", "Hol Sq", "H Square" → seating.hollowSquare
+- "Conference", "Boardroom", "Board", "Conf" → seating.conference
+- "Exhibit", "Trade Show", "Exhibits", "Exhib" → seating.exhibit (if present)
+
+FEATURES - detect from keywords:
+- Pillar-free: "pillar-free", "column-free", "no pillars"
+- Natural light: "natural light", "windows", "daylight"
+- Divisible: "divisible", "airwall", "can divide"
+
+PARSING STRATEGY:
+1. Find table header row to identify column positions
+2. For each data row, read values by column position
+3. Match column headers to our standard field names
+4. Extract ALL rooms, not just examples
+5. Return ONLY valid JSON, no markdown`;
+
+    const userPrompt = `Parse this hotel fact sheet and extract ALL meeting/event spaces.
+
+STEP 1: FIND THE CAPACITY CHART/TABLE
+Look for sections with keywords like:
+- "Capacity Chart"
+- "Event Rooms"
+- "Conference Rooms"
+- "Meeting Spaces"
+- "Function Space"
+- "Event Space"
+- Tables with columns for room names and seating capacities
+
+STEP 2: UNDERSTAND TABLE STRUCTURE
+Typical columns (order may vary):
+- Room Name (e.g., "L'Enfant Ballroom", "LB-A", "Grand Hall")
+- Location/Level (e.g., "Lobby Level", "2nd", "Mezzanine", "Foyer")
+- Dimensions: Length, Width, Height/Ceiling (in feet)
+- Area (square feet - may have commas like "5,406" or "11,700")
+- Seating capacities: Classroom, Theater, Conference, Banquet, U-Shape, Hollow Square, Reception/Cocktail, Exhibits
+
+CRITICAL MAPPING:
+- Column "Reception" → seating.cocktail (NOT crescent!)
+- Column "Classroom" → seating.classroom
+- Column "Theater" → seating.theater  
+- Column "Banquet" → seating.banquet
+- Column "U-Shape" → seating.uShape
+- Column "Hollow Square" → seating.hollowSquare
+- Column "Conference" → seating.conference (if exists)
+- Column "Exhibits" → seating.exhibit (if exists)
+
+FIX OCR ERRORS:
+- "rover" → "Foyer" (common OCR mistake)
+- "5,406" → 5406 (remove commas)
+- Column numbers separated by spaces
+
+I detected ${candidateRooms.length} room entries - extract ALL of them with data from the correct columns!
+
+FULL OCR TEXT:
+${rawText}
+
+Return JSON with ALL rooms, reading each column in the exact order above!`;
+
+    try {
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-4o-mini',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        temperature: 0.1,
+        max_tokens: 16000  // Increased for extracting ALL rooms (up to ~30 rooms)
+      });
+
+      const textOutput = completion.choices[0].message.content || '';
+      console.log('🤖 OpenAI response received, length:', textOutput.length);
+      console.log('🤖 First 500 chars:', textOutput.substring(0, 500));
+      
+      // Try to parse the JSON response
+      let parsed = { meetingRooms: candidateRooms }; // fallback
+      
+      try {
+        // Try direct parse first
+        parsed = JSON.parse(textOutput);
+      } catch (e) {
+        // Try to extract JSON from markdown code blocks
+        const jsonMatch = textOutput.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
+        if (jsonMatch) {
+          parsed = JSON.parse(jsonMatch[1]);
+        } else {
+          // Try to find JSON object in the text
+          const objectMatch = textOutput.match(/\{[\s\S]*"meetingRooms"[\s\S]*\}/);
+          if (objectMatch) {
+            parsed = JSON.parse(objectMatch[0]);
+          }
+        }
+      }
+
+      console.log(`✅ Returning ${parsed.meetingRooms?.length || 0} validated meeting room(s)`);
+      
+      // Debug: Log first few rooms to verify mapping
+      if (parsed.meetingRooms && parsed.meetingRooms.length > 0) {
+        console.log('🔍 Sample room data:', JSON.stringify(parsed.meetingRooms[0], null, 2));
+      }
+      
+      return res.json(parsed);
+
+    } catch (aiError) {
+      console.error('🤖 OpenAI processing error:', aiError.message);
+      // Fallback to candidate rooms if OpenAI fails
+      return res.json({ 
+        meetingRooms: candidateRooms,
+        warning: 'AI validation failed, returning OCR results'
+      });
+    }
+
+  } catch (err) {
+    console.error('🔴 Hybrid extraction error:', err);
+    
+    // Clean up the uploaded file
+    if (req.file && req.file.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    
+    return res.status(500).json({ 
+      error: 'Extraction failed: ' + err.message,
+      details: err.stack 
+    });
+  } finally {
+    // Clean up all temporary files
+    for (const tmpFile of tmpFiles) {
+      try { fs.unlinkSync(tmpFile); } catch (_) {}
+    }
+    if (req.file && req.file.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
+    
+    // Clean up temporary directories
+    try {
+      const uploadsDir = path.join(process.cwd(), 'uploads');
+      const tmpDirs = fs.readdirSync(uploadsDir).filter(f => f.startsWith('pdf2png-') || f.startsWith('ocr-'));
+      for (const dir of tmpDirs) {
+        const dirPath = path.join(uploadsDir, dir);
+        try {
+          fs.rmSync(dirPath, { recursive: true, force: true });
+        } catch (_) {}
+      }
+    } catch (_) {}
+  }
+});
+
+// ---------- Debug OCR Endpoint ----------
+app.post('/debugOCR', upload.single('factSheet'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+
+  try {
+    const ext = extOf(req.file.originalname);
+    let rawText = '';
+    
+    if (ext === 'pdf') {
+      rawText = await ocrPdfText(req.file.path);
+    } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
+      const { default: Tesseract } = await import('tesseract.js');
+      const { data: { text } } = await Tesseract.recognize(req.file.path, 'eng');
+      rawText = text;
+    }
+    
+    // Clean up
+    try { fs.unlinkSync(req.file.path); } catch (_) {}
+    
+    // Return the raw text for inspection
+    return res.json({
+      textLength: rawText.length,
+      fullText: rawText,
+      first1000: rawText.substring(0, 1000),
+      lines: rawText.split('\n').length
+    });
+  } catch (err) {
+    if (req.file?.path) try { fs.unlinkSync(req.file.path); } catch (_) {}
+    return res.status(500).json({ error: err.message });
+  }
+});
+
+// ======================================================================
+// VERSION 8.0: COMPREHENSIVE HOTEL PROFILE EXTRACTION (AI-Powered)
+// ======================================================================
+app.post('/uploadHotelProfile', upload.single('hotelProfile'), async (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'No file uploaded.' });
+  
+  console.log('🤖 Version 8.0: Full Hotel Profile Extraction starting for:', req.file.originalname);
+  
+  try {
+    const ext = extOf(req.file.originalname);
+    let rawText = '';
+    
+    // Step 1: Extract text using OCR
+    if (ext === 'pdf') {
+      console.log('📄 Using PDF OCR...');
+      rawText = await ocrPdfText(req.file.path);
+    } else if (['png', 'jpg', 'jpeg'].includes(ext)) {
+      console.log('🖼️ Using Image OCR...');
+      const { default: Tesseract } = await import('tesseract.js');
+      const { data: { text } } = await Tesseract.recognize(req.file.path, 'eng');
+      rawText = text;
+    } else {
+      return res.status(400).json({ error: 'Unsupported file type. Please upload PDF or image.' });
+    }
+    
+    console.log(`📖 Extracted ${rawText.length} characters from document`);
+    console.log(`📄 First 500 chars:\n${rawText.substring(0, 500)}`);
+    
+    // Step 2: Send to OpenAI for comprehensive extraction
+    const openaiKey = process.env.OPENAI_API_KEY;
+    if (!openaiKey) {
+      return res.status(500).json({ error: 'OpenAI API key not configured' });
+    }
+    
+    const { default: OpenAI } = await import('openai');
+    const openai = new OpenAI({ apiKey: openaiKey });
+    
+    console.log('🤖 Sending to OpenAI for comprehensive extraction...');
+    
+    const systemPrompt = `You are an expert hotel data extraction AI. Extract ALL hotel information from the provided text.
+
+IMPORTANT: Extract as much as you can find. Look for:
+
+1. HOTEL INFORMATION:
+   - Hotel name
+   - Address (street, city, state, zip, country)
+   - Main phone number
+   - Main email
+   - Website
+   - Contact person name (sales director, GM, etc.)
+
+2. MEETING SPACES:
+   - Room name
+   - Level/Floor
+   - Square footage
+   - Dimensions (length x width)
+   - Ceiling height
+   - Pillar-free? Natural light? Divisible?
+   - Seating capacities: theater, classroom, banquet rounds, u-shape, hollow square, conference, crescent rounds, cocktail/reception
+
+3. GUEST ROOMS:
+   - Total number of rooms
+   - Room types and counts (standard, suite, ADA accessible, etc.)
+   
+4. AMENITIES:
+   - Pool, spa, fitness center, restaurant, bar
+   - Business center, parking, WiFi
+   - Any special features
+
+Return ONLY valid JSON in this exact format:
+{
+  "hotelName": "string",
+  "contactName": "string",
+  "email": "string",
+  "phone": "string",
+  "address": {
+    "street": "string",
+    "city": "string",
+    "state": "string",
+    "zip": "string",
+    "country": "string"
+  },
+  "website": "string",
+  "totalRooms": number,
+  "roomTypes": [
+    {"type": "string", "count": number}
+  ],
+  "amenities": ["string"],
+  "meetingRooms": [
+    {
+      "name": "string",
+      "level": "string",
+      "sqFt": number,
+      "lengthFt": number,
+      "widthFt": number,
+      "ceilingFt": number,
+      "pillarFree": boolean,
+      "naturalLight": boolean,
+      "divisible": boolean,
+      "seating": {
+        "banquet": number,
+        "theater": number,
+        "classroom": number,
+        "uShape": number,
+        "cocktail": number,
+        "crescent": number,
+        "hollowSquare": number,
+        "conference": number
+      },
+      "notes": "string"
+    }
+  ],
+  "summary": "string describing what was found"
+}
+
+If a field is not found, use null. Do NOT invent data. Extract only what is clearly stated.`;
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Extract all hotel information from this text:\n\n${rawText}` }
+      ],
+      max_tokens: 16000,
+      temperature: 0.1
+    });
+    
+    const aiResponse = completion.choices[0].message.content;
+    console.log(`🤖 AI response length: ${aiResponse.length}`);
+    console.log(`🤖 First 500 chars: ${aiResponse.substring(0, 500)}`);
+    
+    // Parse the JSON response
+    let hotelData;
+    try {
+      // Extract JSON from markdown code blocks if present
+      const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || aiResponse.match(/```\s*([\s\S]*?)\s*```/);
+      const jsonStr = jsonMatch ? jsonMatch[1] : aiResponse;
+      hotelData = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error('❌ Failed to parse AI response:', parseErr);
+      return res.status(500).json({ error: 'AI returned invalid JSON' });
+    }
+    
+    console.log(`✅ Successfully extracted hotel profile:`, {
+      hotel: hotelData.hotelName,
+      meetingRooms: hotelData.meetingRooms?.length || 0,
+      amenities: hotelData.amenities?.length || 0,
+      roomTypes: hotelData.roomTypes?.length || 0
+    });
+    
+    return res.json(hotelData);
+    
+  } catch (err) {
+    console.error('🔴 Hotel profile extraction error:', err);
+    return res.status(500).json({ 
+      error: 'Extraction failed: ' + err.message 
+    });
+  } finally {
+    // Clean up uploaded file
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch (_) {}
+    }
   }
 });
 
@@ -4542,7 +6744,7 @@ app.post('/api/auth/forgot-password', async (req, res) => {
     // Store reset token (you might want to add a password_reset_tokens table in production)
     // For now, we'll just send the email
     
-    const resetUrl = `${process.env.BASE_URL || 'http://localhost:5050'}/reset-password.html?token=${resetToken}`;
+    const resetUrl = `${process.env.BASE_URL || 'http://localhost:${PORT}'}/reset-password.html?token=${resetToken}`;
     
     const subject = 'Password Reset - FEDEVENT Hotel Portal';
     const html = `
@@ -4681,6 +6883,49 @@ app.get('/api/admin/hotels/:id', requireAuth, requireAdmin, (req, res) => {
   } catch (error) {
     console.error('Admin hotel details error:', error);
     return fail(res, 500, 'Failed to fetch hotel details');
+  }
+});
+
+// Get hotel profile for public viewing (no authentication required)
+app.get('/api/hotels/:id/profile', (req, res) => {
+  try {
+    const hotelId = req.params.id;
+    
+    const hotel = db.prepare(`SELECT * FROM hotels WHERE id = ? AND is_active = 1`).get(hotelId);
+    if (!hotel) {
+      return fail(res, 404, 'Hotel not found or inactive');
+    }
+    
+    // Get the latest approved profile
+    const profile = db.prepare(`
+      SELECT * FROM hotel_profiles 
+      WHERE hotel_id = ? AND status = 'approved' 
+      ORDER BY updated_at DESC 
+      LIMIT 1
+    `).get(hotelId);
+    
+    // Parse profile data if available
+    let profileData = {};
+    if (profile && profile.profile_data) {
+      try {
+        profileData = JSON.parse(profile.profile_data);
+      } catch (e) {
+        console.error('Error parsing profile data:', e);
+      }
+    }
+    
+    // Merge hotel data with profile data for display
+    const hotelProfile = {
+      ...hotel,
+      ...profileData,
+      profile_status: profile ? profile.status : 'not_submitted',
+      profile_updated: profile ? profile.updated_at : null
+    };
+    
+    return ok(res, { hotel: hotelProfile });
+  } catch (error) {
+    console.error('Public hotel profile error:', error);
+    return fail(res, 500, 'Failed to fetch hotel profile');
   }
 });
 
@@ -6079,7 +8324,7 @@ async function sendContractNotification(hotel, contractId, token) {
     }
 
     const subject = `New Contract Opportunity - ${contract.title}`;
-    const baseUrl = process.env.BASE_URL || 'http://localhost:5050';
+    const baseUrl = process.env.BASE_URL || 'http://localhost:${PORT}';
     const interestedUrl = `${baseUrl}/api/contracts/respond/${token}`;
     
     const html = `
@@ -6175,34 +8420,48 @@ function generateAgreementPdfBytes(opts) {
   // Fonts
   const fontObjId = addObj('<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>');
 
+  // Helper function to escape PDF text strings
+  const escapePdfText = (str) => {
+    if (!str) return '';
+    return str.toString()
+      .replace(/\\/g, '\\\\')
+      .replace(/\(/g, '\\(')
+      .replace(/\)/g, '\\)')
+      .replace(/\r/g, '\\r')
+      .replace(/\n/g, '\\n');
+  };
+
   // Content stream (simple text)
   const text = [
     'BT',
     '/F1 12 Tf',
     '72 760 Td',
-    `(CREATA Hotel Partner Terms of Participation - v${version}) Tj`,
+    `(${escapePdfText(`CREATA Hotel Partner Terms of Participation - v${version}`)}) Tj`,
     'T*',
-    `(Hotel: ${hotelName}) Tj`,
+    `(${escapePdfText(`Hotel: ${hotelName}`)}) Tj`,
     'T*',
-    `(Representative: ${repName}) Tj`,
+    `(${escapePdfText(`Representative: ${repName}`)}) Tj`,
     'T*',
-    `(Title: ${title}) Tj`,
+    `(${escapePdfText(`Title: ${title}`)}) Tj`,
     'T*',
-    `(Email: ${email}) Tj`,
+    `(${escapePdfText(`Email: ${email}`)}) Tj`,
     'T*',
-    `(Effective: ${effective}) Tj`,
+    `(${escapePdfText(`Effective: ${effective}`)}) Tj`,
     'T*',
-    '(By signing electronically, you agree to the Terms shown on the website.) Tj',
+    `(${escapePdfText('By signing electronically, you agree to the Terms shown on the website.')}) Tj`,
     'ET'
   ].join('\n');
   const stream = `<< /Length ${text.length} >>\nstream\n${text}\nendstream`;
   const contentsId = addObj(stream);
 
-  // Page
-  const pageId = addObj(`<< /Type /Page /Parent 0 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 ${fontObjId} 0 R >> >> /Contents ${contentsId} 0 R >>`);
+  // Pages (need to be defined before page)
+  const pagesId = addObj(`<< /Type /Pages /Kids [] /Count 1 >>`);
 
-  // Pages
-  const pagesId = addObj(`<< /Type /Pages /Kids [${pageId} 0 R] /Count 1 >>`);
+  // Page
+  const pageId = addObj(`<< /Type /Page /Parent ${pagesId} 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 ${fontObjId} 0 R >> >> /Contents ${contentsId} 0 R >>`);
+
+  // Update pages to reference the page
+  objects[pagesId - 1] = `<< /Type /Pages /Kids [${pageId} 0 R] /Count 1 >>`;
 
   // Catalog
   const catalogId = addObj(`<< /Type /Catalog /Pages ${pagesId} 0 R >>`);
@@ -6294,7 +8553,7 @@ app.post('/api/sign-agreement', async (req, res) => {
           html: `
             <p>Hello ${approverName || ''},</p>
             <p>${repName} signed the CREATA participation agreement on behalf of ${hotelName}. Please countersign to approve.</p>
-            <p><a href="${process.env.BASE_URL || 'http://localhost:' + (process.env.PORT || 5050)}/approve-agreement.html?token=${token}">Click here to review and sign</a></p>
+            <p><a href="${process.env.BASE_URL || 'http://localhost:' + PORT}/approve-agreement.html?token=${token}">Click here to review and sign</a></p>
             <p>Thank you.</p>
           `
         });
@@ -6548,7 +8807,7 @@ app.post('/api/submit', upload.any(), async (req, res) => {
           </div>
           
           <div style="margin:2rem 0;">
-            <a href="${process.env.BASE_URL || 'http://localhost:5050'}/admin-dashboard.html" 
+            <a href="${process.env.BASE_URL || 'http://localhost:${PORT}'}/admin-dashboard.html" 
                style="background:#1f2937; color:white; padding:0.75rem 1.5rem; text-decoration:none; border-radius:6px; display:inline-block;">
               View in Admin Dashboard
             </a>
@@ -7948,8 +10207,366 @@ Question: ${message}` : message;
   }
 });
 
+// Public AI chatbot endpoint - No authentication required for website visitors
+app.post('/api/chat/assistant', async (req, res) => {
+  try {
+    const { message, conversationHistory = [], currentPage = '', formContext = {} } = req.body;
+
+    if (!message || !message.trim()) {
+      return res.status(400).json({ error: 'Message is required' });
+    }
+
+    // Initialize OpenAI client
+    const openaiClient = await getOpenAI();
+    
+    if (!openaiClient) {
+      // Fallback to rule-based responses if OpenAI is not available
+      return res.json({
+        response: "I'm here to help! While my AI capabilities are temporarily limited, I can still assist you. Please contact us at (305) 850-7848 or info@fedevent.com for immediate assistance.",
+        isAiResponse: false
+      });
+    }
+
+    // Comprehensive knowledge base about FEDEVENT
+    const knowledgeBase = `
+# FEDEVENT / CREATA Global Event Agency LLC - Complete Knowledge Base
+
+## Company Overview
+FEDEVENT is operated by CREATA Global Event Agency LLC, which serves as the prime contractor for all U.S. government contracts. We specialize in federal event planning, hotel partnerships, and emergency response coordination.
+
+## Contact Information
+- Phone: (305) 850-7848
+- Email: info@fedevent.com
+- Emergency: Available 24/7
+- Business Hours: Monday-Friday, 9AM-6PM EST
+- Response Time: Within 24 hours for non-emergency inquiries
+
+## Contract Structure
+- **CREATA Global Event Agency LLC** is the PRIME CONTRACTOR for all government contracts
+- Hotels and service providers serve as SUBCONTRACTORS under CREATA
+- U.S. government issues purchase orders (POs) directly to CREATA Global only
+- CREATA manages subcontractors, ensures compliance, and distributes payments
+- Only CREATA must be SAM.gov registered; hotels do NOT need individual registration
+
+## Hotel Partnership Requirements
+To join CREATA's Preferred Vendor Network, hotels must meet:
+1. **AAA Rating**: A significant plus but NOT strictly required. Hotels with AAA ratings (2-5 Diamond) have higher chances of selection. Some government agencies may require specific AAA diamond levels for their events, while most prioritize quality and compliance over ratings.
+2. **Facilities**: Indoor facilities only (no outdoor-only properties)
+3. **Payment Terms**: Must accept NET30 payment terms (mandatory)
+4. **Government POs**: Must accept government-backed purchase orders
+5. **No Direct Bill**: CREATA does not complete direct bill applications
+6. **U.S. Standards**: Must meet U.S. government safety and compliance standards
+
+## Registration Process
+1. Complete the hotel registration form on our website
+2. Provide all required documentation (licenses, certifications, insurance)
+3. Submit property information (rooms, meeting spaces, amenities)
+4. **Review Timeline**: 2-4 business days for most applications
+5. Extended timeline if additional verification needed
+6. Email notification sent upon approval
+
+### What We Review During Registration
+- Proper business licensing and compliance
+- U.S. government safety standards adherence
+- CREATA Global subcontractor policy alignment
+- NET30 payment term acceptance
+- Government PO acknowledgment
+- Facility requirements (indoor spaces, AAA rating)
+
+## Payment Terms (Critical Information)
+**NET30 Terms - MANDATORY:**
+- CREATA operates STRICTLY under NET30 payment terms
+- NO deposits or upfront payments permitted
+- NO advance payments for government contracts
+- All invoicing done through CREATA as prime contractor
+
+**Payment Process Flow:**
+1. Hotels/vendors invoice CREATA directly after service completion
+2. CREATA invoices the U.S. Government
+3. **NET30 countdown starts** when the governmental body (USG/UN) approves the submitted invoice
+4. U.S. Government processes payment (typically 2-3 weeks after approval)
+5. Once CREATA receives payment from the U.S. Government, CREATA issues payment to the hotel **within 2 business days**
+6. This ensures rapid payment to subcontractors once government funds are received
+
+**Important:** CREATA does NOT complete direct bill applications. All POs are issued to CREATA as the prime contractor.
+
+## SAM.gov Registration
+**For Hotels and Subcontractors:** NO SAM.gov registration required!
+- Only CREATA Global, as prime contractor, must be SAM.gov registered
+- Hotels and vendors are subcontractors - no individual registration needed
+- You can choose to register anyway, but it's not required to participate
+- All contracts must still be fulfilled through CREATA Global
+- Hotels always act as subcontractors for government task orders
+
+This structure simplifies the process while maintaining federal compliance.
+
+## Contract Awards and Selection
+**Award Process:**
+1. Government issues a task order with specific requirements
+2. CREATA identifies qualified hotels from Preferred Vendor Network
+3. We present the most advantageous offer to the customer
+4. If selected as best value, customer extends an award
+5. Contract awarded through CREATA as prime contractor
+
+**Selection Criteria:**
+- Specific requirements of each government task order
+- Compliance with federal standards
+- Location and proximity to event site
+- Pricing competitiveness (30% discount on per diem preferred)
+- Facility capabilities (meeting spaces, capacity, amenities)
+- Reliability and past performance
+- Availability for requested dates
+
+**Multiple Opportunities:**
+- Hotels demonstrating reliability may be awarded multiple contracts over time
+- Rare that hotels in our network don't meet requirements
+- Registration ensures eligibility for future task orders
+
+## Subcontractor Rules (CRITICAL)
+**Government Contact Policy:**
+- Subcontractors (including hotels) are NOT permitted to contact U.S. government officials directly
+- If government contact info is accidentally shared, immediately notify CREATA and delete the information
+- Direct communication with government may result in immediate termination from vendor network
+- Only CREATA, as prime contractor, is authorized to engage with government representatives
+
+**Compliance Requirements:**
+- Violations of subcontractor policies may result in termination from CREATA's Preferred Vendor Network
+- Compliance with rules is essential to maintaining credibility with U.S. government agencies
+- Includes failing to honor payment terms or contacting government officials directly
+- All communications must go through CREATA
+
+## Services Offered
+**Event Planning:**
+- Corporate conferences and workshops
+- Government training sessions and meetings
+- Multi-day events with accommodation coordination
+- Meeting space coordination and setup
+- Catering and logistics management
+- AV equipment and technical support
+
+**Hotel Network:**
+- 2+ Diamond AAA rated properties nationwide
+- NET30 payment terms accepted
+- Government per diem rates (30% discount preferred)
+- Group block reservations
+- Indoor facilities
+- Nationwide coverage across all states
+
+**Emergency Services:**
+- 24/7 emergency response team available
+- Rapid deployment capabilities
+- Crisis accommodation solutions
+- Emergency meeting coordination
+- Priority booking status
+- Immediate confirmation for urgent needs
+
+**Pricing Structure:**
+- NET30 payment terms (mandatory)
+- Government-backed purchase orders
+- 30% discount on per diem rates (preferred but not required)
+- No upfront payments required
+- Transparent pricing structure
+- No hidden fees
+
+## Per Diem Rates
+- Government per diem rates apply for federal employees
+- Based on GSA (General Services Administration) rates by location
+- Rates vary by city/region and season
+- 30% discount on per diem rates preferred
+- Per diem covers lodging and meals & incidentals
+- Updated annually by GSA
+
+**How to Check Per Diem Rates:**
+- Use our built-in **Resources page** at /resources.html to instantly look up current GSA per diem rates for any U.S. city
+- Our system pulls real-time data directly from the official GSA API
+- No need to visit external websites - we have the same official data integrated
+- Simply enter the city and state to see current lodging and M&IE rates
+- You can also visit gsa.gov/perdiem if you prefer the official government site
+
+## Profile Updates
+**Can hotels update their profile after approval?** YES!
+
+**What You Can Update:**
+- Room counts and availability
+- Meeting space information and changes
+- Amenities and services offered
+- Contact information
+- Service offerings and capabilities
+- Pricing and rate structures
+
+**Where Updates Are Stored:**
+- All updates stored in CREATA's Preferred Vendor Network database
+- Ensures accurate matching for future government opportunities
+- Changes reflected in future contract matching and proposals
+- Maintains current information for rapid response to task orders
+
+**Access:** Update your profile anytime through the dashboard or contact support.
+
+## Account Deactivation Policy
+**Deactivation Process:**
+- Accounts can be deactivated by FEDEVENT administrators for policy violations, inactivity, or at account holder's request
+- Deactivated accounts cannot access the system or receive contract notifications
+- Account data retained for 180 days to allow for reactivation if needed
+- After 180 days, all account data permanently deleted
+
+**Reactivation:**
+- Deactivated accounts can be reactivated within 180 days by contacting FEDEVENT support
+- Reactivation requests must include valid reason for restoration
+- All account privileges restored upon successful reactivation
+
+**Data Retention:**
+- Account information retained for 180 days after deactivation
+- After 180 days, all data permanently deleted from our systems
+- Policy ensures compliance with data protection regulations
+
+**Contact for Deactivation/Reactivation:** support@fedevent.com
+
+## Frequently Asked Questions
+
+**Q: Why does CREATA act as the prime contractor?**
+A: The U.S. government prefers working with established prime contractors who manage subcontractors. This ensures federal compliance, proper documentation, and streamlined payment processing.
+
+**Q: How long does approval take?**
+A: Most applications are reviewed within 2-4 business days. Extended verification may take slightly longer.
+
+**Q: Is AAA rating required?**
+A: AAA rating is a significant advantage but NOT strictly required. Hotels with AAA ratings (2-5 Diamond) have better chances of selection for government contracts. Some specific government agencies may require certain AAA diamond levels for their premium events, while most agencies prioritize overall quality, compliance, and value. We encourage pursuing AAA certification to maximize your opportunities.
+
+**Q: Can I negotiate different payment terms?**
+A: No. NET30 is mandatory for all government contracts. No exceptions can be made.
+
+**Q: Do I invoice the government directly?**
+A: No. You invoice CREATA directly. CREATA invoices the government. Once paid, CREATA pays you within NET30 terms.
+
+**Q: What happens after I'm approved?**
+A: You're added to CREATA's Preferred Vendor Network. When relevant task orders arise, CREATA will contact qualified hotels for bids and proposals.
+
+**Q: Is approval a guarantee of contracts?**
+A: No. Approval adds you to our network for consideration, but contract selection depends on government requirements, availability, pricing, and compliance.
+
+**Q: Can I contact the government agency directly?**
+A: Absolutely not. This is a critical violation and will result in immediate termination from our vendor network. All government communication must go through CREATA.
+
+## Technical Support
+For technical issues with registration, forms, or website functionality:
+- Email: info@fedevent.com
+- Phone: (305) 850-7848
+- Describe the issue in detail (browser, error messages, screenshots helpful)
+- Our team will respond within 24 hours
+
+## Form Filling Assistance
+If users need help filling out the registration form:
+1. **Hotel Name**: Official legal business name
+2. **Contact Information**: Primary contact person who will manage bookings
+3. **Property Details**: Address, phone, email, website
+4. **Room Information**: Total rooms, room types, capacities
+5. **Meeting Spaces**: Names, capacities, setups available
+6. **Amenities**: List all available amenities (WiFi, parking, fitness center, etc.)
+7. **AAA Rating**: Must be 2+ Diamonds
+8. **NET30 Acceptance**: Must acknowledge and accept
+9. **Government PO Acceptance**: Must confirm willingness to accept
+10. **Licenses & Insurance**: Upload required documents
+
+## Privacy & Data Protection
+- All information submitted is stored securely
+- Used only for contract matching and vendor network management
+- Not shared with third parties except as required for government contracting
+- Compliant with federal data protection standards
+`;
+
+    // Build conversation context
+    const messages = [
+      {
+        role: 'system',
+        content: `You are an intelligent AI assistant for FEDEVENT (CREATA Global Event Agency LLC). Your purpose is to help website visitors with:
+
+1. **Registration Assistance**: Guide users step-by-step through the hotel registration form, explaining each field, requirements, and why the information is needed.
+
+2. **Policy Questions**: Answer questions about company policies, payment terms, contract structure, subcontractor rules, and compliance requirements.
+
+3. **Technical Support**: Help users troubleshoot website issues, form problems, and navigation questions.
+
+4. **General Information**: Provide details about services, requirements, contact information, and processes.
+
+**Your Personality:**
+- Friendly, professional, and helpful
+- Patient and thorough in explanations
+- Proactive in offering relevant additional information
+- Clear and concise in responses
+- Empathetic to user concerns
+
+**Guidelines:**
+- Use the knowledge base provided to give accurate, detailed answers
+- When discussing payment terms, always emphasize NET30 is mandatory
+- Make it clear CREATA is the prime contractor, hotels are subcontractors
+- Explain that SAM.gov registration is NOT required for hotels
+- Be clear about the 2-4 day review timeline for applications
+- If asked about specific form fields, explain what information is needed and why
+- For technical issues beyond your scope, direct users to contact support
+- Never make promises about contract awards or guarantees
+- Always maintain professional boundaries regarding government contacts
+
+**Current Context:**
+- User is on page: ${currentPage || 'unknown'}
+- Form context: ${JSON.stringify(formContext)}
+
+Use the comprehensive knowledge base below to answer questions accurately:
+
+${knowledgeBase}`
+      }
+    ];
+
+    // Add conversation history (limit to last 10 exchanges to manage token usage)
+    const recentHistory = conversationHistory.slice(-10);
+    recentHistory.forEach(msg => {
+      messages.push({
+        role: msg.role || 'user',
+        content: msg.content
+      });
+    });
+
+    // Add current user message
+    messages.push({
+      role: 'user',
+      content: message
+    });
+
+    // Call OpenAI API
+    const completion = await openaiClient.chat.completions.create({
+      model: 'gpt-4o-mini', // Using gpt-4o-mini for better quality and lower cost
+      messages: messages,
+      max_tokens: 1000,
+      temperature: 0.7,
+      presence_penalty: 0.6,
+      frequency_penalty: 0.3
+    });
+
+    const response = completion.choices[0]?.message?.content;
+    
+    if (!response) {
+      return res.status(500).json({ error: 'No response generated' });
+    }
+
+    res.json({
+      response,
+      isAiResponse: true,
+      tokensUsed: completion.usage?.total_tokens || 0
+    });
+
+  } catch (error) {
+    console.error('Chatbot assistant error:', error);
+    
+    // Friendly fallback response
+    res.json({
+      response: "I apologize, but I'm experiencing technical difficulties right now. Please feel free to contact us directly at (305) 850-7848 or info@fedevent.com, and our team will be happy to assist you immediately!",
+      isAiResponse: false,
+      error: error.message
+    });
+  }
+});
+
 // ---------- Start Server ----------
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 7070;
 
 // Run log rotation on startup
 try {

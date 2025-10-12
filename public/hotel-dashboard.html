@@ -103,6 +103,32 @@
             margin-bottom: 2rem;
         }
         
+        .hotel-info-display {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hotel-info-header {
+            text-align: center;
+        }
+        
+        .hotel-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-address {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0;
+        }
+        
         .stats-overview {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -384,6 +410,14 @@
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
         }
 
+        /* Debug styles for View Profile button */
+        #viewProfileBtn {
+            position: relative !important;
+            z-index: 10 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -466,6 +500,14 @@
             <h1 class="welcome-title">Welcome to Your Dashboard</h1>
             <p class="welcome-subtitle">Manage your hotel profile, contracts, and opportunities all in one place.</p>
             
+            <!-- Hotel Info Display -->
+            <div id="hotelInfoDisplay" class="hotel-info-display" style="display: none;">
+                <div class="hotel-info-header">
+                    <h2 id="hotelNameDisplay" class="hotel-name">Loading hotel information...</h2>
+                    <div id="hotelAddressDisplay" class="hotel-address">Loading address...</div>
+                </div>
+            </div>
+            
             <div class="stats-overview">
                 <div class="stat-card">
                     <div class="stat-card-number" id="dashboardActiveContracts">0</div>
@@ -500,9 +542,9 @@
                         <a href="/hotel-registration.html?continue=true&signedIn=true" class="quick-action-btn">
                             ✏️ Complete Registration
                         </a>
-                        <button class="quick-action-btn" onclick="viewProfile()">
+                        <a href="/hotel-profile.html" class="quick-action-btn">
                             👁️ View Profile
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
@@ -743,8 +785,91 @@
                 if (hotelData) {
                     currentHotel = JSON.parse(hotelData);
                 }
+                
+                // Load hotel information for display
+                await loadHotelInfo();
             } catch (error) {
                 console.error('Error loading user data:', error);
+            }
+        }
+        
+        // Load hotel information for display
+        async function loadHotelInfo() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    return;
+                }
+
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.ok && result.hotel) {
+                        // Store hotel data
+                        currentHotel = result.hotel;
+                        localStorage.setItem('fedevent_hotel', JSON.stringify(result.hotel));
+                        
+                        // Display hotel info
+                        displayHotelInfo(result.hotel);
+                    } else {
+                        // Try to get basic hotel info from user data
+                        if (currentUser && currentUser.hotel_name) {
+                            displayBasicHotelInfo();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading hotel info:', error);
+                // Try to display basic info from stored data
+                if (currentHotel) {
+                    displayHotelInfo(currentHotel);
+                } else if (currentUser && currentUser.hotel_name) {
+                    displayBasicHotelInfo();
+                }
+            }
+        }
+        
+        // Display hotel information
+        function displayHotelInfo(hotel) {
+            const hotelInfoDisplay = document.getElementById('hotelInfoDisplay');
+            const hotelNameDisplay = document.getElementById('hotelNameDisplay');
+            const hotelAddressDisplay = document.getElementById('hotelAddressDisplay');
+            
+            if (hotel && (hotel.name || hotel.property_name)) {
+                hotelNameDisplay.textContent = hotel.name || hotel.property_name || 'Hotel';
+                
+                // Build address from available fields
+                const addressParts = [];
+                if (hotel.address) addressParts.push(hotel.address);
+                else {
+                    if (hotel.street_address) addressParts.push(hotel.street_address);
+                    if (hotel.city) addressParts.push(hotel.city);
+                    if (hotel.state) addressParts.push(hotel.state);
+                    if (hotel.zip_code) addressParts.push(hotel.zip_code);
+                    if (hotel.country && hotel.country !== 'US') addressParts.push(hotel.country);
+                }
+                
+                hotelAddressDisplay.textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Address not available';
+                
+                hotelInfoDisplay.style.display = 'block';
+            }
+        }
+        
+        // Display basic hotel info from user data
+        function displayBasicHotelInfo() {
+            const hotelInfoDisplay = document.getElementById('hotelInfoDisplay');
+            const hotelNameDisplay = document.getElementById('hotelNameDisplay');
+            const hotelAddressDisplay = document.getElementById('hotelAddressDisplay');
+            
+            if (currentUser && currentUser.hotel_name) {
+                hotelNameDisplay.textContent = currentUser.hotel_name;
+                hotelAddressDisplay.textContent = currentUser.hotel_address || 'Address not available';
+                hotelInfoDisplay.style.display = 'block';
             }
         }
 
@@ -874,7 +999,34 @@
 
         // View profile
         function viewProfile() {
-            window.location.href = '/hotel-profile.html';
+            console.log('🔍 View Profile clicked');
+            console.log('🔍 currentHotel:', currentHotel);
+            console.log('🔍 currentUser:', currentUser);
+            
+            if (currentHotel && currentHotel.id) {
+                console.log('🔍 Navigating to hotel profile with ID:', currentHotel.id);
+                window.location.href = `/hotel-profile.html?id=${currentHotel.id}`;
+            } else {
+                console.log('🔍 No currentHotel.id, trying fallback...');
+                // Fallback - try to get hotel ID from user data or show error
+                const userData = localStorage.getItem('fedevent_user');
+                console.log('🔍 userData from localStorage:', userData);
+                
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    console.log('🔍 parsed user:', user);
+                    if (user.hotel_id) {
+                        console.log('🔍 Navigating with user hotel_id:', user.hotel_id);
+                        window.location.href = `/hotel-profile.html?id=${user.hotel_id}`;
+                    } else {
+                        console.log('🔍 No hotel_id in user data');
+                        showMessage('Hotel profile not available. Please complete hotel registration first to link your account to a hotel.', 'error');
+                    }
+                } else {
+                    console.log('🔍 No userData in localStorage');
+                    showMessage('Please log in to view your hotel profile.', 'error');
+                }
+            }
         }
 
         // Add team member

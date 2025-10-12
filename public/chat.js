@@ -1,96 +1,132 @@
 (() => {
+  // Conversation history to maintain context
+  let conversationHistory = [];
+  let isProcessing = false;
+  
+  // Voice features
+  let recognition = null;
+  let synthesis = window.speechSynthesis;
+  let isListening = false;
+  let isVoiceOutputEnabled = false;
+  let currentUtterance = null;
+
+  // Create chat bubble
   const bubble = document.createElement('div');
   bubble.id = 'chat-bubble';
-  bubble.innerHTML = '🧠';
+  bubble.innerHTML = `
+    <div class="bubble-icon">🤖</div>
+    <div class="bubble-pulse"></div>
+  `;
+
+  // Create chat panel
   const panel = document.createElement('div');
   panel.id = 'chat-panel';
   panel.innerHTML = `
     <div class="chat-head">
-      <span>🧠 FEDEVENT Thinking Agent</span>
-      <button id="chat-minimize" style="background:none;border:none;color:white;font-size:16px;cursor:pointer;">✖</button>
+      <div class="chat-head-content">
+        <span class="chat-title">🤖 FEDEVENT AI Assistant</span>
+        <span class="chat-subtitle">Here to help you every step of the way</span>
+      </div>
+      <button id="chat-minimize" aria-label="Close chat">✖</button>
     </div>
     <div class="chat-body">
       <div id="chat-messages" class="chat-messages"></div>
-      <div class="chat-input-area">
-        <input id="chat_input" type="text" placeholder="Ask about our services..." />
-        <button id="chat_send">Send</button>
+      <div id="chat-typing" class="chat-typing" style="display: none;">
+        <span></span><span></span><span></span>
       </div>
-    </div>`;
+      <div class="chat-input-area">
+        <button id="chat_voice_input" aria-label="Voice input" title="Click to speak">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M10 12.5a2.5 2.5 0 002.5-2.5V5a2.5 2.5 0 00-5 0v5a2.5 2.5 0 002.5 2.5zM6 9v1a4 4 0 008 0V9M10 14v3M7 17h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <input id="chat_input" type="text" placeholder="Ask me anything about registration, policies, or how to fill out forms..." autocomplete="off" />
+        <button id="chat_voice_output" aria-label="Toggle voice output" title="Enable voice responses">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M8 6l-4 4H1v4h3l4 4V6zM15 10c0-1.657-1.343-3-3-3M15 10c0 1.657-1.343 3-3 3M17 10c0-2.761-2.239-5-5-5M17 10c0 2.761-2.239 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+        <button id="chat_send" aria-label="Send message">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <path d="M2 10L18 2L12 18L10 11L2 10Z" fill="currentColor"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div class="chat-footer">
+      <span class="chat-footer-text">Powered by AI • Available 24/7</span>
+      <button id="chat-clear" aria-label="Clear chat" title="Start a new conversation">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+          <path d="M2 4h12M5 4V3a1 1 0 011-1h4a1 1 0 011 1v1M7 7v5M9 7v5M3 4l1 9a1 1 0 001 1h6a1 1 0 001-1l1-9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Clear Chat
+      </button>
+    </div>
+  `;
 
-  // Service knowledge base
-  const serviceResponses = {
-    // Government Services
-    'government': {
-      keywords: ['government', 'gov', 'federal', 'agency', 'official', 'public sector'],
-      response: "🏛️ **Government Services:**\n\n• Event planning for federal agencies\n• Contract management with NET30 terms\n• Government-backed purchase orders\n• Emergency response coordination\n• Compliance with federal requirements\n\nWould you like to know more about any specific service?"
-    },
-    'event planning': {
-      keywords: ['event', 'planning', 'conference', 'meeting', 'workshop', 'training'],
-      response: "📅 **Event Planning Services:**\n\n• Corporate conferences & workshops\n• Government training sessions\n• Multi-day events with accommodation\n• Meeting space coordination\n• Catering & logistics management\n• AV equipment & technical support\n\nWhat type of event are you planning?"
-    },
-    'hotels': {
-      keywords: ['hotel', 'accommodation', 'rooms', 'stay', 'lodging', 'venue'],
-      response: "🏨 **Hotel Network:**\n\n• 2+ Diamond AAA rated properties\n• NET30 payment terms accepted\n• Government per diem rates\n• Group block reservations\n• Indoor facilities required\n• Nationwide coverage\n\nNeed help finding hotels in a specific location?"
-    },
-    'pricing': {
-      keywords: ['price', 'cost', 'rate', 'budget', 'fee', 'payment', 'net30'],
-      response: "💰 **Pricing & Payment:**\n\n• NET30 payment terms (mandatory)\n• Government-backed purchase orders\n• 30% discount on per diem rates (preferred)\n• No upfront payments required\n• Transparent pricing structure\n• No hidden fees\n\nWould you like a custom quote for your event?"
-    },
-    'emergency': {
-      keywords: ['emergency', 'urgent', 'asap', 'immediate', 'crisis', 'rush'],
-      response: "🚨 **Emergency Services:**\n\n• 24/7 emergency response team\n• Rapid deployment capabilities\n• Crisis accommodation solutions\n• Emergency meeting coordination\n• Priority booking status\n• Immediate confirmation\n\n📞 For urgent needs, call us directly or use our emergency request form!"
-    },
-    'registration': {
-      keywords: ['register', 'sign up', 'join', 'partner', 'apply', 'become'],
-      response: "📋 **Registration:**\n\n• **Hotels:** Complete our partnership application\n• **Government Users:** Access our portal\n• **Requirements:** NET30 terms, AAA rating, indoor facilities\n• **Benefits:** Access to government contracts, priority consideration\n\nWhich registration type interests you?"
-    },
-    'contact': {
-      keywords: ['contact', 'phone', 'email', 'reach', 'support', 'help'],
-      response: "📞 **Contact Information:**\n\n• **Phone:** (305) 850-7848\n• **Email:** info@fedevent.com\n• **Emergency:** Available 24/7\n• **Response Time:** Within 24 hours (non-emergency)\n• **Business Hours:** Mon-Fri 9AM-6PM EST\n\nHow can we assist you today?"
-    },
-    'requirements': {
-      keywords: ['requirement', 'criteria', 'qualification', 'standard', 'compliance'],
-      response: "✅ **Requirements:**\n\n**For Hotels:**\n• AAA 2+ Diamond rating\n• Indoor facilities only\n• NET30 payment acceptance\n• Government PO acceptance\n• No direct bill applications\n\n**For Government Events:**\n• Federal agency authorization\n• Proper documentation\n• Budget approval\n\nNeed clarification on any requirements?"
-    },
-    // FAQ-based responses
-    'creata': {
-      keywords: ['creata', 'prime contractor', 'subcontractor', 'contract ownership', 'who owns'],
-      response: "🏢 **Contract Structure:**\n\nAll government contracts are awarded to **CREATA Global Event Agency LLC** as the prime contractor. Hotels and service providers serve strictly as **subcontractors** under CREATA.\n\n**Why CREATA acts as prime?**\n• U.S. government issues purchase orders (POs) directly to CREATA Global\n• CREATA manages subcontractors, ensures compliance, and distributes payments\n• Only CREATA must be SAM.gov registered (hotels don't need individual registration)\n\nThis structure ensures federal compliance and streamlined operations."
-    },
-    'sam': {
-      keywords: ['sam.gov', 'sam registration', 'registered', 'system for award management'],
-      response: "📋 **SAM.gov Registration:**\n\n**Hotels:** NO registration required! Only CREATA Global, as the prime contractor, must be SAM.gov registered.\n\n**Key Points:**\n• Hotels and vendors are subcontractors\n• No individual SAM registration needed to participate\n• If you choose to register anyway, that's fine\n• All contracts must still be fulfilled through CREATA Global\n• Hotels always act as subcontractors for government task orders\n\nThis simplifies the process for hotels while maintaining compliance."
-    },
-    'payment terms': {
-      keywords: ['payment', 'net30', 'terms', 'deposit', 'advance', 'invoice', 'billing'],
-      response: "💰 **Payment Terms:**\n\n**NET30 Terms (Mandatory):**\n• CREATA operates strictly under NET30 payment terms\n• No deposits or upfront payments permitted\n• No advance payments for government contracts\n\n**Payment Process:**\n1. Hotels/vendors invoice CREATA directly\n2. CREATA invoices the U.S. government\n3. Once government payment is received and cleared, CREATA releases funds to subcontractor\n4. NET30 countdown starts when U.S. government approves CREATA's invoice\n5. Generally 2-3 weeks for funds to be received\n\n**Direct Bill:** CREATA does not complete direct bill applications - all POs are issued to CREATA as prime contractor."
-    },
-    'approval': {
-      keywords: ['approval', 'timeline', 'how long', 'process', 'review', 'approved'],
-      response: "⏰ **Approval Process:**\n\n**Timeline:** 2-4 business days for most applications\n\n**What We Review:**\n• Proper licensing and compliance\n• U.S. government safety standards\n• CREATA Global subcontractor policies\n• NET30 payment term acceptance\n• Government PO acknowledgment\n\n**Extended Timeline:** If additional verification needed (compliance checks, facility requirements), may take slightly longer.\n\n**Notification:** You'll be notified by email once your profile has been approved.\n\n**No Guarantee:** Approval adds you to CREATA's Hotel Network for consideration, but selection depends on government requirements, availability, pricing, and compliance."
-    },
-    'contracts': {
-      keywords: ['contract', 'award', 'bidding', 'selection', 'how awarded'],
-      response: "📄 **Contract Awards:**\n\n**Award Process:**\n• We present the offer to the customer\n• If most advantageous offer, customer extends an award\n• Time frame between winning bids and customer award is the decision period\n\n**Selection Criteria:**\n• Specific requirements of each government task order\n• Compliance, location, and pricing\n• Reliability and past performance\n• Rare that hotels in our network don't meet requirements\n\n**Multiple Opportunities:** Hotels demonstrating reliability and compliance may be awarded multiple opportunities over time.\n\n**Registration:** Complete registration with our network ensures eligibility for future task orders."
-    },
-    'subcontractor rules': {
-      keywords: ['subcontractor', 'rules', 'government contact', 'violation', 'termination'],
-      response: "📋 **Subcontractor Rules:**\n\n**Government Contact:**\n• Subcontractors (including hotels) are NOT permitted to contact U.S. government officials directly\n• If government contact info is accidentally shared, immediately notify CREATA and delete the information\n• Direct communication may result in immediate termination from vendor network\n• Only CREATA, as prime contractor, is authorized to engage with government representatives\n\n**Compliance:**\n• Violations of subcontractor policies may result in termination from CREATA's Preferred Vendor Network\n• Compliance with rules is essential to maintaining credibility with U.S. government agencies\n• Includes failing to honor payment terms or contacting government officials directly"
-    },
-    'profile update': {
-      keywords: ['update profile', 'change profile', 'modify', 'edit profile', 'profile changes'],
-      response: "✏️ **Profile Updates:**\n\n**Yes, you can update your profile after approval!**\n\n**What You Can Update:**\n• Room counts\n• Meeting space changes\n• Amenities\n• Contact information\n• Service offerings\n\n**Where Updates Are Stored:**\n• Updated information is stored in CREATA's Preferred Vendor Network\n• Ensures accurate matching for future government opportunities\n• Changes are reflected in future contract matching\n\n**Access:** Update your profile anytime through the dashboard or contact support for assistance."
-    },
-    'account deactivation': {
-      keywords: ['deactivate', 'deactivation', 'delete account', 'remove account', 'account removal', 'inactive account'],
-      response: "🔒 **Account Deactivation Policy:**\n\n**Deactivation Process:**\n• Accounts can be deactivated by FEDEVENT administrators for policy violations, inactivity, or at the request of the account holder\n• Deactivated accounts cannot access the system or receive contract notifications\n• Account data is retained for 180 days to allow for reactivation if needed\n• After 180 days, all account data is permanently deleted\n\n**Reactivation:**\n• Deactivated accounts can be reactivated within 180 days by contacting FEDEVENT support\n• Reactivation requests must include a valid reason for restoration\n• All account privileges are restored upon successful reactivation\n\n**Data Retention:**\n• Account information is retained for 180 days after deactivation\n• After 180 days, all data is permanently deleted from our systems\n• This policy ensures compliance with data protection regulations\n\n**Contact:** For account deactivation or reactivation requests, contact support@fedevent.com"
+  // Get current page context
+  function getCurrentPageContext() {
+    const path = window.location.pathname;
+    const pageName = path.split('/').pop().replace('.html', '') || 'home';
+    
+    // Detect if user is on a form
+    const forms = document.querySelectorAll('form');
+    const formContext = {};
+    
+    if (forms.length > 0) {
+      formContext.hasForm = true;
+      formContext.formFields = [];
+      
+      // Get form field information
+      forms.forEach(form => {
+        const inputs = form.querySelectorAll('input, select, textarea');
+        inputs.forEach(input => {
+          if (input.name || input.id) {
+            const label = form.querySelector(`label[for="${input.id}"]`);
+            formContext.formFields.push({
+              name: input.name || input.id,
+              type: input.type || input.tagName.toLowerCase(),
+              label: label ? label.textContent.trim() : '',
+              required: input.required || input.hasAttribute('required')
+            });
+          }
+        });
+      });
     }
-  };
+    
+    return {
+      page: pageName,
+      url: window.location.href,
+      formContext
+    };
+  }
 
-  // Initialize thinking agent
+  // Initialize chat with welcome message
   function initChat() {
     const messagesContainer = document.getElementById('chat-messages');
-    addMessage('FEDEVENT Thinking Agent', "🧠 Hello! I'm your intelligent thinking agent for FEDEVENT.\n\nI analyze your questions deeply and provide thoughtful, contextual responses about:\n\n• Government contracting & CREATA's role\n• Hotel partnership requirements & processes\n• Payment terms & NET30 compliance\n• Contract awards & bidding strategies\n• SAM.gov registration & federal compliance\n• Emergency services & rapid response\n\nWhat would you like me to think through for you today?", 'bot');
+    
+    if (messagesContainer.children.length === 0) {
+      const pageContext = getCurrentPageContext();
+      let welcomeMessage = `👋 Hello! I'm your AI assistant for FEDEVENT.\n\n`;
+      
+      if (pageContext.formContext.hasForm) {
+        welcomeMessage += `I see you're on the ${pageContext.page} page with a form. I can help you:\n\n`;
+        welcomeMessage += `• Understand each field in the form\n`;
+        welcomeMessage += `• Explain what information is required\n`;
+        welcomeMessage += `• Answer questions about policies and terms\n`;
+        welcomeMessage += `• Guide you through the registration process\n\n`;
+      } else {
+        welcomeMessage += `I'm here to help you with:\n\n`;
+        welcomeMessage += `• Registration and partnership information\n`;
+        welcomeMessage += `• Company policies and payment terms\n`;
+        welcomeMessage += `• Contract structure and processes\n`;
+        welcomeMessage += `• Technical support and navigation\n\n`;
+      }
+      
+      welcomeMessage += `What can I help you with today?`;
+      
+      addMessage('Assistant', welcomeMessage, 'bot');
+    }
   }
 
   // Add message to chat
@@ -101,159 +137,391 @@
     
     const time = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
     
+    // Format message with markdown-like styling
+    let formattedMessage = message
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\n/g, '<br>')
+      .replace(/• /g, '<span class="bullet">•</span> ');
+    
     messageDiv.innerHTML = `
-      <div class="message-sender">${sender} <span class="message-time">${time}</span></div>
-      <div class="message-content">${message.replace(/\n/g, '<br>')}</div>
+      <div class="message-avatar">${type === 'bot' ? '🤖' : '👤'}</div>
+      <div class="message-bubble">
+        <div class="message-sender">${sender}</div>
+        <div class="message-content">${formattedMessage}</div>
+        <div class="message-time">${time}</div>
+      </div>
     `;
     
     messagesContainer.appendChild(messageDiv);
     messagesContainer.scrollTop = messagesContainer.scrollHeight;
   }
 
-  // Advanced thinking analysis
-  function analyzeQuestion(userInput) {
-    const input = userInput.toLowerCase();
+  // Show typing indicator
+  function showTypingIndicator(show = true) {
+    const typingIndicator = document.getElementById('chat-typing');
+    const messagesContainer = document.getElementById('chat-messages');
     
-    // Analyze question complexity and context
-    const questionAnalysis = {
-      complexity: input.length > 50 ? 'complex' : input.length > 20 ? 'moderate' : 'simple',
-      context: [],
-      intent: 'general',
-      urgency: input.includes('urgent') || input.includes('asap') || input.includes('emergency') ? 'high' : 'normal'
-    };
-
-    // Determine context areas
-    if (input.includes('creata') || input.includes('prime') || input.includes('subcontractor')) {
-      questionAnalysis.context.push('contract_structure');
+    if (show) {
+      typingIndicator.style.display = 'flex';
+      messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    } else {
+      typingIndicator.style.display = 'none';
     }
-    if (input.includes('sam') || input.includes('registration') || input.includes('compliance')) {
-      questionAnalysis.context.push('compliance');
-    }
-    if (input.includes('payment') || input.includes('net30') || input.includes('invoice') || input.includes('billing')) {
-      questionAnalysis.context.push('payment');
-    }
-    if (input.includes('contract') || input.includes('award') || input.includes('bidding')) {
-      questionAnalysis.context.push('contracts');
-    }
-    if (input.includes('hotel') || input.includes('venue') || input.includes('accommodation')) {
-      questionAnalysis.context.push('hotels');
-    }
-    if (input.includes('government') || input.includes('federal') || input.includes('agency')) {
-      questionAnalysis.context.push('government');
-    }
-
-    return questionAnalysis;
   }
 
-  // Generate thinking process response
-  function generateThinkingResponse(userInput, analysis) {
-    let thinkingProcess = "🧠 **Thinking Process:**\n\n";
-    
-    // Add analysis insights
-    thinkingProcess += `**Question Analysis:**\n`;
-    thinkingProcess += `• Complexity: ${analysis.complexity}\n`;
-    thinkingProcess += `• Context Areas: ${analysis.context.length > 0 ? analysis.context.join(', ') : 'general inquiry'}\n`;
-    thinkingProcess += `• Urgency Level: ${analysis.urgency}\n\n`;
+  // Send message to AI backend
+  async function sendMessageToAI(message) {
+    try {
+      const pageContext = getCurrentPageContext();
+      
+      const response = await fetch('/api/chat/assistant', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message: message,
+          conversationHistory: conversationHistory,
+          currentPage: pageContext.page,
+          formContext: pageContext.formContext
+        })
+      });
 
-    // Add thinking steps
-    thinkingProcess += `**Analysis Steps:**\n`;
-    thinkingProcess += `1. Understanding your specific needs\n`;
-    thinkingProcess += `2. Considering FEDEVENT's processes and policies\n`;
-    thinkingProcess += `3. Evaluating compliance requirements\n`;
-    thinkingProcess += `4. Synthesizing comprehensive response\n\n`;
-
-    return thinkingProcess;
-  }
-
-  // Find best response with thinking analysis
-  function findResponse(userInput) {
-    const input = userInput.toLowerCase();
-    const analysis = analyzeQuestion(userInput);
-    
-    let bestMatch = null;
-    let highestScore = 0;
-    let matchedContexts = [];
-
-    // Enhanced keyword matching with context awareness
-    for (const [key, service] of Object.entries(serviceResponses)) {
-      const score = service.keywords.reduce((acc, keyword) => {
-        if (input.includes(keyword)) {
-          return acc + keyword.length * 2; // Boost longer keyword matches
-        }
-        return acc;
-      }, 0);
-
-      // Context bonus
-      if (analysis.context.includes(key.replace('_', ''))) {
-        score += 10;
-        matchedContexts.push(key);
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
       }
 
-      if (score > highestScore) {
-        highestScore = score;
-        bestMatch = service;
-      }
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('AI request error:', error);
+      throw error;
     }
-
-    // Generate thinking response first
-    const thinkingResponse = generateThinkingResponse(userInput, analysis);
-
-    // Return comprehensive response
-    if (bestMatch) {
-      return thinkingResponse + "**My Analysis:**\n\n" + bestMatch.response + "\n\n💡 **Additional Considerations:**\n\nBased on your question, I recommend reviewing our comprehensive FAQ section for detailed policy information. Would you like me to elaborate on any specific aspect of my analysis?";
-    }
-
-    // Advanced fallback for complex questions
-    if (analysis.complexity === 'complex' || analysis.context.length > 1) {
-      return thinkingResponse + "**My Analysis:**\n\nThis appears to be a multi-faceted question that requires careful consideration of several aspects:\n\n" + 
-             analysis.context.map(ctx => {
-               switch(ctx) {
-                 case 'contract_structure': return "• **Contract Structure** - Understanding CREATA's role as prime contractor\n";
-                 case 'compliance': return "• **Compliance** - Federal requirements and registration needs\n";
-                 case 'payment': return "• **Payment Terms** - NET30 processes and billing procedures\n";
-                 case 'contracts': return "• **Contract Awards** - Bidding and selection processes\n";
-                 case 'hotels': return "• **Hotel Partnerships** - Requirements and benefits\n";
-                 case 'government': return "• **Government Services** - Federal agency coordination\n";
-                 default: return "";
-               }
-             }).join('') + 
-             "\n**Recommendation:** I suggest breaking this down into specific areas. Could you focus on one aspect at a time, or would you prefer a comprehensive overview of all relevant areas?";
-    }
-
-    // Standard fallback
-    return thinkingResponse + "**My Analysis:**\n\nI understand you're seeking information about FEDEVENT's services. Let me help you explore the most relevant areas:\n\n• **Government Services** - Federal event planning & coordination\n• **Hotel Partnerships** - Join CREATA's Preferred Vendor Network\n• **Contract Structure** - Understanding prime/subcontractor relationships\n• **Payment Terms** - NET30 compliance & billing processes\n• **Compliance Requirements** - SAM.gov, federal standards, policies\n• **Emergency Services** - 24/7 rapid response capabilities\n\n**Thinking Question:** Which area would you like me to analyze in depth for you?";
   }
 
   // Handle user input
-  function handleUserInput() {
+  async function handleUserInput() {
     const input = document.getElementById('chat_input');
+    const sendButton = document.getElementById('chat_send');
     const message = input.value.trim();
     
-    if (!message) return;
+    if (!message || isProcessing) return;
     
-    // Add user message
+    // Set processing state
+    isProcessing = true;
+    input.disabled = true;
+    sendButton.disabled = true;
+    
+    // Add user message to chat
     addMessage('You', message, 'user');
+    
+    // Add to conversation history
+    conversationHistory.push({
+      role: 'user',
+      content: message
+    });
     
     // Clear input
     input.value = '';
     
-    // Show thinking indicator with longer delay for analysis
+    // Show typing indicator
+    showTypingIndicator(true);
+    
+    try {
+      // Send to AI backend
+      const response = await sendMessageToAI(message);
+      
+      // Hide typing indicator
+      showTypingIndicator(false);
+      
+      // Add AI response to chat
+      if (response.response) {
+        addMessage('Assistant', response.response, 'bot');
+        
+        // Speak the response if voice output is enabled
+        speakText(response.response);
+        
+        // Add to conversation history
+        conversationHistory.push({
+          role: 'assistant',
+          content: response.response
+        });
+        
+        // Limit conversation history to last 20 messages (10 exchanges)
+        if (conversationHistory.length > 20) {
+          conversationHistory = conversationHistory.slice(-20);
+        }
+      } else {
+        throw new Error('No response from AI');
+      }
+      
+    } catch (error) {
+      showTypingIndicator(false);
+      
+      // Show error message
+      const errorMessage = `I apologize, but I'm having trouble connecting right now. Please try again, or contact us directly at:\n\n• Phone: (305) 850-7848\n• Email: info@fedevent.com\n\nOur team is available to help!`;
+      addMessage('Assistant', errorMessage, 'bot');
+      
+      console.error('Chat error:', error);
+    } finally {
+      // Reset processing state
+      isProcessing = false;
+      input.disabled = false;
+      sendButton.disabled = false;
+      input.focus();
+    }
+  }
+
+  // Add quick action buttons
+  function addQuickActions() {
+    const messagesContainer = document.getElementById('chat-messages');
+    const pageContext = getCurrentPageContext();
+    
+    // Only add quick actions on first load and if on form page
+    if (messagesContainer.children.length <= 1 && pageContext.formContext.hasForm) {
+      const quickActionsDiv = document.createElement('div');
+      quickActionsDiv.className = 'chat-quick-actions';
+      quickActionsDiv.innerHTML = `
+        <div class="quick-actions-title">Quick questions:</div>
+        <button class="quick-action-btn" data-question="How do I fill out this registration form?">📋 Help with form</button>
+        <button class="quick-action-btn" data-question="What are the NET30 payment terms?">💰 Payment terms</button>
+        <button class="quick-action-btn" data-question="What requirements do I need to meet?">✅ Requirements</button>
+        <button class="quick-action-btn" data-question="How long does approval take?">⏰ Approval time</button>
+      `;
+      
+      messagesContainer.appendChild(quickActionsDiv);
+      
+      // Add event listeners to quick action buttons
+      quickActionsDiv.querySelectorAll('.quick-action-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const question = btn.getAttribute('data-question');
+          document.getElementById('chat_input').value = question;
+          handleUserInput();
+          quickActionsDiv.remove(); // Remove quick actions after use
+        });
+      });
+    }
+  }
+
+  // Initialize speech recognition
+  function initSpeechRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    
+    if (!SpeechRecognition) {
+      console.warn('Speech recognition not supported in this browser');
+      return null;
+    }
+    
+    const recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    
+    recognition.onstart = () => {
+      isListening = true;
+      const voiceBtn = document.getElementById('chat_voice_input');
+      voiceBtn.classList.add('listening');
+      voiceBtn.title = 'Listening... Click to stop';
+      
+      // Add listening indicator to input
+      const input = document.getElementById('chat_input');
+      input.placeholder = '🎤 Listening...';
+    };
+    
+    recognition.onresult = (event) => {
+      const transcript = event.results[0][0].transcript;
+      const input = document.getElementById('chat_input');
+      input.value = transcript;
+      
+      // Auto-send the transcribed message
+      setTimeout(() => {
+        handleUserInput();
+      }, 300);
+    };
+    
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      stopListening();
+      
+      if (event.error === 'not-allowed') {
+        addMessage('Assistant', '🎤 Microphone access was denied. Please allow microphone access in your browser settings to use voice input.', 'bot');
+      } else if (event.error === 'no-speech') {
+        // Silent error, user didn't speak
+      } else {
+        addMessage('Assistant', '🎤 Sorry, I couldn\'t hear that. Please try again.', 'bot');
+      }
+    };
+    
+    recognition.onend = () => {
+      stopListening();
+    };
+    
+    return recognition;
+  }
+  
+  // Start listening for voice input
+  function startListening() {
+    if (!recognition) {
+      recognition = initSpeechRecognition();
+      if (!recognition) {
+        addMessage('Assistant', '🎤 Voice input is not supported in your browser. Please try Chrome, Safari, or Edge.', 'bot');
+        return;
+      }
+    }
+    
+    if (isListening) {
+      recognition.stop();
+      return;
+    }
+    
+    try {
+      recognition.start();
+    } catch (error) {
+      console.error('Failed to start recognition:', error);
+    }
+  }
+  
+  // Stop listening
+  function stopListening() {
+    isListening = false;
+    const voiceBtn = document.getElementById('chat_voice_input');
+    voiceBtn.classList.remove('listening');
+    voiceBtn.title = 'Click to speak';
+    
+    const input = document.getElementById('chat_input');
+    input.placeholder = 'Ask me anything about registration, policies, or how to fill out forms...';
+  }
+  
+  // Speak text using text-to-speech
+  function speakText(text) {
+    if (!isVoiceOutputEnabled) return;
+    
+    // Stop any current speech
+    if (synthesis.speaking) {
+      synthesis.cancel();
+    }
+    
+    // Remove markdown formatting for better speech
+    const cleanText = text
+      .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove bold
+      .replace(/\n/g, ' ')               // Replace newlines with spaces
+      .replace(/•/g, '')                 // Remove bullets
+      .replace(/\[.*?\]/g, '');          // Remove links
+    
+    currentUtterance = new SpeechSynthesisUtterance(cleanText);
+    currentUtterance.rate = 1.0;
+    currentUtterance.pitch = 1.0;
+    currentUtterance.volume = 1.0;
+    
+    // Try to use a pleasant voice
+    const voices = synthesis.getVoices();
+    const preferredVoice = voices.find(voice => 
+      voice.lang.startsWith('en') && (voice.name.includes('Female') || voice.name.includes('Samantha'))
+    ) || voices.find(voice => voice.lang.startsWith('en')) || voices[0];
+    
+    if (preferredVoice) {
+      currentUtterance.voice = preferredVoice;
+    }
+    
+    currentUtterance.onstart = () => {
+      const voiceOutputBtn = document.getElementById('chat_voice_output');
+      voiceOutputBtn.classList.add('speaking');
+    };
+    
+    currentUtterance.onend = () => {
+      const voiceOutputBtn = document.getElementById('chat_voice_output');
+      voiceOutputBtn.classList.remove('speaking');
+    };
+    
+    synthesis.speak(currentUtterance);
+  }
+  
+  // Toggle voice output
+  function toggleVoiceOutput() {
+    isVoiceOutputEnabled = !isVoiceOutputEnabled;
+    const voiceOutputBtn = document.getElementById('chat_voice_output');
+    
+    if (isVoiceOutputEnabled) {
+      voiceOutputBtn.classList.add('active');
+      voiceOutputBtn.title = 'Voice responses enabled (click to disable)';
+      
+      // Announce activation
+      const utterance = new SpeechSynthesisUtterance('Voice responses enabled');
+      synthesis.speak(utterance);
+    } else {
+      voiceOutputBtn.classList.remove('active');
+      voiceOutputBtn.title = 'Enable voice responses';
+      
+      // Stop any current speech
+      if (synthesis.speaking) {
+        synthesis.cancel();
+      }
+    }
+    
+    // Track voice output toggle
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'voice_output_toggled', {
+        'event_category': 'User Interaction',
+        'event_label': isVoiceOutputEnabled ? 'enabled' : 'disabled'
+      });
+    }
+  }
+
+  // Clear chat and reset to initial state
+  function clearChat() {
+    // Clear conversation history
+    conversationHistory = [];
+    
+    // Clear messages container
+    const messagesContainer = document.getElementById('chat-messages');
+    messagesContainer.innerHTML = '';
+    
+    // Re-initialize with welcome message and quick actions
+    initChat();
+    setTimeout(() => addQuickActions(), 100);
+    
+    // Show success feedback
+    const clearBtn = document.getElementById('chat-clear');
+    const originalText = clearBtn.innerHTML;
+    clearBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M13 4L6 11L3 8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg> Cleared!';
+    clearBtn.disabled = true;
+    
     setTimeout(() => {
-      const response = findResponse(message);
-      addMessage('FEDEVENT Thinking Agent', response, 'bot');
-    }, 1000 + Math.random() * 1000); // 1-2 second thinking time
+      clearBtn.innerHTML = originalText;
+      clearBtn.disabled = false;
+    }, 1500);
+    
+    // Track clear event
+    if (typeof gtag !== 'undefined') {
+      gtag('event', 'chat_cleared', {
+        'event_category': 'User Interaction',
+        'event_label': 'AI Assistant'
+      });
+    }
   }
 
   // Set up event listeners
-  document.addEventListener('DOMContentLoaded', () => {
-    document.body.appendChild(bubble);
-    document.body.appendChild(panel);
-    
+  function setupEventListeners() {
     // Bubble click to open/close
     bubble.addEventListener('click', () => {
       panel.classList.toggle('open');
-      if (panel.classList.contains('open') && !document.getElementById('chat-messages').hasChildNodes()) {
-        initChat();
+      
+      if (panel.classList.contains('open')) {
+        if (document.getElementById('chat-messages').children.length === 0) {
+          initChat();
+          setTimeout(() => addQuickActions(), 100);
+        }
+        setTimeout(() => {
+          document.getElementById('chat_input').focus();
+        }, 300);
+        
+        // Track chat open event
+        if (typeof gtag !== 'undefined') {
+          gtag('event', 'chat_opened', {
+            'event_category': 'User Interaction',
+            'event_label': 'AI Assistant'
+          });
+        }
       }
     });
     
@@ -263,12 +531,36 @@
       panel.classList.remove('open');
     });
     
+    // Clear chat button
+    document.getElementById('chat-clear').addEventListener('click', () => {
+      clearChat();
+    });
+    
+    // Voice input button
+    document.getElementById('chat_voice_input').addEventListener('click', () => {
+      startListening();
+      
+      // Track voice input usage
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'voice_input_used', {
+          'event_category': 'User Interaction',
+          'event_label': 'AI Assistant'
+        });
+      }
+    });
+    
+    // Voice output toggle button
+    document.getElementById('chat_voice_output').addEventListener('click', () => {
+      toggleVoiceOutput();
+    });
+    
     // Send button
     document.getElementById('chat_send').addEventListener('click', handleUserInput);
     
     // Enter key to send
     document.getElementById('chat_input').addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
         handleUserInput();
       }
     });
@@ -287,7 +579,37 @@
     });
     
     observer.observe(panel, { attributes: true });
-  });
+
+    // Detect form field focus to offer help
+    document.addEventListener('focusin', (e) => {
+      if (e.target.matches('input, select, textarea') && e.target.form) {
+        const label = document.querySelector(`label[for="${e.target.id}"]`);
+        const fieldName = label ? label.textContent.trim() : (e.target.name || e.target.id);
+        
+        // Show a subtle notification on the bubble
+        if (fieldName && !panel.classList.contains('open')) {
+          bubble.setAttribute('data-tooltip', `Need help with "${fieldName}"? Click me!`);
+          bubble.classList.add('has-tooltip');
+          
+          setTimeout(() => {
+            bubble.classList.remove('has-tooltip');
+            bubble.removeAttribute('data-tooltip');
+          }, 5000);
+        }
+      }
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => {
+      document.body.appendChild(bubble);
+      document.body.appendChild(panel);
+      setupEventListeners();
+    });
+  } else {
+    document.body.appendChild(bubble);
+    document.body.appendChild(panel);
+    setupEventListeners();
+  }
 })();
-
-

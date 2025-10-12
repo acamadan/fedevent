@@ -1,0 +1,1177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEDEVENT - Connect Your Hotel to Governmental Contract Opportunities</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Suppress Tailwind CDN production warning
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+                return; // Suppress this specific warning
+            }
+            originalWarn.apply(console, args);
+        };
+    </script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'usa-red': '#B22234',
+                        'usa-blue': '#2563eb',
+                        'un-blue': '#009EDB',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        'display': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Google Places API - Async loading for better performance -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABdwje_wVZfSJi2fcfZQkxI1WhSJnlM3M&libraries=places&loading=async" defer></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WHNVHXGPHG"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-WHNVHXGPHG', {
+            'page_title': 'FEDEVENT Prelaunch',
+            'page_path': '/prelaunch.html'
+        });
+    </script>
+    
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-size: 17px;
+            line-height: 1.4705882353;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+            font-family: SF Pro Text, SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+        
+        p {
+            font-size: 17px;
+            line-height: 1.4705882353;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Benefit card headers - larger and more prominent */
+        .card-hover h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .patriotic-gradient {
+            background: linear-gradient(135deg, #3C3B6E 0%, #B22234 100%);
+        }
+        
+        .usa-gradient {
+            background: linear-gradient(to right, #B22234 0%, #FFFFFF 50%, #3C3B6E 100%);
+        }
+        
+        :root {
+            --text: #0b2545;
+            --text-light: #5b6b7b;
+            --error: #dc3545;
+            --bright-blue: #2563eb;
+        }
+        
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+            border: 2px solid #e5e7eb !important;
+            margin-top: 4px !important;
+        }
+        
+        .pac-item {
+            padding: 12px 16px !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+            font-size: 14px !important;
+        }
+        
+        .pac-item:hover {
+            background-color: #f8fafc !important;
+        }
+        
+        .pac-item-selected {
+            background-color: #e3f2fd !important;
+        }
+        
+        .pac-icon {
+            display: none !important;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .card-hover:hover {
+            transform: scale(1.12) translateY(-12px);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 1s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(60, 59, 110, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(178, 34, 52, 0.4); }
+        }
+        
+        /* Smooth scroll with fixed header */
+        html {
+            scroll-padding-top: 80px;
+        }
+        
+        body {
+            padding-top: 0;
+        }
+        
+        /* Custom checkbox styling */
+        input[type="checkbox"]:checked {
+            background-color: #3C3B6E;
+            border-color: #3C3B6E;
+        }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Form focus states */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3C3B6E;
+            box-shadow: 0 0 0 3px rgba(60, 59, 110, 0.15);
+        }
+        
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 12px;
+            border: 2px solid #3C3B6E;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-top: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .pac-item {
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+        
+        .pac-item:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .pac-item-query {
+            font-size: 15px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="antialiased bg-white text-gray-900" x-data="{ showSuccess: false, isSubmitting: false, userCode: '' }">
+
+    <!-- Fixed Video Background -->
+    <div class="fixed top-0 left-0 w-full h-screen z-0">
+        <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover">
+            <source src="/US&UN FLAG.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <!-- Dark Overlay for Better Text Readability -->
+        <div class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section class="relative z-10 overflow-hidden" style="height: 80vh; min-height: 500px; max-height: 700px;">
+        <!-- Content -->
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center" style="padding-top: 60px;">
+            
+            <!-- Headline -->
+            <div class="text-center max-w-5xl mx-auto fade-in">
+                <h1 class="mb-8 leading-tight text-white" style="font-size: 64px; line-height: 1.14286; font-weight: 700; letter-spacing: -0.02em; font-family: 'Inter', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif; text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
+                    Connect Your Hotel to<br>
+                    <span class="text-usa-blue" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">Governmental Contract</span> <span class="text-usa-red" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">Opportunities</span>
+                </h1>
+                
+                <p class="text-2xl text-white mb-6 max-w-4xl mx-auto leading-relaxed font-medium" style="font-size: 1.5rem; line-height: 1.6; text-shadow: 1px 1px 6px rgba(0,0,0,0.8);">
+                    FEDEVENT is a new platform by CREATA Global Event Agency that helps hotels access lodging and conference contracts issued by <strong>governmental agencies worldwide</strong> — with <strong>zero direct billing paperwork</strong>.
+                </p>
+                
+                <p class="text-xl text-white mb-16 max-w-3xl mx-auto" style="font-size: 1.25rem; line-height: 1.7; font-weight: 500; text-shadow: 1px 1px 6px rgba(0,0,0,0.8);">
+                    We work with <strong>governmental agencies worldwide</strong> including <strong>USG</strong> (United States Government) and <strong>UN</strong> (United Nations) to streamline contract opportunities for qualified hotel partners.
+                </p>
+                
+                <!-- CTA Button -->
+                <div class="mb-16">
+                    <a href="#waitlist" 
+                       class="inline-block patriotic-gradient text-white text-2xl font-bold px-16 py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110 pulse-glow"
+                       onclick="if(typeof gtag !== 'undefined') gtag('event', 'click', {'event_category': 'engagement', 'event_label': 'cta_hero_join_waitlist'});">
+                        Join the Waitlist →
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Decorative gradient orbs - patriotic colors -->
+        <div class="absolute top-0 left-0 w-96 h-96 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-red-800 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" style="animation-delay: 1s;"></div>
+    </section>
+
+    <!-- About the Platform Section -->
+    <section class="relative z-10 py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl md:text-6xl font-bold mb-4" style="font-weight: 800; letter-spacing: -0.02em;">What Is <span class="text-usa-red">FED</span><span class="text-usa-blue">EVENT</span>? <span style="color: #6b7280; font-weight: 600; font-style: italic;">— you may ask</span></h2>
+                <p class="text-2xl mb-8" style="color: #0071e3; font-weight: 600; letter-spacing: -0.01em;">Your Trusted Partner in Government World</p>
+                <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed" style="font-size: 1.25rem; line-height: 1.6;">
+                    FEDEVENT is a private contracting network connecting hotels with federal lodging and event opportunities. As a hotel partner, you'll be pre-qualified for events hosted by U.S. Government agencies — from conferences and training events to long-term lodging agreements.
+                </p>
+            </div>
+            
+            <!-- 3 Quick Highlights -->
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Highlight 1 -->
+                <div class="card-hover bg-white border-2 border-usa-blue p-10 rounded-3xl text-center shadow-lg">
+                    <h3 class="text-3xl font-black mb-4 text-usa-blue">Government Contracts Simplified</h3>
+                    <p class="text-xl text-gray-700 font-medium">No SAM registration needed for hotels. We handle the compliance.</p>
+                </div>
+                
+                <!-- Highlight 2 -->
+                <div class="card-hover bg-white border-2 border-usa-red p-10 rounded-3xl text-center shadow-lg">
+                    <h3 class="text-3xl font-black mb-4 text-usa-red">Guaranteed Payments</h3>
+                    <p class="text-xl text-gray-700 font-medium">NET30 terms under federal purchase orders. Secure and reliable.</p>
+                </div>
+                
+                <!-- Highlight 3 -->
+                <div class="card-hover bg-white border-2 border-black p-10 rounded-3xl text-center shadow-lg">
+                    <h3 class="text-3xl font-black mb-4 text-gray-900">More Bookings</h3>
+                    <p class="text-xl text-gray-700 font-medium">Access to recurring governmental events nationwide.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits for Hotels Section -->
+    <section class="relative z-10 py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="text-6xl md:text-7xl font-bold mb-8" style="font-weight: 800; letter-spacing: -0.02em;">Hotels & Venues — What You Gain</h2>
+                <p class="text-2xl text-gray-600" style="font-weight: 500;">Why join the FEDEVENT Preferred Hotel Network?</p>
+            </div>
+            
+            <!-- Benefits Grid -->
+            <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-12">
+                <!-- Benefit Card 1 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                📈
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Consistent Group Demand</h3>
+                            <p class="text-lg text-gray-600">Predictable revenue streams for your entire portfolio. Perfect for management companies and franchise operators seeking stable occupancy across multiple properties.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 2 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                📋
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Complete Event Briefs</h3>
+                            <p class="text-lg text-gray-600">Receive full event details including verified headcounts, rooming lists, meeting and A/V specifications, dietary requirements, and a complete day-by-day schedule to help your team prepare efficiently.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 3 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                📞
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Simplified Communication</h3>
+                            <p class="text-lg text-gray-600">No more chasing multiple contacts. One dedicated coordinator handles all pre-event planning, rapid decision-making, and on-site execution—saving your team time and reducing confusion.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 4 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                ✨
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Professional Closeout & Repeat Business</h3>
+                            <p class="text-lg text-gray-600">Streamlined post-event reconciliation and complete documentation for your records. High-performing properties earn priority placement for future contracts—turning one event into ongoing revenue.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 6 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                🎯
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Expert-Guided Access to Federal Buyers</h3>
+                            <p class="text-lg text-gray-600">Leverage CREATA Global's proven track record and deep government relationships to access opportunities you couldn't reach alone—without the complexity of federal procurement regulations.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 7 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                💳
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Simplified Payment Processing</h3>
+                            <p class="text-lg text-gray-600">CREATA handles all government invoicing and payment processing through official federal systems—eliminating complex paperwork and ensuring timely NET30 payments to your property.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 8 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                ⭐
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Preferred Network Benefits</h3>
+                            <p class="text-lg text-gray-600">Early partners receive priority placement, first access to high-value contracts, exclusive training resources, and enhanced visibility to government buyers—building your competitive advantage from day one.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Benefit Card 9 -->
+                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0 mr-6">
+                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                🎁
+                            </div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold mb-3">Early Access Advantage</h3>
+                            <p class="text-lg text-gray-600">Reserve your spot in the FEDEVENT network with no upfront fee. Early registrants will begin receiving upcoming opportunity notices and communications before the official launch—positioning your property ahead of the competition for federal event contracts.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Special Offer Banner -->
+            <div class="text-center">
+                <div class="inline-block bg-usa-blue text-white px-8 py-4 rounded-2xl shadow-lg">
+                    <p class="text-lg font-semibold">
+                        Be among the first 1,000 hotels to join and receive <span class="underline">free featured placement</span> at launch.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lead Capture Form Section -->
+    <section id="waitlist" class="relative z-10 py-24 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl md:text-6xl font-bold mb-8">Join the Waitlist</h2>
+                <p class="text-2xl text-gray-600">Be the first to know when FEDEVENT launches. Register your interest today.</p>
+            </div>
+            
+            <!-- Success Message -->
+            <div x-show="showSuccess" x-transition class="mb-8 bg-blue-50 border-4 border-usa-blue rounded-2xl p-6 text-center">
+                <h3 class="text-2xl font-black text-usa-blue mb-2">Thank You!</h3>
+                <div x-show="userCode" class="my-4 p-4 patriotic-gradient rounded-xl">
+                    <p class="text-white text-sm mb-2 font-semibold">Your Unique User Code</p>
+                    <p x-text="userCode" class="text-white text-3xl font-black tracking-wider"></p>
+                    <p class="text-white text-xs mt-2 opacity-90">Save this code for future reference</p>
+                </div>
+                <p class="text-gray-700 font-medium">You'll be among the first to be invited when FEDEVENT launches in <span class="font-bold text-usa-red">2026</span>.<br>Check your email for confirmation details.</p>
+            </div>
+            
+            <!-- Form -->
+            <form x-show="!showSuccess" @submit.prevent="submitForm" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm">
+                
+                <!-- Property Eligibility Requirement -->
+                <div style="background: #fef2f2; border-radius: 8px; border: 2px solid #dc2626; padding: 16px; margin: 0 0 16px 0;">
+                    <h4 style="margin: 0 0 12px 0; color: #991b1b; font-size: 1.5rem; font-weight: 700;">⚠️ Property Eligibility Requirement</h4>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="margin-bottom: 8px; color: #991b1b; font-weight: 600; font-size: 1.25rem;">Is your hotel an indoor property? (Guests reach their rooms through indoor corridors) <span style="color: #dc2626;">*</span></label>
+                        <div style="display:flex; gap:16px; align-items:center;">
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 1.125rem;">
+                                <input type="radio" name="indoor_property" id="indoor_yes" value="Yes" required onchange="checkIndoorProperty()">
+                                <span>Yes</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 1.125rem;">
+                                <input type="radio" name="indoor_property" id="indoor_no" value="No" required onchange="checkIndoorProperty()">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="indoor_rejection" style="display:none; margin-top:12px; padding:12px; background:#fee; border:1px solid #fcc; border-radius:4px; color:#c00; font-size: 1.125rem;">
+                        <strong>Sorry!</strong> We can only accept indoor properties at this time. Outdoor corridor properties (where guests access rooms from exterior walkways) do not meet governmental contract requirements.
+                    </div>
+                </div>
+                
+                <!-- Required Policies & Terms -->
+                <div style="background: #e3f2fd; border-radius: 8px; border: 1px solid #2196f3; padding: 16px; margin: 0 0 24px 0;">
+                    <h4 style="margin: 0 0 12px 0; color: var(--text); font-size: 1.5rem;">Required Policies & Terms</h4>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--error); cursor: pointer; font-size: 1.125rem;">
+                            <input type="checkbox" name="accepts_net30" value="Yes" required style="margin-top: 2px;">
+                            <span>I accept NET30 payment terms <span style="color: var(--error);">*</span></span>
+                        </label>
+                        <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
+                            NET30 payment terms are mandatory. We cannot accept hotels that do not offer NET30 payment terms.
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--error); cursor: pointer; font-size: 1.125rem;">
+                            <input type="checkbox" name="accepts_po" value="Acceptable" required style="margin-top: 2px;">
+                            <span>I understand and accept the NO DIRECT BILL APPLICATION policy <span style="color: var(--error);">*</span></span>
+                        </label>
+                        <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
+                            We do not process direct bill applications. We have government-backed PO and need direct bill to master account, but no direct bill application approval process with the hotel.
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--text); cursor: pointer; font-size: 1.125rem;">
+                            <input type="checkbox" name="accepts_discount" value="Yes" style="margin-top: 2px;">
+                            <span>I accept 30% off per diem rates (Optional - Higher Consideration)</span>
+                        </label>
+                        <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
+                            Hotels that accept 30% off per diem rates receive higher consideration for government group events.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hotel Name with Google Places -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelName">
+                        Hotel Name <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="hotelName" 
+                        name="hotelName" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Start typing hotel name..."
+                        autocomplete="off"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Type your hotel name and select from suggestions</p>
+                </div>
+                
+                <!-- Hotel Address Field (visible and editable) -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelAddress">
+                        Hotel Address <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="hotelAddress" 
+                        name="hotelAddress" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Full hotel address will be auto-filled from hotel selection"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Address will be auto-filled when you select a hotel from the dropdown</p>
+                </div>
+                
+                <!-- Hidden fields for additional details -->
+                <input type="hidden" id="hotelPhone" name="hotelPhone">
+                <input type="hidden" id="hotelPlaceId" name="hotelPlaceId">
+                
+                
+                <!-- City, State, and Zip Code (auto-filled from Google Places) -->
+                <div class="grid md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-xl font-semibold text-gray-700 mb-3" for="city">
+                            City <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="city" 
+                            name="city" 
+                            required
+                            readonly
+                            class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
+                            placeholder="Auto-filled from hotel selection"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-xl font-semibold text-gray-700 mb-3" for="state">
+                            State/Province <span class="text-gray-400 text-xs">(if applicable)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="state" 
+                            name="state" 
+                            readonly
+                            class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
+                            placeholder="Auto-filled (optional)"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-xl font-semibold text-gray-700 mb-3" for="zipCode">
+                            Zip/Postal Code <span class="text-gray-400 text-xs">(if available)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="zipCode" 
+                            name="zipCode" 
+                            readonly
+                            class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
+                            placeholder="Auto-filled (optional)"
+                        >
+                    </div>
+                </div>
+                
+                <!-- Country -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="country">
+                        Country <span class="text-gray-400 text-xs">(auto-filled)</span>
+                    </label>
+                    <select 
+                        id="country" 
+                        name="country" 
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                    >
+                            <option value="">Select Country...</option>
+                            <option value="US">United States</option>
+                            <option value="CA">Canada</option>
+                            <option value="MX">Mexico</option>
+                            <option value="GB">United Kingdom</option>
+                            <option value="DE">Germany</option>
+                            <option value="FR">France</option>
+                            <option value="IT">Italy</option>
+                            <option value="ES">Spain</option>
+                            <option value="NL">Netherlands</option>
+                            <option value="BE">Belgium</option>
+                            <option value="CH">Switzerland</option>
+                            <option value="AT">Austria</option>
+                            <option value="SE">Sweden</option>
+                            <option value="NO">Norway</option>
+                            <option value="DK">Denmark</option>
+                            <option value="FI">Finland</option>
+                            <option value="IE">Ireland</option>
+                            <option value="PT">Portugal</option>
+                            <option value="GR">Greece</option>
+                            <option value="JP">Japan</option>
+                            <option value="KR">South Korea</option>
+                            <option value="SG">Singapore</option>
+                            <option value="AU">Australia</option>
+                            <option value="NZ">New Zealand</option>
+                            <option value="IN">India</option>
+                            <option value="CN">China</option>
+                            <option value="BR">Brazil</option>
+                            <option value="AR">Argentina</option>
+                            <option value="CL">Chile</option>
+                            <option value="CO">Colombia</option>
+                            <option value="PE">Peru</option>
+                            <option value="ZA">South Africa</option>
+                            <option value="EG">Egypt</option>
+                            <option value="MA">Morocco</option>
+                            <option value="TN">Tunisia</option>
+                            <option value="AE">United Arab Emirates</option>
+                            <option value="SA">Saudi Arabia</option>
+                            <option value="IL">Israel</option>
+                            <option value="TR">Turkey</option>
+                            <option value="RU">Russia</option>
+                            <option value="UA">Ukraine</option>
+                            <option value="PL">Poland</option>
+                            <option value="CZ">Czech Republic</option>
+                            <option value="HU">Hungary</option>
+                            <option value="RO">Romania</option>
+                            <option value="BG">Bulgaria</option>
+                            <option value="HR">Croatia</option>
+                            <option value="SI">Slovenia</option>
+                            <option value="SK">Slovakia</option>
+                            <option value="LT">Lithuania</option>
+                            <option value="LV">Latvia</option>
+                            <option value="EE">Estonia</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                </div>
+                
+                
+                <!-- Contact Name -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="contactName">
+                        Your Name <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="contactName" 
+                        name="contactName" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="John Smith"
+                    >
+                </div>
+                
+                <!-- Title Dropdown -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="title">
+                        Your Title <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        id="title" 
+                        name="title" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                    >
+                        <option value="">Select your title</option>
+                        <option value="Owner">Owner</option>
+                        <option value="General Manager">General Manager</option>
+                        <option value="Director of Sales">Director of Sales</option>
+                        <option value="Sales Manager">Sales Manager</option>
+                        <option value="Sales Coordinator">Sales Coordinator</option>
+                        <option value="Area Director of Sales">Area Director of Sales</option>
+                        <option value="Regional Director of Sales">Regional Director of Sales</option>
+                        <option value="Director of National Accounts">Director of National Accounts</option>
+                        <option value="Revenue Manager">Revenue Manager</option>
+                        <option value="Operations Manager">Operations Manager</option>
+                        <option value="Front Office Manager">Front Office Manager</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <!-- Email -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="email">
+                        Your Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="john.smith@hotel.com"
+                    >
+                </div>
+                
+                <!-- Personal Phone -->
+                <div class="mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="phone">
+                        Your Phone Number <span class="text-gray-400 text-xs">(optional)</span>
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone"
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="(555) 123-4567"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Your personal contact number (Hotel's main number is auto-filled from Google)</p>
+                </div>
+                
+                <!-- Interests (Checkboxes) -->
+                <div class="mb-8">
+                    <label class="block text-base font-semibold text-gray-700 mb-3">
+                        I'm interested in: <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-3">
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="interests" 
+                                value="lodging"
+                                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <span class="ml-3 text-gray-700 text-base">Lodging Contracts</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="interests" 
+                                value="conference"
+                                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <span class="ml-3 text-gray-700 text-base">Conference & Meeting Space</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="interests" 
+                                value="bpa"
+                                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <span class="ml-3 text-gray-700 text-base">Year Term Agreements (BPA)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button 
+                        type="submit"
+                        :disabled="isSubmitting"
+                        class="w-full md:w-auto patriotic-gradient text-white text-lg font-bold px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        x-text="isSubmitting ? 'Submitting...' : 'Join the Waitlist →'"
+                    >
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Visual Section with Background -->
+    <section class="relative z-10 py-24 bg-gradient-to-br from-usa-blue via-gray-900 to-usa-red text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-full h-full" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Global Network</h2>
+                <p class="text-xl text-blue-100 mb-8">
+                    Join hotels worldwide connecting with governmental agency opportunities. From conference centers in major cities to lodging facilities near government installations — FEDEVENT brings worldwide governmental contracts to you.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Countdown / Launch Notice -->
+    <section class="relative z-10 py-24 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="bg-white p-12 rounded-3xl shadow-xl border-4 border-usa-blue">
+                <h2 class="text-3xl md:text-4xl font-black mb-4">Official Launch</h2>
+                <p class="text-6xl font-black mb-4"><span class="text-usa-red">2026</span></p>
+                <p class="text-xl text-gray-600">
+                    Don't miss out — join the waitlist now for priority access and exclusive launch benefits.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-gray-900 text-white py-16 border-t-4 border-usa-red">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 mb-12 max-w-4xl mx-auto">
+                <!-- Company Info -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-2xl font-black mb-4">
+                        <span class="text-usa-red">FED</span><span class="text-usa-blue">EVENT</span>
+                    </h3>
+                    <p class="text-gray-400">
+                        A platform by CREATA Global Event Agency LLC
+                    </p>
+                </div>
+                
+                <!-- Contact -->
+                <div class="text-center md:text-right">
+                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                    <p class="text-gray-400 mb-2">
+                        <a href="mailto:info@Fedevent.com" class="hover:text-white transition-colors">
+                            info@Fedevent.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 FEDEVENT.com. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Google Places Autocomplete Script - Simplified Working Version -->
+    <script>
+        let placeData = {};
+        let autocomplete;
+        
+        function initAutocomplete() {
+            console.log('Initializing Google Places Autocomplete...');
+            
+            if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+                console.error('Google Maps API not loaded');
+                return;
+            }
+            
+            const input = document.getElementById('hotelName');
+            if (!input) {
+                console.error('Hotel name input not found');
+                return;
+            }
+            
+            try {
+                // Initialize autocomplete with simple configuration
+                autocomplete = new google.maps.places.Autocomplete(input, {
+                    types: ['lodging'],
+                    fields: ['name', 'formatted_address', 'address_components', 'formatted_phone_number', 'place_id', 'geometry']
+                });
+                
+                console.log('Autocomplete initialized successfully');
+                
+                // Listen for place selection
+                autocomplete.addListener('place_changed', function() {
+                    const place = autocomplete.getPlace();
+                    console.log('Place selected:', place);
+                    
+                    if (!place.geometry) {
+                        console.log('No place selected or place has no geometry');
+                        return;
+                    }
+                    
+                    // Set hotel name field to ONLY the hotel name (no address)
+                    input.value = place.name || '';
+                    
+                    // Extract address components
+                    let streetNumber = '';
+                    let route = '';
+                    let sublocality = '';
+                    let city = '';
+                    let state = '';
+                    let country = '';
+                    let zipCode = '';
+                    
+                    if (place.address_components) {
+                        place.address_components.forEach(component => {
+                            const types = component.types;
+                            
+                            if (types.includes('street_number')) {
+                                streetNumber = component.long_name;
+                            }
+                            if (types.includes('route')) {
+                                route = component.long_name;
+                            }
+                            if (types.includes('sublocality') || types.includes('sublocality_level_1')) {
+                                sublocality = component.long_name;
+                            }
+                            if (types.includes('locality')) {
+                                city = component.long_name;
+                            }
+                            if (types.includes('administrative_area_level_1')) {
+                                state = component.short_name;
+                            }
+                            if (types.includes('country')) {
+                                country = component.short_name;
+                            }
+                            if (types.includes('postal_code')) {
+                                zipCode = component.long_name;
+                            }
+                        });
+                    }
+                    
+                    // Build street address (different format for different countries)
+                    let streetAddress = '';
+                    if (route) {
+                        // International format: "Street Name No: Number, Neighborhood"
+                        streetAddress = route;
+                        if (streetNumber) {
+                            streetAddress += ' ' + streetNumber;
+                        }
+                        if (sublocality) {
+                            streetAddress += ', ' + sublocality;
+                        }
+                    }
+                    
+                    // Only fill state field for countries with states/provinces (US, CA, AU, BR, MX, IN)
+                    const countriesWithStates = ['US', 'CA', 'AU', 'BR', 'MX', 'IN'];
+                    const stateValue = (country && countriesWithStates.includes(country)) ? state : '';
+                    
+                    // Fill form fields
+                    document.getElementById('hotelAddress').value = streetAddress || place.formatted_address || '';
+                    document.getElementById('city').value = city;
+                    document.getElementById('state').value = stateValue;
+                    document.getElementById('zipCode').value = zipCode;
+                    if (country) {
+                        const countrySelect = document.getElementById('country');
+                        if (countrySelect) {
+                            countrySelect.value = country;
+                        }
+                    }
+                    document.getElementById('hotelPhone').value = place.formatted_phone_number || '';
+                    document.getElementById('hotelPlaceId').value = place.place_id || '';
+                    
+                    // Store place data for submission
+                    placeData = {
+                        name: place.name,
+                        address: streetAddress || place.formatted_address || '',
+                        city: city,
+                        state: stateValue,
+                        zipCode: zipCode,
+                        country: country,
+                        phone: place.formatted_phone_number || '',
+                        placeId: place.place_id
+                    };
+                    
+                    console.log('Hotel selected:', placeData);
+                });
+                
+            } catch (error) {
+                console.error('Error initializing autocomplete:', error);
+            }
+        }
+        
+        // Check indoor property selection
+        function checkIndoorProperty() {
+            const indoorNo = document.getElementById('indoor_no');
+            const rejectionDiv = document.getElementById('indoor_rejection');
+            const submitButton = document.querySelector('button[type="submit"]');
+            
+            if (indoorNo && indoorNo.checked) {
+                rejectionDiv.style.display = 'block';
+                if (submitButton) {
+                    submitButton.disabled = true;
+                    submitButton.style.opacity = '0.5';
+                    submitButton.style.cursor = 'not-allowed';
+                }
+            } else {
+                rejectionDiv.style.display = 'none';
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.style.opacity = '1';
+                    submitButton.style.cursor = 'pointer';
+                }
+            }
+        }
+        
+        // Check if Google Maps is loaded and initialize
+        function checkAndInit() {
+            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                initAutocomplete();
+            } else {
+                console.log('Google Maps not ready, retrying...');
+                setTimeout(checkAndInit, 500);
+            }
+        }
+        
+        // Suppress Google Maps referer errors
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('RefererNotAllowedMapError')) {
+                e.preventDefault();
+                console.log('Google Maps API referer restriction detected - this is normal for localhost development');
+                return false;
+            }
+        });
+        
+        // Start checking when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkAndInit);
+        } else {
+            checkAndInit();
+        }
+        
+        // Also try when window loads
+        window.addEventListener('load', function() {
+            setTimeout(checkAndInit, 1000);
+        });
+    </script>
+
+    <!-- Form Submission Script -->
+    <script>
+        function submitForm(event) {
+            const form = event.target;
+            const formData = new FormData(form);
+            
+            // Get checked interests
+            const interests = [];
+            document.querySelectorAll('input[name="interests"]:checked').forEach(cb => {
+                interests.push(cb.value);
+            });
+            
+            // Validate at least one interest is selected
+            if (interests.length === 0) {
+                alert('Please select at least one area of interest.');
+                return;
+            }
+            
+            // Set submitting state
+            this.isSubmitting = true;
+            
+            // Get eligibility data
+            const indoorProperty = formData.get('indoor_property');
+            const acceptsNet30 = formData.get('accepts_net30');
+            const acceptsPo = formData.get('accepts_po');
+            const acceptsDiscount = formData.get('accepts_discount') || 'No';
+            
+            // Debug: Log the values
+            console.log('Eligibility check:', {
+                indoorProperty,
+                acceptsNet30,
+                acceptsPo,
+                acceptsDiscount
+            });
+            
+            // Validate eligibility
+            if (!indoorProperty || !acceptsNet30 || !acceptsPo) {
+                const missing = [];
+                if (!indoorProperty) missing.push('Indoor Property question');
+                if (!acceptsNet30) missing.push('NET30 payment terms');
+                if (!acceptsPo) missing.push('No Direct Bill Application policy');
+                
+                alert('Please answer all required Property Eligibility and Policy questions:\n\n' + missing.join('\n'));
+                this.isSubmitting = false;
+                return;
+            }
+            
+            // Get hotel details from Google Places
+            const hotelAddress = formData.get('hotelAddress') || document.getElementById('hotelAddress').value;
+            const hotelPhone = formData.get('hotelPhone') || document.getElementById('hotelPhone').value;
+            const hotelPlaceId = formData.get('hotelPlaceId') || document.getElementById('hotelPlaceId').value;
+            
+            // Prepare data object
+            const data = {
+                hotelName: formData.get('hotelName'),
+                hotelAddress: hotelAddress,
+                hotelPhone: hotelPhone,
+                hotelPlaceId: hotelPlaceId,
+                city: formData.get('city'),
+                state: formData.get('state') || '',
+                zipCode: formData.get('zipCode') || '',
+                country: formData.get('country') || '',
+                contactName: formData.get('contactName'),
+                title: formData.get('title'),
+                email: formData.get('email'),
+                phone: formData.get('phone') || '',
+                interests: interests.join(', '),
+                indoorProperty: indoorProperty,
+                acceptsNet30: acceptsNet30,
+                acceptsPo: acceptsPo,
+                acceptsDiscount: acceptsDiscount
+            };
+            
+            // Submit to API
+            fetch('/api/leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    this.showSuccess = true;
+                    this.userCode = result.userCode || '';
+                    
+                    // Track successful form submission in Google Analytics
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'generate_lead', {
+                            'event_category': 'engagement',
+                            'event_label': 'hotel_waitlist_signup',
+                            'value': 1,
+                            'user_code': result.userCode
+                        });
+                        
+                        // Also track as conversion
+                        gtag('event', 'conversion', {
+                            'send_to': 'G-WHNVHXGPHG',
+                            'event_category': 'prelaunch',
+                            'event_label': 'waitlist_signup'
+                        });
+                    }
+                    
+                    form.reset();
+                    // Scroll to success message
+                    setTimeout(() => {
+                        document.getElementById('waitlist').scrollIntoView({ behavior: 'smooth' });
+                    }, 100);
+                } else {
+                    alert('There was an error submitting your information. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error submitting your information. Please try again.');
+            })
+            .finally(() => {
+                this.isSubmitting = false;
+            });
+        }
+    </script>
+</body>
+</html>
+

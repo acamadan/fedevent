@@ -115,7 +115,7 @@
                 <label class="field"><span>Email</span><input id="repEmail" type="email" required></label>
               </div>
               <div class="field-grid">
-                <label class="field"><span>Approver Name</span><input id="approverName" placeholder="e.g., General Manager" required></label>
+                <label class="field"><span>Approver Name</span><input id="approverName" placeholder="" required></label>
                 <label class="field"><span>Approver Title</span>
                   <select id="approverTitle" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px">
                     <option value="">Select title…</option>
@@ -146,6 +146,7 @@
               </div>
 
               <div class="btn-row" style="margin-top:14px">
+                <button class="btn ghost" type="button" onclick="goBackToDashboard()">← Back to Dashboard</button>
                 <button class="btn primary" type="submit">Submit & Download PDF</button>
               </div>
             </form>
@@ -445,6 +446,17 @@
     localStorage.removeItem('fedevent_session');
     localStorage.removeItem('fedevent_user');
     window.location.href = '/hotel-login.html';
+  }
+
+  function goBackToDashboard() {
+    // Check if user is logged in
+    const sessionId = localStorage.getItem('fedevent_session');
+    if (sessionId) {
+      window.location.href = '/hotel-dashboard.html';
+    } else {
+      // If not logged in, go to login page
+      window.location.href = '/hotel-login.html';
+    }
   }
 
   // Close dropdowns when clicking outside

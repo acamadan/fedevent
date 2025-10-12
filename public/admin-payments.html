@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Payments - FEDEVENT Admin</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f8fafc;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        h1 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+        
+        .payment-card {
+            border-left: 4px solid #f59e0b;
+            transition: all 0.2s;
+        }
+        
+        .payment-card:hover {
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .payment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .hotel-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+        }
+        
+        .amount {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        
+        .info-item {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .info-item strong {
+            color: #1f2937;
+            display: block;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #059669;
+        }
+        
+        .btn-secondary {
+            background: #6b7280;
+            color: white;
+            margin-left: 8px;
+        }
+        
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+        
+        .empty-state h2 {
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h3 {
+            margin: 0;
+            color: #1f2937;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e5e7eb;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+        
+        .form-group input:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e40af;
+        }
+        
+        .stat-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-top: 4px;
+        }
+        
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .alert.show {
+            display: block;
+        }
+        
+        .alert-success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #a7f3d0;
+        }
+        
+        .alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💳 Pending Payments</h1>
+        <p class="subtitle">Setup fees awaiting confirmation</p>
+        
+        <div id="alert" class="alert"></div>
+        
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="pendingCount">0</div>
+                <div class="stat-label">Pending Payments</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="totalAmount">$0</div>
+                <div class="stat-label">Total Pending</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="todayCount">0</div>
+                <div class="stat-label">Registered Today</div>
+            </div>
+        </div>
+        
+        <div id="paymentsContainer"></div>
+    </div>
+    
+    <!-- Mark as Paid Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Mark Payment as Paid</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            
+            <form id="paymentForm">
+                <input type="hidden" id="paymentId" name="paymentId">
+                
+                <div class="form-group">
+                    <label for="quickbooksInvoiceId">QuickBooks Invoice ID (Optional)</label>
+                    <input type="text" id="quickbooksInvoiceId" name="quickbooksInvoiceId" placeholder="INV-12345">
+                </div>
+                
+                <div class="form-group">
+                    <label for="quickbooksPaymentId">QuickBooks Payment ID (Optional)</label>
+                    <input type="text" id="quickbooksPaymentId" name="quickbooksPaymentId" placeholder="PMT-12345">
+                </div>
+                
+                <div class="form-group">
+                    <label for="note">Transaction Note</label>
+                    <textarea id="note" name="note" rows="3" placeholder="Payment received via phone/email/etc..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary">✓ Confirm Payment & Activate Account</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        let currentPaymentId = null;
+        
+        async function loadPendingPayments() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch('/api/admin/payments/pending', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401 || response.status === 403) {
+                        window.location.href = '/admin-login.html';
+                        return;
+                    }
+                    throw new Error('Failed to load payments');
+                }
+                
+                const data = await response.json();
+                displayPayments(data.payments);
+                updateStats(data.payments);
+            } catch (error) {
+                console.error('Error loading payments:', error);
+                showAlert('Failed to load pending payments', 'error');
+            }
+        }
+        
+        function updateStats(payments) {
+            document.getElementById('pendingCount').textContent = payments.length;
+            
+            const total = payments.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+            document.getElementById('totalAmount').textContent = `$${total.toFixed(2)}`;
+            
+            const today = new Date().toDateString();
+            const todayCount = payments.filter(p => {
+                const paymentDate = new Date(p.created_at).toDateString();
+                return paymentDate === today;
+            }).length;
+            document.getElementById('todayCount').textContent = todayCount;
+        }
+        
+        function displayPayments(payments) {
+            const container = document.getElementById('paymentsContainer');
+            
+            if (payments.length === 0) {
+                container.innerHTML = `
+                    <div class="card empty-state">
+                        <h2>✓ All Caught Up!</h2>
+                        <p>No pending payments at the moment.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = payments.map(payment => `
+                <div class="card payment-card">
+                    <div class="payment-header">
+                        <div>
+                            <div class="hotel-name">${payment.hotel_name || payment.first_name + ' ' + (payment.last_name || '')}</div>
+                            <div style="color: #6b7280; font-size: 0.875rem; margin-top: 4px;">
+                                Account: ${payment.fedevent_account_number}
+                            </div>
+                        </div>
+                        <div class="amount">$${parseFloat(payment.amount).toFixed(2)}</div>
+                    </div>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <strong>Contact</strong>
+                            ${payment.first_name} ${payment.last_name || ''}
+                        </div>
+                        <div class="info-item">
+                            <strong>Email</strong>
+                            <a href="mailto:${payment.email}">${payment.email}</a>
+                        </div>
+                        <div class="info-item">
+                            <strong>Registered</strong>
+                            ${new Date(payment.created_at).toLocaleDateString()}
+                        </div>
+                        <div class="info-item">
+                            <strong>Payment ID</strong>
+                            #${payment.id}
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 16px; display: flex; gap: 8px;">
+                        <button class="btn btn-primary" onclick="openPaymentModal(${payment.id}, '${payment.email}')">
+                            ✓ Mark as Paid
+                        </button>
+                        <a href="mailto:${payment.email}" class="btn btn-secondary" style="text-decoration: none; display: inline-block;">
+                            📧 Email Hotel
+                        </a>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function openPaymentModal(paymentId, email) {
+            currentPaymentId = paymentId;
+            document.getElementById('paymentId').value = paymentId;
+            document.getElementById('paymentModal').classList.add('show');
+        }
+        
+        function closeModal() {
+            document.getElementById('paymentModal').classList.remove('show');
+            document.getElementById('paymentForm').reset();
+            currentPaymentId = null;
+        }
+        
+        document.getElementById('paymentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const data = {
+                quickbooksInvoiceId: formData.get('quickbooksInvoiceId'),
+                quickbooksPaymentId: formData.get('quickbooksPaymentId'),
+                note: formData.get('note')
+            };
+            
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`/api/admin/payments/${currentPaymentId}/mark-paid`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to mark payment as paid');
+                }
+                
+                showAlert('✓ Payment marked as paid! Account activated and confirmation email sent.', 'success');
+                closeModal();
+                loadPendingPayments();
+            } catch (error) {
+                console.error('Error marking payment:', error);
+                showAlert('Failed to mark payment as paid. Please try again.', 'error');
+            }
+        });
+        
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+            
+            setTimeout(() => {
+                alert.classList.remove('show');
+            }, 5000);
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('paymentModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+        
+        // Load payments on page load
+        document.addEventListener('DOMContentLoaded', loadPendingPayments);
+        
+        // Auto-refresh every 30 seconds
+        setInterval(loadPendingPayments, 30000);
+    </script>
+</body>
+</html>
+

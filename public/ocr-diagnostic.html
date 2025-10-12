@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>OCR Button Diagnostic</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        button { padding: 12px 24px; margin: 10px; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 16px; }
+        .blue { background: #3b82f6; color: white; }
+        .green { background: #10b981; color: white; }
+        pre { background: #f9fafb; padding: 15px; border-radius: 6px; overflow-x: auto; }
+        .result { margin-top: 20px; padding: 15px; background: #e8f5e9; border-radius: 6px; }
+        .error { background: #ffebee; color: #c62828; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 OCR Button Diagnostic Tool</h1>
+        
+        <h3>Step 1: Check Page Elements</h3>
+        <button class="blue" onclick="checkElements()">Check Elements</button>
+        <div id="elementCheck"></div>
+        
+        <h3>Step 2: Test Button Click Events</h3>
+        <button class="blue" onclick="testClickEvents()">Test Events</button>
+        <div id="eventCheck"></div>
+        
+        <h3>Step 3: Check if Buttons are Visible</h3>
+        <button class="blue" onclick="checkVisibility()">Check Visibility</button>
+        <div id="visibilityCheck"></div>
+        
+        <h3>Step 4: Check for JavaScript Errors</h3>
+        <button class="blue" onclick="checkErrors()">Check Console</button>
+        <div id="errorCheck"></div>
+        
+        <h3>Instructions</h3>
+        <ol>
+            <li>Open the hotel registration form in another tab: <a href="/hotel-registration.html" target="_blank">Open Form</a></li>
+            <li>Navigate to Page 3 (Meeting Space Details)</li>
+            <li>Select "Yes" for "Do you have meeting space available?"</li>
+            <li>Come back here and run these diagnostics</li>
+            <li>Then open browser DevTools (F12) → Console tab</li>
+            <li>Paste this code into the console:</li>
+        </ol>
+        
+        <pre>// Check OCR buttons
+const simpleBtn = document.getElementById('processFactSheet');
+const hybridBtn = document.getElementById('processFactSheetHybrid');
+console.log('Simple button:', simpleBtn);
+console.log('Hybrid button:', hybridBtn);
+console.log('Simple button visible?:', simpleBtn ? window.getComputedStyle(simpleBtn).display !== 'none' : 'NOT FOUND');
+console.log('Hybrid button visible?:', hybridBtn ? window.getComputedStyle(hybridBtn).display !== 'none' : 'NOT FOUND');
+
+// Try to click them
+if (simpleBtn) {
+    console.log('Simple button onclick:', simpleBtn.onclick);
+    console.log('Simple button has event listeners?:', 'Unknown - check Elements tab → Event Listeners');
+}
+if (hybridBtn) {
+    console.log('Hybrid button onclick:', hybridBtn.onclick);
+    console.log('Hybrid button has event listeners?:', 'Unknown - check Elements tab → Event Listeners');
+}</pre>
+        
+        <h3>Quick Fix to Try</h3>
+        <p>If buttons don't work, try this in the console of the hotel registration page:</p>
+        <pre>// Force attach event listeners
+document.getElementById('processFactSheet')?.addEventListener('click', function() {
+    console.log('MANUAL: Simple OCR clicked!');
+    alert('Simple OCR button works! Check console for details.');
+});
+
+document.getElementById('processFactSheetHybrid')?.addEventListener('click', function() {
+    console.log('MANUAL: Hybrid OCR clicked!');
+    alert('Hybrid OCR button works! Check console for details.');
+});</pre>
+    </div>
+    
+    <script>
+        function checkElements() {
+            const result = document.getElementById('elementCheck');
+            result.innerHTML = '<pre>Run this on the hotel-registration.html page console:\n\n' +
+                'const simpleBtn = document.getElementById(\'processFactSheet\');\n' +
+                'const hybridBtn = document.getElementById(\'processFactSheetHybrid\');\n' +
+                'console.log({ simpleBtn, hybridBtn });</pre>';
+        }
+        
+        function testClickEvents() {
+            const result = document.getElementById('eventCheck');
+            result.innerHTML = '<pre>On hotel-registration.html console:\n\n' +
+                'const simpleBtn = document.getElementById(\'processFactSheet\');\n' +
+                'if (simpleBtn) {\n' +
+                '    simpleBtn.click();\n' +
+                '    console.log(\'Clicked simple button\');\n' +
+                '}</pre>';
+        }
+        
+        function checkVisibility() {
+            const result = document.getElementById('visibilityCheck');
+            result.innerHTML = '<pre>On hotel-registration.html console:\n\n' +
+                'const meetingTools = document.getElementById(\'meeting_tools\');\n' +
+                'const simpleBtn = document.getElementById(\'processFactSheet\');\n' +
+                'console.log(\'meeting_tools display:\', meetingTools?.style.display);\n' +
+                'console.log(\'simpleBtn display:\', simpleBtn ? getComputedStyle(simpleBtn).display : \'NOT FOUND\');</pre>';
+        }
+        
+        function checkErrors() {
+            const result = document.getElementById('errorCheck');
+            result.innerHTML = '<div class="result">Open DevTools (F12) → Console tab<br>' +
+                'Look for any red error messages<br>' +
+                'Common issues:<br>' +
+                '- "Uncaught TypeError..."<br>' +
+                '- "... is not defined"<br>' +
+                '- "Failed to execute..."</div>';
+        }
+    </script>
+</body>
+</html>
