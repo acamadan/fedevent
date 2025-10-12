@@ -61,6 +61,9 @@
     <!-- Alpine.js for interactivity -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     
+    <!-- Canvas Confetti for celebration effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
     <style>
         * {
             box-sizing: border-box;
@@ -313,133 +316,186 @@
     </section>
 
     <!-- Benefits for Hotels Section -->
-    <section class="relative z-10 py-24 bg-gray-50">
+    <section class="relative z-10 py-24 bg-gray-50" x-data="{ currentSlide: 0, totalSlides: 8 }" x-init="
+        setInterval(() => { 
+            currentSlide = (currentSlide + 1) % totalSlides; 
+        }, 4000);
+    ">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-20">
                 <h2 class="text-6xl md:text-7xl font-bold mb-8" style="font-weight: 800; letter-spacing: -0.02em;">Hotels & Venues — What You Gain</h2>
                 <p class="text-2xl text-gray-600" style="font-weight: 500;">Why join the FEDEVENT Preferred Hotel Network?</p>
             </div>
             
-            <!-- Benefits Grid -->
-            <div class="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto mb-12">
-                <!-- Benefit Card 1 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                📈
+            <!-- Benefits Carousel - Single Card View -->
+            <div class="relative max-w-5xl mx-auto mb-12">
+                <!-- Left Arrow -->
+                <button @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides" 
+                        class="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-usa-blue hover:text-white text-gray-800 rounded-full p-4 shadow-xl transition-all transform hover:scale-110">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                
+                <!-- Right Arrow -->
+                <button @click="currentSlide = (currentSlide + 1) % totalSlides" 
+                        class="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-usa-blue hover:text-white text-gray-800 rounded-full p-4 shadow-xl transition-all transform hover:scale-110">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                
+                <!-- Carousel Container -->
+                <div class="overflow-hidden">
+                    <div class="flex transition-transform duration-700 ease-in-out" :style="`transform: translateX(-${currentSlide * 100}%)`">
+                        
+                        <!-- Card 1 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            📈
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Consistent Group Demand</h3>
+                                        <p class="text-lg text-gray-600">Predictable revenue streams for your entire portfolio. Perfect for management companies and franchise operators seeking stable occupancy across multiple properties.</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Consistent Group Demand</h3>
-                            <p class="text-lg text-gray-600">Predictable revenue streams for your entire portfolio. Perfect for management companies and franchise operators seeking stable occupancy across multiple properties.</p>
+                        
+                        <!-- Card 2 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            📋
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Complete Event Briefs</h3>
+                                        <p class="text-lg text-gray-600">Receive full event details including verified headcounts, rooming lists, meeting and A/V specifications, dietary requirements, and a complete day-by-day schedule to help your team prepare efficiently.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+                        
+                        <!-- Card 3 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            📞
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Simplified Communication</h3>
+                                        <p class="text-lg text-gray-600">No more chasing multiple contacts. One dedicated coordinator handles all pre-event planning, rapid decision-making, and on-site execution—saving your team time and reducing confusion.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 4 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            ✨
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Professional Closeout & Repeat Business</h3>
+                                        <p class="text-lg text-gray-600">Streamlined post-event reconciliation and complete documentation for your records. High-performing properties earn priority placement for future contracts—turning one event into ongoing revenue.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 5 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            🎯
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Expert-Guided Access to Federal Buyers</h3>
+                                        <p class="text-lg text-gray-600">Leverage CREATA Global's proven track record and deep government relationships to access opportunities you couldn't reach alone—without the complexity of federal procurement regulations.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 6 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            💳
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Simplified Payment Processing</h3>
+                                        <p class="text-lg text-gray-600">CREATA handles all government invoicing and payment processing through official federal systems—eliminating complex paperwork and ensuring timely NET30 payments to your property.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 7 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            ⭐
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Preferred Network Benefits</h3>
+                                        <p class="text-lg text-gray-600">Early partners receive priority placement, first access to high-value contracts, exclusive training resources, and enhanced visibility to government buyers—building your competitive advantage from day one.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 8 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-10 rounded-2xl shadow-md h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-6">
+                                        <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
+                                            🎁
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-2xl font-bold mb-3">Early Access Advantage</h3>
+                                        <p class="text-lg text-gray-600">Reserve your spot in the FEDEVENT network with no upfront fee. Early registrants will begin receiving upcoming opportunity notices and communications before the official launch—positioning your property ahead of the competition for federal event contracts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
                 
-                <!-- Benefit Card 2 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                📋
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Complete Event Briefs</h3>
-                            <p class="text-lg text-gray-600">Receive full event details including verified headcounts, rooming lists, meeting and A/V specifications, dietary requirements, and a complete day-by-day schedule to help your team prepare efficiently.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Benefit Card 3 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                📞
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Simplified Communication</h3>
-                            <p class="text-lg text-gray-600">No more chasing multiple contacts. One dedicated coordinator handles all pre-event planning, rapid decision-making, and on-site execution—saving your team time and reducing confusion.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Benefit Card 4 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                ✨
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Professional Closeout & Repeat Business</h3>
-                            <p class="text-lg text-gray-600">Streamlined post-event reconciliation and complete documentation for your records. High-performing properties earn priority placement for future contracts—turning one event into ongoing revenue.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Benefit Card 6 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                🎯
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Expert-Guided Access to Federal Buyers</h3>
-                            <p class="text-lg text-gray-600">Leverage CREATA Global's proven track record and deep government relationships to access opportunities you couldn't reach alone—without the complexity of federal procurement regulations.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Benefit Card 7 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                💳
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Simplified Payment Processing</h3>
-                            <p class="text-lg text-gray-600">CREATA handles all government invoicing and payment processing through official federal systems—eliminating complex paperwork and ensuring timely NET30 payments to your property.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Benefit Card 8 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                ⭐
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Preferred Network Benefits</h3>
-                            <p class="text-lg text-gray-600">Early partners receive priority placement, first access to high-value contracts, exclusive training resources, and enhanced visibility to government buyers—building your competitive advantage from day one.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Benefit Card 9 -->
-                <div class="card-hover bg-white p-10 rounded-2xl shadow-md">
-                    <div class="flex items-start">
-                        <div class="flex-shrink-0 mr-6">
-                            <div class="w-16 h-16 gradient-bg rounded-xl flex items-center justify-center text-white text-3xl">
-                                🎁
-                            </div>
-                        </div>
-                        <div>
-                            <h3 class="text-2xl font-bold mb-3">Early Access Advantage</h3>
-                            <p class="text-lg text-gray-600">Reserve your spot in the FEDEVENT network with no upfront fee. Early registrants will begin receiving upcoming opportunity notices and communications before the official launch—positioning your property ahead of the competition for federal event contracts.</p>
-                        </div>
-                    </div>
+                <!-- Carousel Dots -->
+                <div class="flex justify-center gap-3 mt-8">
+                    <template x-for="i in totalSlides" :key="i">
+                        <button @click="currentSlide = i - 1" 
+                                :class="currentSlide === i - 1 ? 'bg-usa-blue w-12' : 'bg-gray-300 w-3'"
+                                class="h-3 rounded-full transition-all duration-300 hover:bg-usa-red">
+                        </button>
+                    </template>
                 </div>
             </div>
             
@@ -457,20 +513,37 @@
     <!-- Lead Capture Form Section -->
     <section id="waitlist" class="relative z-10 py-24 bg-white">
         <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
+            <div x-show="!showSuccess" x-transition class="text-center mb-16">
                 <h2 class="text-5xl md:text-6xl font-bold mb-8">Join the Waitlist</h2>
                 <p class="text-2xl text-gray-600">Be the first to know when FEDEVENT launches. Register your interest today.</p>
             </div>
             
             <!-- Success Message -->
-            <div x-show="showSuccess" x-transition class="mb-8 bg-blue-50 border-4 border-usa-blue rounded-2xl p-6 text-center">
-                <h3 class="text-2xl font-black text-usa-blue mb-2">Thank You!</h3>
-                <div x-show="userCode" class="my-4 p-4 patriotic-gradient rounded-xl">
-                    <p class="text-white text-sm mb-2 font-semibold">Your Unique User Code</p>
-                    <p x-text="userCode" class="text-white text-3xl font-black tracking-wider"></p>
+            <div x-show="showSuccess" x-transition class="mb-8 bg-gradient-to-br from-blue-50 to-purple-50 border-4 border-usa-blue rounded-2xl p-8 text-center shadow-2xl">
+                <div class="mb-4">
+                    <span class="text-6xl">🎉</span>
+                </div>
+                <h3 class="text-4xl md:text-5xl font-black text-usa-blue mb-4">Congratulations!</h3>
+                <h4 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">You've Joined the Waitlist</h4>
+                
+                <div x-show="userCode" class="my-6 p-6 patriotic-gradient rounded-xl shadow-lg">
+                    <p class="text-white text-sm mb-2 font-semibold uppercase tracking-wide">Your Unique User Code</p>
+                    <p x-text="userCode" class="text-white text-4xl font-black tracking-wider"></p>
                     <p class="text-white text-xs mt-2 opacity-90">Save this code for future reference</p>
                 </div>
-                <p class="text-gray-700 font-medium">You'll be among the first to be invited when FEDEVENT launches in <span class="font-bold text-usa-red">2026</span>.<br>Check your email for confirmation details.</p>
+                
+                <div class="bg-white rounded-xl p-8 shadow-md mb-4">
+                    <p class="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
+                        We will contact you about upcoming opportunities and leads as soon as they become available. 
+                        Your hotel is now registered in our database as an <span class="font-bold text-usa-blue">eligible property</span> 
+                        for government contract opportunities.
+                    </p>
+                </div>
+                
+                <p class="text-gray-600 font-medium">
+                    You'll be among the first to receive invitations when FEDEVENT launches in <span class="font-bold text-usa-red">2026</span>.<br>
+                    <span class="text-sm">Check your email for confirmation details.</span>
+                </p>
             </div>
             
             <!-- Form -->
@@ -947,10 +1020,21 @@
                     // Build street address (different format for different countries)
                     let streetAddress = '';
                     if (route) {
-                        // International format: "Street Name No: Number, Neighborhood"
-                        streetAddress = route;
-                        if (streetNumber) {
-                            streetAddress += ' ' + streetNumber;
+                        // US/CA format: "Number Street Name" (e.g., "123 Main St")
+                        // International format: "Street Name Number" (e.g., "Main St 123")
+                        if (country === 'US' || country === 'CA') {
+                            // US/Canada: Number first, then street name
+                            if (streetNumber) {
+                                streetAddress = streetNumber + ' ' + route;
+                            } else {
+                                streetAddress = route;
+                            }
+                        } else {
+                            // International: Street name first, then number
+                            streetAddress = route;
+                            if (streetNumber) {
+                                streetAddress += ' ' + streetNumber;
+                            }
                         }
                         if (sublocality) {
                             streetAddress += ', ' + sublocality;
@@ -1137,6 +1221,44 @@
                     this.showSuccess = true;
                     this.userCode = result.userCode || '';
                     
+                    // 🎉 Confetti celebration!
+                    setTimeout(() => {
+                        // Fire confetti from multiple angles
+                        const duration = 99000; // 99 seconds
+                        const animationEnd = Date.now() + duration;
+                        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+                        
+                        function randomInRange(min, max) {
+                            return Math.random() * (max - min) + min;
+                        }
+                        
+                        const interval = setInterval(function() {
+                            const timeLeft = animationEnd - Date.now();
+                            
+                            if (timeLeft <= 0) {
+                                return clearInterval(interval);
+                            }
+                            
+                            const particleCount = 50 * (timeLeft / duration);
+                            
+                            // Fire confetti from left
+                            confetti({
+                                ...defaults,
+                                particleCount,
+                                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                                colors: ['#0A3161', '#B31942', '#FFFFFF', '#0071e3', '#8e44ad']
+                            });
+                            
+                            // Fire confetti from right
+                            confetti({
+                                ...defaults,
+                                particleCount,
+                                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                                colors: ['#0A3161', '#B31942', '#FFFFFF', '#0071e3', '#8e44ad']
+                            });
+                        }, 250);
+                    }, 100);
+                    
                     // Track successful form submission in Google Analytics
                     if (typeof gtag !== 'undefined') {
                         gtag('event', 'generate_lead', {
@@ -1155,9 +1277,12 @@
                     }
                     
                     form.reset();
-                    // Scroll to success message
+                    // Scroll to success message - center it in viewport
                     setTimeout(() => {
-                        document.getElementById('waitlist').scrollIntoView({ behavior: 'smooth' });
+                        const waitlistSection = document.getElementById('waitlist');
+                        const yOffset = -100; // Offset from top
+                        const y = waitlistSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
                     }, 100);
                 } else {
                     alert('There was an error submitting your information. Please try again.');

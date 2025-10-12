@@ -542,9 +542,15 @@ if (process.env.MAINTENANCE === '1' || process.env.MAINTENANCE === 'true') {
   });
 }
 
-// Redirect root to prelaunch page (MUST be before static middleware)
+// Root serves the main site (index.html)
+// Prelaunch page is accessible at /prelaunch or /prelaunch.html
 app.get('/', (req, res) => {
-  res.redirect(301, '/prelaunch.html');
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Prelaunch shortcut (also accessible at /prelaunch.html via static files)
+app.get('/prelaunch', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'prelaunch.html'));
 });
 
 // Serve static files from public directory with no cache
@@ -8706,7 +8712,7 @@ app.post('/api/submit', upload.any(), async (req, res) => {
     }
 
     // Validate required fields
-    const requiredFields = ['hotel_name', 'address', 'city', 'country', 'sales_director_name', 'sales_director_email', 'ar_name', 'ar_email'];
+    const requiredFields = ['hotel_name', 'address', 'city', 'country'];
     const missingFields = requiredFields.filter(field => !data[field] || data[field].trim() === '');
     
     if (missingFields.length > 0) {
@@ -8801,8 +8807,7 @@ app.post('/api/submit', upload.any(), async (req, res) => {
           
           <div style="background:#f0fdf4; padding:1rem; border-radius:8px; margin:1rem 0;">
             <h3 style="color:#166534; margin-top:0;">Contact Information</h3>
-            <p><strong>Sales Director:</strong> ${data.sales_director_name || 'Not provided'} (${data.sales_director_email || 'No email'})</p>
-            <p><strong>A/R Contact:</strong> ${data.ar_name || 'Not provided'} (${data.ar_email || 'No email'})</p>
+            <p><strong>Primary Contact:</strong> ${data.primary_contact_name || 'Not provided'} (${data.primary_contact_email || 'No email'})</p>
             ${data.csm_name ? `<p><strong>CSM:</strong> ${data.csm_name} (${data.csm_email || 'No email'})</p>` : ''}
           </div>
           

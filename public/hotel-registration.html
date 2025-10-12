@@ -3391,23 +3391,17 @@
                     accept=".pdf,.png,.jpg,.jpeg" 
                     style="margin-top:8px; padding:8px; border:1px solid #d1d5db; border-radius:6px; width:100%;"
                   >
-                  <div class="hint">Supported: PDF, PNG, JPG, JPEG</div>
+                  <div class="hint">Supported: PDF, PNG, JPG, JPEG • Maximum file size: 10MB</div>
                 </div>
               </div>
               
-              <!-- Extraction Options -->
-              <div class="row" style="margin-top:12px; gap:8px;">
-                <div class="col-6" style="display:flex; flex-direction:column;">
-                  <button type="button" id="processFactSheet" class="btn" style="background:#3b82f6; color:white; width:100%; flex:1;">
-                    📄 Simple OCR
+              <!-- AI OCR Extraction Button -->
+              <div class="row" style="margin-top:12px;">
+                <div class="col-12">
+                  <button type="button" id="processFactSheetHybrid" class="btn" style="background:#10b981; color:white; width:100%;">
+                    🤖 Extract Meeting Rooms with AI
                   </button>
-                  <div class="hint" style="margin-top:4px; font-size:0.8rem;">Basic text extraction</div>
-                </div>
-                <div class="col-6" style="display:flex; flex-direction:column;">
-                  <button type="button" id="processFactSheetHybrid" class="btn" style="background:#10b981; color:white; width:100%; flex:1;">
-                    🤖 Smart OCR + AI
-                  </button>
-                  <div class="hint" style="margin-top:4px; font-size:0.8rem;">AI-validated extraction (recommended)</div>
+                  <div class="hint" style="margin-top:4px; font-size:0.8rem; text-align:center;">AI will automatically extract room names, dimensions, and capacities from your document</div>
                 </div>
               </div>
               
@@ -5420,6 +5414,12 @@
     console.log('🔴 Signed in status:', signedIn, window.signedIn);
     
     try {
+      // Serialize meeting rooms data before collecting form data
+      if (typeof serializeMeetingRooms === 'function') {
+        serializeMeetingRooms();
+        console.log('🔴 Meeting rooms data serialized');
+      }
+      
       // Get all form data
       const form = document.getElementById('hotel-form');
       if (!form) {
@@ -6679,6 +6679,11 @@ Thank you!`;
         console.log('🟢 Removing meeting room');
         roomDiv.remove();
         
+        // Serialize meeting rooms before saving
+        if (typeof serializeMeetingRooms === 'function') {
+          serializeMeetingRooms();
+        }
+        
         // Auto-save after removing room
         if (signedIn || window.signedIn) {
           setTimeout(() => {
@@ -6692,6 +6697,11 @@ Thank you!`;
     const inputs = clone.querySelectorAll('input, select');
     inputs.forEach(input => {
       input.addEventListener('change', function() {
+        // Serialize meeting rooms before saving
+        if (typeof serializeMeetingRooms === 'function') {
+          serializeMeetingRooms();
+        }
+        
         if (signedIn || window.signedIn) {
           setTimeout(() => {
             handleSaveDraft('room-data-change');
@@ -6716,6 +6726,11 @@ Thank you!`;
     setTimeout(() => {
       setupAreaConversion();
     }, 100);
+    
+    // Serialize meeting rooms before saving
+    if (typeof serializeMeetingRooms === 'function') {
+      serializeMeetingRooms();
+    }
     
     // Auto-save after adding room
     if (signedIn || window.signedIn) {
@@ -6786,86 +6801,15 @@ Thank you!`;
     updateProgressIndicator();
   }
   
-  // Add Meeting Room Function
-  function addMeetingRoom() {
-    console.log('🟢 Adding new meeting room');
-    
-    const template = document.getElementById('room-template');
-    const rooms = document.getElementById('rooms');
-    
-    if (!template) {
-      console.error('🟢 Room template not found!');
-      return;
-    }
-    
-    if (!rooms) {
-      console.error('🟢 Rooms container not found!');
-      return;
-    }
-    
-    const clone = template.content.cloneNode(true);
-    const roomDiv = clone.querySelector('.room');
-    
-    // Add remove button functionality
-    const removeBtn = clone.querySelector('.remove-room');
-    if (removeBtn) {
-      removeBtn.addEventListener('click', function() {
-        console.log('🟢 Removing meeting room');
-        roomDiv.remove();
-        
-        // Auto-save after removing room
-        if (signedIn || window.signedIn) {
-          setTimeout(() => {
-            handleSaveDraft('room-removed');
-          }, 500);
-        }
-      });
-    }
-    
-    // Add auto-save listeners to room inputs
-    const inputs = clone.querySelectorAll('input, select');
-    inputs.forEach(input => {
-      input.addEventListener('change', function() {
-        if (signedIn || window.signedIn) {
-          setTimeout(() => {
-            handleSaveDraft('room-data-change');
-          }, 1000);
-        }
-      });
-    });
-    
-    rooms.appendChild(clone);
-    
-    // Focus on the room name field
-    const nameInput = roomDiv.querySelector('input[name="room_name[]"]');
-    if (nameInput) {
-      setTimeout(() => {
-        nameInput.focus();
-      }, 100);
-    }
-    
-    console.log('🟢 Meeting room added successfully');
-    
-    // Setup area conversion for the new room
-    setTimeout(() => {
-      setupAreaConversion();
-    }, 100);
-    
-    // Auto-save after adding room
-    if (signedIn || window.signedIn) {
-      setTimeout(() => {
-        handleSaveDraft('room-added');
-      }, 500);
-    }
-  }
-  
   // Update step indicators
   function updateStepIndicators() {
     steps = Array.from(document.querySelectorAll('.step'));
     
     steps.forEach((step, index) => {
-      const isCompleted = index < current;
-      const isCurrent = index === current;
+      // Steps are 0-indexed, but they map to pages 1-7 (skip page 0)
+      const stepPageNumber = index + 1;
+      const isCompleted = stepPageNumber < current;
+      const isCurrent = stepPageNumber === current;
 
       step.classList.toggle('completed', isCompleted);
       step.classList.toggle('active', isCurrent);
@@ -7048,13 +6992,16 @@ Thank you!`;
       `;
     } else {
       missingFieldsHTML = `
-        <div style="background:#d1fae5; border:2px solid #10b981; border-radius:12px; padding:20px; margin-bottom:20px;">
-          <div style="display:flex; align-items:center; gap:12px;">
-            <div style="font-size:32px; line-height:1;">✅</div>
-            <div>
-              <h3 style="color:#065f46; margin:0 0 8px 0; font-size:1.3rem;">Profile Complete!</h3>
-              <p style="color:#047857; margin:0; font-size:1rem;">
-                All required fields have been filled. You can now proceed to submit your hotel profile.
+        <div style="background:linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%); border:3px solid #10b981; border-radius:16px; padding:32px; margin-bottom:32px; box-shadow:0 8px 24px rgba(16, 185, 129, 0.2);">
+          <div style="display:flex; align-items:center; justify-content:center; gap:16px;">
+            <div style="font-size:64px; line-height:1;">✅</div>
+            <div style="text-align:center;">
+              <h2 style="color:#065f46; margin:0 0 12px 0; font-size:2.5rem; font-weight:800;">LOOKS GOOD!</h2>
+              <p style="color:#047857; margin:0; font-size:1.3rem; font-weight:600;">
+                Your hotel profile is complete and ready to submit!
+              </p>
+              <p style="color:#059669; margin:8px 0 0 0; font-size:1rem; font-weight:500;">
+                Review the details below to ensure everything is correct.
               </p>
             </div>
           </div>
@@ -7180,10 +7127,6 @@ Thank you!`;
           <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(250px, 1fr)); gap:12px;">
             <p style="margin:4px 0; color:#374151;"><strong>Primary Contact:</strong> ${data.primary_contact_name || 'Not provided'}</p>
             <p style="margin:4px 0; color:#374151;"><strong>Primary Email:</strong> ${data.primary_contact_email || 'Not provided'}</p>
-            <p style="margin:4px 0; color:#374151;"><strong>Sales Director:</strong> ${data.sales_director_name || 'Not provided'}</p>
-            <p style="margin:4px 0; color:#374151;"><strong>Sales Email:</strong> ${data.sales_director_email || 'Not provided'}</p>
-            <p style="margin:4px 0; color:#374151;"><strong>A/R Contact:</strong> ${data.ar_name || 'Not provided'}</p>
-            <p style="margin:4px 0; color:#374151;"><strong>A/R Email:</strong> ${data.ar_email || 'Not provided'}</p>
             ${data.csm_name ? `<p style="margin:4px 0; color:#374151;"><strong>CSM:</strong> ${data.csm_name}</p>` : ''}
             ${data.csm_email ? `<p style="margin:4px 0; color:#374151;"><strong>CSM Email:</strong> ${data.csm_email}</p>` : ''}
           </div>
@@ -7211,10 +7154,6 @@ Thank you!`;
     if (!data.hotel_phone || data.hotel_phone.trim() === '') companyMissing.push('Hotel Phone');
     if (!data.primary_contact_name || data.primary_contact_name.trim() === '') companyMissing.push('Primary Contact Name');
     if (!data.primary_contact_email || data.primary_contact_email.trim() === '') companyMissing.push('Primary Contact Email');
-    if (!data.sales_director_name || data.sales_director_name.trim() === '') companyMissing.push('Sales Director Name');
-    if (!data.sales_director_email || data.sales_director_email.trim() === '') companyMissing.push('Sales Director Email');
-    if (!data.ar_name || data.ar_name.trim() === '') companyMissing.push('A/R Contact Name');
-    if (!data.ar_email || data.ar_email.trim() === '') companyMissing.push('A/R Contact Email');
     
     if (companyMissing.length > 0) {
       missingSections.push({
@@ -9492,62 +9431,7 @@ Thank you!`;
       }
     }
 
-    // OCR-based Fact Sheet Processing (Simple)
-    const processFactSheetBtn = document.getElementById('processFactSheet');
-    console.log('🔍 OCR Simple button found:', !!processFactSheetBtn);
-    if (processFactSheetBtn) {
-      console.log('✅ Adding event listener to Simple OCR button');
-      processFactSheetBtn.addEventListener('click', async () => {
-        console.log('🎯 Simple OCR button clicked!');
-        const fileInput = document.getElementById('factSheet');
-        if (!fileInput.files.length) {
-          alert('Please upload a PDF or image file first.');
-          return;
-        }
-
-        const file = fileInput.files[0];
-        const formData = new FormData();
-        formData.append('factSheet', file);
-
-        // Show loading state
-        const statusDiv = document.getElementById('ocr-processing-status');
-        const statusText = document.getElementById('ocr-status-text');
-        processFactSheetBtn.disabled = true;
-        processFactSheetBtn.textContent = '⏳ Processing...';
-        statusDiv.style.display = 'block';
-        statusText.textContent = '📄 Running basic OCR extraction...';
-
-        try {
-          const response = await fetch('/uploadFactSheet', {
-            method: 'POST',
-            body: formData
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Failed to process file');
-          }
-
-          if (data.meetingRooms && data.meetingRooms.length) {
-            displayExtractedRooms(data.meetingRooms, false);
-            alert(`✅ Extracted ${data.meetingRooms.length} meeting room(s)!\n\n⚠️ IMPORTANT: Please double-check all extracted data!\nOCR can misread numbers and text.\n\nVerify:\n• Room names and dimensions\n• Square footage values\n• All seating capacities\n\nScroll down to review before saving.`);
-          } else {
-            alert('No meeting room info found in the file. Please try a different file or use the manual entry option.');
-          }
-        } catch (err) {
-          console.error('📄 Error processing fact sheet:', err);
-          alert('Error processing the file: ' + err.message + '\n\nPlease make sure the server is running and try again.');
-        } finally {
-          // Restore button state
-          processFactSheetBtn.disabled = false;
-          processFactSheetBtn.textContent = '📄 Simple OCR';
-          statusDiv.style.display = 'none';
-        }
-      });
-    }
-
-    // Hybrid OCR + AI Processing
+    // AI OCR + Extraction
     const processFactSheetHybridBtn = document.getElementById('processFactSheetHybrid');
     console.log('🔍 OCR Hybrid button found:', !!processFactSheetHybridBtn);
     if (processFactSheetHybridBtn) {
@@ -9564,25 +9448,33 @@ Thank you!`;
         const formData = new FormData();
         formData.append('factSheet', file);
 
+        // Validate file size (10MB limit)
+        const maxSizeMB = 10;
+        const maxSizeBytes = maxSizeMB * 1024 * 1024;
+        if (file.size > maxSizeBytes) {
+          alert(`File is too large. Maximum file size is ${maxSizeMB}MB.\n\nYour file: ${(file.size / (1024 * 1024)).toFixed(1)}MB\n\nPlease upload a smaller file or compress the PDF.`);
+          return;
+        }
+        
         // Show loading state
         const statusDiv = document.getElementById('ocr-processing-status');
         const statusText = document.getElementById('ocr-status-text');
         processFactSheetHybridBtn.disabled = true;
         processFactSheetHybridBtn.textContent = '⏳ Processing...';
         statusDiv.style.display = 'block';
-        statusText.textContent = '🔄 Step 1/3: Converting PDF pages to images...';
+        statusText.textContent = '📄 Reading your document...';
 
         try {
           // Simulate progress updates (actual progress comes from server logs)
           setTimeout(() => {
             if (statusDiv.style.display === 'block') {
-              statusText.textContent = '📖 Step 2/3: Running Tesseract OCR on pages...';
+              statusText.textContent = '🔍 Finding meeting rooms...';
             }
           }, 2000);
           
           setTimeout(() => {
             if (statusDiv.style.display === 'block') {
-              statusText.textContent = '🤖 Step 3/3: AI validating and normalizing data...';
+              statusText.textContent = '🤖 AI is organizing the data...';
             }
           }, 5000);
 
@@ -9600,21 +9492,21 @@ Thank you!`;
           if (data.meetingRooms && data.meetingRooms.length) {
             displayExtractedRooms(data.meetingRooms, true);
             
-            let message = `✅ AI extracted ${data.meetingRooms.length} meeting room(s)!\n\n⚠️ IMPORTANT: AI can make mistakes!\nPlease carefully review and verify:\n• Room names and square footage\n• Dimensions (length, width, ceiling)\n• All seating capacities\n• Use the Features Table to select room features\n\nScroll down to review all extracted data before saving.`;
+            let message = `✅ Successfully extracted ${data.meetingRooms.length} meeting room${data.meetingRooms.length > 1 ? 's' : ''}!\n\n⚠️ Please review the information below:\n• Room names and square footage\n• Dimensions and ceiling heights\n• Seating capacities\n• Room features (use the Features Table)\n\nScroll down to review and make any corrections.`;
             if (data.warning) {
               message += `\n\n⚠️ ${data.warning}`;
             }
             alert(message);
           } else {
-            alert('No meeting room info found in the file. Please try a different file or use the manual entry option.');
+            alert('Could not find meeting room information in this file.\n\nPlease try:\n• A different file\n• Or add rooms manually using the form above');
           }
         } catch (err) {
           console.error('🔴 Error processing fact sheet:', err);
-          alert('Error processing the file: ' + err.message + '\n\nPlease make sure the server is running and try again.');
+          alert('Unable to process the file.\n\n' + err.message + '\n\nPlease try:\n• A different file\n• Refreshing the page\n• Or contact support if the issue persists');
         } finally {
           // Restore button state
           processFactSheetHybridBtn.disabled = false;
-          processFactSheetHybridBtn.textContent = '🤖 Smart OCR + AI';
+          processFactSheetHybridBtn.textContent = '🤖 Extract Meeting Rooms with AI';
           statusDiv.style.display = 'none';
         }
       });
@@ -11082,6 +10974,12 @@ Thank you!`;
       
       submittingFlag = true; submitting.classList.add('show');
       try{
+        // Serialize meeting rooms data before submission
+        if (typeof serializeMeetingRooms === 'function') {
+          serializeMeetingRooms();
+          console.log('🚀 Meeting rooms serialized before submission');
+        }
+        
         const urlParams = new URLSearchParams(window.location.search);
         const editMode = urlParams.get('mode');
         const fd = new FormData(form);
