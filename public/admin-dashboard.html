@@ -1333,8 +1333,12 @@ You can use these placeholders:
             <!-- Actions (Waitlist - View Only) -->
             <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e5e7eb;">
                 <div style="font-weight: 600; color: #374151;">
-                    Registered Hotels (filled prelaunch form)
+                    <span id="selectedLeadsCount">0</span> selected
                 </div>
+                <button onclick="bulkDeleteHotels()" 
+                        style="background: #dc2626; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    🗑️ Delete Selected
+                </button>
                 <button onclick="exportWaitlistToExcel()" 
                         style="background: #16a34a; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
                     📊 Export to Excel
@@ -2934,12 +2938,8 @@ This action cannot be undone.`)) {
                         <td style="padding: 0.75rem; color: #6b7280;">${signupDate}</td>
                         <td style="padding: 0.75rem;">
                             <button onclick="viewLeadDetails(${lead.id})" 
-                                    style="background: #3b82f6; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600; margin-right: 0.25rem;">
+                                    style="background: #3b82f6; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600;">
                                 View
-                            </button>
-                            <button onclick="confirmDeleteHotel(${lead.id}, '${(lead.hotel_name || '').replace(/'/g, "\\'")}', '${lead.email || ''}')" 
-                                    style="background: #dc2626; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600;">
-                                🗑️ Delete
                             </button>
                         </td>
                     </tr>
@@ -3010,57 +3010,91 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             alert(details);
         }
         
-        // Delete hotel functions
-        function confirmDeleteHotel(leadId, hotelName, email) {
-            const message = `⚠️ CONFIRM DELETION\n\n` +
-                          `Are you sure you want to delete this hotel from the waitlist?\n\n` +
-                          `Hotel: ${hotelName}\n` +
-                          `Email: ${email}\n\n` +
+        // Bulk delete hotel functions
+        function bulkDeleteHotels() {
+            if (selectedLeads.size === 0) {
+                alert('⚠️ No hotels selected\n\nPlease select at least one hotel to delete by checking the checkboxes.');
+                return;
+            }
+            
+            // Get details of selected hotels
+            const selectedHotels = allWaitlist.filter(lead => selectedLeads.has(lead.id));
+            const hotelNames = selectedHotels.map(h => h.hotel_name).join('\n• ');
+            
+            const message = `⚠️ CONFIRM BULK DELETION\n\n` +
+                          `You are about to delete ${selectedLeads.size} hotel(s):\n\n` +
+                          `• ${hotelNames}\n\n` +
                           `This action will:\n` +
-                          `• Remove the hotel from the active waitlist\n` +
-                          `• Move it to the "Deleted Hotels" section\n` +
-                          `• Keep a record for reference\n\n` +
+                          `• Remove these hotels from the active waitlist\n` +
+                          `• Move them to the "Deleted Hotels" section\n` +
+                          `• Keep records for reference\n\n` +
                           `Type "DELETE" to confirm:`;
             
             const confirmation = prompt(message);
             
             if (confirmation === 'DELETE') {
-                deleteHotel(leadId, hotelName, email);
+                executeBulkDelete(selectedHotels);
             } else if (confirmation !== null) {
                 alert('❌ Deletion cancelled. You must type "DELETE" exactly to confirm.');
             }
         }
         
-        async function deleteHotel(leadId, hotelName, email) {
+        async function executeBulkDelete(hotels) {
             try {
                 const sessionId = localStorage.getItem('fedevent_session');
-                const response = await fetch(`${API_BASE}/api/admin/waitlist/${leadId}`, {
-                    method: 'DELETE',
-                    headers: { 
-                        'Authorization': `Bearer ${sessionId}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        hotel_name: hotelName,
-                        email: email,
-                        deleted_by: currentUser?.email || 'admin',
-                        deleted_reason: 'Manual deletion from admin dashboard'
-                    })
-                });
+                let successCount = 0;
+                let failCount = 0;
                 
-                if (!response.ok) {
-                    throw new Error('Failed to delete hotel');
+                // Show progress
+                const totalCount = hotels.length;
+                console.log(`Starting bulk delete of ${totalCount} hotels...`);
+                
+                for (const hotel of hotels) {
+                    try {
+                        const response = await fetch(`${API_BASE}/api/admin/waitlist/${hotel.id}`, {
+                            method: 'DELETE',
+                            headers: { 
+                                'Authorization': `Bearer ${sessionId}`,
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                hotel_name: hotel.hotel_name,
+                                email: hotel.email,
+                                deleted_by: currentUser?.email || 'admin',
+                                deleted_reason: 'Bulk deletion from admin dashboard'
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            successCount++;
+                            console.log(`Deleted: ${hotel.hotel_name}`);
+                        } else {
+                            failCount++;
+                            console.error(`Failed to delete: ${hotel.hotel_name}`);
+                        }
+                    } catch (error) {
+                        failCount++;
+                        console.error(`Error deleting ${hotel.hotel_name}:`, error);
+                    }
                 }
                 
-                const result = await response.json();
-                alert(`✅ Hotel "${hotelName}" has been deleted successfully.\n\nThe record has been moved to the Deleted Hotels section.`);
+                // Show results
+                let resultMessage = `✅ Bulk Deletion Complete\n\n`;
+                resultMessage += `Successfully deleted: ${successCount} hotel(s)\n`;
+                if (failCount > 0) {
+                    resultMessage += `Failed: ${failCount} hotel(s)\n`;
+                }
+                resultMessage += `\nThe deleted records have been moved to the Deleted Hotels section.`;
                 
-                // Reload the waitlist
+                alert(resultMessage);
+                
+                // Clear selection and reload
+                selectedLeads.clear();
                 await loadWaitlist();
                 
             } catch (error) {
-                console.error('Delete hotel error:', error);
-                alert(`❌ Failed to delete hotel: ${error.message}`);
+                console.error('Bulk delete error:', error);
+                alert(`❌ Failed to complete bulk deletion: ${error.message}`);
             }
         }
         
