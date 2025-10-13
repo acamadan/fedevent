@@ -440,3 +440,4 @@ process.on('SIGINT', () => {
   process.exit(0);
 });
 
+// Deployment trigger - Mon Oct 13 12:46:33 EDT 2025
