@@ -498,6 +498,7 @@
                     
                     // Store session
                     localStorage.setItem('sessionId', result.sessionId);
+                    localStorage.setItem('fedevent_session', result.sessionId);
                     localStorage.setItem('user', JSON.stringify(result.user));
                     
                     message.innerHTML = '<div class="success">Login successful! Redirecting...</div>';

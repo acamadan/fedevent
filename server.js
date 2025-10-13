@@ -1276,6 +1276,37 @@ try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN accepts_discount TEXT`); } cat
 try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN country TEXT`); } catch (e) {}
 try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN zip_code TEXT`); } catch (e) {}
 
+// Email contacts table - for invitation campaigns (separate from registered waitlist)
+try { 
+  db.exec(`CREATE TABLE IF NOT EXISTS email_contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    email TEXT UNIQUE NOT NULL,
+    hotel_name TEXT NOT NULL,
+    contact_name TEXT NOT NULL,
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    zip_code TEXT,
+    country TEXT,
+    phone TEXT,
+    title TEXT,
+    notes TEXT,
+    priority_level TEXT DEFAULT 'normal',
+    invitation_status TEXT DEFAULT 'not_invited',
+    invited_at TEXT,
+    invited_by INTEGER,
+    registered TEXT DEFAULT 'No',
+    registered_lead_id INTEGER,
+    last_contacted_at TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (invited_by) REFERENCES users (id),
+    FOREIGN KEY (registered_lead_id) REFERENCES hotel_leads (id)
+  )`);
+  console.log('✅ Email contacts table created');
+} catch (e) {
+  if (!e.message.includes('already exists')) console.log('Email contacts table already exists');
+}
+
 // Link prelaunch codes to main hotel accounts (migration)
 try {
   db.exec(`ALTER TABLE hotels ADD COLUMN prelaunch_code TEXT UNIQUE`);
@@ -3458,6 +3489,24 @@ app.post('/api/leads', async (req, res) => {
     
     console.log(`✅ New prelaunch lead: ${userCode} - ${hotelName} (${city}, ${state})`);
 
+    // Check if this email was in email_contacts (invitation campaign)
+    // If yes, mark them as registered and link to this lead
+    try {
+      const emailContact = db.prepare('SELECT id FROM email_contacts WHERE email = ?').get(email);
+      if (emailContact) {
+        db.prepare(`
+          UPDATE email_contacts
+          SET registered = 'Yes',
+              registered_lead_id = ?
+          WHERE id = ?
+        `).run(leadId, emailContact.id);
+        console.log(`✅ Linked email contact ${email} to waitlist lead ${leadId}`);
+      }
+    } catch (linkError) {
+      console.error('Error linking email contact to lead:', linkError);
+      // Continue anyway - lead is saved
+    }
+
     // Send notification email if configured
     if (process.env.NOTIFY_TO && process.env.SMTP_HOST) {
       const subject = '🎯 New FEDEVENT Hotel Waitlist Signup';
@@ -5083,7 +5132,7 @@ app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet('Hotel Waitlist');
     
-    // Define columns
+    // Define columns with CRM tracking fields
     worksheet.columns = [
       { header: 'User Code', key: 'user_code', width: 15 },
       { header: 'Hotel Name', key: 'hotel_name', width: 30 },
@@ -5102,7 +5151,13 @@ app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res
       { header: 'Accepts Direct Bill (No App)', key: 'accepts_po', width: 20 },
       { header: '30% Discount', key: 'accepts_discount', width: 15 },
       { header: 'Interests', key: 'interests', width: 40 },
-      { header: 'Registered Date', key: 'created_at', width: 20 }
+      { header: 'Priority Level', key: 'priority_level', width: 15 },
+      { header: 'Invitation Status', key: 'invitation_status', width: 18 },
+      { header: 'Invited Date', key: 'invited_at', width: 20 },
+      { header: 'Registration Status', key: 'registration_status', width: 20 },
+      { header: 'Last Contacted', key: 'last_contacted_at', width: 20 },
+      { header: 'Notes', key: 'notes', width: 40 },
+      { header: 'Signed Up Date', key: 'created_at', width: 20 }
     ];
     
     // Style header row
@@ -5114,9 +5169,9 @@ app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res
     };
     worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
     
-    // Add data rows
+    // Add data rows with CRM tracking fields
     leads.forEach(lead => {
-      worksheet.addRow({
+      const row = worksheet.addRow({
         user_code: lead.user_code,
         hotel_name: lead.hotel_name,
         hotel_address: lead.hotel_address,
@@ -5134,8 +5189,24 @@ app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res
         accepts_po: lead.accepts_po,
         accepts_discount: lead.accepts_discount || 'No',
         interests: lead.interests,
+        priority_level: lead.priority_level || 'normal',
+        invitation_status: lead.invitation_status || 'not_invited',
+        invited_at: lead.invited_at || '',
+        registration_status: lead.registration_status || 'waitlist',
+        last_contacted_at: lead.last_contacted_at || '',
+        notes: lead.notes || '',
         created_at: lead.created_at
       });
+      
+      // Color code registration status
+      const statusCell = row.getCell('registration_status');
+      if (lead.registration_status === 'registered') {
+        statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF92D050' } };
+      } else if (lead.registration_status === 'active') {
+        statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF00B050' } };
+      } else if (lead.invitation_status === 'invited') {
+        statusCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
+      }
     });
     
     // Set response headers
@@ -5149,6 +5220,662 @@ app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res
   } catch (error) {
     console.error('Error exporting waitlist:', error);
     return fail(res, 500, 'Failed to export waitlist data');
+  }
+});
+
+// Get all email contacts (Admin only) - for invitation campaigns
+app.get('/api/admin/email-contacts', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const contacts = db.prepare(`
+      SELECT * FROM email_contacts
+      ORDER BY created_at DESC
+    `).all();
+    
+    return ok(res, { contacts });
+  } catch (error) {
+    console.error('Error fetching email contacts:', error);
+    return fail(res, 500, 'Failed to fetch email contacts');
+  }
+});
+
+// Bulk send invitations to email contacts (Admin only)
+app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { contactIds, emailSubject, emailBody, sendEmail = true } = req.body;
+    
+    if (!Array.isArray(contactIds) || contactIds.length === 0) {
+      return fail(res, 400, 'Contact IDs array is required');
+    }
+    
+    const adminUserId = req.user.id;
+    const invitedAt = new Date().toISOString();
+    let successCount = 0;
+    let failedEmails = [];
+    
+    for (const contactId of contactIds) {
+      try {
+        const contact = db.prepare('SELECT * FROM email_contacts WHERE id = ?').get(contactId);
+        if (!contact) continue;
+        
+        // Update invitation status
+        db.prepare(`
+          UPDATE email_contacts 
+          SET invitation_status = 'invited',
+              invited_at = ?,
+              invited_by = ?,
+              last_contacted_at = ?
+          WHERE id = ?
+        `).run(invitedAt, adminUserId, invitedAt, contactId);
+        
+        // Send invitation email if enabled
+        if (sendEmail && transporter) {
+          try {
+            const subject = emailSubject || `Join FEDEVENT - Your Invitation`;
+            const body = emailBody || `
+              <h2>You're Invited to Join FEDEVENT!</h2>
+              <p>Dear ${contact.contact_name},</p>
+              <p>We're excited to invite ${contact.hotel_name} to join the FEDEVENT platform for federal government lodging contracts.</p>
+              <p><strong>Complete your registration here:</strong><br>
+              <a href="${process.env.BASE_URL || 'https://fedevent.com'}/prelaunch.html">${process.env.BASE_URL || 'https://fedevent.com'}/prelaunch.html</a></p>
+              <p>Join hundreds of hotels already serving federal travelers!</p>
+              <p>Best regards,<br>FEDEVENT Team</p>
+            `;
+            
+            await transporter.sendMail({
+              from: process.env.SMTP_FROM || 'noreply@fedevent.com',
+              to: contact.email,
+              subject: subject,
+              html: body
+            });
+            successCount++;
+          } catch (emailError) {
+            console.error(`Failed to send email to ${contact.email}:`, emailError);
+            failedEmails.push({ email: contact.email, error: emailError.message });
+          }
+        } else {
+          successCount++;
+        }
+      } catch (error) {
+        console.error(`Error processing contact ${contactId}:`, error);
+      }
+    }
+    
+    return ok(res, { 
+      message: `Invitations sent to ${successCount} contacts`,
+      successCount,
+      totalProcessed: contactIds.length,
+      failedEmails: failedEmails.length > 0 ? failedEmails : undefined
+    });
+  } catch (error) {
+    console.error('Error sending bulk invitations:', error);
+    return fail(res, 500, 'Failed to send invitations');
+  }
+});
+
+// Export email contacts to Excel (Admin only)
+app.get('/api/admin/email-contacts/export', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const contacts = db.prepare(`
+      SELECT * FROM email_contacts
+      ORDER BY created_at DESC
+    `).all();
+    
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Email Contacts');
+    
+    worksheet.columns = [
+      { header: 'Email', key: 'email', width: 30 },
+      { header: 'Hotel Name', key: 'hotel_name', width: 30 },
+      { header: 'Contact Name', key: 'contact_name', width: 25 },
+      { header: 'Address', key: 'address', width: 40 },
+      { header: 'City', key: 'city', width: 20 },
+      { header: 'State', key: 'state', width: 10 },
+      { header: 'Zip Code', key: 'zip_code', width: 12 },
+      { header: 'Country', key: 'country', width: 15 },
+      { header: 'Phone', key: 'phone', width: 15 },
+      { header: 'Priority Level', key: 'priority_level', width: 15 },
+      { header: 'Invitation Status', key: 'invitation_status', width: 18 },
+      { header: 'Invited Date', key: 'invited_at', width: 20 },
+      { header: 'Registered', key: 'registered', width: 12 },
+      { header: 'Notes', key: 'notes', width: 40 }
+    ];
+    
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF7c3aed' }
+    };
+    
+    contacts.forEach(contact => {
+      const row = worksheet.addRow(contact);
+      
+      // Color code by status
+      if (contact.registered === 'Yes') {
+        row.getCell('registered').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF92D050' } };
+      } else if (contact.invitation_status === 'invited') {
+        row.getCell('invitation_status').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFC000' } };
+      }
+    });
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=email-contacts-${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Error exporting email contacts:', error);
+    return fail(res, 500, 'Failed to export email contacts');
+  }
+});
+
+// Bulk send invitations to waitlist leads (Admin only)
+app.post('/api/admin/waitlist/bulk-invite', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { leadIds, emailSubject, emailBody, sendEmail = true } = req.body;
+    
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return fail(res, 400, 'Lead IDs array is required');
+    }
+    
+    const adminUserId = req.user.id;
+    const invitedAt = new Date().toISOString();
+    let successCount = 0;
+    let failedEmails = [];
+    
+    for (const leadId of leadIds) {
+      try {
+        const lead = db.prepare('SELECT * FROM hotel_leads WHERE id = ?').get(leadId);
+        if (!lead) continue;
+        
+        // Update invitation status
+        db.prepare(`
+          UPDATE hotel_leads 
+          SET invitation_status = 'invited',
+              invited_at = ?,
+              invited_by = ?,
+              last_contacted_at = ?
+          WHERE id = ?
+        `).run(invitedAt, adminUserId, invitedAt, leadId);
+        
+        // Send invitation email if enabled
+        if (sendEmail && transporter) {
+          try {
+            const subject = emailSubject || `Welcome to FEDEVENT - Your Registration Code: ${lead.user_code}`;
+            const body = emailBody || `
+              <h2>Welcome to FEDEVENT!</h2>
+              <p>Dear ${lead.contact_name},</p>
+              <p>Thank you for your interest in FEDEVENT. We're excited to invite you to complete your hotel registration.</p>
+              <p><strong>Your unique registration code: ${lead.user_code}</strong></p>
+              <p>Use this code to complete your registration at: <a href="${process.env.BASE_URL || 'https://fedevent.com'}/hotel-registration.html">${process.env.BASE_URL || 'https://fedevent.com'}/hotel-registration.html</a></p>
+              <p>If you have any questions, please don't hesitate to reach out.</p>
+              <p>Best regards,<br>FEDEVENT Team</p>
+            `;
+            
+            await transporter.sendMail({
+              from: process.env.SMTP_FROM || 'noreply@fedevent.com',
+              to: lead.email,
+              subject: subject,
+              html: body
+            });
+            successCount++;
+          } catch (emailError) {
+            console.error(`Failed to send email to ${lead.email}:`, emailError);
+            failedEmails.push({ email: lead.email, error: emailError.message });
+          }
+        } else {
+          successCount++;
+        }
+      } catch (error) {
+        console.error(`Error processing lead ${leadId}:`, error);
+      }
+    }
+    
+    return ok(res, { 
+      message: `Invitation status updated for ${successCount} leads`,
+      successCount,
+      totalProcessed: leadIds.length,
+      failedEmails: failedEmails.length > 0 ? failedEmails : undefined
+    });
+  } catch (error) {
+    console.error('Error sending bulk invitations:', error);
+    return fail(res, 500, 'Failed to send invitations');
+  }
+});
+
+// Update single lead status (Admin only)
+app.put('/api/admin/waitlist/:id', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const leadId = req.params.id;
+    const { 
+      invitation_status, 
+      registration_status, 
+      priority_level, 
+      notes,
+      last_contacted_at 
+    } = req.body;
+    
+    const lead = db.prepare('SELECT * FROM hotel_leads WHERE id = ?').get(leadId);
+    if (!lead) {
+      return fail(res, 404, 'Lead not found');
+    }
+    
+    const updates = [];
+    const params = [];
+    
+    if (invitation_status) {
+      updates.push('invitation_status = ?');
+      params.push(invitation_status);
+      if (invitation_status === 'invited' && !lead.invited_at) {
+        updates.push('invited_at = ?');
+        params.push(new Date().toISOString());
+        updates.push('invited_by = ?');
+        params.push(req.user.id);
+      }
+    }
+    
+    if (registration_status) {
+      updates.push('registration_status = ?');
+      params.push(registration_status);
+    }
+    
+    if (priority_level) {
+      updates.push('priority_level = ?');
+      params.push(priority_level);
+    }
+    
+    if (notes !== undefined) {
+      updates.push('notes = ?');
+      params.push(notes);
+    }
+    
+    if (last_contacted_at !== undefined) {
+      updates.push('last_contacted_at = ?');
+      params.push(last_contacted_at || new Date().toISOString());
+    }
+    
+    if (updates.length === 0) {
+      return fail(res, 400, 'No valid fields to update');
+    }
+    
+    params.push(leadId);
+    db.prepare(`UPDATE hotel_leads SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+    
+    const updatedLead = db.prepare('SELECT * FROM hotel_leads WHERE id = ?').get(leadId);
+    return ok(res, { lead: updatedLead });
+  } catch (error) {
+    console.error('Error updating lead:', error);
+    return fail(res, 500, 'Failed to update lead');
+  }
+});
+
+// Bulk update lead statuses (Admin only)
+app.put('/api/admin/waitlist/bulk-update', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const { leadIds, updates } = req.body;
+    
+    if (!Array.isArray(leadIds) || leadIds.length === 0) {
+      return fail(res, 400, 'Lead IDs array is required');
+    }
+    
+    if (!updates || typeof updates !== 'object') {
+      return fail(res, 400, 'Updates object is required');
+    }
+    
+    const updateFields = [];
+    const params = [];
+    
+    if (updates.invitation_status) {
+      updateFields.push('invitation_status = ?');
+      params.push(updates.invitation_status);
+    }
+    
+    if (updates.registration_status) {
+      updateFields.push('registration_status = ?');
+      params.push(updates.registration_status);
+    }
+    
+    if (updates.priority_level) {
+      updateFields.push('priority_level = ?');
+      params.push(updates.priority_level);
+    }
+    
+    if (updates.notes !== undefined) {
+      updateFields.push('notes = ?');
+      params.push(updates.notes);
+    }
+    
+    if (updateFields.length === 0) {
+      return fail(res, 400, 'No valid fields to update');
+    }
+    
+    const placeholders = leadIds.map(() => '?').join(',');
+    const query = `UPDATE hotel_leads SET ${updateFields.join(', ')} WHERE id IN (${placeholders})`;
+    const result = db.prepare(query).run(...params, ...leadIds);
+    
+    return ok(res, { 
+      message: 'Leads updated successfully',
+      updatedCount: result.changes
+    });
+  } catch (error) {
+    console.error('Error bulk updating leads:', error);
+    return fail(res, 500, 'Failed to bulk update leads');
+  }
+});
+
+// Sync registered hotels with waitlist (Admin only) - automatically marks leads as registered
+app.post('/api/admin/waitlist/sync-registered', requireAuth, requireAdmin, (req, res) => {
+  try {
+    // Get all registered hotels
+    const hotels = db.prepare(`
+      SELECT h.id, h.email, h.prelaunch_code 
+      FROM hotels h
+      WHERE h.email IS NOT NULL
+    `).all();
+    
+    let syncedCount = 0;
+    const syncResults = [];
+    
+    for (const hotel of hotels) {
+      // Try to match by email first
+      let lead = db.prepare('SELECT * FROM hotel_leads WHERE email = ?').get(hotel.email);
+      
+      // If not found and hotel has prelaunch code, try matching by code
+      if (!lead && hotel.prelaunch_code) {
+        lead = db.prepare('SELECT * FROM hotel_leads WHERE user_code = ?').get(hotel.prelaunch_code);
+      }
+      
+      if (lead) {
+        // Update lead to mark as registered
+        db.prepare(`
+          UPDATE hotel_leads 
+          SET registration_status = 'registered',
+              registered_hotel_id = ?
+          WHERE id = ?
+        `).run(hotel.id, lead.id);
+        
+        // Link hotel to lead if prelaunch code exists
+        if (lead.user_code && !hotel.prelaunch_code) {
+          db.prepare('UPDATE hotels SET prelaunch_code = ? WHERE id = ?').run(lead.user_code, hotel.id);
+        }
+        
+        syncedCount++;
+        syncResults.push({
+          leadId: lead.id,
+          hotelId: hotel.id,
+          hotelEmail: hotel.email,
+          matched: 'email'
+        });
+      }
+    }
+    
+    return ok(res, { 
+      message: `Synced ${syncedCount} registered hotels with waitlist`,
+      syncedCount,
+      details: syncResults
+    });
+  } catch (error) {
+    console.error('Error syncing registered hotels:', error);
+    return fail(res, 500, 'Failed to sync registered hotels');
+  }
+});
+
+// Export registered hotels list for XLOOKUP matching (Admin only)
+app.get('/api/admin/hotels/export-emails', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const hotels = db.prepare(`
+      SELECT h.email, h.name, h.created_at
+      FROM hotels h
+      WHERE h.email IS NOT NULL
+      ORDER BY h.created_at DESC
+    `).all();
+    
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Registered Hotels');
+    
+    worksheet.columns = [
+      { header: 'Email', key: 'email', width: 40 },
+      { header: 'Hotel Name', key: 'name', width: 30 },
+      { header: 'Registration Date', key: 'created_at', width: 20 }
+    ];
+    
+    // Style header
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF00B050' }
+    };
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    
+    hotels.forEach(hotel => {
+      worksheet.addRow({
+        email: hotel.email,
+        name: hotel.name,
+        created_at: hotel.created_at
+      });
+    });
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=registered-hotels-${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Error exporting registered hotels:', error);
+    return fail(res, 500, 'Failed to export registered hotels');
+  }
+});
+
+// Import email contacts from CSV (Admin only) - for invitation campaigns
+app.post('/api/admin/email-contacts/import-csv', requireAuth, requireAdmin, upload.single('csvFile'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return fail(res, 400, 'No file uploaded');
+    }
+    
+    const filePath = req.file.path;
+    const fileContent = fs.readFileSync(filePath, 'utf8');
+    
+    // Parse CSV using csv-parse
+    const { parse } = await import('csv-parse/sync');
+    const records = parse(fileContent, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true,
+      bom: true // Handle UTF-8 BOM
+    });
+    
+    if (records.length === 0) {
+      fs.unlinkSync(filePath); // Clean up
+      return fail(res, 400, 'CSV file is empty or invalid');
+    }
+    
+    let imported = 0;
+    let skipped = 0;
+    let updated = 0;
+    const errors = [];
+    
+    for (const record of records) {
+      try {
+        // Map CSV columns to database fields (flexible mapping)
+        const email = record.Email || record.email || record.EMAIL || record['Contact Email'];
+        const hotelName = record['Hotel Name'] || record.hotel_name || record.HotelName || record.Hotel;
+        const contactName = record['Contact Name'] || record.contact_name || record.ContactName || record.Contact;
+        
+        // Skip if missing required fields
+        if (!email || !hotelName || !contactName) {
+          skipped++;
+          errors.push(`Row skipped: Missing required fields (email: ${email}, hotel: ${hotelName}, contact: ${contactName})`);
+          continue;
+        }
+        
+        // Check if contact already exists in email_contacts table
+        const existing = db.prepare('SELECT id FROM email_contacts WHERE email = ?').get(email);
+        
+        // Also check if they're already in the registered waitlist
+        const alreadyRegistered = db.prepare('SELECT id FROM hotel_leads WHERE email = ?').get(email);
+        if (alreadyRegistered) {
+          skipped++;
+          errors.push(`Row skipped: ${email} already registered in waitlist`);
+          continue;
+        }
+        
+        if (existing) {
+          // Update existing email contact
+          const updates = [];
+          const params = [];
+          
+          if (hotelName) { updates.push('hotel_name = ?'); params.push(hotelName); }
+          if (contactName) { updates.push('contact_name = ?'); params.push(contactName); }
+          if (record.Title || record.title) { updates.push('title = ?'); params.push(record.Title || record.title); }
+          if (record.Phone || record.phone) { updates.push('phone = ?'); params.push(record.Phone || record.phone); }
+          if (record.City || record.city) { updates.push('city = ?'); params.push(record.City || record.city); }
+          if (record.State || record.state) { updates.push('state = ?'); params.push(record.State || record.state); }
+          if (record.Country || record.country) { updates.push('country = ?'); params.push(record.Country || record.country); }
+          if (record['Zip Code'] || record.zip_code) { updates.push('zip_code = ?'); params.push(record['Zip Code'] || record.zip_code); }
+          if (record.Address || record.address) { updates.push('address = ?'); params.push(record.Address || record.address); }
+          if (record.Notes || record.notes) { updates.push('notes = ?'); params.push(record.Notes || record.notes); }
+          if (record['Priority Level'] || record.priority_level) { updates.push('priority_level = ?'); params.push(record['Priority Level'] || record.priority_level); }
+          
+          if (updates.length > 0) {
+            params.push(existing.id);
+            db.prepare(`UPDATE email_contacts SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+            updated++;
+          } else {
+            skipped++;
+          }
+        } else {
+          // Insert new email contact
+          db.prepare(`
+            INSERT INTO email_contacts (
+              email, hotel_name, contact_name, address, city, state, zip_code, country,
+              phone, title, notes, priority_level, invitation_status, registered
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+          `).run(
+            email,
+            hotelName,
+            contactName,
+            record.Address || record.address || null,
+            record.City || record.city || null,
+            record.State || record.state || null,
+            record['Zip Code'] || record.zip_code || null,
+            record.Country || record.country || 'USA',
+            record.Phone || record.phone || null,
+            record.Title || record.title || null,
+            record.Notes || record.notes || null,
+            record['Priority Level'] || record.priority_level || 'normal',
+            'not_invited',
+            'No'
+          );
+          
+          imported++;
+        }
+      } catch (rowError) {
+        console.error('Error processing row:', rowError);
+        errors.push(`Error processing row: ${rowError.message}`);
+        skipped++;
+      }
+    }
+    
+    // Clean up uploaded file
+    fs.unlinkSync(filePath);
+    
+    return ok(res, {
+      message: 'CSV import completed',
+      totalRows: records.length,
+      imported,
+      updated,
+      skipped,
+      errors: errors.length > 0 ? errors.slice(0, 10) : undefined // Return first 10 errors
+    });
+  } catch (error) {
+    console.error('CSV import error:', error);
+    if (req.file && fs.existsSync(req.file.path)) {
+      fs.unlinkSync(req.file.path);
+    }
+    return fail(res, 500, `Failed to import CSV: ${error.message}`);
+  }
+});
+
+// Download CSV import template (Admin only)
+app.get('/api/admin/waitlist/csv-template', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const ExcelJS = (await import('exceljs')).default;
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet('Hotel Leads Import Template');
+    
+    // Define columns matching import expectations
+    worksheet.columns = [
+      { header: 'Hotel Name*', key: 'hotel_name', width: 30 },
+      { header: 'Contact Name*', key: 'contact_name', width: 25 },
+      { header: 'Email*', key: 'email', width: 30 },
+      { header: 'Title', key: 'title', width: 25 },
+      { header: 'Phone', key: 'phone', width: 15 },
+      { header: 'Hotel Phone', key: 'hotel_phone', width: 15 },
+      { header: 'Address', key: 'hotel_address', width: 40 },
+      { header: 'City', key: 'city', width: 20 },
+      { header: 'State', key: 'state', width: 15 },
+      { header: 'Zip Code', key: 'zip_code', width: 12 },
+      { header: 'Country', key: 'country', width: 15 },
+      { header: 'Indoor Property', key: 'indoor_property', width: 15 },
+      { header: 'Accepts NET30', key: 'accepts_net30', width: 15 },
+      { header: 'Accepts Direct Bill', key: 'accepts_po', width: 20 },
+      { header: '30% Discount', key: 'accepts_discount', width: 15 },
+      { header: 'Interests', key: 'interests', width: 40 },
+      { header: 'Priority Level', key: 'priority_level', width: 15 },
+      { header: 'Notes', key: 'notes', width: 40 }
+    ];
+    
+    // Style header row
+    worksheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }
+    };
+    
+    // Add example row
+    worksheet.addRow({
+      hotel_name: 'Grand Hotel Example',
+      contact_name: 'John Smith',
+      email: 'john.smith@grandhotel.com',
+      title: 'General Manager',
+      phone: '555-123-4567',
+      hotel_phone: '555-123-4500',
+      hotel_address: '123 Main Street',
+      city: 'Washington',
+      state: 'DC',
+      zip_code: '20001',
+      country: 'USA',
+      indoor_property: 'Yes',
+      accepts_net30: 'Yes',
+      accepts_po: 'Yes',
+      accepts_discount: 'Yes',
+      interests: 'Government contracts, conferences',
+      priority_level: 'high',
+      notes: 'VIP contact, spoke at conference 2024'
+    });
+    
+    // Add instructions in a note
+    worksheet.getCell('A3').value = 'Instructions:';
+    worksheet.getCell('A3').font = { bold: true, color: { argb: 'FFFF0000' } };
+    worksheet.getCell('A4').value = '1. Fields marked with * are required';
+    worksheet.getCell('A5').value = '2. Delete this example row before importing';
+    worksheet.getCell('A6').value = '3. Priority Level: normal, high, or urgent';
+    worksheet.getCell('A7').value = '4. Yes/No fields: Yes or No (case insensitive)';
+    worksheet.getCell('A8').value = '5. Duplicate emails will update existing records';
+    
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', 'attachment; filename=hotel-leads-import-template.xlsx');
+    
+    await workbook.xlsx.write(res);
+    res.end();
+  } catch (error) {
+    console.error('Template download error:', error);
+    return fail(res, 500, 'Failed to generate template');
   }
 });
 

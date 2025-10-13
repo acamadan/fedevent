@@ -604,6 +604,7 @@
             <div class="nav-links">
                 <a href="#" class="nav-tab active" onclick="showTab('dashboard')">Dashboard</a>
                 <a href="#" class="nav-tab" onclick="showTab('hotels')">Hotels</a>
+                <a href="#" class="nav-tab" onclick="showTab('emailContacts')">Email Contacts</a>
                 <a href="#" class="nav-tab" onclick="showTab('waitlist')">Waitlist</a>
                 <a href="/admin-contracts.html" class="nav-tab">Contracts</a>
                 <a href="/sam-search-admin.html" class="nav-tab">SAM Search</a>
@@ -1170,6 +1171,90 @@ You can use these placeholders:
         </div>
     </div>
     
+    <div id="emailContactsTab" class="tab-content">
+        <!-- Email Contacts (Invitation Campaigns) -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">📧 Email Contacts (Invitation Campaigns)</h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Manage contacts extracted from emails. Send invitations and track conversions to registered waitlist.</p>
+            
+            <!-- Stats Grid -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalEmailContacts">-</div>
+                    <div class="stat-label">Total Email Contacts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="notInvitedContacts">-</div>
+                    <div class="stat-label">Not Invited Yet</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="invitedContacts">-</div>
+                    <div class="stat-label">Invitations Sent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="registeredContacts">-</div>
+                    <div class="stat-label">Registered (Converted!)</div>
+                </div>
+            </div>
+            
+            <!-- Filters -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+                <input type="text" id="emailContactSearch" placeholder="Search by hotel name, email, city..." 
+                       style="flex: 1; min-width: 300px; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;"
+                       oninput="filterEmailContacts()">
+                
+                <select id="emailInvitationFilter" onchange="filterEmailContacts()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All Statuses</option>
+                    <option value="not_invited">Not Invited</option>
+                    <option value="invited">Invited</option>
+                </select>
+                
+                <select id="emailRegisteredFilter" onchange="filterEmailContacts()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All</option>
+                    <option value="No">Not Registered</option>
+                    <option value="Yes">Registered</option>
+                </select>
+                
+                <select id="emailPriorityFilter" onchange="filterEmailContacts()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All Priority</option>
+                    <option value="high">High Priority</option>
+                    <option value="normal">Normal Priority</option>
+                </select>
+            </div>
+            
+            <!-- Bulk Actions -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #374151;">
+                    <span id="selectedEmailContactsCount">0</span> selected
+                </div>
+                <button onclick="bulkSendEmailInvitations()" 
+                        style="background: #7c3aed; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    📧 Send Invitations
+                </button>
+                <button onclick="showImportModal()" 
+                        style="background: #dc2626; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    📤 Import from CSV
+                </button>
+                <button onclick="exportEmailContactsToExcel()" 
+                        style="background: #16a34a; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    📊 Export to Excel
+                </button>
+                <button onclick="loadEmailContacts()" 
+                        style="background: #6b7280; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    🔄 Refresh
+                </button>
+            </div>
+            
+            <!-- Email Contacts Table -->
+            <div id="emailContactsTableContainer" style="overflow-x: auto;">
+                <div class="loading">Click Refresh to load email contacts...</div>
+            </div>
+        </div>
+    </div>
+    
     <div id="waitlistTab" class="tab-content">
         <!-- Hotel Waitlist Management -->
         <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
@@ -1206,20 +1291,41 @@ You can use these placeholders:
                     <option value="">All Countries</option>
                 </select>
                 
+                <select id="invitationStatusFilter" onchange="filterWaitlist()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All Statuses</option>
+                    <option value="not_invited">Not Invited</option>
+                    <option value="invited">Invited</option>
+                </select>
+                
+                <select id="registrationStatusFilter" onchange="filterWaitlist()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    <option value="">All Registration</option>
+                    <option value="waitlist">Waitlist</option>
+                    <option value="invited">Invited</option>
+                    <option value="registered">Registered</option>
+                    <option value="active">Active</option>
+                </select>
+                
                 <select id="discountFilter" onchange="filterWaitlist()" 
                         style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
                     <option value="">All Hotels</option>
                     <option value="Yes">30% Discount Accepted</option>
                     <option value="No">Standard Rate Only</option>
                 </select>
-                
+            </div>
+            
+            <!-- Actions (Waitlist - View Only) -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; padding: 1rem; background: #f8fafc; border-radius: 6px; border: 1px solid #e5e7eb;">
+                <div style="font-weight: 600; color: #374151;">
+                    Registered Hotels (filled prelaunch form)
+                </div>
                 <button onclick="exportWaitlistToExcel()" 
-                        style="background: #16a34a; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        style="background: #16a34a; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
                     📊 Export to Excel
                 </button>
-                
                 <button onclick="loadWaitlist()" 
-                        style="background: #0891b2; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        style="background: #6b7280; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
                     🔄 Refresh
                 </button>
             </div>
@@ -1235,6 +1341,7 @@ You can use these placeholders:
         const API_BASE = '';
         let allHotels = [];
         let allWaitlist = [];
+        let allEmailContacts = [];
         let currentUser = null;
         
         // Tab switching functionality
@@ -1260,6 +1367,8 @@ You can use these placeholders:
             // Load data based on tab
             if (tabName === 'waitlist') {
                 loadWaitlist();
+            } else if (tabName === 'emailContacts') {
+                loadEmailContacts();
             }
             
             // Update page title
@@ -2646,6 +2755,8 @@ This action cannot be undone.`)) {
             const searchTerm = document.getElementById('waitlistSearch').value.toLowerCase();
             const countryFilter = document.getElementById('countryFilter').value;
             const discountFilter = document.getElementById('discountFilter').value;
+            const invitationFilter = document.getElementById('invitationStatusFilter').value;
+            const registrationFilter = document.getElementById('registrationStatusFilter').value;
             
             let filtered = allWaitlist.filter(lead => {
                 const matchesSearch = !searchTerm || 
@@ -2656,12 +2767,16 @@ This action cannot be undone.`)) {
                 
                 const matchesCountry = !countryFilter || lead.country === countryFilter;
                 const matchesDiscount = !discountFilter || lead.accepts_discount === discountFilter;
+                const matchesInvitation = !invitationFilter || (lead.invitation_status || 'not_invited') === invitationFilter;
+                const matchesRegistration = !registrationFilter || (lead.registration_status || 'waitlist') === registrationFilter;
                 
-                return matchesSearch && matchesCountry && matchesDiscount;
+                return matchesSearch && matchesCountry && matchesDiscount && matchesInvitation && matchesRegistration;
             });
             
             displayWaitlist(filtered);
         }
+        
+        let selectedLeads = new Set();
         
         function displayWaitlist(leads) {
             const container = document.getElementById('waitlistTableContainer');
@@ -2672,48 +2787,78 @@ This action cannot be undone.`)) {
             }
             
             let html = `
-                <table style="width: 100%; border-collapse: collapse;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
                     <thead>
                         <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb;">
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">User Code</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Hotel Name</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Contact</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Location</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Email</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Phone</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">30% Discount</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Registered</th>
-                            <th style="padding: 1rem; text-align: left; font-weight: 600;">Actions</th>
+                            <th style="padding: 0.75rem; text-align: center; font-weight: 600;">
+                                <input type="checkbox" id="selectAllLeads" onchange="toggleSelectAllLeads()">
+                            </th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">User Code</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Hotel Name</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Contact</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Location</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Email</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Invitation</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Registration</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">30% Disc</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Signed Up</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
             `;
             
             leads.forEach(lead => {
-                const location = [lead.city, lead.state, lead.country].filter(Boolean).join(', ');
-                const registeredDate = new Date(lead.created_at).toLocaleDateString();
+                const location = [lead.city, lead.state].filter(Boolean).join(', ');
+                const signupDate = new Date(lead.created_at).toLocaleDateString();
                 const discountBadge = lead.accepts_discount === 'Yes' 
-                    ? '<span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">✓ YES</span>'
-                    : '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">NO</span>';
+                    ? '<span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">YES</span>'
+                    : '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">NO</span>';
+                
+                // Invitation status badge
+                const invitationStatus = lead.invitation_status || 'not_invited';
+                let invitationBadge = '';
+                if (invitationStatus === 'invited') {
+                    invitationBadge = '<span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">✉️ INVITED</span>';
+                } else {
+                    invitationBadge = '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Not Invited</span>';
+                }
+                
+                // Registration status badge
+                const registrationStatus = lead.registration_status || 'waitlist';
+                let registrationBadge = '';
+                if (registrationStatus === 'registered') {
+                    registrationBadge = '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">✓ REGISTERED</span>';
+                } else if (registrationStatus === 'active') {
+                    registrationBadge = '<span style="background: #a7f3d0; color: #064e3b; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">✓ ACTIVE</span>';
+                } else if (registrationStatus === 'invited') {
+                    registrationBadge = '<span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Invited</span>';
+                } else {
+                    registrationBadge = '<span style="background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Waitlist</span>';
+                }
                 
                 html += `
                     <tr style="border-bottom: 1px solid #e5e7eb;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                        <td style="padding: 1rem;">
-                            <span style="font-family: monospace; background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600;">
+                        <td style="padding: 0.75rem; text-align: center;">
+                            <input type="checkbox" class="lead-checkbox" data-lead-id="${lead.id}" onchange="updateLeadSelection()">
+                        </td>
+                        <td style="padding: 0.75rem;">
+                            <span style="font-family: monospace; background: #dbeafe; color: #1e40af; padding: 0.25rem 0.5rem; border-radius: 4px; font-weight: 600; font-size: 0.75rem;">
                                 ${lead.user_code || '—'}
                             </span>
                         </td>
-                        <td style="padding: 1rem; font-weight: 600;">${lead.hotel_name || '—'}</td>
-                        <td style="padding: 1rem;">${lead.contact_name || '—'}<br><span style="font-size: 0.75rem; color: #6b7280;">${lead.title || ''}</span></td>
-                        <td style="padding: 1rem; font-size: 0.875rem;">${location}</td>
-                        <td style="padding: 1rem;"><a href="mailto:${lead.email}" style="color: #2563eb;">${lead.email}</a></td>
-                        <td style="padding: 1rem; font-size: 0.875rem;">${lead.phone || '—'}</td>
-                        <td style="padding: 1rem;">${discountBadge}</td>
-                        <td style="padding: 1rem; font-size: 0.875rem; color: #6b7280;">${registeredDate}</td>
-                        <td style="padding: 1rem;">
+                        <td style="padding: 0.75rem; font-weight: 600;">${lead.hotel_name || '—'}</td>
+                        <td style="padding: 0.75rem;">${lead.contact_name || '—'}<br><span style="font-size: 0.7rem; color: #6b7280;">${lead.title || ''}</span></td>
+                        <td style="padding: 0.75rem;">${location}</td>
+                        <td style="padding: 0.75rem;"><a href="mailto:${lead.email}" style="color: #2563eb; text-decoration: none;">${lead.email}</a></td>
+                        <td style="padding: 0.75rem;">${invitationBadge}</td>
+                        <td style="padding: 0.75rem;">${registrationBadge}</td>
+                        <td style="padding: 0.75rem;">${discountBadge}</td>
+                        <td style="padding: 0.75rem; color: #6b7280;">${signupDate}</td>
+                        <td style="padding: 0.75rem;">
                             <button onclick="viewLeadDetails(${lead.id})" 
-                                    style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
-                                View Details
+                                    style="background: #3b82f6; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600;">
+                                View
                             </button>
                         </td>
                     </tr>
@@ -2722,6 +2867,35 @@ This action cannot be undone.`)) {
             
             html += '</tbody></table>';
             container.innerHTML = html;
+        }
+        
+        function toggleSelectAllLeads() {
+            const checkbox = document.getElementById('selectAllLeads');
+            const checkboxes = document.querySelectorAll('.lead-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                if (checkbox.checked) {
+                    selectedLeads.add(parseInt(cb.dataset.leadId));
+                } else {
+                    selectedLeads.delete(parseInt(cb.dataset.leadId));
+                }
+            });
+            
+            updateLeadSelection();
+        }
+        
+        function updateLeadSelection() {
+            const checkboxes = document.querySelectorAll('.lead-checkbox');
+            selectedLeads.clear();
+            
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedLeads.add(parseInt(cb.dataset.leadId));
+                }
+            });
+            
+            document.getElementById('selectedLeadsCount').textContent = selectedLeads.size;
         }
         
         function viewLeadDetails(leadId) {
@@ -2775,9 +2949,338 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                 a.click();
                 window.URL.revokeObjectURL(url);
                 document.body.removeChild(a);
+                
+                alert('✅ Waitlist exported successfully! Check your downloads folder.');
             } catch (error) {
                 console.error('Export error:', error);
                 alert('Failed to export waitlist data');
+            }
+        }
+        
+        // Export registered hotels list for XLOOKUP matching
+        async function exportRegisteredEmails() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/hotels/export-emails`, {
+                    headers: { 'Authorization': `Bearer ${sessionId}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to export registered hotels');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `registered-hotels-${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                alert('✅ Registered hotels list exported! Use this for XLOOKUP in Excel to match with your master list.');
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export registered hotels list');
+            }
+        }
+        
+        // Bulk send invitations
+        async function bulkSendInvitations() {
+            if (selectedLeads.size === 0) {
+                alert('Please select at least one lead to send invitations to.');
+                return;
+            }
+            
+            const confirmed = confirm(`Send invitation emails to ${selectedLeads.size} selected hotels?\\n\\nThis will:\\n- Mark them as "Invited"\\n- Send them their registration code via email\\n- Update the last contacted date`);
+            if (!confirmed) return;
+            
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/waitlist/bulk-invite`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        leadIds: Array.from(selectedLeads),
+                        sendEmail: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    alert(`✅ Success!\\n\\nInvitations sent to ${result.successCount} hotels.\\n${result.failedEmails ? `Failed: ${result.failedEmails.length}` : ''}`);
+                    selectedLeads.clear();
+                    loadWaitlist(); // Refresh the list
+                } else {
+                    alert(`Failed to send invitations: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Bulk invite error:', error);
+                alert('Failed to send invitations. Please try again.');
+            }
+        }
+        
+        // Sync registered hotels with waitlist
+        async function syncRegisteredHotels() {
+            const confirmed = confirm('Sync Registered Hotels?\\n\\nThis will automatically:\\n- Match registered hotel accounts with waitlist leads by email\\n- Update their registration status to "Registered"\\n- Link the hotel account to the lead record\\n\\nContinue?');
+            if (!confirmed) return;
+            
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/waitlist/sync-registered`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    alert(`✅ Sync Complete!\\n\\n${result.syncedCount} hotel(s) matched and marked as registered.\\n\\nDetails:\\n${result.details.map(d => `- ${d.hotelEmail}`).join('\\n')}`);
+                    loadWaitlist(); // Refresh the list
+                } else {
+                    alert(`Sync failed: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Sync error:', error);
+                alert('Failed to sync registered hotels. Please try again.');
+            }
+        }
+        
+        // ========== EMAIL CONTACTS FUNCTIONS ==========
+        
+        let selectedEmailContacts = new Set();
+        
+        async function loadEmailContacts() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/email-contacts`, {
+                    headers: { 'Authorization': `Bearer ${sessionId}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load email contacts');
+                }
+                
+                const data = await response.json();
+                allEmailContacts = data.contacts || [];
+                updateEmailContactsStats(allEmailContacts);
+                displayEmailContacts(allEmailContacts);
+            } catch (error) {
+                console.error('Load email contacts error:', error);
+                document.getElementById('emailContactsTableContainer').innerHTML = 
+                    '<div style="text-align: center; padding: 2rem; color: #dc2626;">Failed to load email contacts</div>';
+            }
+        }
+        
+        function updateEmailContactsStats(contacts) {
+            const total = contacts.length;
+            const notInvited = contacts.filter(c => c.invitation_status === 'not_invited').length;
+            const invited = contacts.filter(c => c.invitation_status === 'invited').length;
+            const registered = contacts.filter(c => c.registered === 'Yes').length;
+            
+            document.getElementById('totalEmailContacts').textContent = total;
+            document.getElementById('notInvitedContacts').textContent = notInvited;
+            document.getElementById('invitedContacts').textContent = invited;
+            document.getElementById('registeredContacts').textContent = registered;
+        }
+        
+        function filterEmailContacts() {
+            const searchTerm = document.getElementById('emailContactSearch').value.toLowerCase();
+            const invitationFilter = document.getElementById('emailInvitationFilter').value;
+            const registeredFilter = document.getElementById('emailRegisteredFilter').value;
+            const priorityFilter = document.getElementById('emailPriorityFilter').value;
+            
+            let filtered = allEmailContacts.filter(contact => {
+                const matchesSearch = !searchTerm || 
+                    (contact.hotel_name || '').toLowerCase().includes(searchTerm) ||
+                    (contact.email || '').toLowerCase().includes(searchTerm) ||
+                    (contact.city || '').toLowerCase().includes(searchTerm) ||
+                    (contact.contact_name || '').toLowerCase().includes(searchTerm);
+                
+                const matchesInvitation = !invitationFilter || contact.invitation_status === invitationFilter;
+                const matchesRegistered = !registeredFilter || contact.registered === registeredFilter;
+                const matchesPriority = !priorityFilter || contact.priority_level === priorityFilter;
+                
+                return matchesSearch && matchesInvitation && matchesRegistered && matchesPriority;
+            });
+            
+            displayEmailContacts(filtered);
+        }
+        
+        function displayEmailContacts(contacts) {
+            const container = document.getElementById('emailContactsTableContainer');
+            
+            if (contacts.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">No email contacts found</div>';
+                return;
+            }
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                    <thead>
+                        <tr style="background: #f8fafc; border-bottom: 2px solid #e5e7eb;">
+                            <th style="padding: 0.75rem; text-align: center; font-weight: 600;">
+                                <input type="checkbox" id="selectAllEmailContacts" onchange="toggleSelectAllEmailContacts()">
+                            </th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Hotel Name</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Contact</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Email</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Location</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Priority</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Status</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            contacts.forEach(contact => {
+                const location = [contact.city, contact.state].filter(Boolean).join(', ');
+                
+                // Status badge
+                let statusBadge = '';
+                if (contact.invitation_status === 'invited') {
+                    statusBadge = '<span style="background: #fef3c7; color: #92400e; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">✉️ INVITED</span>';
+                } else {
+                    statusBadge = '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Not Invited</span>';
+                }
+                
+                // Registered badge
+                let registeredBadge = '';
+                if (contact.registered === 'Yes') {
+                    registeredBadge = '<span style="background: #d1fae5; color: #065f46; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">✓ YES</span>';
+                } else {
+                    registeredBadge = '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">No</span>';
+                }
+                
+                // Priority badge
+                let priorityBadge = '';
+                if (contact.priority_level === 'high') {
+                    priorityBadge = '<span style="background: #fee2e2; color: #991b1b; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">HIGH</span>';
+                } else {
+                    priorityBadge = '<span style="background: #f3f4f6; color: #6b7280; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem;">Normal</span>';
+                }
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #e5e7eb;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                        <td style="padding: 0.75rem; text-align: center;">
+                            <input type="checkbox" class="email-contact-checkbox" data-contact-id="${contact.id}" onchange="updateEmailContactSelection()">
+                        </td>
+                        <td style="padding: 0.75rem; font-weight: 600;">${contact.hotel_name || '—'}</td>
+                        <td style="padding: 0.75rem;">${contact.contact_name || '—'}<br><span style="font-size: 0.7rem; color: #6b7280;">${contact.title || ''}</span></td>
+                        <td style="padding: 0.75rem;"><a href="mailto:${contact.email}" style="color: #2563eb; text-decoration: none;">${contact.email}</a></td>
+                        <td style="padding: 0.75rem;">${location || '—'}</td>
+                        <td style="padding: 0.75rem;">${priorityBadge}</td>
+                        <td style="padding: 0.75rem;">${statusBadge}</td>
+                        <td style="padding: 0.75rem;">${registeredBadge}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+        
+        function toggleSelectAllEmailContacts() {
+            const checkbox = document.getElementById('selectAllEmailContacts');
+            const checkboxes = document.querySelectorAll('.email-contact-checkbox');
+            
+            checkboxes.forEach(cb => {
+                cb.checked = checkbox.checked;
+                if (checkbox.checked) {
+                    selectedEmailContacts.add(parseInt(cb.dataset.contactId));
+                } else {
+                    selectedEmailContacts.delete(parseInt(cb.dataset.contactId));
+                }
+            });
+            
+            updateEmailContactSelection();
+        }
+        
+        function updateEmailContactSelection() {
+            const checkboxes = document.querySelectorAll('.email-contact-checkbox');
+            selectedEmailContacts.clear();
+            
+            checkboxes.forEach(cb => {
+                if (cb.checked) {
+                    selectedEmailContacts.add(parseInt(cb.dataset.contactId));
+                }
+            });
+            
+            document.getElementById('selectedEmailContactsCount').textContent = selectedEmailContacts.size;
+        }
+        
+        async function bulkSendEmailInvitations() {
+            if (selectedEmailContacts.size === 0) {
+                alert('Please select at least one contact to send invitations to.');
+                return;
+            }
+            
+            const confirmed = confirm(`Send invitation emails to ${selectedEmailContacts.size} selected hotels?\\n\\nThis will:\\n- Mark them as "Invited"\\n- Send them registration invitation\\n- Update invitation tracking`);
+            if (!confirmed) return;
+            
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/email-contacts/bulk-invite`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        contactIds: Array.from(selectedEmailContacts),
+                        sendEmail: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    alert(`✅ Success!\\n\\nInvitations sent to ${result.successCount} hotels.\\n${result.failedEmails ? `Failed: ${result.failedEmails.length}` : ''}`);
+                    selectedEmailContacts.clear();
+                    loadEmailContacts(); // Refresh
+                } else {
+                    alert(`Failed to send invitations: ${result.message}`);
+                }
+            } catch (error) {
+                console.error('Bulk invite error:', error);
+                alert('Failed to send invitations. Please try again.');
+            }
+        }
+        
+        async function exportEmailContactsToExcel() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/email-contacts/export`, {
+                    headers: { 'Authorization': `Bearer ${sessionId}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to export email contacts');
+                }
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `email-contacts-${new Date().toISOString().split('T')[0]}.xlsx`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                alert('✅ Email contacts exported successfully!');
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Failed to export email contacts');
             }
         }
         
@@ -2792,8 +3295,6 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         document.head.appendChild(style);
     </script>
     
-    <!-- Universal Logout System -->
-    <script src="/logout-universal.js"></script>
     <script src="/footer.js"></script>
 <footer id="contact">
     <div class="container">
@@ -2886,5 +3387,216 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         }
     }
 </style>
+
+<!-- CSV Import Modal -->
+<div id="importModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title">📤 Import Leads from CSV/Excel</h3>
+            <button class="close-btn" onclick="closeModal('importModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 6px;">
+                <strong style="color: #92400e;">⚠️ Important:</strong>
+                <ul style="margin: 0.5rem 0 0 1.5rem; color: #78350f;">
+                    <li>Required fields: Hotel Name, Contact Name, Email</li>
+                    <li>Duplicate emails will update existing records</li>
+                    <li>Supports CSV and Excel (.xlsx) files</li>
+                    <li>Maximum file size: 25MB</li>
+                </ul>
+            </div>
+            
+            <div style="margin-bottom: 1.5rem;">
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Select File:</label>
+                <input type="file" 
+                       id="csvFileInput" 
+                       accept=".csv,.xlsx,.xls" 
+                       style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; cursor: pointer;">
+                <p style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280;">
+                    Don't have a template? 
+                    <a href="#" onclick="downloadImportTemplate(); return false;" style="color: #2563eb; text-decoration: underline;">
+                        Download Import Template
+                    </a>
+                </p>
+            </div>
+            
+            <div id="importProgress" style="display: none; margin-bottom: 1rem;">
+                <div style="background: #f3f4f6; height: 6px; border-radius: 3px; overflow: hidden;">
+                    <div id="importProgressBar" style="background: #3b82f6; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <p id="importProgressText" style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; text-align: center;">
+                    Processing...
+                </p>
+            </div>
+            
+            <div id="importResults" style="display: none; margin-bottom: 1rem;"></div>
+            
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="closeModal('importModal')" 
+                        style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    Cancel
+                </button>
+                <button onclick="processImport()" 
+                        id="importButton"
+                        style="background: #dc2626; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    📤 Import Data
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // CSV Import Functions
+    function showImportModal() {
+        document.getElementById('importModal').style.display = 'block';
+        document.getElementById('csvFileInput').value = '';
+        document.getElementById('importProgress').style.display = 'none';
+        document.getElementById('importResults').style.display = 'none';
+    }
+    
+    function closeModal(modalId) {
+        document.getElementById(modalId).style.display = 'none';
+    }
+    
+    async function downloadImportTemplate() {
+        try {
+            const sessionId = localStorage.getItem('fedevent_session');
+            const response = await fetch(`${API_BASE}/api/admin/waitlist/csv-template`, {
+                headers: { 'Authorization': `Bearer ${sessionId}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to download template');
+            }
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'hotel-leads-import-template.xlsx';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            alert('✅ Template downloaded! Fill it out with your data and import it back.');
+        } catch (error) {
+            console.error('Template download error:', error);
+            alert('Failed to download template. Please try again.');
+        }
+    }
+    
+    async function processImport() {
+        const fileInput = document.getElementById('csvFileInput');
+        const file = fileInput.files[0];
+        
+        if (!file) {
+            alert('Please select a CSV or Excel file to import.');
+            return;
+        }
+        
+        // Validate file type
+        const validTypes = [
+            'text/csv',
+            'application/vnd.ms-excel',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        ];
+        
+        if (!validTypes.includes(file.type) && !file.name.match(/\.(csv|xlsx|xls)$/i)) {
+            alert('Please select a valid CSV or Excel file (.csv, .xlsx, .xls)');
+            return;
+        }
+        
+        // Show progress
+        document.getElementById('importProgress').style.display = 'block';
+        document.getElementById('importProgressBar').style.width = '30%';
+        document.getElementById('importProgressText').textContent = 'Uploading file...';
+        document.getElementById('importButton').disabled = true;
+        document.getElementById('importResults').style.display = 'none';
+        
+        try {
+            const sessionId = localStorage.getItem('fedevent_session');
+            const formData = new FormData();
+            formData.append('csvFile', file);
+            
+            document.getElementById('importProgressBar').style.width = '60%';
+            document.getElementById('importProgressText').textContent = 'Processing data...';
+            
+            const response = await fetch(`${API_BASE}/api/admin/email-contacts/import-csv`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`
+                },
+                body: formData
+            });
+            
+            document.getElementById('importProgressBar').style.width = '90%';
+            
+            const result = await response.json();
+            
+            document.getElementById('importProgressBar').style.width = '100%';
+            document.getElementById('importProgressText').textContent = 'Complete!';
+            
+            // Show results
+            setTimeout(() => {
+                document.getElementById('importProgress').style.display = 'none';
+                
+                let resultsHTML = '<div style="padding: 1rem; border-radius: 6px; border: 2px solid ';
+                
+                if (result.ok) {
+                    resultsHTML += '#10b981; background: #d1fae5;">';
+                    resultsHTML += '<h4 style="margin: 0 0 0.5rem 0; color: #065f46;">✅ Import Successful!</h4>';
+                    resultsHTML += '<ul style="margin: 0; padding-left: 1.5rem; color: #047857;">';
+                    resultsHTML += `<li><strong>${result.imported || 0}</strong> new leads imported</li>`;
+                    resultsHTML += `<li><strong>${result.updated || 0}</strong> existing leads updated</li>`;
+                    resultsHTML += `<li><strong>${result.skipped || 0}</strong> rows skipped</li>`;
+                    resultsHTML += `<li><strong>${result.totalRows || 0}</strong> total rows processed</li>`;
+                    resultsHTML += '</ul>';
+                    
+                    if (result.errors && result.errors.length > 0) {
+                        resultsHTML += '<details style="margin-top: 0.5rem;"><summary style="cursor: pointer; color: #dc2626;">View Errors</summary>';
+                        resultsHTML += '<ul style="margin: 0.5rem 0 0 1.5rem; font-size: 0.875rem; color: #991b1b;">';
+                        result.errors.forEach(error => {
+                            resultsHTML += `<li>${error}</li>`;
+                        });
+                        resultsHTML += '</ul></details>';
+                    }
+                } else {
+                    resultsHTML += '#dc2626; background: #fee2e2;">';
+                    resultsHTML += '<h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Import Failed</h4>';
+                    resultsHTML += `<p style="margin: 0; color: #b91c1c;">${result.message || 'Unknown error occurred'}</p>`;
+                }
+                
+                resultsHTML += '</div>';
+                
+                document.getElementById('importResults').innerHTML = resultsHTML;
+                document.getElementById('importResults').style.display = 'block';
+                document.getElementById('importButton').disabled = false;
+                
+                if (result.ok && (result.imported > 0 || result.updated > 0)) {
+                    // Reload email contacts after successful import
+                    setTimeout(() => {
+                        closeModal('importModal');
+                        loadEmailContacts();
+                    }, 3000);
+                }
+            }, 500);
+            
+        } catch (error) {
+            console.error('Import error:', error);
+            document.getElementById('importProgress').style.display = 'none';
+            document.getElementById('importResults').innerHTML = `
+                <div style="padding: 1rem; border-radius: 6px; border: 2px solid #dc2626; background: #fee2e2;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Import Failed</h4>
+                    <p style="margin: 0; color: #b91c1c;">${error.message || 'Failed to import file. Please check the file format and try again.'}</p>
+                </div>
+            `;
+            document.getElementById('importResults').style.display = 'block';
+            document.getElementById('importButton').disabled = false;
+        }
+    }
+</script>
+
 </body>
 </html>
