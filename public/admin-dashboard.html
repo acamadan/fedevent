@@ -1203,6 +1203,21 @@ You can use these placeholders:
                        style="flex: 1; min-width: 300px; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;"
                        oninput="filterEmailContacts()">
                 
+                <select id="emailCityFilter" onchange="filterEmailContacts()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; min-width: 150px;">
+                    <option value="">All Cities</option>
+                </select>
+                
+                <select id="emailStateFilter" onchange="filterEmailContacts()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; min-width: 150px;">
+                    <option value="">All States</option>
+                </select>
+                
+                <select id="emailCountryFilter" onchange="filterEmailContacts()" 
+                        style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; min-width: 150px;">
+                    <option value="">All Countries</option>
+                </select>
+                
                 <select id="emailInvitationFilter" onchange="filterEmailContacts()" 
                         style="padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
                     <option value="">All Statuses</option>
@@ -1335,6 +1350,24 @@ You can use these placeholders:
                 <div class="loading">Loading waitlist data...</div>
             </div>
         </div>
+        
+        <!-- Deleted Hotels Section -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-top: 2rem; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600; color: #dc2626;">🗑️ Deleted Hotels</h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Hotels that have been removed from the waitlist. This data is kept for reference.</p>
+            
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center;">
+                <button onclick="loadDeletedHotels()" 
+                        style="background: #6b7280; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    🔄 Load Deleted Hotels
+                </button>
+                <span id="deletedHotelsCount" style="color: #6b7280; font-size: 0.875rem;">-</span>
+            </div>
+            
+            <div id="deletedHotelsContainer" style="overflow-x: auto;">
+                <div style="text-align: center; padding: 2rem; color: #6b7280;">Click "Load Deleted Hotels" to view deleted entries</div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -1343,6 +1376,45 @@ You can use these placeholders:
         let allWaitlist = [];
         let allEmailContacts = [];
         let currentUser = null;
+        
+        // Country name mapping - convert abbreviations to full names
+        const countryNames = {
+            'US': 'United States',
+            'USA': 'United States',
+            'United States': 'United States',
+            'CA': 'Canada',
+            'Canada': 'Canada',
+            'MX': 'Mexico',
+            'Mexico': 'Mexico',
+            'UK': 'United Kingdom',
+            'GB': 'United Kingdom',
+            'United Kingdom': 'United Kingdom',
+            'DE': 'Germany',
+            'Germany': 'Germany',
+            'FR': 'France',
+            'France': 'France',
+            'IT': 'Italy',
+            'Italy': 'Italy',
+            'ES': 'Spain',
+            'Spain': 'Spain',
+            'JP': 'Japan',
+            'Japan': 'Japan',
+            'CN': 'China',
+            'China': 'China',
+            'IN': 'India',
+            'India': 'India',
+            'BR': 'Brazil',
+            'Brazil': 'Brazil',
+            'AU': 'Australia',
+            'Australia': 'Australia',
+            'NZ': 'New Zealand',
+            'New Zealand': 'New Zealand'
+        };
+        
+        function getFullCountryName(country) {
+            if (!country) return 'N/A';
+            return countryNames[country] || country;
+        }
         
         // Tab switching functionality
         function showTab(tabName) {
@@ -2743,7 +2815,7 @@ This action cannot be undone.`)) {
         }
         
         function populateCountryFilter(leads) {
-            const countries = [...new Set(leads.map(l => l.country).filter(Boolean))].sort();
+            const countries = [...new Set(leads.map(l => getFullCountryName(l.country)).filter(c => c !== 'N/A'))].sort();
             const select = document.getElementById('countryFilter');
             select.innerHTML = '<option value="">All Countries</option>';
             countries.forEach(country => {
@@ -2765,7 +2837,7 @@ This action cannot be undone.`)) {
                     (lead.city || '').toLowerCase().includes(searchTerm) ||
                     (lead.contact_name || '').toLowerCase().includes(searchTerm);
                 
-                const matchesCountry = !countryFilter || lead.country === countryFilter;
+                const matchesCountry = !countryFilter || getFullCountryName(lead.country) === countryFilter;
                 const matchesDiscount = !discountFilter || lead.accepts_discount === discountFilter;
                 const matchesInvitation = !invitationFilter || (lead.invitation_status || 'not_invited') === invitationFilter;
                 const matchesRegistration = !registrationFilter || (lead.registration_status || 'waitlist') === registrationFilter;
@@ -2809,7 +2881,7 @@ This action cannot be undone.`)) {
             `;
             
             leads.forEach(lead => {
-                const location = [lead.city, lead.state].filter(Boolean).join(', ');
+                const location = [lead.city, lead.state, getFullCountryName(lead.country)].filter(c => c && c !== 'N/A').join(', ');
                 const signupDate = new Date(lead.created_at).toLocaleDateString();
                 const discountBadge = lead.accepts_discount === 'Yes' 
                     ? '<span style="background: #dcfce7; color: #166534; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.7rem; font-weight: 600;">YES</span>'
@@ -2847,7 +2919,12 @@ This action cannot be undone.`)) {
                                 ${lead.user_code || '—'}
                             </span>
                         </td>
-                        <td style="padding: 0.75rem; font-weight: 600;">${lead.hotel_name || '—'}</td>
+                        <td style="padding: 0.75rem; font-weight: 600;">
+                            <a href="#" onclick="openHotelDetailPopup(${lead.id}); return false;" 
+                               style="color: #2563eb; text-decoration: none; cursor: pointer; font-weight: 600;">
+                                ${lead.hotel_name || '—'}
+                            </a>
+                        </td>
                         <td style="padding: 0.75rem;">${lead.contact_name || '—'}<br><span style="font-size: 0.7rem; color: #6b7280;">${lead.title || ''}</span></td>
                         <td style="padding: 0.75rem;">${location}</td>
                         <td style="padding: 0.75rem;"><a href="mailto:${lead.email}" style="color: #2563eb; text-decoration: none;">${lead.email}</a></td>
@@ -2857,8 +2934,12 @@ This action cannot be undone.`)) {
                         <td style="padding: 0.75rem; color: #6b7280;">${signupDate}</td>
                         <td style="padding: 0.75rem;">
                             <button onclick="viewLeadDetails(${lead.id})" 
-                                    style="background: #3b82f6; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600;">
+                                    style="background: #3b82f6; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600; margin-right: 0.25rem;">
                                 View
+                            </button>
+                            <button onclick="confirmDeleteHotel(${lead.id}, '${(lead.hotel_name || '').replace(/'/g, "\\'")}', '${lead.email || ''}')" 
+                                    style="background: #dc2626; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; font-size: 0.7rem; font-weight: 600;">
+                                🗑️ Delete
                             </button>
                         </td>
                     </tr>
@@ -2927,6 +3008,133 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             `;
             
             alert(details);
+        }
+        
+        // Delete hotel functions
+        function confirmDeleteHotel(leadId, hotelName, email) {
+            const message = `⚠️ CONFIRM DELETION\n\n` +
+                          `Are you sure you want to delete this hotel from the waitlist?\n\n` +
+                          `Hotel: ${hotelName}\n` +
+                          `Email: ${email}\n\n` +
+                          `This action will:\n` +
+                          `• Remove the hotel from the active waitlist\n` +
+                          `• Move it to the "Deleted Hotels" section\n` +
+                          `• Keep a record for reference\n\n` +
+                          `Type "DELETE" to confirm:`;
+            
+            const confirmation = prompt(message);
+            
+            if (confirmation === 'DELETE') {
+                deleteHotel(leadId, hotelName, email);
+            } else if (confirmation !== null) {
+                alert('❌ Deletion cancelled. You must type "DELETE" exactly to confirm.');
+            }
+        }
+        
+        async function deleteHotel(leadId, hotelName, email) {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/waitlist/${leadId}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        hotel_name: hotelName,
+                        email: email,
+                        deleted_by: currentUser?.email || 'admin',
+                        deleted_reason: 'Manual deletion from admin dashboard'
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to delete hotel');
+                }
+                
+                const result = await response.json();
+                alert(`✅ Hotel "${hotelName}" has been deleted successfully.\n\nThe record has been moved to the Deleted Hotels section.`);
+                
+                // Reload the waitlist
+                await loadWaitlist();
+                
+            } catch (error) {
+                console.error('Delete hotel error:', error);
+                alert(`❌ Failed to delete hotel: ${error.message}`);
+            }
+        }
+        
+        // Load deleted hotels
+        let allDeletedHotels = [];
+        
+        async function loadDeletedHotels() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`${API_BASE}/api/admin/waitlist/deleted`, {
+                    headers: { 'Authorization': `Bearer ${sessionId}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load deleted hotels');
+                }
+                
+                const data = await response.json();
+                allDeletedHotels = data.deleted || [];
+                
+                document.getElementById('deletedHotelsCount').textContent = 
+                    `Total: ${allDeletedHotels.length} deleted hotel(s)`;
+                
+                displayDeletedHotels(allDeletedHotels);
+            } catch (error) {
+                console.error('Load deleted hotels error:', error);
+                document.getElementById('deletedHotelsContainer').innerHTML = 
+                    '<div style="text-align: center; padding: 2rem; color: #dc2626;">Failed to load deleted hotels</div>';
+            }
+        }
+        
+        function displayDeletedHotels(hotels) {
+            const container = document.getElementById('deletedHotelsContainer');
+            
+            if (hotels.length === 0) {
+                container.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">No deleted hotels found</div>';
+                return;
+            }
+            
+            let html = `
+                <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                    <thead>
+                        <tr style="background: #fef2f2; border-bottom: 2px solid #fecaca;">
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Hotel Name</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Contact</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Location</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Email</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Deleted Date</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Deleted By</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Reason</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            hotels.forEach(hotel => {
+                const location = [hotel.city, hotel.state, getFullCountryName(hotel.country)].filter(c => c && c !== 'N/A').join(', ');
+                const deletedDate = hotel.deleted_at ? new Date(hotel.deleted_at).toLocaleString() : 'N/A';
+                
+                html += `
+                    <tr style="border-bottom: 1px solid #fecaca; background: #fef2f2;" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fef2f2'">
+                        <td style="padding: 0.75rem; font-weight: 600;">${hotel.hotel_name || '—'}</td>
+                        <td style="padding: 0.75rem;">${hotel.contact_name || '—'}<br><span style="font-size: 0.7rem; color: #6b7280;">${hotel.title || ''}</span></td>
+                        <td style="padding: 0.75rem;">${location}</td>
+                        <td style="padding: 0.75rem;"><a href="mailto:${hotel.email}" style="color: #dc2626; text-decoration: none;">${hotel.email}</a></td>
+                        <td style="padding: 0.75rem; color: #6b7280; font-size: 0.75rem;">${deletedDate}</td>
+                        <td style="padding: 0.75rem; color: #6b7280; font-size: 0.75rem;">${hotel.deleted_by || 'N/A'}</td>
+                        <td style="padding: 0.75rem; color: #6b7280; font-size: 0.75rem;">${hotel.deleted_reason || 'N/A'}</td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            container.innerHTML = html;
         }
         
         async function exportWaitlistToExcel() {
@@ -3072,6 +3280,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                 const data = await response.json();
                 allEmailContacts = data.contacts || [];
                 updateEmailContactsStats(allEmailContacts);
+                populateEmailLocationFilters(allEmailContacts);
                 displayEmailContacts(allEmailContacts);
             } catch (error) {
                 console.error('Load email contacts error:', error);
@@ -3092,8 +3301,37 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             document.getElementById('registeredContacts').textContent = registered;
         }
         
+        function populateEmailLocationFilters(contacts) {
+            // Populate city filter
+            const cities = [...new Set(contacts.map(c => c.city).filter(Boolean))].sort();
+            const citySelect = document.getElementById('emailCityFilter');
+            citySelect.innerHTML = '<option value="">All Cities</option>';
+            cities.forEach(city => {
+                citySelect.innerHTML += `<option value="${city}">${city}</option>`;
+            });
+            
+            // Populate state filter
+            const states = [...new Set(contacts.map(c => c.state).filter(Boolean))].sort();
+            const stateSelect = document.getElementById('emailStateFilter');
+            stateSelect.innerHTML = '<option value="">All States</option>';
+            states.forEach(state => {
+                stateSelect.innerHTML += `<option value="${state}">${state}</option>`;
+            });
+            
+            // Populate country filter with full names
+            const countries = [...new Set(contacts.map(c => getFullCountryName(c.country)).filter(c => c !== 'N/A'))].sort();
+            const countrySelect = document.getElementById('emailCountryFilter');
+            countrySelect.innerHTML = '<option value="">All Countries</option>';
+            countries.forEach(country => {
+                countrySelect.innerHTML += `<option value="${country}">${country}</option>`;
+            });
+        }
+        
         function filterEmailContacts() {
             const searchTerm = document.getElementById('emailContactSearch').value.toLowerCase();
+            const cityFilter = document.getElementById('emailCityFilter').value;
+            const stateFilter = document.getElementById('emailStateFilter').value;
+            const countryFilter = document.getElementById('emailCountryFilter').value;
             const invitationFilter = document.getElementById('emailInvitationFilter').value;
             const registeredFilter = document.getElementById('emailRegisteredFilter').value;
             const priorityFilter = document.getElementById('emailPriorityFilter').value;
@@ -3105,11 +3343,14 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                     (contact.city || '').toLowerCase().includes(searchTerm) ||
                     (contact.contact_name || '').toLowerCase().includes(searchTerm);
                 
+                const matchesCity = !cityFilter || contact.city === cityFilter;
+                const matchesState = !stateFilter || contact.state === stateFilter;
+                const matchesCountry = !countryFilter || getFullCountryName(contact.country) === countryFilter;
                 const matchesInvitation = !invitationFilter || contact.invitation_status === invitationFilter;
                 const matchesRegistered = !registeredFilter || contact.registered === registeredFilter;
                 const matchesPriority = !priorityFilter || contact.priority_level === priorityFilter;
                 
-                return matchesSearch && matchesInvitation && matchesRegistered && matchesPriority;
+                return matchesSearch && matchesCity && matchesState && matchesCountry && matchesInvitation && matchesRegistered && matchesPriority;
             });
             
             displayEmailContacts(filtered);
