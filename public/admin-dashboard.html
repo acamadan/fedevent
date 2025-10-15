@@ -1251,7 +1251,11 @@ You can use these placeholders:
                 </button>
                 <button onclick="showImportModal()" 
                         style="background: #dc2626; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
-                    📤 Import from CSV
+                    📤 Import from Excel/CSV
+                </button>
+                <button onclick="showPrelaunchEmailModal()" 
+                        style="background: #1e40af; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    📧 Send Prelaunch Emails
                 </button>
                 <button onclick="exportEmailContactsToExcel()" 
                         style="background: #16a34a; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
@@ -3721,6 +3725,138 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
     </div>
 </div>
 
+<!-- Prelaunch Email Modal -->
+<div id="prelaunchEmailModal" class="modal">
+    <div class="modal-content" style="max-width: 900px;">
+        <div class="modal-header">
+            <h3 class="modal-title">📧 Send Prelaunch Invitation Emails</h3>
+            <button class="close-btn" onclick="closeModal('prelaunchEmailModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #eff6ff; border-left: 4px solid #1e40af; border-radius: 6px;">
+                <strong style="color: #1e40af;">📧 Prelaunch Email Campaign</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #1e40af;">
+                    Send professional invitation emails to your hotel contacts inviting them to join FEDEVENT's prelaunch waitlist.
+                </p>
+            </div>
+            
+            <!-- Email Template Preview -->
+            <div style="margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 1rem; color: #1f2937;">📧 Email Template Preview</h4>
+                <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
+                    <div style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); padding: 20px; text-align: center; color: white;">
+                        <h2 style="margin: 0; font-size: 24px;">FEDEVENT</h2>
+                        <p style="margin: 5px 0 0 0; opacity: 0.9;">Government Contracts Simplified</p>
+                    </div>
+                    <div style="padding: 20px; background: white;">
+                        <p style="margin: 0 0 15px 0; font-weight: 600;">Dear [Contact Name],</p>
+                        <p style="margin: 0 0 15px 0; line-height: 1.6;">
+                            Thank you for your previous interest in government contract opportunities. We're excited to introduce you to <strong>FEDEVENT</strong> – a revolutionary platform that makes winning government hotel contracts easier than ever before.
+                        </p>
+                        <div style="background: #f8fafc; border-left: 4px solid #1e40af; padding: 15px; margin: 15px 0; border-radius: 6px;">
+                            <h4 style="margin: 0 0 10px 0; color: #1e40af;">🎯 Why FEDEVENT?</h4>
+                            <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
+                                <li><strong>Direct Access</strong> to federal government hotel contracts</li>
+                                <li><strong>Competitive Bidding</strong> with real-time notifications</li>
+                                <li><strong>Streamlined Process</strong> – no more complex paperwork</li>
+                                <li><strong>Guaranteed Payments</strong> from government agencies</li>
+                                <li><strong>Exclusive Opportunities</strong> for registered hotels</li>
+                            </ul>
+                        </div>
+                        <p style="margin: 15px 0;">
+                            As an <strong>early access member</strong>, [Hotel Name] can join our platform before the official launch and gain a competitive advantage in securing lucrative government contracts.
+                        </p>
+                        <div style="text-align: center; margin: 20px 0;">
+                            <button style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); color: white; padding: 12px 30px; border: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                                🚀 Join Early Access Now
+                            </button>
+                        </div>
+                        <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 12px; margin: 15px 0; border-radius: 6px;">
+                            <p style="margin: 0; color: #92400e; font-size: 14px;">
+                                <strong>⚡ Limited Time:</strong> Early access members receive priority notifications for all new government contracts and exclusive onboarding support.
+                            </p>
+                        </div>
+                        <p style="margin: 15px 0; font-size: 14px; color: #6b7280;">
+                            <strong>Important:</strong> If you no longer wish to receive emails about government contract opportunities from FEDEVENT, you can unsubscribe below. Please note that unsubscribing means you will <strong>NOT receive notifications</strong> about upcoming government contracts that could benefit your property.
+                        </p>
+                        <p style="text-align: center; margin: 15px 0;">
+                            <a href="#" style="color: #9ca3af; text-decoration: underline; font-size: 12px;">Unsubscribe from future emails</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Campaign Settings -->
+            <div style="margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 1rem; color: #1f2937;">⚙️ Campaign Settings</h4>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Subject Line:</label>
+                        <input type="text" 
+                               id="emailSubject" 
+                               value="🏨 Exclusive Invitation: Join FEDEVENT Early Access"
+                               style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Send Mode:</label>
+                        <select id="sendMode" style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                            <option value="test">Test Mode (Preview Only)</option>
+                            <option value="live">Live Send</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Recipients -->
+            <div style="margin-bottom: 2rem;">
+                <h4 style="margin-bottom: 1rem; color: #1f2937;">📋 Recipients</h4>
+                <div style="background: #f8fafc; padding: 1rem; border-radius: 6px; border: 1px solid #e5e7eb;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <div>
+                            <strong>Total Contacts:</strong> <span id="totalContactsCount">0</span>
+                        </div>
+                        <div>
+                            <strong>Unsubscribed:</strong> <span id="unsubscribedCount">0</span>
+                        </div>
+                        <div>
+                            <strong>Will Send To:</strong> <span id="willSendCount" style="color: #1e40af; font-weight: 600;">0</span>
+                        </div>
+                    </div>
+                    <p style="margin: 0; color: #6b7280; font-size: 14px;">
+                        The system will automatically skip unsubscribed contacts and only send to eligible recipients.
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Progress -->
+            <div id="emailProgress" style="display: none; margin-bottom: 1rem;">
+                <div style="background: #f3f4f6; height: 8px; border-radius: 4px; overflow: hidden;">
+                    <div id="emailProgressBar" style="background: #1e40af; height: 100%; width: 0%; transition: width 0.3s;"></div>
+                </div>
+                <p id="emailProgressText" style="margin-top: 0.5rem; font-size: 0.875rem; color: #6b7280; text-align: center;">
+                    Preparing to send...
+                </p>
+            </div>
+            
+            <!-- Results -->
+            <div id="emailResults" style="display: none; margin-bottom: 1rem;"></div>
+            
+            <!-- Actions -->
+            <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                <button onclick="closeModal('prelaunchEmailModal')" 
+                        style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    Cancel
+                </button>
+                <button onclick="sendPrelaunchEmails()" 
+                        id="sendEmailButton"
+                        style="background: #1e40af; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                    📧 Send Emails
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     // CSV Import Functions
     function showImportModal() {
@@ -3869,6 +4005,163 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             `;
             document.getElementById('importResults').style.display = 'block';
             document.getElementById('importButton').disabled = false;
+        }
+    }
+    
+    // Prelaunch Email Functions
+    async function showPrelaunchEmailModal() {
+        document.getElementById('prelaunchEmailModal').style.display = 'block';
+        await updateEmailRecipients();
+    }
+    
+    async function updateEmailRecipients() {
+        try {
+            const sessionId = localStorage.getItem('fedevent_session');
+            const response = await fetch(`${API_BASE}/api/admin/email-contacts`, {
+                headers: { 'Authorization': `Bearer ${sessionId}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch email contacts');
+            }
+            
+            const data = await response.json();
+            const contacts = data.contacts || [];
+            
+            const totalContacts = contacts.length;
+            const unsubscribed = contacts.filter(c => c.unsubscribed === 1).length;
+            const willSend = totalContacts - unsubscribed;
+            
+            document.getElementById('totalContactsCount').textContent = totalContacts;
+            document.getElementById('unsubscribedCount').textContent = unsubscribed;
+            document.getElementById('willSendCount').textContent = willSend;
+            
+        } catch (error) {
+            console.error('Error fetching email contacts:', error);
+            document.getElementById('totalContactsCount').textContent = 'Error';
+            document.getElementById('unsubscribedCount').textContent = 'Error';
+            document.getElementById('willSendCount').textContent = 'Error';
+        }
+    }
+    
+    async function sendPrelaunchEmails() {
+        const subject = document.getElementById('emailSubject').value;
+        const sendMode = document.getElementById('sendMode').value;
+        const testMode = sendMode === 'test';
+        
+        if (!subject.trim()) {
+            alert('Please enter a subject line for the email.');
+            return;
+        }
+        
+        if (!testMode) {
+            const confirmed = confirm(
+                `🚨 CONFIRM LIVE EMAIL SEND\n\n` +
+                `You are about to send emails to ALL eligible contacts.\n\n` +
+                `Subject: "${subject}"\n` +
+                `Mode: Live Send\n\n` +
+                `This action cannot be undone. Are you sure you want to continue?`
+            );
+            
+            if (!confirmed) {
+                return;
+            }
+        }
+        
+        try {
+            // Get all contact IDs
+            const sessionId = localStorage.getItem('fedevent_session');
+            const response = await fetch(`${API_BASE}/api/admin/email-contacts`, {
+                headers: { 'Authorization': `Bearer ${sessionId}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to fetch contacts');
+            }
+            
+            const data = await response.json();
+            const contacts = data.contacts || [];
+            const contactIds = contacts.map(c => c.id);
+            
+            if (contactIds.length === 0) {
+                alert('No contacts found. Please import contacts first.');
+                return;
+            }
+            
+            // Show progress
+            document.getElementById('emailProgress').style.display = 'block';
+            document.getElementById('sendEmailButton').disabled = true;
+            document.getElementById('emailProgressText').textContent = testMode ? 'Testing email send...' : 'Sending emails...';
+            
+            // Send bulk emails
+            const sendResponse = await fetch(`${API_BASE}/api/admin/prelaunch/bulk-send`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${sessionId}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contactIds: contactIds,
+                    customSubject: subject,
+                    testMode: testMode
+                })
+            });
+            
+            if (!sendResponse.ok) {
+                throw new Error('Failed to send emails');
+            }
+            
+            const result = await sendResponse.json();
+            
+            // Show results
+            document.getElementById('emailProgress').style.display = 'none';
+            document.getElementById('emailResults').style.display = 'block';
+            
+            if (result.ok) {
+                const data = result.data;
+                document.getElementById('emailResults').innerHTML = `
+                    <div style="padding: 1rem; border-radius: 6px; border: 2px solid #16a34a; background: #dcfce7;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #166534;">✅ ${testMode ? 'Test Complete' : 'Emails Sent Successfully'}</h4>
+                        <div style="margin: 0.5rem 0; color: #166534;">
+                            <p style="margin: 0.25rem 0;"><strong>Successfully ${testMode ? 'tested' : 'sent'}:</strong> ${data.successCount} emails</p>
+                            <p style="margin: 0.25rem 0;"><strong>Skipped (unsubscribed):</strong> ${data.skippedCount} contacts</p>
+                            <p style="margin: 0.25rem 0;"><strong>Failed:</strong> ${data.failedCount} emails</p>
+                            <p style="margin: 0.25rem 0;"><strong>Total processed:</strong> ${data.totalProcessed} contacts</p>
+                        </div>
+                        ${data.failedEmails && data.failedEmails.length > 0 ? `
+                            <details style="margin-top: 0.5rem;">
+                                <summary style="cursor: pointer; color: #dc2626;">View Failed Emails (${data.failedEmails.length})</summary>
+                                <ul style="margin: 0.5rem 0 0 1rem; font-size: 0.875rem;">
+                                    ${data.failedEmails.map(f => `<li>${f.email}: ${f.error}</li>`).join('')}
+                                </ul>
+                            </details>
+                        ` : ''}
+                    </div>
+                `;
+                
+                if (testMode) {
+                    alert('✅ Test mode complete! Review the results above. Switch to "Live Send" mode when ready to send real emails.');
+                } else {
+                    alert('✅ Emails sent successfully! Check the results above for details.');
+                    // Refresh the email contacts list
+                    loadEmailContacts();
+                }
+            } else {
+                throw new Error(result.error || 'Failed to send emails');
+            }
+            
+        } catch (error) {
+            console.error('Email send error:', error);
+            document.getElementById('emailProgress').style.display = 'none';
+            document.getElementById('emailResults').style.display = 'block';
+            document.getElementById('emailResults').innerHTML = `
+                <div style="padding: 1rem; border-radius: 6px; border: 2px solid #dc2626; background: #fee2e2;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Email Send Failed</h4>
+                    <p style="margin: 0; color: #b91c1c;">${error.message || 'Failed to send emails. Please try again.'}</p>
+                </div>
+            `;
+        } finally {
+            document.getElementById('sendEmailButton').disabled = false;
         }
     }
 </script>

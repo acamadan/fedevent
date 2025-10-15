@@ -6,17 +6,27 @@
     <title>FEDEVENT - Connect Your Hotel to Governmental Contract Opportunities</title>
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Tailwind CSS - Production Ready -->
     <script>
-        // Suppress Tailwind CDN production warning
+        // Suppress Tailwind CDN production warning BEFORE loading
         const originalWarn = console.warn;
         console.warn = function(...args) {
-            if (args[0] && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
                 return; // Suppress this specific warning
             }
             originalWarn.apply(console, args);
         };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind after loading
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {}
+                }
+            }
+        }
     </script>
     
     <!-- Custom Tailwind Config -->
@@ -44,7 +54,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     
     <!-- Google Places API - Async loading for better performance -->
-    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABdwje_wVZfSJi2fcfZQkxI1WhSJnlM3M&libraries=places&loading=async" defer></script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABdwje_wVZfSJi2fcfZQkxI1WhSJnlM3M&libraries=places&loading=async&callback=initGoogleMaps" defer></script>
     
     <!-- Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-WHNVHXGPHG"></script>
@@ -72,18 +82,60 @@
             right: 20px;
             z-index: 1000;
             font-family: 'Inter', system-ui, sans-serif;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 1200px) {
+            .ai-assistant {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+            }
+        }
+        
+        .ai-assistant * {
+            pointer-events: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .ai-assistant {
+                bottom: 10px;
+                right: 10px;
+            }
         }
         
         .ai-chat-window {
+            position: absolute;
+            bottom: 80px;
+            right: 0;
             width: 350px;
+            max-width: calc(100vw - 40px);
             height: 500px;
+            max-height: calc(100vh - 120px);
             background: white;
             border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
-            border: 2px solid #e5e7eb;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            border: 3px solid #2563eb;
             overflow: hidden;
-            transform: translateY(100%);
-            transition: transform 0.3s ease-in-out;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        @media (max-width: 1200px) {
+            .ai-chat-window {
+                width: 320px;
+                height: 450px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ai-chat-window {
+                width: calc(100vw - 20px);
+                height: 400px;
+                bottom: 70px;
+                right: 0;
+            }
         }
         
         .ai-chat-window.open {
@@ -127,7 +179,7 @@
         }
         
         .ai-chat-messages {
-            height: 350px;
+            flex: 1;
             overflow-y: auto;
             padding: 20px;
             background: #f9fafb;
@@ -222,25 +274,188 @@
             transform: scale(1.05);
         }
         
+        .ai-mic-btn, .ai-voice-btn, .ai-clear-btn {
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            margin: 0 2px;
+        }
+        
+        .ai-mic-btn:hover, .ai-voice-btn:hover, .ai-clear-btn:hover {
+            background: #e5e7eb;
+            transform: scale(1.05);
+        }
+        
+        .ai-mic-btn.recording {
+            background: #ef4444;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        .ai-voice-btn.enabled {
+            background: #10b981;
+            color: white;
+        }
+        
         .ai-toggle-btn {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(135deg, #2563eb, #dc2626);
+            width: 220px;
+            height: 220px;
+            background: #000000;
             border: none;
             border-radius: 50%;
-            color: white;
-            font-size: 24px;
             cursor: pointer;
-            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+            box-shadow: 0 30px 100px rgba(37, 99, 235, 0.4), 0 0 0 0 rgba(37, 99, 235, 0.7);
             transition: all 0.3s ease;
             display: flex;
             align-items: center;
             justify-content: center;
+            position: relative;
+            overflow: hidden;
         }
         
+        
         .ai-toggle-btn:hover {
-            transform: scale(1.1);
-            box-shadow: 0 12px 25px rgba(37, 99, 235, 0.4);
+            transform: scale(1.15);
+            box-shadow: 0 30px 80px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0.7);
+            animation: none;
+        }
+        
+        .dana-video {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .ai-toggle-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .ai-typing-text {
+            background: #000000;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+            border: 3px solid #00ff00;
+            width: 224px;
+            height: 216px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            animation: terminalGlow 2s ease-in-out infinite alternate;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .ai-typing-text-content {
+            color: #00ff00;
+            font-size: 15px;
+            font-weight: 400;
+            line-height: 1.2;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            position: absolute;
+            top: -15px;
+            left: 20px;
+            right: 20px;
+            text-align: left;
+        }
+        
+        .dana-avatar {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a8a, #dc2626);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="danaGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%231e3a8a"/><stop offset="100%" style="stop-color:%23dc2626"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23danaGradient)"/><circle cx="50" cy="35" r="8" fill="white"/><circle cx="50" cy="35" r="5" fill="%2300aaff"/><path d="M35 50 Q50 40 65 50" stroke="white" stroke-width="2" fill="none"/><path d="M30 65 Q50 55 70 65" stroke="white" stroke-width="1" fill="none"/><text x="50" y="85" text-anchor="middle" fill="white" font-family="Arial" font-size="8" font-weight="bold">D.A.N.A</text></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .dana-face {
+            color: white;
+            font-size: 24px;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            letter-spacing: 2px;
+        }
+        
+        .terminal-prompt {
+            color: #00ff00;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+        }
+        
+        .terminal-status {
+            color: #00ff00;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+            font-size: 15px;
+        }
+        
+        .typing-line {
+            display: flex;
+            align-items: center;
+        }
+        
+        .typing-text {
+            color: #00ff00;
+        }
+        
+        .cursor {
+            background-color: #00ff00;
+            color: #000000;
+            width: 8px;
+            height: 15px;
+            display: inline-block;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+            vertical-align: baseline;
+        }
+        
+        @keyframes terminalGlow {
+            0% { 
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+                border-color: #00ff00;
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+                border-color: #00ff41;
+            }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), 0 0 0 0 rgba(37, 99, 235, 0.7);
+            }
+            70% {
+                box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), 0 0 0 10px rgba(37, 99, 235, 0);
+            }
+            100% {
+                box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), 0 0 0 0 rgba(37, 99, 235, 0);
+            }
         }
         
         .ai-typing-indicator {
@@ -476,7 +691,111 @@
         }
     </style>
 </head>
-<body class="antialiased bg-white text-gray-900" x-data="{ showSuccess: false, isSubmitting: false, userCode: '' }">
+<body class="antialiased bg-white text-gray-900" x-data="waitlistForm()">
+
+    <!-- PLS AI Assistant - Absolute Position (Below Header) -->
+    <div class="ai-assistant" x-data="plsAssistant()" style="position: absolute; top: calc(100vh + 40px); right: 40px; z-index: 1000;">
+        <!-- Chat Window -->
+        <div class="ai-chat-window" x-show="isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="transform translate-y-full" x-transition:enter-end="transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="transform translate-y-0" x-transition:leave-end="transform translate-y-full">
+            <!-- Header -->
+            <div class="ai-chat-header">
+                <div class="ai-chat-title">
+                    🤖 D.A.N.A
+                </div>
+                <button class="ai-close-btn" @click="closeChat()">×</button>
+            </div>
+            
+            <!-- Messages -->
+            <div class="ai-chat-messages" x-ref="messagesContainer">
+                <div class="ai-message">
+                    <div class="ai-avatar">D.A.N.A</div>
+                    <div class="ai-message-content">
+                        Hi! I'm D.A.N.A, your Digital Assistant Network Agent for FEDEVENT prelaunch. I can help you understand government contracting opportunities, hotel eligibility requirements, and guide you through joining our waitlist. How can I assist you today?
+                    </div>
+                </div>
+                
+                <!-- Quick Questions -->
+                <div class="ai-quick-questions">
+                    <div class="ai-quick-question" @click="sendQuickQuestion('What are the hotel eligibility requirements?')">
+                        Hotel eligibility requirements?
+                    </div>
+                    <div class="ai-quick-question" @click="sendQuickQuestion('What types of government contracts are available?')">
+                        What contracts are available?
+                    </div>
+                    <div class="ai-quick-question" @click="sendQuickQuestion('How does the payment process work?')">
+                        How does payment work?
+                    </div>
+                    <div class="ai-quick-question" @click="sendQuickQuestion('What happens after I join the waitlist?')">
+                        What happens after joining?
+                    </div>
+                </div>
+                
+                <!-- Dynamic Messages -->
+                <template x-for="message in messages" :key="message.id">
+                    <div class="ai-message" :class="message.isUser ? 'ai-user-message' : ''">
+                        <div class="ai-avatar" x-text="message.isUser ? 'U' : 'D.A.N.A'"></div>
+                        <div class="ai-message-content" x-html="message.content"></div>
+                    </div>
+                </template>
+                
+                <!-- Typing Indicator -->
+                <div x-show="isTyping" class="ai-message">
+                    <div class="ai-avatar">D.A.N.A</div>
+                    <div class="ai-typing-indicator">
+                        <div class="ai-typing-dots">
+                            <div class="ai-typing-dot"></div>
+                            <div class="ai-typing-dot"></div>
+                            <div class="ai-typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div class="ai-chat-input">
+                <div class="ai-input-group">
+                    <input 
+                        type="text" 
+                        class="ai-text-input" 
+                        placeholder="Ask D.A.N.A about FEDEVENT prelaunch..."
+                        x-model="inputMessage"
+                        @keydown.enter="sendMessage()"
+                        :disabled="isTyping"
+                    >
+                    <button class="ai-mic-btn" @click="toggleMic()" :class="{ 'recording': isRecording }" title="Voice Input">
+                        🎤
+                    </button>
+                    <button class="ai-voice-btn" @click="toggleVoice()" :class="{ 'enabled': voiceEnabled }" title="Voice Response">
+                        🔊
+                    </button>
+                    <button class="ai-clear-btn" @click="clearChat()" title="Clear Chat">
+                        🗑️
+                    </button>
+                    <button class="ai-send-btn" @click="sendMessage()" :disabled="!inputMessage.trim() || isTyping">
+                        →
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toggle Button with Typing Text -->
+        <div class="ai-toggle-container" x-show="!isOpen">
+            <!-- Typing Text -->
+            <div class="ai-typing-text">
+                <div class="ai-typing-text-content" id="dana-typing">
+                    <div class="terminal-prompt">TERMINAL D.A.N.A</div><div class="terminal-status">STATUS: ACTIVE, SOURCE: AI AGENT</div>
+                    <div class="typing-line">
+                        <span class="typing-text" id="typing-animation"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Toggle Button -->
+            <button class="ai-toggle-btn" @click="toggleChat()" @mouseenter="playDanaVideo()" @mouseleave="pauseDanaVideo()">
+                <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" muted playsinline x-ref="danaVideo" @loadeddata="initDanaVideo()" @error="videoError()" @canplay="videoCanPlay()" @ended="pauseAtEnd()"></video>
+            </button>
+        </div>
+    </div>
 
     <!-- Fixed Video Background -->
     <div class="fixed top-0 left-0 w-full h-screen z-0">
@@ -787,9 +1106,17 @@
                 </div>
                 
                 <div class="bg-white rounded-xl p-8 shadow-md mb-4">
+                    <!-- FEDEVENT Logo -->
+                    <div class="text-center mb-6">
+                        <h1 class="text-4xl md:text-5xl font-black mb-2">
+                            <span class="text-usa-red">FED</span><span class="text-usa-blue">EVENT</span>
+                        </h1>
+                        <div class="w-16 h-1 bg-gradient-to-r from-usa-red to-usa-blue mx-auto rounded-full"></div>
+                    </div>
+                    
                     <p class="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
                         We will contact you about upcoming opportunities and leads as soon as they become available. 
-                        Your hotel is now registered in our database as an <span class="font-bold text-usa-blue">eligible property</span> 
+                        Your hotel is now registered in our database and meets the <span class="font-bold text-usa-blue">FEDEVENT minimum requirements</span> 
                         for government contract opportunities.
                     </p>
                 </div>
@@ -801,7 +1128,7 @@
             </div>
             
             <!-- Form -->
-            <form x-show="!showSuccess" @submit.prevent="submitForm" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm">
+            <form x-show="!showSuccess" @submit.prevent="submitForm($event)" onsubmit="alert('Form onsubmit triggered!'); return false;" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm">
                 
                 <!-- Property Eligibility Requirement -->
                 <div id="eligibility-section" style="background: #fef2f2; border-radius: 8px; border: 2px solid #dc2626; padding: 16px; margin: 0 0 16px 0;">
@@ -830,7 +1157,7 @@
                     
                     <div style="margin-bottom: 12px;">
                         <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--error); cursor: pointer; font-size: 1.125rem;">
-                            <input type="checkbox" name="accepts_net30" value="Yes" required style="margin-top: 2px;">
+                            <input type="checkbox" id="net30_terms" name="accepts_net30" value="Yes" required style="margin-top: 2px;">
                             <span>I accept NET30 payment terms <span style="color: var(--error);">*</span></span>
                         </label>
                         <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
@@ -840,7 +1167,7 @@
                     
                     <div style="margin-bottom: 12px;">
                         <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--error); cursor: pointer; font-size: 1.125rem;">
-                            <input type="checkbox" name="accepts_po" value="Acceptable" required style="margin-top: 2px;">
+                            <input type="checkbox" id="no_direct_bill" name="accepts_po" value="Acceptable" required style="margin-top: 2px;">
                             <span>I understand and accept the NO DIRECT BILL APPLICATION policy <span style="color: var(--error);">*</span></span>
                         </label>
                         <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
@@ -908,7 +1235,6 @@
                             id="city" 
                             name="city" 
                             required
-                            readonly
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled from hotel selection"
                         >
@@ -921,7 +1247,6 @@
                             type="text" 
                             id="state" 
                             name="state" 
-                            readonly
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled (optional)"
                         >
@@ -934,7 +1259,6 @@
                             type="text" 
                             id="zipCode" 
                             name="zipCode" 
-                            readonly
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled (optional)"
                         >
@@ -977,6 +1301,7 @@
                             <option value="AU">Australia</option>
                             <option value="NZ">New Zealand</option>
                             <option value="IN">India</option>
+                            <option value="ID">Indonesia</option>
                             <option value="CN">China</option>
                             <option value="BR">Brazil</option>
                             <option value="AR">Argentina</option>
@@ -1121,12 +1446,14 @@
                 <!-- Submit Button -->
                 <div class="form-section-after-eligibility text-center">
                     <button 
-                        type="submit"
+                        type="button"
+                        @click="submitForm($event)"
                         :disabled="isSubmitting"
                         class="w-full md:w-auto patriotic-gradient text-white text-lg font-bold px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                         x-text="isSubmitting ? 'Submitting...' : 'Join the Waitlist →'"
                     >
                     </button>
+                    
                 </div>
             </form>
         </div>
@@ -1197,8 +1524,15 @@
     <script>
         let placeData = {};
         let autocomplete;
+        let isInitialized = false;
         
         function initAutocomplete() {
+            // Prevent multiple initializations
+            if (isInitialized) {
+                console.log('Autocomplete already initialized, skipping...');
+                return;
+            }
+            
             console.log('Initializing Google Places Autocomplete...');
             
             if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
@@ -1213,12 +1547,25 @@
             }
             
             try {
+                // Suppress deprecation warning
+                const originalWarn = console.warn;
+                console.warn = function(...args) {
+                    if (args[0] && args[0].includes('google.maps.places.Autocomplete is not available to new customers')) {
+                        return; // Suppress this specific warning
+                    }
+                    originalWarn.apply(console, args);
+                };
+                
                 // Initialize autocomplete with simple configuration
                 autocomplete = new google.maps.places.Autocomplete(input, {
                     types: ['lodging'],
                     fields: ['name', 'formatted_address', 'address_components', 'formatted_phone_number', 'place_id', 'geometry']
                 });
                 
+                // Restore console.warn
+                console.warn = originalWarn;
+                
+                isInitialized = true;
                 console.log('Autocomplete initialized successfully');
                 
                 // Listen for place selection
@@ -1274,8 +1621,14 @@
                         
                         // For international addresses: if city is missing but we have province/administrative_area_level_1, use that
                         // This handles cases like Istanbul where the province IS the city
-                        if (!city && province) {
-                            city = province;
+                        // BUT don't use country name as city
+                        // Special case for Jakarta: extract "Jakarta" from "Daerah Khusus Ibukota Jakarta"
+                        if (!city && province && province !== country) {
+                            if (province.includes('Jakarta')) {
+                                city = 'Jakarta';
+                            } else {
+                                city = province;
+                            }
                         }
                         
                         console.log('📍 Address components extracted:', {
@@ -1296,18 +1649,55 @@
                                 streetAddress = route;
                             }
                         } else {
-                            // International: Check if route ends with "No:" (waiting for number)
-                            if ((route.endsWith('No:') || route.endsWith('No.')) && streetNumber) {
-                                // Route ends with "No:", append the number
+                            // International: Handle various "No:" patterns
+                            console.log('🔍 Debug - Route:', route, 'StreetNumber:', streetNumber);
+                            
+                            // COMPREHENSIVE duplication fix - handle ALL cases
+                            console.log('🔍 FULL DEBUG - Route:', `"${route}"`, 'StreetNumber:', `"${streetNumber}"`);
+                            
+                            // Check if we have duplication (both route and street number contain "No" patterns)
+                            const routeHasNo = route.includes('No:') || route.includes('No.');
+                            const streetHasNo = streetNumber && (streetNumber.includes('No:') || streetNumber.includes('No.'));
+                            
+                            console.log('🔍 Route has No:', routeHasNo, 'Street has No:', streetHasNo);
+                            
+                            if (routeHasNo && streetHasNo) {
+                                // DUPLICATION CASE - both have "No" patterns
+                                console.log('🚨 DUPLICATION DETECTED - Both route and street have No patterns');
+                                
+                                // Clean the route - remove trailing "No:" or "No."
+                                let cleanRoute = route.replace(/\s*No[:\\.]\s*$/, '').trim();
+                                console.log('🧹 Cleaned route:', `"${cleanRoute}"`);
+                                
+                                // Clean the street number - remove leading "No:" or "No."
+                                let cleanStreetNumber = streetNumber.replace(/^No[:\\.]\s*/, '').trim();
+                                console.log('🧹 Cleaned street number:', `"${cleanStreetNumber}"`);
+                                
+                                // Combine with single "No:"
+                                streetAddress = cleanRoute + ' No: ' + cleanStreetNumber;
+                                console.log('✅ FINAL CLEANED ADDRESS:', `"${streetAddress}"`);
+                                
+                            } else if (routeHasNo && streetNumber && !streetHasNo) {
+                                // Route has "No:" but street number is clean
                                 streetAddress = route + ' ' + streetNumber;
-                            } else if (route.includes('No:') || route.includes('No.') || /\d/.test(route)) {
-                                // Route already has the complete number, use as-is
-                                streetAddress = route;
-                            } else if (streetNumber) {
-                                // Add building number with "No:" format
-                                streetAddress = route + ' No: ' + streetNumber;
+                                console.log('✅ Route has No, street clean:', streetAddress);
+                                
+                            } else if (!routeHasNo && streetNumber) {
+                                // Route is clean, check if street number already has "No:"
+                                if (streetNumber.includes('No:') || streetNumber.includes('No.')) {
+                                    // Street number already has "No:", just combine
+                                    streetAddress = route + ' ' + streetNumber;
+                                    console.log('✅ Route clean, street has No, combining:', streetAddress);
+                                } else {
+                                    // Street number is clean, add "No:" format
+                                    streetAddress = route + ' No: ' + streetNumber;
+                                    console.log('✅ Route clean, adding No:', streetAddress);
+                                }
+                                
                             } else {
+                                // Use route as-is
                                 streetAddress = route;
+                                console.log('✅ Using route as-is:', streetAddress);
                             }
                         }
                         if (sublocality) {
@@ -1326,11 +1716,24 @@
                     document.getElementById('city').value = city;
                     document.getElementById('state').value = stateValue;
                     document.getElementById('zipCode').value = zipCode;
+                    
+                    // Debug country field
+                    console.log('🌍 Country field debug:', {
+                        country: country,
+                        countrySelect: document.getElementById('country'),
+                        allAddressComponents: place.address_components
+                    });
+                    
                     if (country) {
                         const countrySelect = document.getElementById('country');
                         if (countrySelect) {
                             countrySelect.value = country;
+                            console.log('✅ Country set to:', country);
+                        } else {
+                            console.log('❌ Country select element not found');
                         }
+                    } else {
+                        console.log('❌ No country data available');
                     }
                     document.getElementById('hotelPhone').value = place.formatted_phone_number || '';
                     document.getElementById('hotelPlaceId').value = place.place_id || '';
@@ -1381,13 +1784,137 @@
             }
         }
         
+        // Check required policy acceptance
+        function checkRequiredPolicies() {
+            const net30Checkbox = document.getElementById('net30_terms');
+            const directBillCheckbox = document.getElementById('no_direct_bill');
+            
+            console.log('🔍 Policy check debug:', {
+                net30Checkbox: net30Checkbox,
+                net30Checked: net30Checkbox ? net30Checkbox.checked : 'element not found',
+                directBillCheckbox: directBillCheckbox,
+                directBillChecked: directBillCheckbox ? directBillCheckbox.checked : 'element not found'
+            });
+            
+            if (!net30Checkbox || !directBillCheckbox) {
+                console.log('❌ Policy checkboxes not found');
+                return false;
+            }
+            
+            if (!net30Checkbox.checked || !directBillCheckbox.checked) {
+                console.log('❌ Required policies not accepted, showing popup');
+                // Show policy requirement popup
+                showPolicyRequirementPopup();
+                return false;
+            }
+            console.log('✅ All required policies accepted');
+            return true;
+        }
+        
+        // Show policy requirement popup
+        function showPolicyRequirementPopup() {
+            // Create popup overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Inter', system-ui, sans-serif;
+            `;
+            
+            // Create popup content
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                background: white;
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+                text-align: center;
+                border: 3px solid #dc2626;
+            `;
+            
+            popup.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                <h2 style="color: #dc2626; font-size: 24px; font-weight: 700; margin-bottom: 20px;">
+                    Required Policies Not Accepted
+                </h2>
+                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                    We are unable to accept hotels that do not accept <strong>NET30 payment terms</strong> and the <strong>NO DIRECT BILL APPLICATION policy</strong>.
+                </p>
+                <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">
+                        <strong>Need clarification?</strong>
+                    </p>
+                    <p style="color: #374151; font-size: 14px; line-height: 1.5;">
+                        • Send us an email with your questions at <strong>info@Fedevent.com</strong><br>
+                        • Ask the <strong>PLS Assistant</strong> (🤖) for answers to common questions
+                    </p>
+                </div>
+                <button onclick="closePolicyPopup()" style="
+                    background: linear-gradient(135deg, #2563eb, #dc2626);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 12px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    I Understand
+                </button>
+            `;
+            
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closePolicyPopup();
+                }
+            });
+            
+            // Store reference for closing
+            window.currentPolicyPopup = overlay;
+        }
+        
+        // Close policy popup
+        function closePolicyPopup() {
+            if (window.currentPolicyPopup) {
+                document.body.removeChild(window.currentPolicyPopup);
+                window.currentPolicyPopup = null;
+            }
+        }
+        
         // Check if Google Maps is loaded and initialize
         function checkAndInit() {
+            // Prevent multiple initializations
+            if (isInitialized) {
+                return;
+            }
+            
+            console.log('🔍 Checking Google Maps API...', {
+                google: typeof google !== 'undefined',
+                maps: typeof google !== 'undefined' && google.maps,
+                places: typeof google !== 'undefined' && google.maps && google.maps.places
+            });
+            
             if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                console.log('✅ Google Maps API is ready, initializing autocomplete...');
                 initAutocomplete();
             } else {
-                console.log('Google Maps not ready, retrying...');
-                setTimeout(checkAndInit, 500);
+                console.log('⏳ Google Maps not ready, retrying in 1 second...');
+                setTimeout(checkAndInit, 1000);
             }
         }
         
@@ -1400,6 +1927,54 @@
             }
         });
         
+        // D.A.N.A Typing Animation with Lip Sync
+        function startDanaTyping() {
+            const message = "HEY I AM D.A.N.A\nDIGITAL ASSISTANT NETWORK AGENT\nI AM HERE TO ASSIST";
+            const typingElement = document.getElementById('typing-animation');
+            let index = 0;
+            let isTyping = true;
+            
+            // Calculate typing speed to match 7-second video
+            const videoDuration = 7080; // 7.08 seconds in milliseconds
+            const messageLength = message.length;
+            const typingDelay = videoDuration / messageLength * 0.8; // Faster typing to match lips
+            
+            function typeNextChar() {
+                if (index < message.length && isTyping) {
+                    // Add the character and cursor together, preserving line breaks
+                    let displayText = message.substring(0, index + 1).replace(/\n/g, '<br>');
+                    typingElement.innerHTML = displayText + '<span class="cursor">&nbsp;</span>';
+                    
+                    index++;
+                    setTimeout(typeNextChar, typingDelay); // Match video duration
+                } else if (index >= message.length) {
+                    // Keep the message visible with cursor, don't clear it
+                    // Just restart the typing effect after a longer pause
+                    setTimeout(() => {
+                        if (isTyping) {
+                            typingElement.innerHTML = '';
+                            index = 0;
+                            typeNextChar();
+                        }
+                    }, 3000); // 3 second pause before restart
+                }
+            }
+            
+            // Start typing
+            typeNextChar();
+        }
+        
+        // Start D.A.N.A typing when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(startDanaTyping, 1000); // Start after 1 second
+        });
+        
+        // Google Maps API callback function
+        window.initGoogleMaps = function() {
+            console.log('🎉 Google Maps API loaded via callback!');
+            checkAndInit();
+        };
+        
         // Start checking when DOM is ready
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', checkAndInit);
@@ -1407,32 +1982,58 @@
             checkAndInit();
         }
         
-        // Also try when window loads
+        // Also try when window loads (only if not already initialized)
         window.addEventListener('load', function() {
-            setTimeout(checkAndInit, 1000);
+            if (!isInitialized) {
+                console.log('🔄 Window loaded, checking Google Maps again...');
+                setTimeout(checkAndInit, 1000);
+            }
         });
     </script>
 
     <!-- Form Submission Script -->
     <script>
-        function submitForm(event) {
-            const form = event.target;
-            const formData = new FormData(form);
-            
-            // Get checked interests
-            const interests = [];
-            document.querySelectorAll('input[name="interests"]:checked').forEach(cb => {
-                interests.push(cb.value);
-            });
-            
-            // Validate at least one interest is selected
-            if (interests.length === 0) {
-                alert('Please select at least one area of interest.');
-                return;
-            }
-            
-            // Set submitting state
-            this.isSubmitting = true;
+        function waitlistForm() {
+            return {
+                showSuccess: false,
+                isSubmitting: false,
+                userCode: '',
+                
+                submitForm(event) {
+                    console.log('🚀 Form submission started');
+                    alert('Form submission started!'); // TEST ALERT
+                    
+                    // Get the form element properly
+                    const form = document.getElementById('waitlistForm');
+                    if (!form) {
+                        console.error('Form not found!');
+                        return false;
+                    }
+                    const formData = new FormData(form);
+                    
+                    // Check required policies first
+                    console.log('🔍 Checking required policies...');
+                    if (!checkRequiredPolicies()) {
+                        console.log('❌ Policy check failed, stopping submission');
+                        alert('Policy check failed!'); // TEST ALERT
+                        return false; // Stop submission if policies not accepted
+                    }
+                    console.log('✅ Policy check passed, continuing submission');
+                    
+                    // Get checked interests
+                    const interests = [];
+                    document.querySelectorAll('input[name="interests"]:checked').forEach(cb => {
+                        interests.push(cb.value);
+                    });
+                    
+                    // Validate at least one interest is selected
+                    if (interests.length === 0) {
+                        alert('Please select at least one area of interest.');
+                        return;
+                    }
+                    
+                    // Set submitting state
+                    this.isSubmitting = true;
             
             // Get eligibility data
             const indoorProperty = formData.get('indoor_property');
@@ -1574,90 +2175,10 @@
             .finally(() => {
                 this.isSubmitting = false;
             });
+                }
+            }
         }
     </script>
-
-    <!-- PLS AI Assistant -->
-    <div class="ai-assistant" x-data="plsAssistant()">
-        <!-- Chat Window -->
-        <div class="ai-chat-window" x-show="isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="transform translate-y-full" x-transition:enter-end="transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="transform translate-y-0" x-transition:leave-end="transform translate-y-full">
-            <!-- Header -->
-            <div class="ai-chat-header">
-                <div class="ai-chat-title">
-                    🤖 PLS Assistant
-                </div>
-                <button class="ai-close-btn" @click="closeChat()">×</button>
-            </div>
-            
-            <!-- Messages -->
-            <div class="ai-chat-messages" x-ref="messagesContainer">
-                <div class="ai-message">
-                    <div class="ai-avatar">PLS</div>
-                    <div class="ai-message-content">
-                        Hi! I'm PLS, your AI assistant for FEDEVENT prelaunch. I can help you understand government contracting opportunities, hotel eligibility requirements, and guide you through joining our waitlist. How can I assist you today?
-                    </div>
-                </div>
-                
-                <!-- Quick Questions -->
-                <div class="ai-quick-questions">
-                    <div class="ai-quick-question" @click="sendQuickQuestion('What are the hotel eligibility requirements?')">
-                        Hotel eligibility requirements?
-                    </div>
-                    <div class="ai-quick-question" @click="sendQuickQuestion('What types of government contracts are available?')">
-                        What contracts are available?
-                    </div>
-                    <div class="ai-quick-question" @click="sendQuickQuestion('How does the payment process work?')">
-                        How does payment work?
-                    </div>
-                    <div class="ai-quick-question" @click="sendQuickQuestion('What happens after I join the waitlist?')">
-                        What happens after joining?
-                    </div>
-                </div>
-                
-                <!-- Dynamic Messages -->
-                <template x-for="message in messages" :key="message.id">
-                    <div class="ai-message" :class="message.isUser ? 'ai-user-message' : ''">
-                        <div class="ai-avatar" x-text="message.isUser ? 'U' : 'PLS'"></div>
-                        <div class="ai-message-content" x-html="message.content"></div>
-                    </div>
-                </template>
-                
-                <!-- Typing Indicator -->
-                <div x-show="isTyping" class="ai-message">
-                    <div class="ai-avatar">PLS</div>
-                    <div class="ai-typing-indicator">
-                        <div class="ai-typing-dots">
-                            <div class="ai-typing-dot"></div>
-                            <div class="ai-typing-dot"></div>
-                            <div class="ai-typing-dot"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Input -->
-            <div class="ai-chat-input">
-                <div class="ai-input-group">
-                    <input 
-                        type="text" 
-                        class="ai-text-input" 
-                        placeholder="Ask PLS about FEDEVENT prelaunch..."
-                        x-model="inputMessage"
-                        @keydown.enter="sendMessage()"
-                        :disabled="isTyping"
-                    >
-                    <button class="ai-send-btn" @click="sendMessage()" :disabled="!inputMessage.trim() || isTyping">
-                        →
-                    </button>
-                </div>
-            </div>
-        </div>
-        
-        <!-- Toggle Button -->
-        <button class="ai-toggle-btn" @click="toggleChat()" x-show="!isOpen">
-            🤖
-        </button>
-    </div>
 
     <!-- PLS AI Assistant JavaScript -->
     <script>
@@ -1669,6 +2190,10 @@
                 messages: [],
                 messageId: 0,
                 userInteractions: [],
+                isRecording: false,
+                voiceEnabled: false,
+                recognition: null,
+                synthesis: null,
                 
                 toggleChat() {
                     this.isOpen = !this.isOpen;
@@ -1709,6 +2234,14 @@
                         
                         // Track AI response
                         this.trackInteraction('ai_response', response);
+                        
+                        // Speak response if voice is enabled
+                        if (this.voiceEnabled && this.synthesis) {
+                            const utterance = new SpeechSynthesisUtterance(response.replace(/<[^>]*>/g, ''));
+                            utterance.rate = 0.9;
+                            utterance.pitch = 1.1;
+                            this.synthesis.speak(utterance);
+                        }
                     }, 1000 + Math.random() * 2000);
                 },
                 
@@ -1874,6 +2407,139 @@
                     2. Fill out the waitlist form below<br>
                     3. Start receiving exclusive opportunities<br><br>
                     Would you like to know more about eligibility requirements, contract types, or how to fill out the form?`;
+                },
+                
+                init() {
+                    // Initialize speech recognition
+                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        this.recognition = new SpeechRecognition();
+                        this.recognition.continuous = false;
+                        this.recognition.interimResults = false;
+                        this.recognition.lang = 'en-US';
+                        
+                        this.recognition.onresult = (event) => {
+                            const transcript = event.results[0][0].transcript;
+                            this.inputMessage = transcript;
+                            this.isRecording = false;
+                        };
+                        
+                        this.recognition.onerror = () => {
+                            this.isRecording = false;
+                        };
+                    }
+                    
+                    // Initialize speech synthesis
+                    if ('speechSynthesis' in window) {
+                        this.synthesis = window.speechSynthesis;
+                    }
+                },
+                
+                toggleMic() {
+                    if (!this.recognition) return;
+                    
+                    if (this.isRecording) {
+                        this.recognition.stop();
+                        this.isRecording = false;
+                    } else {
+                        this.recognition.start();
+                        this.isRecording = true;
+                    }
+                },
+                
+                toggleVoice() {
+                    this.voiceEnabled = !this.voiceEnabled;
+                },
+                
+                clearChat() {
+                    this.messages = [];
+                },
+                
+                initDanaVideo() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    if (video) {
+                        console.log('🎥 DANA video loaded, duration:', video.duration);
+                        // Set to last frame (smiley face)
+                        video.currentTime = video.duration - 0.1;
+                        console.log('🎥 Set to last frame at:', video.currentTime);
+                    }
+                },
+                
+                videoError() {
+                    console.log('❌ DANA video error - file might not exist or be corrupted');
+                },
+                
+                videoCanPlay() {
+                    console.log('✅ DANA video can play - ready for audio');
+                },
+                
+                enableDanaAudio() {
+                    const video = this.$refs.danaVideo;
+                    if (video) {
+                        console.log('🔓 Enabling DANA audio with user interaction...');
+                        video.muted = false;
+                        video.volume = 0.8;
+                    }
+                },
+                
+                playDanaAudio() {
+                    const video = this.$refs.danaVideo;
+                    if (video) {
+                        console.log('🎤 Playing DANA audio...');
+                        if (video.muted) {
+                            video.muted = false;
+                            video.volume = 0.8;
+                            video.play();
+                        }
+                    } else {
+                        console.log('❌ DANA video not found');
+                    }
+                },
+                
+                pauseDanaAudio() {
+                    const video = this.$refs.danaVideo;
+                    if (video) {
+                        console.log('Pausing DANA audio...');
+                        video.muted = true;
+                    }
+                },
+                
+                playDanaVideo() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    console.log('🎬 playDanaVideo called, video:', video);
+                    if (video) {
+                        console.log('🎬 Playing DANA video from start...');
+                        video.currentTime = 0;
+                        video.muted = false;
+                        video.volume = 0.8;
+                        video.play().then(() => {
+                            console.log('✅ Video playing successfully');
+                        }).catch(e => console.log('❌ Video play error:', e));
+                    } else {
+                        console.log('❌ Video element not found');
+                    }
+                },
+                
+                pauseDanaVideo() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    console.log('⏸️ pauseDanaVideo called, video:', video);
+                    if (video) {
+                        console.log('⏸️ Pausing DANA video and returning to smiley face...');
+                        video.pause();
+                        // Return to last frame (smiley face)
+                        video.currentTime = video.duration - 0.1;
+                        console.log('✅ Video paused at:', video.currentTime);
+                    } else {
+                        console.log('❌ Video element not found');
+                    }
+                },
+                
+                pauseAtEnd() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    if (video) {
+                        console.log('🏁 Video ended, staying at last frame');
+                        // Video stays at last frame (smiley face)
+                    }
                 }
             }
         }

@@ -1307,6 +1307,18 @@ try {
   if (!e.message.includes('already exists')) console.log('Email contacts table already exists');
 }
 
+// Add unsubscribe tracking columns to email_contacts
+try { db.exec(`ALTER TABLE email_contacts ADD COLUMN unsubscribed INTEGER DEFAULT 0`); } catch (e) {}
+try { db.exec(`ALTER TABLE email_contacts ADD COLUMN unsubscribed_at TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE email_contacts ADD COLUMN unsubscribe_token TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE email_contacts ADD COLUMN prelaunch_sent INTEGER DEFAULT 0`); } catch (e) {}
+try { db.exec(`ALTER TABLE email_contacts ADD COLUMN prelaunch_sent_at TEXT`); } catch (e) {}
+
+// Add unsubscribe tracking to hotel_leads as well
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN unsubscribed INTEGER DEFAULT 0`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN unsubscribed_at TEXT`); } catch (e) {}
+try { db.exec(`ALTER TABLE hotel_leads ADD COLUMN unsubscribe_token TEXT`); } catch (e) {}
+
 // Link prelaunch codes to main hotel accounts (migration)
 try {
   db.exec(`ALTER TABLE hotels ADD COLUMN prelaunch_code TEXT UNIQUE`);
@@ -4192,6 +4204,134 @@ function requireAdmin(req, res, next) {
   next();
 }
 
+// Generate prelaunch invitation email template
+function generatePrelaunchInvitationEmail({ hotelName, contactName, unsubscribeToken }) {
+  const baseUrl = process.env.BASE_URL || 'https://fedevent.com';
+  const unsubscribeUrl = `${baseUrl}/unsubscribe?token=${unsubscribeToken}`;
+  
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Exclusive Early Access to Government Contracts</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f8fafc;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f8fafc; padding: 40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);">
+              
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); padding: 40px 40px 30px 40px; text-align: center;">
+                  <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">FEDEVENT</h1>
+                  <p style="color: #e0e7ff; margin: 0; font-size: 16px; font-weight: 500;">Government Contracts Simplified</p>
+                </td>
+              </tr>
+              
+              <!-- Main Content -->
+              <tr>
+                <td style="padding: 40px;">
+                  <p style="color: #1f2937; font-size: 18px; font-weight: 600; margin: 0 0 20px 0;">Dear ${contactName || 'Hotel Partner'},</p>
+                  
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                    Thank you for your previous interest in government contract opportunities. We're excited to introduce you to <strong>FEDEVENT</strong> – a revolutionary platform that makes winning government hotel contracts easier than ever before.
+                  </p>
+                  
+                  <div style="background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%); border-left: 4px solid #1e40af; padding: 20px; margin: 30px 0; border-radius: 8px;">
+                    <h2 style="color: #1e40af; font-size: 20px; font-weight: 700; margin: 0 0 15px 0;">🎯 Why FEDEVENT?</h2>
+                    <ul style="color: #374151; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                      <li><strong>Direct Access</strong> to federal government hotel contracts</li>
+                      <li><strong>Competitive Bidding</strong> with real-time notifications</li>
+                      <li><strong>Streamlined Process</strong> – no more complex paperwork</li>
+                      <li><strong>Guaranteed Payments</strong> from government agencies</li>
+                      <li><strong>Exclusive Opportunities</strong> for registered hotels</li>
+                    </ul>
+                  </div>
+                  
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 30px 0;">
+                    As an <strong>early access member</strong>, ${hotelName} can join our platform before the official launch and gain a competitive advantage in securing lucrative government contracts.
+                  </p>
+                  
+                  <!-- CTA Button -->
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center" style="padding: 10px 0 30px 0;">
+                        <a href="${baseUrl}/prelaunch.html" style="display: inline-block; background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 16px 40px; border-radius: 8px; font-size: 18px; font-weight: 700; box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);">
+                          🚀 Join Early Access Now
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 8px;">
+                    <p style="color: #92400e; font-size: 14px; line-height: 1.6; margin: 0;">
+                      <strong>⚡ Limited Time:</strong> Early access members receive priority notifications for all new government contracts and exclusive onboarding support.
+                    </p>
+                  </div>
+                  
+                  <h3 style="color: #1f2937; font-size: 18px; font-weight: 700; margin: 30px 0 15px 0;">What Happens Next?</h3>
+                  <ol style="color: #374151; font-size: 15px; line-height: 1.8; margin: 0 0 20px 0; padding-left: 20px;">
+                    <li>Click the button above to register your hotel</li>
+                    <li>Complete your property profile (takes 5 minutes)</li>
+                    <li>Get instant access to active government contracts</li>
+                    <li>Start bidding and winning contracts immediately</li>
+                  </ol>
+                  
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 20px 0;">
+                    Our team is here to support you every step of the way. If you have any questions, simply reply to this email or visit our help center.
+                  </p>
+                  
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 30px 0 10px 0;">
+                    Looking forward to partnering with you,
+                  </p>
+                  <p style="color: #1f2937; font-size: 16px; font-weight: 600; margin: 0;">
+                    The FEDEVENT Team
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background-color: #f9fafb; padding: 30px 40px; border-top: 1px solid #e5e7eb;">
+                  <p style="color: #6b7280; font-size: 13px; line-height: 1.6; margin: 0 0 15px 0; text-align: center;">
+                    FEDEVENT - Connecting Hotels with Government Travel Opportunities<br>
+                    Trusted by hotels nationwide for government contract management
+                  </p>
+                  
+                  <table width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                      <td align="center">
+                        <a href="${baseUrl}" style="color: #1e40af; text-decoration: none; font-size: 13px; margin: 0 10px;">Visit Website</a>
+                        <span style="color: #d1d5db;">|</span>
+                        <a href="${baseUrl}/help-center.html" style="color: #1e40af; text-decoration: none; font-size: 13px; margin: 0 10px;">Help Center</a>
+                        <span style="color: #d1d5db;">|</span>
+                        <a href="${baseUrl}/prelaunch.html" style="color: #1e40af; text-decoration: none; font-size: 13px; margin: 0 10px;">Sign Up</a>
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                    <p style="color: #9ca3af; font-size: 12px; line-height: 1.5; margin: 0 0 10px 0; text-align: center;">
+                      <strong>Important:</strong> If you no longer wish to receive emails about government contract opportunities from FEDEVENT, you can unsubscribe below. Please note that unsubscribing means you will <strong>NOT receive notifications</strong> about upcoming government contracts that could benefit your property.
+                    </p>
+                    <p style="text-align: center; margin: 15px 0 0 0;">
+                      <a href="${unsubscribeUrl}" style="color: #9ca3af; text-decoration: underline; font-size: 12px;">Unsubscribe from future emails</a>
+                    </p>
+                  </div>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
 async function sendMail({ to, subject, html, attachments = [], replyTo, from }) {
   try {
     if (!process.env.SMTP_HOST || !to) {
@@ -5309,6 +5449,213 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
   } catch (error) {
     console.error('Error sending bulk invitations:', error);
     return fail(res, 500, 'Failed to send invitations');
+  }
+});
+
+// Send bulk prelaunch invitations to email contacts (Admin only)
+app.post('/api/admin/prelaunch/bulk-send', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { contactIds, customSubject, testMode = false } = req.body;
+    
+    if (!Array.isArray(contactIds) || contactIds.length === 0) {
+      return fail(res, 400, 'Contact IDs array is required');
+    }
+    
+    if (!process.env.SMTP_HOST) {
+      return fail(res, 400, 'SMTP not configured');
+    }
+    
+    const adminUserId = req.user.id;
+    const now = new Date().toISOString();
+    let successCount = 0;
+    let skippedCount = 0;
+    let failedEmails = [];
+    
+    for (const contactId of contactIds) {
+      try {
+        const contact = db.prepare('SELECT * FROM email_contacts WHERE id = ?').get(contactId);
+        if (!contact) {
+          console.log(`Contact ${contactId} not found, skipping`);
+          continue;
+        }
+        
+        // Skip if already unsubscribed
+        if (contact.unsubscribed === 1) {
+          console.log(`Contact ${contact.email} is unsubscribed, skipping`);
+          skippedCount++;
+          continue;
+        }
+        
+        // Generate or retrieve unsubscribe token
+        let unsubscribeToken = contact.unsubscribe_token;
+        if (!unsubscribeToken) {
+          unsubscribeToken = crypto.randomBytes(32).toString('hex');
+          db.prepare('UPDATE email_contacts SET unsubscribe_token = ? WHERE id = ?')
+            .run(unsubscribeToken, contactId);
+        }
+        
+        // Generate email HTML
+        const html = generatePrelaunchInvitationEmail({
+          hotelName: contact.hotel_name,
+          contactName: contact.contact_name || 'Hotel Partner',
+          unsubscribeToken
+        });
+        
+        const subject = customSubject || '🏨 Exclusive Invitation: Join FEDEVENT Early Access';
+        
+        // Send email (skip in test mode)
+        if (!testMode) {
+          const result = await sendMail({
+            to: contact.email,
+            subject,
+            html,
+            from: process.env.SMTP_FROM || 'noreply@fedevent.com'
+          });
+          
+          if (result.ok) {
+            // Update contact status
+            db.prepare(`
+              UPDATE email_contacts 
+              SET invitation_status = 'invited',
+                  invited_at = ?,
+                  invited_by = ?,
+                  last_contacted_at = ?
+              WHERE id = ?
+            `).run(now, adminUserId, now, contactId);
+            
+            successCount++;
+            console.log(`✅ Email sent to ${contact.email}`);
+          } else {
+            failedEmails.push({ 
+              email: contact.email, 
+              error: result.error || 'Email send failed' 
+            });
+          }
+        } else {
+          successCount++;
+          console.log(`✅ Test mode: Would send to ${contact.email}`);
+        }
+        
+        // Add small delay to avoid rate limiting (100ms between emails)
+        if (!testMode) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+        
+      } catch (error) {
+        console.error(`Error processing contact ${contactId}:`, error);
+        const contact = db.prepare('SELECT email FROM email_contacts WHERE id = ?').get(contactId);
+        failedEmails.push({ 
+          email: contact?.email || `ID:${contactId}`, 
+          error: error.message 
+        });
+      }
+    }
+    
+    return ok(res, { 
+      message: testMode 
+        ? `Test mode: Would send to ${successCount} contacts` 
+        : `Emails sent to ${successCount} contacts`,
+      successCount,
+      skippedCount,
+      failedCount: failedEmails.length,
+      totalProcessed: contactIds.length,
+      failedEmails: failedEmails.length > 0 ? failedEmails : undefined,
+      testMode
+    });
+  } catch (error) {
+    console.error('Error sending bulk prelaunch emails:', error);
+    return fail(res, 500, 'Failed to send prelaunch invitations');
+  }
+});
+
+// Unsubscribe endpoint (public, no auth required)
+app.get('/api/unsubscribe', (req, res) => {
+  try {
+    const { token } = req.query;
+    
+    if (!token) {
+      return fail(res, 400, 'Unsubscribe token is required');
+    }
+    
+    // Try email_contacts first
+    const contact = db.prepare('SELECT * FROM email_contacts WHERE unsubscribe_token = ?').get(token);
+    
+    if (contact) {
+      if (contact.unsubscribed === 1) {
+        return ok(res, { 
+          message: 'Already unsubscribed',
+          email: contact.email,
+          alreadyUnsubscribed: true
+        });
+      }
+      
+      db.prepare(`
+        UPDATE email_contacts 
+        SET unsubscribed = 1, unsubscribed_at = datetime('now')
+        WHERE unsubscribe_token = ?
+      `).run(token);
+      
+      return ok(res, { 
+        message: 'Successfully unsubscribed',
+        email: contact.email,
+        success: true
+      });
+    }
+    
+    // Try hotel_leads
+    const lead = db.prepare('SELECT * FROM hotel_leads WHERE unsubscribe_token = ?').get(token);
+    
+    if (lead) {
+      if (lead.unsubscribed === 1) {
+        return ok(res, { 
+          message: 'Already unsubscribed',
+          email: lead.email,
+          alreadyUnsubscribed: true
+        });
+      }
+      
+      db.prepare(`
+        UPDATE hotel_leads 
+        SET unsubscribed = 1, unsubscribed_at = datetime('now')
+        WHERE unsubscribe_token = ?
+      `).run(token);
+      
+      return ok(res, { 
+        message: 'Successfully unsubscribed',
+        email: lead.email,
+        success: true
+      });
+    }
+    
+    return fail(res, 404, 'Invalid unsubscribe token');
+    
+  } catch (error) {
+    console.error('Unsubscribe error:', error);
+    return fail(res, 500, 'Failed to process unsubscribe request');
+  }
+});
+
+// Get unsubscribed contacts (Admin only)
+app.get('/api/admin/unsubscribed', requireAuth, requireAdmin, (req, res) => {
+  try {
+    const unsubscribedContacts = db.prepare(`
+      SELECT email, hotel_name, unsubscribed_at, 'email_contacts' as source
+      FROM email_contacts 
+      WHERE unsubscribed = 1
+      UNION ALL
+      SELECT email, hotel_name, unsubscribed_at, 'hotel_leads' as source
+      FROM hotel_leads 
+      WHERE unsubscribed = 1
+      ORDER BY unsubscribed_at DESC
+    `).all();
+    
+    return ok(res, { 
+      unsubscribed: unsubscribedContacts,
+      total: unsubscribedContacts.length
+    });
+  } catch (error) {
+    console.error('Error fetching unsubscribed contacts:', error);
+    return fail(res, 500, 'Failed to fetch unsubscribed contacts');
   }
 });
 

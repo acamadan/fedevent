@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Unsubscribe - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            padding: 40px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 10px 0;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+            margin: 0;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #e5e7eb;
+            border-top-color: #1e40af;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .success {
+            text-align: center;
+        }
+
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 40px;
+        }
+
+        .error {
+            text-align: center;
+        }
+
+        .error-icon {
+            width: 80px;
+            height: 80px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 40px;
+        }
+
+        h2 {
+            color: #1f2937;
+            font-size: 24px;
+            font-weight: 700;
+            margin: 0 0 15px 0;
+        }
+
+        p {
+            color: #6b7280;
+            font-size: 16px;
+            line-height: 1.6;
+            margin: 0 0 20px 0;
+        }
+
+        .email {
+            background: #f3f4f6;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 14px;
+            color: #1e40af;
+            margin: 20px 0;
+        }
+
+        .warning-box {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+
+        .warning-box p {
+            color: #92400e;
+            font-size: 14px;
+            margin: 0;
+        }
+
+        .warning-box strong {
+            display: block;
+            margin-bottom: 8px;
+            color: #78350f;
+        }
+
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%);
+            color: white;
+            text-decoration: none;
+            padding: 14px 32px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.3);
+        }
+
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 64, 175, 0.4);
+        }
+
+        .secondary-link {
+            color: #1e40af;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            margin-top: 20px;
+        }
+
+        .secondary-link:hover {
+            text-decoration: underline;
+        }
+
+        .footer {
+            background: #f9fafb;
+            padding: 20px 40px;
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .footer p {
+            color: #9ca3af;
+            font-size: 12px;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>FEDEVENT</h1>
+            <p>Unsubscribe from Email Notifications</p>
+        </div>
+
+        <div class="content">
+            <!-- Loading State -->
+            <div id="loading-state" class="loading">
+                <div class="spinner"></div>
+                <p>Processing your request...</p>
+            </div>
+
+            <!-- Success State -->
+            <div id="success-state" class="success" style="display: none;">
+                <div class="success-icon">✓</div>
+                <h2>Successfully Unsubscribed</h2>
+                <p>We've removed the following email from our mailing list:</p>
+                <div class="email" id="success-email"></div>
+                
+                <div class="warning-box">
+                    <strong>⚠️ Important Notice</strong>
+                    <p>You will no longer receive notifications about upcoming government contract opportunities, exclusive deals, or platform updates from FEDEVENT.</p>
+                </div>
+
+                <p>If you change your mind, you can always sign up again at our website.</p>
+                <a href="/" class="button">Return to Homepage</a>
+            </div>
+
+            <!-- Already Unsubscribed State -->
+            <div id="already-unsubscribed-state" class="success" style="display: none;">
+                <div class="success-icon">ℹ️</div>
+                <h2>Already Unsubscribed</h2>
+                <p>This email address has already been removed from our mailing list:</p>
+                <div class="email" id="already-email"></div>
+                <p>You won't receive any future emails from FEDEVENT.</p>
+                <a href="/" class="button">Return to Homepage</a>
+            </div>
+
+            <!-- Error State -->
+            <div id="error-state" class="error" style="display: none;">
+                <div class="error-icon">✕</div>
+                <h2>Unable to Unsubscribe</h2>
+                <p id="error-message">The unsubscribe link may be invalid or expired.</p>
+                <p>If you continue to receive unwanted emails, please contact our support team.</p>
+                <a href="/help-center.html" class="button">Contact Support</a>
+                <br>
+                <a href="/" class="secondary-link">Return to Homepage</a>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>FEDEVENT - Government Contracts Simplified</p>
+        </div>
+    </div>
+
+    <script>
+        // Get token from URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        async function processUnsubscribe() {
+            if (!token) {
+                showError('No unsubscribe token provided.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/unsubscribe?token=${encodeURIComponent(token)}`);
+                const data = await response.json();
+
+                if (data.ok) {
+                    if (data.data.alreadyUnsubscribed) {
+                        showAlreadyUnsubscribed(data.data.email);
+                    } else if (data.data.success) {
+                        showSuccess(data.data.email);
+                    } else {
+                        showError(data.data.message || 'An error occurred.');
+                    }
+                } else {
+                    showError(data.error || 'Unable to process your request.');
+                }
+            } catch (error) {
+                console.error('Unsubscribe error:', error);
+                showError('A network error occurred. Please try again later.');
+            }
+        }
+
+        function showSuccess(email) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('success-email').textContent = email;
+            document.getElementById('success-state').style.display = 'block';
+        }
+
+        function showAlreadyUnsubscribed(email) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('already-email').textContent = email;
+            document.getElementById('already-unsubscribed-state').style.display = 'block';
+        }
+
+        function showError(message) {
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-state').style.display = 'block';
+        }
+
+        // Process unsubscribe on page load
+        processUnsubscribe();
+    </script>
+</body>
+</html>
+
