@@ -791,8 +791,8 @@
             </div>
             
             <!-- Toggle Button -->
-            <button class="ai-toggle-btn" @click="toggleChat()" @mouseenter="playDanaVideo()" @mouseleave="pauseDanaVideo()">
-                <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline x-ref="danaVideo" @loadeddata="initDanaVideo()" @error="videoError()" @canplay="videoCanPlay()" @ended="pauseAtEnd()" @click="enableDanaAudio()"></video>
+            <button class="ai-toggle-btn" @click="toggleChat(); enableDanaAudio()" @mouseenter="playDanaVideo()" @mouseleave="pauseDanaVideo()">
+                <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline x-ref="danaVideo" @loadeddata="initDanaVideo()" @error="videoError()" @canplay="videoCanPlay()" @ended="pauseAtEnd()"></video>
             </button>
         </div>
     </div>
@@ -1897,9 +1897,13 @@
         }
 
         // Listen for any user interaction to enable video playback
-        ['click', 'touchstart', 'keydown'].forEach(event => {
+        ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'].forEach(event => {
             document.addEventListener(event, enableVideoPlayback, { once: true });
         });
+        
+        // Also listen on the entire document body
+        document.body.addEventListener('click', enableVideoPlayback, { once: true });
+        document.body.addEventListener('touchstart', enableVideoPlayback, { once: true });
         
         // D.A.N.A Typing Animation with Lip Sync
         function startDanaTyping() {
@@ -2527,19 +2531,21 @@
                         console.log('🎬 Playing DANA video from start...');
                         video.currentTime = 0;
                         
-                        // Always try to enable audio - browsers will block if needed
-                        video.muted = false;
+                        // Start muted to avoid autoplay restrictions
+                        video.muted = true;
                         video.volume = 0.8;
                         
                         video.play().then(() => {
-                            console.log('✅ Video playing successfully with audio:', !video.muted);
+                            console.log('✅ Video playing successfully (muted initially)');
+                            
+                            // Try to unmute after a short delay
+                            setTimeout(() => {
+                                video.muted = false;
+                                console.log('🔊 Attempting to unmute video...');
+                            }, 100);
+                            
                         }).catch(e => {
                             console.log('❌ Video play error:', e);
-                            // If audio fails, try muted
-                            video.muted = true;
-                            video.play().then(() => {
-                                console.log('✅ Video playing muted due to autoplay restrictions');
-                            }).catch(e2 => console.log('❌ Muted video play also failed:', e2));
                         });
                     } else {
                         console.log('❌ Video element not found');
