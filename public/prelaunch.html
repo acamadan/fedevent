@@ -792,7 +792,7 @@
             
             <!-- Toggle Button -->
             <button class="ai-toggle-btn" @click="toggleChat()" @mouseenter="playDanaVideo()" @mouseleave="pauseDanaVideo()">
-                <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" muted playsinline x-ref="danaVideo" @loadeddata="initDanaVideo()" @error="videoError()" @canplay="videoCanPlay()" @ended="pauseAtEnd()"></video>
+                <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline x-ref="danaVideo" @loadeddata="initDanaVideo()" @error="videoError()" @canplay="videoCanPlay()" @ended="pauseAtEnd()" @click="enableDanaAudio()"></video>
             </button>
         </div>
     </div>
@@ -2480,11 +2480,21 @@
                 },
                 
                 enableDanaAudio() {
-                    const video = this.$refs.danaVideo;
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
                     if (video) {
                         console.log('🔓 Enabling DANA audio with user interaction...');
                         video.muted = false;
                         video.volume = 0.8;
+                        userInteracted = true; // Mark as interacted
+                        
+                        // If video is currently playing, restart it to enable audio
+                        if (!video.paused) {
+                            const currentTime = video.currentTime;
+                            video.currentTime = currentTime;
+                            video.play().then(() => {
+                                console.log('✅ DANA audio enabled and video restarted');
+                            }).catch(e => console.log('❌ Failed to restart video with audio:', e));
+                        }
                     }
                 },
                 
@@ -2517,25 +2527,19 @@
                         console.log('🎬 Playing DANA video from start...');
                         video.currentTime = 0;
                         
-                        // Only unmute if user has interacted with the page
-                        if (userInteracted) {
-                            video.muted = false;
-                            video.volume = 0.8;
-                        } else {
-                            // Keep muted if no user interaction yet
-                            video.muted = true;
-                            video.volume = 0;
-                        }
+                        // Always try to enable audio - browsers will block if needed
+                        video.muted = false;
+                        video.volume = 0.8;
                         
                         video.play().then(() => {
-                            console.log('✅ Video playing successfully');
+                            console.log('✅ Video playing successfully with audio:', !video.muted);
                         }).catch(e => {
                             console.log('❌ Video play error:', e);
-                            // If video fails to play due to autoplay restrictions, try muted
-                            if (!userInteracted) {
-                                video.muted = true;
-                                video.play().catch(e2 => console.log('❌ Muted video play also failed:', e2));
-                            }
+                            // If audio fails, try muted
+                            video.muted = true;
+                            video.play().then(() => {
+                                console.log('✅ Video playing muted due to autoplay restrictions');
+                            }).catch(e2 => console.log('❌ Muted video play also failed:', e2));
                         });
                     } else {
                         console.log('❌ Video element not found');
