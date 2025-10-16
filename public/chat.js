@@ -9,12 +9,14 @@
   let isListening = false;
   let isVoiceOutputEnabled = false;
   let currentUtterance = null;
+  let isSpeaking = false;
+  let isPaused = false;
 
   // Create chat bubble
   const bubble = document.createElement('div');
   bubble.id = 'chat-bubble';
   bubble.innerHTML = `
-    <div class="bubble-icon">🤖</div>
+    <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline></video>
     <div class="bubble-pulse"></div>
   `;
 
@@ -24,7 +26,10 @@
   panel.innerHTML = `
     <div class="chat-head">
       <div class="chat-head-content">
-        <span class="chat-title">🤖 FEDEVENT AI Assistant</span>
+        <span class="chat-title">
+          <img src="/dana.mp4" alt="DANA" class="chat-dana-icon" style="width: 24px; height: 24px; border-radius: 50%; margin-right: 8px; object-fit: cover;">
+          D.A.N.A FEDEVENT AI
+        </span>
         <span class="chat-subtitle">Here to help you every step of the way</span>
       </div>
       <button id="chat-minimize" aria-label="Close chat">✖</button>
@@ -41,6 +46,23 @@
           </svg>
         </button>
         <input id="chat_input" type="text" placeholder="Ask me anything about registration, policies, or how to fill out forms..." autocomplete="off" />
+        <div class="voice-controls" style="display: flex; gap: 4px;">
+          <button id="chat_voice_play" aria-label="Play voice" title="Play voice response" style="display: none;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M6 3l12 7-12 7V3z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button id="chat_voice_pause" aria-label="Pause voice" title="Pause voice response" style="display: none;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M6 4h2v12H6V4zm6 0h2v12h-2V4z" fill="currentColor"/>
+            </svg>
+          </button>
+          <button id="chat_voice_stop" aria-label="Stop voice" title="Stop voice response" style="display: none;">
+            <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+              <path d="M4 4h12v12H4V4z" fill="currentColor"/>
+            </svg>
+          </button>
+        </div>
         <button id="chat_voice_output" aria-label="Toggle voice output" title="Enable voice responses">
           <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
             <path d="M8 6l-4 4H1v4h3l4 4V6zM15 10c0-1.657-1.343-3-3-3M15 10c0 1.657-1.343 3-3 3M17 10c0-2.761-2.239-5-5-5M17 10c0 2.761-2.239 5-5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -107,7 +129,7 @@
     
     if (messagesContainer.children.length === 0) {
       const pageContext = getCurrentPageContext();
-      let welcomeMessage = `👋 Hello! I'm your AI assistant for FEDEVENT.\n\n`;
+      let welcomeMessage = `👋 Hello! I'm Dana — FEDEVENT's AI assistant.\n\n`;
       
       if (pageContext.formContext.hasForm) {
         welcomeMessage += `I see you're on the ${pageContext.page} page with a form. I can help you:\n\n`;
@@ -125,7 +147,7 @@
       
       welcomeMessage += `What can I help you with today?`;
       
-      addMessage('Assistant', welcomeMessage, 'bot');
+      addMessage('Dana', welcomeMessage, 'bot');
     }
   }
 
@@ -173,6 +195,8 @@
   async function sendMessageToAI(message) {
     try {
       const pageContext = getCurrentPageContext();
+      const isUnrestricted = true && !(/prelaunch|invite|waitlist/i.test(window.location.pathname) || document.body.classList.contains('prelaunch'));
+      const isPrelaunch = /prelaunch|invite|waitlist/i.test(window.location.pathname) || document.body.classList.contains('prelaunch');
       
       const response = await fetch('/api/chat/assistant', {
         method: 'POST',
@@ -183,7 +207,8 @@
           message: message,
           conversationHistory: conversationHistory,
           currentPage: pageContext.page,
-          formContext: pageContext.formContext
+          formContext: pageContext.formContext,
+          mode: isUnrestricted ? 'dana_unrestricted' : (isPrelaunch ? 'dana_prelaunch' : 'default')
         })
       });
 
@@ -236,7 +261,7 @@
       
       // Add AI response to chat
       if (response.response) {
-        addMessage('Assistant', response.response, 'bot');
+        addMessage('Dana', response.response, 'bot');
         
         // Speak the response if voice output is enabled
         speakText(response.response);
@@ -505,25 +530,42 @@
     // Bubble click to open/close
     bubble.addEventListener('click', () => {
       panel.classList.toggle('open');
-      
       if (panel.classList.contains('open')) {
-        if (document.getElementById('chat-messages').children.length === 0) {
-          initChat();
-          setTimeout(() => addQuickActions(), 100);
-        }
-        setTimeout(() => {
-          document.getElementById('chat_input').focus();
-        }, 300);
-        
-        // Track chat open event
-        if (typeof gtag !== 'undefined') {
-          gtag('event', 'chat_opened', {
-            'event_category': 'User Interaction',
-            'event_label': 'AI Assistant'
-          });
-        }
+        // Hide the entire DANA sphere when chat opens
+        bubble.style.display = 'none';
+      } else {
+        // Show the entire DANA sphere when chat closes and restore DANA video
+        bubble.style.display = 'grid';
+        // Ensure DANA video is properly restored
+        bubble.innerHTML = `
+          <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline></video>
+          <div class="bubble-pulse"></div>
+        `;
       }
     });
+
+    // DANA video hover events
+    bubble.addEventListener('mouseenter', playDanaVideo);
+    bubble.addEventListener('mouseleave', pauseDanaVideo);
+
+    // Panel open logic
+    if (panel.classList.contains('open')) {
+      if (document.getElementById('chat-messages').children.length === 0) {
+        initChat();
+        setTimeout(() => addQuickActions(), 100);
+      }
+      setTimeout(() => {
+        document.getElementById('chat_input').focus();
+      }, 300);
+      
+      // Track chat open event
+      if (typeof gtag !== 'undefined') {
+        gtag('event', 'chat_opened', {
+          'event_category': 'User Interaction',
+          'event_label': 'AI Assistant'
+        });
+      }
+    }
     
     // Minimize button
     document.getElementById('chat-minimize').addEventListener('click', (e) => {
@@ -600,16 +642,62 @@
     });
   }
 
+  // DANA Video Functions
+  let danaActivated = false;
+
+  function activateDanaOnPageInteraction() {
+    if (!danaActivated) {
+      // Trigger a silent video play to satisfy browser requirements
+      const danaVideo = document.getElementById('danaVideo');
+      if (danaVideo) {
+        danaVideo.muted = true;
+        danaVideo.play().then(() => {
+          danaVideo.pause();
+          danaVideo.muted = false;
+          danaActivated = true;
+          console.log('DANA activated - hover should work now');
+        }).catch(e => console.log('DANA activation failed:', e));
+      }
+    }
+  }
+
+  function playDanaVideo() {
+    const danaVideo = document.getElementById('danaVideo');
+    if (danaVideo) {
+      danaVideo.currentTime = 0;
+      danaVideo.play().catch(e => console.log('Video play failed:', e));
+    }
+  }
+
+  function pauseDanaVideo() {
+    const danaVideo = document.getElementById('danaVideo');
+    if (danaVideo) {
+      danaVideo.pause();
+    }
+  }
+
   // Initialize when DOM is ready
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
       document.body.appendChild(bubble);
       document.body.appendChild(panel);
       setupEventListeners();
+      
+      // Auto-activate DANA on any page interaction
+      const activationEvents = ['click', 'touchstart', 'keydown', 'mousemove'];
+      activationEvents.forEach(event => {
+        document.addEventListener(event, activateDanaOnPageInteraction, { once: true });
+      });
     });
   } else {
     document.body.appendChild(bubble);
     document.body.appendChild(panel);
     setupEventListeners();
+    
+    // Auto-activate DANA on any page interaction
+    const activationEvents = ['click', 'touchstart', 'keydown', 'mousemove'];
+    activationEvents.forEach(event => {
+      document.addEventListener(event, activateDanaOnPageInteraction, { once: true });
+    });
   }
 })();

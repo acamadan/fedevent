@@ -80,12 +80,7 @@
         }
         
         .header {
-            background: var(--white);
-            border-bottom: 1px solid var(--border);
-            padding: 1rem 0;
-            position: sticky;
-            top: 0;
-            z-index: 100;
+            display: none; /* Hide old header since we're using sidebar */
         }
         
         .header-content {
@@ -598,26 +593,111 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">FEDEVENT Admin</div>
-            <div class="nav-links">
-                <a href="#" class="nav-tab active" onclick="showTab('dashboard')">Dashboard</a>
-                <a href="#" class="nav-tab" onclick="showTab('hotels')">Hotels</a>
-                <a href="#" class="nav-tab" onclick="showTab('emailContacts')">Email Contacts</a>
-                <a href="#" class="nav-tab" onclick="showTab('waitlist')">Waitlist</a>
-                <a href="/admin-contracts.html" class="nav-tab">Contracts</a>
-                <a href="/sam-search-admin.html" class="nav-tab">SAM Search</a>
+    <div class="admin-layout">
+        <!-- Top Header -->
+        <header class="admin-top-header">
+            <div class="admin-top-header-content">
+                <div class="admin-top-header-left">
+                    <h1 class="admin-top-header-title">FEDEVENT Admin</h1>
+                </div>
+                <div class="admin-top-header-right">
+                    <div class="user-menu">
+                        <a href="#" class="user-trigger">
+                            <div class="user-avatar">A</div>
+                            <span id="userInfo">Loading...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <div class="user-dropdown">
+                            <a href="/admin-profile.html">
+                                <i class="fas fa-user"></i>
+                                Profile
+                            </a>
+                            <a href="/admin-settings.html">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                            <button onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="user-menu">
-                <div class="user-info" id="userInfo">Loading...</div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
-    </header>
-    
-    <div class="container">
-        <h1 class="page-title" id="pageTitle">Admin Dashboard</h1>
+        </header>
+        
+        <!-- Main Content Area (Sidebar + Content) -->
+        <div class="admin-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <a href="/admin-dashboard.html" class="admin-sidebar-logo">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></span>
+                    </a>
+                    <button class="admin-sidebar-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                
+                <nav class="admin-sidebar-nav">
+                    <a href="#" class="admin-nav-item active" onclick="showTab('dashboard')">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="showTab('hotels')">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="showTab('emailContacts')">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Contacts</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="showTab('waitlist')">
+                        <i class="fas fa-users"></i>
+                        <span>Waitlist</span>
+                    </a>
+                    <a href="/admin-contracts.html" class="admin-nav-item">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Contracts</span>
+                    </a>
+                    <a href="/sam-search-admin.html" class="admin-nav-item">
+                        <i class="fas fa-search"></i>
+                        <span>SAM Search</span>
+                    </a>
+                    <a href="/admin-settings.html" class="admin-nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main-content">
+            <!-- Top Bar -->
+            <header class="admin-topbar">
+                <div class="admin-topbar-left">
+                    <button class="admin-mobile-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <nav class="admin-breadcrumb">
+                        <a href="/admin-dashboard.html">Admin</a>
+                        <i class="fas fa-chevron-right"></i>
+                        <span id="pageTitle">Dashboard</span>
+                    </nav>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="admin-content">
+                <div class="admin-page-header">
+                    <h1>Admin Dashboard</h1>
+                    <p>Manage your FEDEVENT system from this central dashboard.</p>
+                </div>
         
         <!-- Tab Content -->
         <div id="dashboardTab" class="tab-content active">
@@ -1378,6 +1458,20 @@ You can use these placeholders:
         </div>
     </div>
 
+    <!-- Quick View Modal for Waitlist Hotels -->
+    <div id="waitlistQuickViewModal" class="modal" style="display:none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
+      <div class="modal-content" style="background: #fff; margin: 5% auto; padding: 0; border: 1px solid #e5e7eb; width: 820px; max-width: calc(100% - 40px); border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+        <div style="display:flex; align-items:center; justify-content:space-between; padding: 14px 16px; border-bottom:1px solid #e5e7eb;">
+          <div style="font-weight:700; font-size:1rem; color:#111827" id="waitlistQuickViewTitle">Hotel Quick View</div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <a id="waitlistQuickViewOpenPage" href="#" target="_blank" style="font-size:0.875rem; text-decoration:none; color:#2563eb; font-weight:600;">Open full page ↗</a>
+            <button onclick="closeWaitlistQuickView()" aria-label="Close" style="background:#f3f4f6; border:1px solid #e5e7eb; color:#111827; padding:6px 10px; border-radius:8px; cursor:pointer;">✖</button>
+          </div>
+        </div>
+        <div id="waitlistQuickViewBody" style="padding: 16px; max-height: 70vh; overflow:auto;"></div>
+      </div>
+    </div>
+
     <script>
         const API_BASE = '';
         let allHotels = [];
@@ -1430,9 +1524,15 @@ You can use these placeholders:
             const tabContents = document.querySelectorAll('.tab-content');
             tabContents.forEach(tab => tab.classList.remove('active'));
             
-            // Remove active class from all nav tabs
-            const navTabs = document.querySelectorAll('.nav-tab');
-            navTabs.forEach(tab => tab.classList.remove('active'));
+            // Remove active class from all nav items
+            const navItems = document.querySelectorAll('.admin-nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            // Add active class to clicked nav item
+            const clickedItem = event.target.closest('.admin-nav-item');
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
             
             // Show selected tab content
             const selectedTab = document.getElementById(tabName + 'Tab');
@@ -1451,12 +1551,18 @@ You can use these placeholders:
                 loadEmailContacts();
             }
             
-            // Update page title
+            // Update page title in breadcrumb
             const pageTitle = document.getElementById('pageTitle');
-            if (tabName === 'dashboard') {
-                pageTitle.textContent = 'Admin Dashboard';
-            } else if (tabName === 'hotels') {
-                pageTitle.textContent = 'Hotel Management';
+            if (pageTitle) {
+                if (tabName === 'dashboard') {
+                    pageTitle.textContent = 'Dashboard';
+                } else if (tabName === 'hotels') {
+                    pageTitle.textContent = 'Hotels';
+                } else if (tabName === 'emailContacts') {
+                    pageTitle.textContent = 'Email Contacts';
+                } else if (tabName === 'waitlist') {
+                    pageTitle.textContent = 'Waitlist';
+                }
             }
             
             // Load data for the selected tab
@@ -2784,7 +2890,7 @@ This action cannot be undone.`)) {
         // Waitlist Functions
         async function loadWaitlist() {
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/waitlist`, {
                     headers: { 'Authorization': `Bearer ${sessionId}` }
                 });
@@ -3013,6 +3119,60 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             
             alert(details);
         }
+
+        // Open mid-size modal quick view for waitlist hotel
+        function openHotelDetailPopup(leadId) {
+            const lead = allWaitlist.find(l => l.id === leadId);
+            if (!lead) return;
+            const modal = document.getElementById('waitlistQuickViewModal');
+            const titleEl = document.getElementById('waitlistQuickViewTitle');
+            const bodyEl = document.getElementById('waitlistQuickViewBody');
+            const openLink = document.getElementById('waitlistQuickViewOpenPage');
+            titleEl.textContent = lead.hotel_name || 'Hotel Quick View';
+            const detailsId = encodeURIComponent(lead.hotel_id || lead.id);
+            openLink.href = `/hotel-details.html?id=${detailsId}`;
+            bodyEl.innerHTML = `
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <div>
+                  <div style=\"font-weight:600; color:#374151;\">Hotel</div>
+                  <div>${lead.hotel_name || '—'}</div>
+                  <div style=\"margin-top:6px; color:#6b7280; font-size:0.9rem;\">${[lead.city, lead.state, getFullCountryName(lead.country)].filter(Boolean).join(', ') || '—'}</div>
+                </div>
+                <div>
+                  <div style=\"font-weight:600; color:#374151;\">Contact</div>
+                  <div>${lead.contact_name || '—'} ${lead.title ? `<span style=\\\"color:#6b7280; font-size:0.85rem;\\\">(${lead.title})</span>` : ''}</div>
+                  <div style=\"margin-top:6px;\"><a href=\"mailto:${lead.email}\" style=\"color:#2563eb; text-decoration:none;\">${lead.email}</a>${lead.phone ? ` · <span style=\\\"color:#374151\\\">${lead.phone}</span>` : ''}</div>
+                </div>
+                <div>
+                  <div style=\"font-weight:600; color:#374151;\">Registration</div>
+                  <div>${lead.registration_status || 'waitlist'}</div>
+                </div>
+                <div>
+                  <div style=\"font-weight:600; color:#374151;\">Invitation</div>
+                  <div>${lead.invitation_status || 'not_invited'}</div>
+                </div>
+                <div>
+                  <div style=\"font-weight:600; color:#374151;\">Policies</div>
+                  <div style=\"display:flex; gap:8px; flex-wrap:wrap; margin-top:4px;\">
+                    ${lead.accepts_net30 ? '<span style=\\\"background:#dcfce7;color:#166534;padding:2px 6px;border-radius:6px;font-size:12px;\\\">NET30</span>' : ''}
+                    ${lead.accepts_po ? '<span style=\\\"background:#eef2ff;color:#3730a3;padding:2px 6px;border-radius:6px;font-size:12px;\\\">Gov PO</span>' : ''}
+                    ${lead.accepts_discount === 'Yes' ? '<span style=\\\"background:#fff7ed;color:#9a3412;padding:2px 6px;border-radius:6px;font-size:12px;\\\">30% Per Diem</span>' : ''}
+                  </div>
+                </div>
+                <div>
+                  <div style=\"font-weight:600; color:#374151;\">User Code</div>
+                  <div><span style=\"font-family:monospace;background:#dbeafe;color:#1e40af;padding:2px 6px;border-radius:6px;\">${lead.user_code || '—'}</span></div>
+                </div>
+              </div>
+              <div style=\"margin-top:12px; color:#6b7280; font-size:0.9rem;\">Signed up: ${lead.created_at ? new Date(lead.created_at).toLocaleString() : '—'}</div>
+            `;
+            modal.style.display = 'block';
+        }
+
+        function closeWaitlistQuickView() {
+            const modal = document.getElementById('waitlistQuickViewModal');
+            modal.style.display = 'none';
+        }
         
         // Bulk delete hotel functions
         function bulkDeleteHotels() {
@@ -3045,7 +3205,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         
         async function executeBulkDelete(hotels) {
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 let successCount = 0;
                 let failCount = 0;
                 
@@ -3107,7 +3267,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         
         async function loadDeletedHotels() {
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/waitlist/deleted`, {
                     headers: { 'Authorization': `Bearer ${sessionId}` }
                 });
@@ -3177,7 +3337,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         
         async function exportWaitlistToExcel() {
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/waitlist/export`, {
                     headers: { 'Authorization': `Bearer ${sessionId}` }
                 });
@@ -3206,7 +3366,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         // Export registered hotels list for XLOOKUP matching
         async function exportRegisteredEmails() {
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/hotels/export-emails`, {
                     headers: { 'Authorization': `Bearer ${sessionId}` }
                 });
@@ -3243,7 +3403,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             if (!confirmed) return;
             
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/waitlist/bulk-invite`, {
                     method: 'POST',
                     headers: {
@@ -3277,7 +3437,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             if (!confirmed) return;
             
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/waitlist/sync-registered`, {
                     method: 'POST',
                     headers: {
@@ -3306,7 +3466,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         
         async function loadEmailContacts() {
             try {
-                const sessionId = localStorage.getItem('fedevent_session');
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
                 const response = await fetch(`${API_BASE}/api/admin/email-contacts`, {
                     headers: { 'Authorization': `Bearer ${sessionId}` }
                 });
@@ -3872,7 +4032,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
     
     async function downloadImportTemplate() {
         try {
-            const sessionId = localStorage.getItem('fedevent_session');
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
             const response = await fetch(`${API_BASE}/api/admin/waitlist/csv-template`, {
                 headers: { 'Authorization': `Bearer ${sessionId}` }
             });
@@ -3927,7 +4087,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         document.getElementById('importResults').style.display = 'none';
         
         try {
-            const sessionId = localStorage.getItem('fedevent_session');
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
             const formData = new FormData();
             formData.append('csvFile', file);
             
@@ -4016,7 +4176,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
     
     async function updateEmailRecipients() {
         try {
-            const sessionId = localStorage.getItem('fedevent_session');
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
             const response = await fetch(`${API_BASE}/api/admin/email-contacts`, {
                 headers: { 'Authorization': `Bearer ${sessionId}` }
             });
@@ -4070,7 +4230,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         
         try {
             // Get all contact IDs
-            const sessionId = localStorage.getItem('fedevent_session');
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
             const response = await fetch(`${API_BASE}/api/admin/email-contacts`, {
                 headers: { 'Authorization': `Bearer ${sessionId}` }
             });
@@ -4165,6 +4325,18 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         }
     }
 </script>
+
+            </div> <!-- admin-content -->
+            </main> <!-- admin-main-content -->
+        </div> <!-- admin-content-wrapper -->
+    </div> <!-- admin-layout -->
+    
+    <!-- Include CSS and Font Awesome for icons -->
+    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Include sidebar JavaScript -->
+    <script src="admin-sidebar.js"></script>
 
 </body>
 </html>

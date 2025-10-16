@@ -602,7 +602,6 @@ const upload = multer({
     else cb(new Error(`Unsupported file type: ${file.mimetype}`));
   }
 });
-
 // Submit bid for final acceptance (locks the bid)
 app.post('/api/hotel/contracts/:id/bid/submit', requireAuth, (req, res) => {
   try {
@@ -1240,7 +1239,6 @@ try { db.exec(`CREATE TABLE IF NOT EXISTS payments (
 )`); console.log('✅ Payments table created'); } catch (e) {
   if (!e.message.includes('already exists')) console.log('Payments table already exists');
 }
-
 // Hotel leads table for prelaunch waitlist
 try { db.exec(`CREATE TABLE IF NOT EXISTS hotel_leads (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -1388,7 +1386,6 @@ try {
     console.log('is_priority column already exists');
   }
 }
-
 db.exec(`
 
   CREATE TABLE IF NOT EXISTS sessions (
@@ -1840,7 +1837,6 @@ db.exec(`
     updated_at TEXT DEFAULT (datetime('now'))
   );
 `);
-
 // ---------- SAM.gov integration ----------
 app.get('/api/sam/search', async (req, res) => {
   try {
@@ -2145,7 +2141,6 @@ app.get('/api/qr/:data', async (req, res) => {
     res.status(500).json({ error: 'Failed to generate QR code' });
   }
 });
-
 // Unified SAM.gov proxy matching Next.js example
 app.get('/api/opps', async (req, res) => {
   try {
@@ -2392,7 +2387,6 @@ app.post('/api/sam/search-and-email', async (req, res) => {
     return fail(res, 500, 'Search-and-email failed', { detail: String(e.message || e) });
   }
 });
-
 // ---------- Enhanced Per Diem API ----------
 app.get('/api/perdiem', async (req, res) => {
   try {
@@ -2925,7 +2919,6 @@ app.get('/api/perdiem/locations', async (req, res) => {
     return fail(res, 500, 'Per diem locations lookup failed');
   }
 });
-
 // ---------- GSA Per Diem API Integration - All 6 Endpoints ----------
 
 // Helper function to parse GSA API response structure
@@ -3016,7 +3009,6 @@ async function callGSAAPI(endpoint, apiKey, timeout = 10000) {
     throw error;
   }
 }
-
 // Endpoint 1: Get per diem rates by city/state/year
 app.get('/api/gsa/rates/city/:city/state/:state/year/:year', async (req, res) => {
   try {
@@ -3437,7 +3429,6 @@ app.post('/api/chat', async (req, res) => {
     return fail(res, 500, 'Chat failed');
   }
 });
-
 // ---------- Hotel Prelaunch Waitlist API ----------
 app.post('/api/leads', async (req, res) => {
   try {
@@ -3984,7 +3975,6 @@ async function ensureFreshQuickBooksToken() {
   
   return tokens.access_token;
 }
-
 // Create QuickBooks invoice for hotel registration
 async function createQuickBooksInvoice(email, name, amount, accountNumber, userId) {
   try {
@@ -4203,7 +4193,6 @@ function requireAdmin(req, res, next) {
   }
   next();
 }
-
 // Generate prelaunch invitation email template
 function generatePrelaunchInvitationEmail({ hotelName, contactName, unsubscribeToken }) {
   const baseUrl = process.env.BASE_URL || 'https://fedevent.com';
@@ -4613,7 +4602,6 @@ app.post('/api/auth/login', async (req, res) => {
     return fail(res, 500, 'Login failed');
   }
 });
-
 // Register endpoint (for hotel users)
 app.post('/api/auth/register', async (req, res) => {
   try {
@@ -4989,7 +4977,6 @@ app.get('/quickbooks/auth', requireAuth, requireAdmin, (req, res) => {
     res.status(500).send('Failed to initiate QuickBooks connection');
   }
 });
-
 // Step 2: OAuth Callback from QuickBooks
 app.get('/api/quickbooks/callback', async (req, res) => {
   try {
@@ -5258,7 +5245,6 @@ app.get('/api/admin/waitlist', requireAuth, requireAdmin, (req, res) => {
     return fail(res, 500, 'Failed to fetch waitlist data');
   }
 });
-
 // Export hotel waitlist to Excel (Admin only)
 app.get('/api/admin/waitlist/export', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -5790,7 +5776,6 @@ app.post('/api/admin/waitlist/bulk-invite', requireAuth, requireAdmin, async (re
     return fail(res, 500, 'Failed to send invitations');
   }
 });
-
 // Update single lead status (Admin only)
 app.put('/api/admin/waitlist/:id', requireAuth, requireAdmin, (req, res) => {
   try {
@@ -5910,7 +5895,6 @@ app.put('/api/admin/waitlist/bulk-update', requireAuth, requireAdmin, (req, res)
     return fail(res, 500, 'Failed to bulk update leads');
   }
 });
-
 // Sync registered hotels with waitlist (Admin only) - automatically marks leads as registered
 app.post('/api/admin/waitlist/sync-registered', requireAuth, requireAdmin, (req, res) => {
   try {
@@ -6380,9 +6364,7 @@ app.post('/api/upload', requireAuth, upload.single('file'), (req, res) => {
     return fail(res, 500, 'File upload failed');
   }
 });
-
 // ---------- AI Document Processing for Meeting Layouts ----------
-
 // Process meeting layout documents with OpenAI
 app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), async (req, res) => {
   try {
@@ -7032,7 +7014,6 @@ app.post('/debugOCR', upload.single('factSheet'), async (req, res) => {
     return res.status(500).json({ error: err.message });
   }
 });
-
 // ======================================================================
 // VERSION 8.0: COMPREHENSIVE HOTEL PROFILE EXTRACTION (AI-Powered)
 // ======================================================================
@@ -7147,7 +7128,6 @@ Return ONLY valid JSON in this exact format:
   ],
   "summary": "string describing what was found"
 }
-
 If a field is not found, use null. Do NOT invent data. Extract only what is clearly stated.`;
 
     const completion = await openai.chat.completions.create({
@@ -7608,7 +7588,6 @@ app.delete('/api/government/documents/:id', requireGovAuth, (req, res) => {
     return fail(res, 500, 'Failed to delete document');
   }
 });
-
 // ---------- Government Hotel Search API ----------
 
 // Search hotels for government users
@@ -7945,7 +7924,6 @@ app.get('/api/admin/hotels', requireAuth, requireAdmin, (req, res) => {
     return fail(res, 500, 'Failed to fetch hotels');
   }
 });
-
 // Get hotel details (admin only)
 app.get('/api/admin/hotels/:id', requireAuth, requireAdmin, (req, res) => {
   try {
@@ -8233,7 +8211,6 @@ app.post('/api/hotel/profile', requireAuth, (req, res) => {
     return fail(res, 500, 'Failed to submit hotel profile');
   }
 });
-
 // Update hotel profile (hotel users only)
 app.put('/api/hotel/profile', requireAuth, (req, res) => {
   try {
@@ -8741,7 +8718,6 @@ app.post('/api/admin/contracts/:id/grant', requireAuth, requireAdmin, (req, res)
     return fail(res, 500, 'Failed to grant access');
   }
 });
-
 // Delete contract (admin only)
 app.delete('/api/admin/contracts/:id', requireAuth, requireAdmin, (req, res) => {
   try {
@@ -8870,7 +8846,6 @@ app.put('/api/admin/contracts/:id', requireAuth, requireAdmin, (req, res) => {
     return fail(res, 500, 'Failed to update contract');
   }
 });
-
 // Hotel responds to notification (interested/not interested)
 app.post('/api/contracts/respond/:token', async (req, res) => {
   try {
@@ -9475,7 +9450,6 @@ app.post('/api/signin', (req, res) => {
   const { user = 'guest' } = req.body || {};
   return ok(res, { user: { id: 1, username: user } });
 });
-
 // Simple PDF generator using minimal canvas drawing via PDF syntax
 function generateAgreementPdfBytes(opts) {
   const {
@@ -10120,7 +10094,6 @@ app.put('/api/admin/hotels/bulk-edit', requireAuth, requireAdmin, (req, res) => 
     return fail(res, 500, 'Failed to update hotels');
   }
 });
-
 // Bulk send message to hotels
 app.post('/api/admin/hotels/bulk-message', requireAuth, requireAdmin, async (req, res) => {
   try {
@@ -10199,7 +10172,6 @@ app.post('/api/admin/hotels/bulk-message', requireAuth, requireAdmin, async (req
     return fail(res, 500, 'Failed to send bulk messages');
   }
 });
-
 // ---------- Team Member Invitation System ----------
 
 // Send team member invitation
@@ -10697,7 +10669,6 @@ async function parseSowDocument(filePath, originalName, mimeType) {
 
   return { requirements, summary, clins: sanitizedClins, warnings };
 }
-
 // SOW Document Processing API
 app.post('/api/process-sow', upload.single('sow_document'), async (req, res) => {
   try {
@@ -10977,7 +10948,6 @@ app.post('/submit-request', upload.array('attachments', 10), async (req, res) =>
     return fail(res, 500, 'Failed to process request');
   }
 });
-
 // Google Places API key endpoint
 app.get('/api/google-places-key', (req, res) => {
   try {
@@ -11286,10 +11256,121 @@ Question: ${message}` : message;
   }
 });
 
+// Hotel search endpoint
+app.post('/api/hotels/search', async (req, res) => {
+  try {
+    const { location, placeId, lat, lng, startDate, endDate, roomCount, attendeeCount } = req.body;
+    
+    console.log('Hotel search request:', {
+      location,
+      placeId,
+      lat,
+      lng,
+      startDate,
+      endDate,
+      roomCount,
+      attendeeCount
+    });
+    
+    // Query hotels from database based on location
+    let query = `
+      SELECT 
+        h.*,
+        hc.hotel_name,
+        hc.hotel_address,
+        hc.hotel_city,
+        hc.hotel_state,
+        hc.hotel_zip,
+        hc.hotel_phone,
+        hc.hotel_email,
+        hc.hotel_website,
+        hc.total_rooms,
+        hc.single_rooms,
+        hc.double_rooms,
+        hc.ada_rooms,
+        hc.suite_rooms
+      FROM hotel_profiles h
+      LEFT JOIN hotel_compliance hc ON h.hotel_id = hc.hotel_id
+      WHERE 1=1
+    `;
+    
+    const params = [];
+    
+    // Add location-based search
+    if (lat && lng) {
+      // Search within radius (approximately 50 miles)
+      query += ` AND (
+        (6371 * acos(cos(radians(?)) * cos(radians(hc.hotel_lat)) * cos(radians(hc.hotel_lng) - radians(?)) + sin(radians(?)) * sin(radians(hc.hotel_lat)))) < 80.5
+        OR hc.hotel_city LIKE ? 
+        OR hc.hotel_state LIKE ?
+        OR hc.hotel_address LIKE ?
+      )`;
+      params.push(lat, lng, lat, `%${location}%`, `%${location}%`, `%${location}%`);
+    } else if (location) {
+      // Text-based location search
+      query += ` AND (
+        hc.hotel_city LIKE ? 
+        OR hc.hotel_state LIKE ?
+        OR hc.hotel_address LIKE ?
+        OR hc.hotel_name LIKE ?
+      )`;
+      params.push(`%${location}%`, `%${location}%`, `%${location}%`, `%${location}%`);
+    }
+    
+    // Add room availability filter
+    if (roomCount) {
+      query += ` AND hc.total_rooms >= ?`;
+      params.push(parseInt(roomCount));
+    }
+    
+    // Add status filter (only active hotels)
+    query += ` AND h.status = 'active'`;
+    
+    // Order by relevance (closest first if coordinates available)
+    if (lat && lng) {
+      query += ` ORDER BY (6371 * acos(cos(radians(?)) * cos(radians(hc.hotel_lat)) * cos(radians(hc.hotel_lng) - radians(?)) + sin(radians(?)) * sin(radians(hc.hotel_lat)))) ASC`;
+      params.push(lat, lng, lat);
+    } else {
+      query += ` ORDER BY hc.hotel_name ASC`;
+    }
+    
+    console.log('Executing hotel search query:', query);
+    console.log('With parameters:', params);
+    
+    const [hotels] = await db.execute(query, params);
+    
+    console.log(`Found ${hotels.length} hotels matching search criteria`);
+    
+    res.json({
+      success: true,
+      hotels: hotels,
+      searchCriteria: {
+        location,
+        placeId,
+        lat,
+        lng,
+        startDate,
+        endDate,
+        roomCount,
+        attendeeCount
+      },
+      totalFound: hotels.length
+    });
+    
+  } catch (error) {
+    console.error('Hotel search error:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to search hotels',
+      message: error.message
+    });
+  }
+});
+
 // Public AI chatbot endpoint - No authentication required for website visitors
 app.post('/api/chat/assistant', async (req, res) => {
   try {
-    const { message, conversationHistory = [], currentPage = '', formContext = {} } = req.body;
+    const { message, conversationHistory = [], currentPage = '', formContext = {}, mode = 'default' } = req.body;
 
     if (!message || !message.trim()) {
       return res.status(400).json({ error: 'Message is required' });
@@ -11343,7 +11424,6 @@ To join CREATA's Preferred Vendor Network, hotels must meet:
 4. **Review Timeline**: 2-4 business days for most applications
 5. Extended timeline if additional verification needed
 6. Email notification sent upon approval
-
 ### What We Review During Registration
 - Proper business licensing and compliance
 - U.S. government safety standards adherence
@@ -11554,10 +11634,7 @@ If users need help filling out the registration form:
 `;
 
     // Build conversation context
-    const messages = [
-      {
-        role: 'system',
-        content: `You are an intelligent AI assistant for FEDEVENT (CREATA Global Event Agency LLC). Your purpose is to help website visitors with:
+    const systemPromptDefault = `You are an intelligent AI assistant for FEDEVENT (CREATA Global Event Agency LLC). Your purpose is to help website visitors with:
 
 1. **Registration Assistance**: Guide users step-by-step through the hotel registration form, explaining each field, requirements, and why the information is needed.
 
@@ -11591,7 +11668,30 @@ If users need help filling out the registration form:
 
 Use the comprehensive knowledge base below to answer questions accurately:
 
-${knowledgeBase}`
+${knowledgeBase}`;
+
+    const systemPromptDana = `You are Dana, FEDEVENT's AI. On the public landing page, you have no topical restrictions. Freely explain all FEDEVENT services, processes, policies, and offerings in clear, direct language. If users ask for examples or templates, provide them. Keep responses helpful, candid, and solution-oriented. Avoid making legal guarantees or disclosing private data. When in doubt, be transparent and give best-practice guidance.
+
+Context:
+- Page: ${currentPage || 'home'}
+- Form context: ${JSON.stringify(formContext)}
+
+Use the comprehensive knowledge base below to answer questions thoroughly:
+
+${knowledgeBase}`;
+
+    const systemPromptDanaPrelaunch = `You are Dana, FEDEVENT's AI, operating in Prelaunch mode. Be brief and high-level. Focus on inviting hotels to join the waitlist and verifying interest. Do not dive into detailed registration steps or internal processes. Emphasize benefits, eligibility (NET30, Gov PO acceptance, indoor facilities), and next steps (watch for invite, limited program). Avoid deep operational details.
+
+Context:
+- Page: ${currentPage || 'prelaunch'}
+- Form context: ${JSON.stringify(formContext)}
+
+Use the knowledge base for accurate high-level answers, but avoid granular walkthroughs.`;
+
+    const messages = [
+      {
+        role: 'system',
+        content: mode === 'dana_unrestricted' ? systemPromptDana : (mode === 'dana_prelaunch' ? systemPromptDanaPrelaunch : systemPromptDefault)
       }
     ];
 

@@ -693,8 +693,8 @@
 </head>
 <body class="antialiased bg-white text-gray-900" x-data="waitlistForm()">
 
-    <!-- PLS AI Assistant - Absolute Position (Below Header) -->
-    <div class="ai-assistant" x-data="plsAssistant()" style="position: absolute; top: calc(100vh + 40px); right: 40px; z-index: 1000;">
+    <!-- PLS AI Assistant - Fixed, never overlaps header -->
+    <div class="ai-assistant" x-data="plsAssistant()" x-init="setupAssistantPositioning()" style="z-index: 1000;">
         <!-- Chat Window -->
         <div class="ai-chat-window" x-show="isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="transform translate-y-full" x-transition:enter-end="transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="transform translate-y-0" x-transition:leave-end="transform translate-y-full">
             <!-- Header -->
@@ -809,7 +809,7 @@
     </div>
 
     <!-- Hero Section -->
-    <section class="relative z-10 overflow-hidden" style="height: 100vh; min-height: 700px; max-height: none;">
+    <section id="hero" class="relative z-10 overflow-hidden" style="height: 100vh; min-height: 700px; max-height: none;">
         <!-- Content -->
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center" style="padding-top: 120px; padding-bottom: 120px;">
             
@@ -1198,7 +1198,7 @@
                         required
                         class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
                         placeholder="Start typing hotel name..."
-                        autocomplete="off"
+                        autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true"
                     >
                     <p class="text-xs text-gray-500 mt-1">Type your hotel name and select from suggestions</p>
                 </div>
@@ -1215,6 +1215,7 @@
                         required
                         class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
                         placeholder="Full hotel address will be auto-filled from hotel selection"
+                        autocomplete="address-line1"
                     >
                     <p class="text-xs text-gray-500 mt-1">Address will be auto-filled when you select a hotel from the dropdown</p>
                 </div>
@@ -1237,6 +1238,7 @@
                             required
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled from hotel selection"
+                            autocomplete="address-level2"
                         >
                     </div>
                     <div>
@@ -1249,6 +1251,7 @@
                             name="state" 
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled (optional)"
+                            autocomplete="address-level1"
                         >
                     </div>
                     <div>
@@ -1261,76 +1264,25 @@
                             name="zipCode" 
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled (optional)"
+                            autocomplete="postal-code"
                         >
                     </div>
                 </div>
                 
-                <!-- Country -->
+                <!-- Country (auto-filled text, not a dropdown) -->
                 <div class="form-section-after-eligibility mb-6">
                     <label class="block text-xl font-semibold text-gray-700 mb-3" for="country">
                         Country <span class="text-gray-400 text-xs">(auto-filled)</span>
                     </label>
-                    <select 
-                        id="country" 
-                        name="country" 
-                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                    <input 
+                        type="text"
+                        id="country"
+                        name="country"
+                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Auto-filled from hotel selection"
+                        autocomplete="country"
+                        readonly
                     >
-                            <option value="">Select Country...</option>
-                            <option value="US">United States</option>
-                            <option value="CA">Canada</option>
-                            <option value="MX">Mexico</option>
-                            <option value="GB">United Kingdom</option>
-                            <option value="DE">Germany</option>
-                            <option value="FR">France</option>
-                            <option value="IT">Italy</option>
-                            <option value="ES">Spain</option>
-                            <option value="NL">Netherlands</option>
-                            <option value="BE">Belgium</option>
-                            <option value="CH">Switzerland</option>
-                            <option value="AT">Austria</option>
-                            <option value="SE">Sweden</option>
-                            <option value="NO">Norway</option>
-                            <option value="DK">Denmark</option>
-                            <option value="FI">Finland</option>
-                            <option value="IE">Ireland</option>
-                            <option value="PT">Portugal</option>
-                            <option value="GR">Greece</option>
-                            <option value="JP">Japan</option>
-                            <option value="KR">South Korea</option>
-                            <option value="SG">Singapore</option>
-                            <option value="AU">Australia</option>
-                            <option value="NZ">New Zealand</option>
-                            <option value="IN">India</option>
-                            <option value="ID">Indonesia</option>
-                            <option value="CN">China</option>
-                            <option value="BR">Brazil</option>
-                            <option value="AR">Argentina</option>
-                            <option value="CL">Chile</option>
-                            <option value="CO">Colombia</option>
-                            <option value="PE">Peru</option>
-                            <option value="ZA">South Africa</option>
-                            <option value="EG">Egypt</option>
-                            <option value="MA">Morocco</option>
-                            <option value="TN">Tunisia</option>
-                            <option value="AE">United Arab Emirates</option>
-                            <option value="SA">Saudi Arabia</option>
-                            <option value="IL">Israel</option>
-                            <option value="TR">Turkey</option>
-                            <option value="RU">Russia</option>
-                            <option value="UA">Ukraine</option>
-                            <option value="PL">Poland</option>
-                            <option value="CZ">Czech Republic</option>
-                            <option value="HU">Hungary</option>
-                            <option value="RO">Romania</option>
-                            <option value="BG">Bulgaria</option>
-                            <option value="HR">Croatia</option>
-                            <option value="SI">Slovenia</option>
-                            <option value="SK">Slovakia</option>
-                            <option value="LT">Lithuania</option>
-                            <option value="LV">Latvia</option>
-                            <option value="EE">Estonia</option>
-                            <option value="OTHER">Other</option>
-                        </select>
                 </div>
                 
                 
@@ -1525,6 +1477,7 @@
         let placeData = {};
         let autocomplete;
         let isInitialized = false;
+        let suppressAddressOverwriteUntil = 0;
         
         function initAutocomplete() {
             // Prevent multiple initializations
@@ -1587,7 +1540,8 @@
                     let sublocality = '';
                     let city = '';
                     let state = '';
-                    let country = '';
+                    let countryShort = '';
+                    let countryLong = '';
                     let zipCode = '';
                     let province = ''; // For places like Istanbul (administrative_area_level_1)
                     
@@ -1612,7 +1566,8 @@
                                 province = component.long_name; // Store full province name (e.g., "Istanbul")
                             }
                             if (types.includes('country')) {
-                                country = component.short_name;
+                                countryShort = component.short_name;
+                                countryLong = component.long_name;
                             }
                             if (types.includes('postal_code')) {
                                 zipCode = component.long_name;
@@ -1623,7 +1578,7 @@
                         // This handles cases like Istanbul where the province IS the city
                         // BUT don't use country name as city
                         // Special case for Jakarta: extract "Jakarta" from "Daerah Khusus Ibukota Jakarta"
-                        if (!city && province && province !== country) {
+                        if (!city && province && province !== countryLong) {
                             if (province.includes('Jakarta')) {
                                 city = 'Jakarta';
                             } else {
@@ -1632,7 +1587,7 @@
                         }
                         
                         console.log('📍 Address components extracted:', {
-                            streetNumber, route, sublocality, city, state, province, country, zipCode
+                            streetNumber, route, sublocality, city, state, province, countryShort, countryLong, zipCode
                         });
                     }
                     
@@ -1641,7 +1596,7 @@
                     if (route) {
                         // US/CA format: "Number Street Name" (e.g., "123 Main St")
                         // International format: "Street Name No: Number" (e.g., "Cengiz Topel Cd. No: 39")
-                        if (country === 'US' || country === 'CA') {
+                        if (countryShort === 'US' || countryShort === 'CA') {
                             // US/Canada: Number first, then street name
                             if (streetNumber) {
                                 streetAddress = streetNumber + ' ' + route;
@@ -1709,7 +1664,7 @@
                     
                     // Only fill state field for countries with states/provinces (US, CA, AU, BR, MX, IN)
                     const countriesWithStates = ['US', 'CA', 'AU', 'BR', 'MX', 'IN'];
-                    const stateValue = (country && countriesWithStates.includes(country)) ? state : '';
+                    const stateValue = (countryShort && countriesWithStates.includes(countryShort)) ? state : '';
                     
                     // Fill form fields
                     document.getElementById('hotelAddress').value = streetAddress || place.formatted_address || '';
@@ -1719,18 +1674,20 @@
                     
                     // Debug country field
                     console.log('🌍 Country field debug:', {
-                        country: country,
-                        countrySelect: document.getElementById('country'),
+                        countryShort: countryShort,
+                        countryLong: countryLong,
+                        countryInput: document.getElementById('country'),
                         allAddressComponents: place.address_components
                     });
                     
-                    if (country) {
-                        const countrySelect = document.getElementById('country');
-                        if (countrySelect) {
-                            countrySelect.value = country;
-                            console.log('✅ Country set to:', country);
+                    if (countryShort || countryLong) {
+                        const countryInput = document.getElementById('country');
+                        if (countryInput) {
+                            const displayCountry = countryLong && countryShort ? `${countryLong} (${countryShort})` : (countryLong || countryShort);
+                            countryInput.value = displayCountry;
+                            console.log('✅ Country set to:', displayCountry);
                         } else {
-                            console.log('❌ Country select element not found');
+                            console.log('❌ Country input element not found');
                         }
                     } else {
                         console.log('❌ No country data available');
@@ -1738,6 +1695,9 @@
                     document.getElementById('hotelPhone').value = place.formatted_phone_number || '';
                     document.getElementById('hotelPlaceId').value = place.place_id || '';
                     
+                    // Briefly suppress browser autofill from overriding Places data
+                    suppressAddressOverwriteUntil = Date.now() + 3000; // 3 seconds window
+
                     // Store place data for submission
                     placeData = {
                         name: place.name,
@@ -1745,7 +1705,7 @@
                         city: city,
                         state: stateValue,
                         zipCode: zipCode,
-                        country: country,
+                        country: countryShort || countryLong || '',
                         phone: place.formatted_phone_number || '',
                         placeId: place.place_id
                     };
@@ -2194,6 +2154,38 @@
                 voiceEnabled: false,
                 recognition: null,
                 synthesis: null,
+                setupAssistantPositioning() {
+                    const assistantEl = this.$root; // .ai-assistant root div
+                    const heroEl = document.getElementById('hero');
+                    if (!assistantEl || !heroEl) return;
+
+                    const applyPosition = () => {
+                        const heroRect = heroEl.getBoundingClientRect();
+                        const heroHeight = heroEl.offsetHeight || window.innerHeight;
+                        const scrolled = window.scrollY || window.pageYOffset || 0;
+
+                        // When near/top of page (header visible), keep assistant pinned just below hero
+                        if (scrolled < heroHeight) {
+                            assistantEl.style.position = 'absolute';
+                            assistantEl.style.top = (heroHeight + 40) + 'px';
+                            assistantEl.style.right = '40px';
+                            assistantEl.style.bottom = '';
+                        } else {
+                            // After passing hero, stick to bottom-right
+                            assistantEl.style.position = 'fixed';
+                            assistantEl.style.bottom = '40px';
+                            assistantEl.style.right = '40px';
+                            assistantEl.style.top = '';
+                        }
+                    };
+
+                    // Initial apply and listeners
+                    this.$nextTick(() => {
+                        applyPosition();
+                        window.addEventListener('scroll', applyPosition, { passive: true });
+                        window.addEventListener('resize', applyPosition);
+                    });
+                },
                 
                 toggleChat() {
                     this.isOpen = !this.isOpen;
