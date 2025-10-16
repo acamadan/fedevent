@@ -1478,6 +1478,7 @@
         let autocomplete;
         let isInitialized = false;
         let suppressAddressOverwriteUntil = 0;
+        let userInteracted = false;
         
         function initAutocomplete() {
             // Prevent multiple initializations
@@ -1885,6 +1886,19 @@
                 console.log('Google Maps API referer restriction detected - this is normal for localhost development');
                 return false;
             }
+        });
+
+        // Enable video playback on first user interaction
+        function enableVideoPlayback() {
+            if (!userInteracted) {
+                userInteracted = true;
+                console.log('🎬 User interaction detected - video playback now enabled');
+            }
+        }
+
+        // Listen for any user interaction to enable video playback
+        ['click', 'touchstart', 'keydown'].forEach(event => {
+            document.addEventListener(event, enableVideoPlayback, { once: true });
         });
         
         // D.A.N.A Typing Animation with Lip Sync
@@ -2498,15 +2512,31 @@
                 
                 playDanaVideo() {
                     const video = this.$refs.danaVideo || document.getElementById('danaVideo');
-                    console.log('🎬 playDanaVideo called, video:', video);
+                    console.log('🎬 playDanaVideo called, video:', video, 'userInteracted:', userInteracted);
                     if (video) {
                         console.log('🎬 Playing DANA video from start...');
                         video.currentTime = 0;
-                        video.muted = false;
-                        video.volume = 0.8;
+                        
+                        // Only unmute if user has interacted with the page
+                        if (userInteracted) {
+                            video.muted = false;
+                            video.volume = 0.8;
+                        } else {
+                            // Keep muted if no user interaction yet
+                            video.muted = true;
+                            video.volume = 0;
+                        }
+                        
                         video.play().then(() => {
                             console.log('✅ Video playing successfully');
-                        }).catch(e => console.log('❌ Video play error:', e));
+                        }).catch(e => {
+                            console.log('❌ Video play error:', e);
+                            // If video fails to play due to autoplay restrictions, try muted
+                            if (!userInteracted) {
+                                video.muted = true;
+                                video.play().catch(e2 => console.log('❌ Muted video play also failed:', e2));
+                            }
+                        });
                     } else {
                         console.log('❌ Video element not found');
                     }
