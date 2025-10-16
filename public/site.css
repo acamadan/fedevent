@@ -156,7 +156,9 @@ footer a{color:#e2e8f0;text-decoration:none}
 }
 
 .admin-nav-item {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
   color: #cbd5e1;
   text-decoration: none;
   padding: 1rem 1.5rem;
