@@ -2531,22 +2531,20 @@
                     const video = this.$refs.danaVideo || document.getElementById('danaVideo');
                     console.log('🎬 playDanaVideo called, video:', video, 'userInteracted:', userInteracted);
                     if (video) {
-                        console.log('🎬 Playing DANA video from start...');
-                        video.currentTime = 0;
-                        
-                        // Only enable audio if user has interacted with DANA directly
-                        if (userInteracted) {
-                            video.muted = false;
-                            video.volume = 0.8;
-                            console.log('🔊 Playing with audio (user interacted)');
-                        } else {
-                            video.muted = true;
-                            video.volume = 0.8;
-                            console.log('🔇 Playing muted (no direct interaction yet)');
+                        // Only play if user has interacted with the site
+                        if (!userInteracted) {
+                            console.log('😊 DANA staying with smiley face - no interaction yet');
+                            return; // Don't play, stay with smiley face
                         }
                         
+                        console.log('🎬 Playing DANA video from start...');
+                        video.currentTime = 0;
+                        video.muted = false;
+                        video.volume = 0.8;
+                        console.log('🔊 Playing with audio (user interacted)');
+                        
                         video.play().then(() => {
-                            console.log('✅ Video playing successfully');
+                            console.log('✅ Video playing successfully with audio');
                         }).catch(e => {
                             console.log('❌ Video play error:', e);
                             // If audio fails, try muted
