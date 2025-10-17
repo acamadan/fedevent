@@ -1131,7 +1131,7 @@
             </div>
             
             <!-- Form -->
-            <form x-show="!showSuccess" @submit.prevent="submitForm($event)" onsubmit="alert('Form onsubmit triggered!'); return false;" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm">
+            <form x-show="!showSuccess" @submit.prevent="submitForm($event)" onsubmit="alert('Form onsubmit triggered!'); return false;" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm" autocomplete="off">
                 
                 <!-- Property Eligibility Requirement -->
                 <div id="eligibility-section" style="background: #fef2f2; border-radius: 8px; border: 2px solid #dc2626; padding: 16px; margin: 0 0 16px 0;">
@@ -1218,7 +1218,9 @@
                         required
                         class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
                         placeholder="Full hotel address will be auto-filled from hotel selection"
-                        autocomplete="address-line1"
+                        autocomplete="off"
+                        data-lpignore="true"
+                        data-form-type="other"
                     >
                     <p class="text-xs text-gray-500 mt-1">Address will be auto-filled when you select a hotel from the dropdown</p>
                 </div>
@@ -1513,6 +1515,11 @@
                     originalWarn.apply(console, args);
                 };
                 
+                // Prevent browser autofill from interfering
+                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('data-lpignore', 'true');
+                input.setAttribute('data-form-type', 'other');
+                
                 // Initialize autocomplete with simple configuration
                 autocomplete = new google.maps.places.Autocomplete(input, {
                     types: ['lodging'],
@@ -1521,6 +1528,21 @@
                 
                 // Restore console.warn
                 console.warn = originalWarn;
+                
+                // Prevent browser autofill from overwriting the field
+                input.addEventListener('focus', function() {
+                    // Ensure autocomplete is off when user focuses
+                    this.setAttribute('autocomplete', 'off');
+                });
+                
+                // Prevent autofill from overwriting after Google Places sets a value
+                input.addEventListener('input', function() {
+                    // If browser autofill tries to overwrite, restore Google Places value
+                    if (this.value && !this.value.includes('•')) {
+                        // This is likely browser autofill, ignore it
+                        return;
+                    }
+                });
                 
                 isInitialized = true;
                 console.log('Autocomplete initialized successfully');
