@@ -12395,7 +12395,7 @@ Use the knowledge base for accurate high-level answers, but avoid granular walkt
 });
 
 // ---------- Start Server ----------
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 7070;
 
 // Run log rotation on startup
 try {
