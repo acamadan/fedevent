@@ -5394,20 +5394,116 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
         `).run(invitedAt, adminUserId, invitedAt, contactId);
         
         // Send invitation email if enabled
-        if (sendEmail && transporter) {
+        if (sendEmail && process.env.SMTP_HOST) {
           try {
-            const subject = emailSubject || `Join FEDEVENT - Your Invitation`;
+            const subject = emailSubject || `🏛️ Join FEDEVENT - Federal Hotel Network Invitation`;
             const body = emailBody || `
-              <h2>You're Invited to Join FEDEVENT!</h2>
-              <p>Dear ${contact.contact_name},</p>
-              <p>We're excited to invite ${contact.hotel_name} to join the FEDEVENT platform for federal government lodging contracts.</p>
-              <p><strong>Complete your registration here:</strong><br>
-              <a href="${process.env.BASE_URL || 'https://fedevent.com'}/prelaunch.html">${process.env.BASE_URL || 'https://fedevent.com'}/prelaunch.html</a></p>
-              <p>Join hundreds of hotels already serving federal travelers!</p>
-              <p>Best regards,<br>FEDEVENT Team</p>
+              <!DOCTYPE html>
+              <html>
+              <head>
+                <meta charset="utf-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>FEDEVENT Invitation</title>
+              </head>
+              <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f8fafc;">
+                <div style="max-width: 600px; margin: 0 auto; background: #ffffff; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                  
+                  <!-- Header -->
+                  <div style="background: #ffffff; padding: 40px 30px; text-align: center; border-bottom: 3px solid #dc2626;">
+                    <div style="font-size: 32px; font-weight: bold; margin-bottom: 10px;">
+                      <span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span>
+                    </div>
+                    <div style="color: #6b7280; font-size: 18px; font-weight: 500;">
+                      The Premier Federal Hotel Network
+                    </div>
+                  </div>
+                  
+                  <!-- Main Content -->
+                  <div style="padding: 40px 30px;">
+                    <h1 style="color: #1e40af; font-size: 28px; margin: 0 0 20px 0; text-align: center; font-weight: 700;">
+                      🎯 Exclusive Invitation for ${contact.hotel_name}
+                    </h1>
+                    
+                    <p style="color: #374151; font-size: 18px; line-height: 1.6; margin: 0 0 25px 0;">
+                      Dear <strong>${contact.contact_name}</strong>,
+                    </p>
+                    
+                    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                      We're thrilled to invite <strong>${contact.hotel_name}</strong> to join FEDEVENT, the most exclusive network connecting premium hotels with federal government travelers.
+                    </p>
+                    
+                    <!-- Benefits Section -->
+                    <div style="background: #f0f9ff; border-left: 4px solid #dc2626; padding: 25px; margin: 30px 0; border-radius: 8px;">
+                      <h3 style="color: #dc2626; font-size: 20px; margin: 0 0 15px 0; font-weight: 600;">
+                        🚀 Why Join FEDEVENT?
+                      </h3>
+                      <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                        <li><strong>💰 Revenue Opportunity:</strong> Access to $2.3B+ in annual federal travel spending</li>
+                        <li><strong>🏛️ Government Events:</strong> Connect with federal agencies through our platform</li>
+                        <li><strong>⭐ Global Network:</strong> Join our worldwide network of partner hotels</li>
+                        <li><strong>📈 Growth Opportunity:</strong> Expand your business through our platform</li>
+                        <li><strong>🛡️ Verified Process:</strong> Secure, compliant booking system</li>
+                      </ul>
+                    </div>
+                    
+                    <!-- CTA Section -->
+                    <div style="text-align: center; margin: 35px 0;">
+                      <a href="${process.env.BASE_URL || 'https://fedevent.com'}/prelaunch.html" 
+                         style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
+                                color: white; text-decoration: none; padding: 18px 40px; 
+                                border-radius: 12px; font-size: 18px; font-weight: 600; 
+                                box-shadow: 0 4px 14px rgba(5, 150, 105, 0.3); 
+                                transition: all 0.3s ease;">
+                        🎯 Join FEDEVENT Now - It's Free!
+                      </a>
+                    </div>
+                    
+                    <!-- Stats Section -->
+                    <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin: 30px 0; text-align: center;">
+                      <h3 style="color: #dc2626; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">
+                        📊 FEDEVENT by the Numbers
+                      </h3>
+                      <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
+                        <div style="text-align: center;">
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">$2.3B+</div>
+                          <div style="color: #6b7280; font-size: 14px;">Annual Federal Travel</div>
+                        </div>
+                        <div style="text-align: center;">
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">Global</div>
+                          <div style="color: #6b7280; font-size: 14px;">Partner Network</div>
+                        </div>
+                        <div style="text-align: center;">
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">50+</div>
+                          <div style="color: #6b7280; font-size: 14px;">Federal Agencies</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
+                      <strong>Limited Time:</strong> Join now and get priority placement in our federal agency directory.
+                    </p>
+                  </div>
+                  
+                  <!-- Footer -->
+                  <div style="background: #1f2937; color: #d1d5db; padding: 30px; text-align: center;">
+                    <div style="font-size: 16px; font-weight: 600; margin-bottom: 10px;">
+                      Ready to grow your government business?
+                    </div>
+                    <div style="font-size: 14px; margin-bottom: 20px;">
+                      Join FEDEVENT today and start serving federal travelers tomorrow.
+                    </div>
+                    <div style="font-size: 12px; color: #9ca3af;">
+                      FEDEVENT Team | Federal Hotel Network<br>
+                      This invitation is exclusive to ${contact.hotel_name}
+                    </div>
+                  </div>
+                  
+                </div>
+              </body>
+              </html>
             `;
             
-            await transporter.sendMail({
+            await sendMail({
               from: process.env.SMTP_FROM || 'noreply@fedevent.com',
               to: contact.email,
               subject: subject,
@@ -5733,20 +5829,102 @@ app.post('/api/admin/waitlist/bulk-invite', requireAuth, requireAdmin, async (re
         `).run(invitedAt, adminUserId, invitedAt, leadId);
         
         // Send invitation email if enabled
-        if (sendEmail && transporter) {
+        if (sendEmail && process.env.SMTP_HOST) {
           try {
-            const subject = emailSubject || `Welcome to FEDEVENT - Your Registration Code: ${lead.user_code}`;
+            const subject = emailSubject || `🏛️ Welcome to FEDEVENT - Your Exclusive Registration Code: ${lead.user_code}`;
             const body = emailBody || `
-              <h2>Welcome to FEDEVENT!</h2>
-              <p>Dear ${lead.contact_name},</p>
-              <p>Thank you for your interest in FEDEVENT. We're excited to invite you to complete your hotel registration.</p>
-              <p><strong>Your unique registration code: ${lead.user_code}</strong></p>
-              <p>Use this code to complete your registration at: <a href="${process.env.BASE_URL || 'https://fedevent.com'}/hotel-registration.html">${process.env.BASE_URL || 'https://fedevent.com'}/hotel-registration.html</a></p>
-              <p>If you have any questions, please don't hesitate to reach out.</p>
-              <p>Best regards,<br>FEDEVENT Team</p>
+              <!DOCTYPE html>
+              <html lang="en">
+              <head>
+                <meta charset="UTF-8">
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>FEDEVENT Registration Invitation</title>
+                <style>
+                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+                  .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+                  .header { background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; padding: 40px 30px; text-align: center; }
+                  .header h1 { margin: 0; font-size: 28px; font-weight: 700; }
+                  .header p { margin: 8px 0 0 0; opacity: 0.9; font-size: 16px; }
+                  .content { padding: 40px 30px; }
+                  .greeting { font-size: 18px; color: #1f2937; margin-bottom: 20px; }
+                  .message { font-size: 16px; color: #4b5563; line-height: 1.6; margin-bottom: 20px; }
+                  .code-box { background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%); border: 2px solid #d1d5db; border-radius: 8px; padding: 20px; text-align: center; margin: 30px 0; }
+                  .code { font-size: 24px; font-weight: 700; color: #1e40af; letter-spacing: 2px; font-family: 'Courier New', monospace; }
+                  .cta-button { display: inline-block; background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); color: white; text-decoration: none; padding: 16px 32px; border-radius: 8px; font-weight: 600; font-size: 16px; margin: 20px 0; transition: transform 0.2s ease; }
+                  .cta-button:hover { transform: translateY(-2px); }
+                  .benefits { background: #f9fafb; border-radius: 8px; padding: 24px; margin: 30px 0; }
+                  .benefits h3 { margin: 0 0 16px 0; color: #1f2937; font-size: 18px; }
+                  .benefits ul { margin: 0; padding-left: 20px; color: #4b5563; }
+                  .benefits li { margin-bottom: 8px; line-height: 1.5; }
+                  .contact { background: #f3f4f6; padding: 24px; text-align: center; color: #6b7280; font-size: 14px; }
+                  .contact a { color: #3b82f6; text-decoration: none; }
+                  .footer { background: #1f2937; color: #9ca3af; padding: 20px; text-align: center; font-size: 12px; }
+                  @media (max-width: 600px) { .container { margin: 0; border-radius: 0; } .header, .content, .contact, .footer { padding: 20px; } }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <div class="header">
+                    <h1>🏛️ FEDEVENT</h1>
+                    <p>Federal Event Management Solutions</p>
+                  </div>
+                  
+                  <div class="content">
+                    <div class="greeting">Dear ${lead.contact_name},</div>
+                    
+                    <div class="message">
+                      Thank you for your interest in joining FEDEVENT's exclusive network of government-approved hotels. We're excited to invite you to complete your registration and become part of our premium hospitality network.
+                    </div>
+                    
+                    <div class="code-box">
+                      <div style="color: #6b7280; font-size: 14px; margin-bottom: 8px;">Your Exclusive Registration Code:</div>
+                      <div class="code">${lead.user_code}</div>
+                    </div>
+                    
+                    <div style="text-align: center;">
+                      <a href="${process.env.BASE_URL || 'https://fedevent.com'}/hotel-registration.html" class="cta-button">
+                        Complete Registration Now
+                      </a>
+                    </div>
+                    
+                    <div class="benefits">
+                      <h3>🎯 Why Join FEDEVENT?</h3>
+                      <ul>
+                        <li><strong>Guaranteed Government Contracts</strong> - Access exclusive federal event opportunities</li>
+                        <li><strong>NET30 Payment Terms</strong> - No upfront deposits, payment within 30 days</li>
+                        <li><strong>Professional Support</strong> - Dedicated account management and 24/7 support</li>
+                        <li><strong>Premium Network</strong> - Join AAA 2+ Diamond rated properties only</li>
+                        <li><strong>Streamlined Process</strong> - Simple registration and contract management</li>
+                      </ul>
+                    </div>
+                    
+                    <div class="message">
+                      <strong>Registration is quick and easy:</strong><br>
+                      1. Click the button above to access the registration form<br>
+                      2. Enter your registration code when prompted<br>
+                      3. Complete your hotel profile and submit required documents<br>
+                      4. Get approved within 2-4 business days<br>
+                      5. Start receiving government contract opportunities!
+                    </div>
+                  </div>
+                  
+                  <div class="contact">
+                    <strong>Need Help?</strong><br>
+                    📞 Call us at <a href="tel:305-850-7848">(305) 850-7848</a><br>
+                    📧 Email us at <a href="mailto:info@fedevent.com">info@fedevent.com</a><br>
+                    🌐 Visit us at <a href="${process.env.BASE_URL || 'https://fedevent.com'}">fedevent.com</a>
+                  </div>
+                  
+                  <div class="footer">
+                    <p style="margin: 0;">© 2025 CREATA Global Event Agency LLC. All rights reserved.</p>
+                    <p style="margin: 8px 0 0 0;">This is an exclusive invitation. Please do not share your registration code.</p>
+                  </div>
+                </div>
+              </body>
+              </html>
             `;
             
-            await transporter.sendMail({
+            await sendMail({
               from: process.env.SMTP_FROM || 'noreply@fedevent.com',
               to: lead.email,
               subject: subject,
@@ -6763,7 +6941,6 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
       // Single vision call for image input
       const base64Data = fileBuffer.toString('base64');
       const messages = [
-        { role: 'system', content: systemPrompt },
         { role: 'user', content: [
           { type: 'text', text: userPrompt },
           { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } }
@@ -6771,6 +6948,7 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
       ];
       const response = await claude.messages.create({
         model: 'claude-3-haiku-20240307',
+        system: systemPrompt,
         max_tokens: 4000,
         temperature: 0.1,
         messages: [
@@ -6794,7 +6972,6 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
       for (let i = 0; i < chunks.length; i++) {
         const chunk = chunks[i];
         const messages = [
-          { role: 'system', content: systemPrompt },
           { role: 'user', content: [{ type: 'text', text: `${userPrompt}\n\nDocument text (chunk ${i+1}/${chunks.length}):\n\n${chunk}` }] }
         ];
         let content = '';
@@ -6802,10 +6979,11 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
           try {
             const resp = await claude.messages.create({ 
               model: 'claude-3-haiku-20240307', 
+              system: systemPrompt,
               max_tokens: 4000, 
               temperature: 0.1,
               messages: [
-                { role: 'user', content: `${systemPrompt}\n\n${userPrompt}\n\nDocument text (chunk ${i+1}/${chunks.length}):\n\n${chunk}` }
+                { role: 'user', content: `${userPrompt}\n\nDocument text (chunk ${i+1}/${chunks.length}):\n\n${chunk}` }
               ]
             });
             content = (resp && resp.content && resp.content[0] && resp.content[0].text) || '';
@@ -11147,7 +11325,7 @@ app.post('/submit-request', upload.array('attachments', 10), async (req, res) =>
     }
     
     // Send confirmation email to requester
-    if (transporter) {
+    if (process.env.SMTP_HOST) {
       try {
         const emailHtml = `
           <h2>Government Event Request Confirmation</h2>
@@ -11171,7 +11349,7 @@ app.post('/submit-request', upload.array('attachments', 10), async (req, res) =>
           Professional Government Event Solutions</p>
         `;
         
-        await transporter.sendMail({
+        await sendMail({
           from: process.env.SMTP_FROM || 'noreply@fedevent.com',
           to: primary_poc_email,
           subject: `Government Event Request Confirmation - ${requestId}`,
@@ -12015,12 +12193,7 @@ Context:
 
 Use the knowledge base for accurate high-level answers, but avoid granular walkthroughs.`;
 
-    const messages = [
-      {
-        role: 'system',
-        content: mode === 'dana_unrestricted' ? systemPromptDana : (mode === 'dana_prelaunch' ? systemPromptDanaPrelaunch : systemPromptDefault)
-      }
-    ];
+    const messages = [];
 
     // Add conversation history (limit to last 10 exchanges to manage token usage)
     const recentHistory = conversationHistory.slice(-10);
@@ -12037,9 +12210,10 @@ Use the knowledge base for accurate high-level answers, but avoid granular walkt
       content: message
     });
 
-    // Call Claude API
+    // Call Claude API with system prompt as separate parameter
     const completion = await claudeClient.messages.create({
       model: 'claude-3-haiku-20240307',
+      system: mode === 'dana_unrestricted' ? systemPromptDana : (mode === 'dana_prelaunch' ? systemPromptDanaPrelaunch : systemPromptDefault),
       messages: messages,
       max_tokens: 1000,
       temperature: 0.7

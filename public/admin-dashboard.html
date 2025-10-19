@@ -378,6 +378,38 @@
             display: block;
         }
         
+        @keyframes slideInCenter {
+            from {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideOutCenter {
+            from {
+                transform: translate(-50%, -50%) scale(1);
+                opacity: 1;
+            }
+            to {
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
         .hotel-hover-header {
             display: flex;
             justify-content: space-between;
@@ -1589,6 +1621,19 @@ You can use these placeholders:
         }
         
         // Sidebar toggle functionality
+        function toggleSidebar() {
+            const sidebar = document.querySelector('.admin-sidebar');
+            const toggleBtn = document.querySelector('.admin-sidebar-toggle');
+            const icon = toggleBtn.querySelector('i');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.classList.remove('collapsed');
+                icon.className = 'fas fa-chevron-right';
+            } else {
+                sidebar.classList.add('collapsed');
+                icon.className = 'fas fa-chevron-left';
+            }
+        }
 
         // Tab switching functionality
         function showTab(tabName) {
@@ -2142,6 +2187,206 @@ You can use these placeholders:
             
             // Force redirect to login page
             window.location.replace('/admin-login.html');
+        }
+        
+        // Show centered notification
+        function showCenteredNotification(message, type = 'success') {
+            // Remove any existing notification
+            const existing = document.querySelector('.centered-notification');
+            if (existing) existing.remove();
+            
+            const notification = document.createElement('div');
+            notification.className = 'centered-notification';
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: ${type === 'success' ? '#10b981' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                color: white;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+                z-index: 10000;
+                font-weight: 600;
+                text-align: center;
+                max-width: 400px;
+                animation: slideInCenter 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // Auto-remove after 4 seconds
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.style.animation = 'slideOutCenter 0.3s ease';
+                    setTimeout(() => notification.remove(), 300);
+                }
+            }, 4000);
+        }
+        
+        // Show invitation confirmation modal
+        function showInvitationModal(count, type, onConfirm) {
+            // Remove any existing modal
+            const existing = document.querySelector('.invitation-modal');
+            if (existing) existing.remove();
+            
+            // Create modal backdrop
+            const backdrop = document.createElement('div');
+            backdrop.className = 'modal-backdrop';
+            backdrop.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 9999;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                animation: fadeIn 0.3s ease;
+            `;
+            
+            // Create modal
+            const modal = document.createElement('div');
+            modal.className = 'invitation-modal';
+            modal.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+                animation: slideInCenter 0.3s ease;
+                text-align: center;
+            `;
+            
+            modal.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <h3 style="margin: 0 0 16px 0; color: #1f2937; font-size: 20px; font-weight: 600;">
+                        Send Invitation Emails
+                    </h3>
+                    <p style="margin: 0 0 16px 0; color: #6b7280; font-size: 16px;">
+                        Send invitation emails to ${count} selected ${type}?
+                    </p>
+                    <div style="background: #f3f4f6; padding: 16px; border-radius: 8px; margin: 16px 0; text-align: left;">
+                        <p style="margin: 0; color: #374151; font-weight: 500;">This will:</p>
+                        <ul style="margin: 8px 0 0 0; padding-left: 20px; color: #6b7280;">
+                            <li>Mark them as "Invited"</li>
+                            <li>Send them registration invitation</li>
+                            <li>Update invitation tracking</li>
+                        </ul>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button id="modal-cancel" style="
+                        background: #f3f4f6;
+                        color: #374151;
+                        border: 1px solid #d1d5db;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    ">
+                        Cancel
+                    </button>
+                    <button id="modal-confirm" style="
+                        background: #3b82f6;
+                        color: white;
+                        border: 1px solid #3b82f6;
+                        padding: 12px 24px;
+                        border-radius: 8px;
+                        font-weight: 500;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    ">
+                        Send Invitations
+                    </button>
+                </div>
+            `;
+            
+            backdrop.appendChild(modal);
+            document.body.appendChild(backdrop);
+            
+            // Add hover effects
+            const cancelBtn = modal.querySelector('#modal-cancel');
+            const confirmBtn = modal.querySelector('#modal-confirm');
+            
+            cancelBtn.addEventListener('mouseenter', () => {
+                cancelBtn.style.background = '#e5e7eb';
+            });
+            cancelBtn.addEventListener('mouseleave', () => {
+                cancelBtn.style.background = '#f3f4f6';
+            });
+            
+            confirmBtn.addEventListener('mouseenter', () => {
+                confirmBtn.style.background = '#2563eb';
+            });
+            confirmBtn.addEventListener('mouseleave', () => {
+                confirmBtn.style.background = '#3b82f6';
+            });
+            
+            // Event handlers
+            cancelBtn.addEventListener('click', () => {
+                backdrop.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => backdrop.remove(), 300);
+            });
+            
+            confirmBtn.addEventListener('click', () => {
+                backdrop.style.animation = 'fadeOut 0.3s ease';
+                setTimeout(() => {
+                    backdrop.remove();
+                    onConfirm();
+                }, 300);
+            });
+            
+            // Close on backdrop click
+            backdrop.addEventListener('click', (e) => {
+                if (e.target === backdrop) {
+                    backdrop.style.animation = 'fadeOut 0.3s ease';
+                    setTimeout(() => backdrop.remove(), 300);
+                }
+            });
+        }
+        
+        // Send bulk invitations function
+        async function sendBulkInvitations(selectedItems, type) {
+            try {
+                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
+                const endpoint = type === 'leads' ? '/api/admin/waitlist/bulk-invite' : '/api/admin/email-contacts/bulk-invite';
+                const bodyKey = type === 'leads' ? 'leadIds' : 'contactIds';
+                
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        [bodyKey]: Array.from(selectedItems),
+                        sendEmail: true
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    showCenteredNotification(`✅ Successfully sent ${selectedItems.size} invitation emails!`, 'success');
+                    // Refresh the data
+                    if (type === 'leads') {
+                        loadWaitlistData();
+                    } else {
+                        loadEmailContactsData();
+                    }
+                } else {
+                    showCenteredNotification(`❌ Error: ${result.error || 'Failed to send invitations'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Bulk invite error:', error);
+                showCenteredNotification('❌ Error sending invitations. Please try again.', 'error');
+            }
         }
         
         // Show hotel hover popup
@@ -3475,40 +3720,14 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         // Bulk send invitations
         async function bulkSendInvitations() {
             if (selectedLeads.size === 0) {
-                alert('Please select at least one lead to send invitations to.');
+                showCenteredNotification('Please select at least one lead to send invitations to.', 'error');
                 return;
             }
             
-            const confirmed = confirm(`Send invitation emails to ${selectedLeads.size} selected hotels?\\n\\nThis will:\\n- Mark them as "Invited"\\n- Send them their registration code via email\\n- Update the last contacted date`);
-            if (!confirmed) return;
-            
-            try {
-                const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
-                const response = await fetch(`${API_BASE}/api/admin/waitlist/bulk-invite`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${sessionId}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        leadIds: Array.from(selectedLeads),
-                        sendEmail: true
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.ok) {
-                    alert(`✅ Success!\\n\\nInvitations sent to ${result.successCount} hotels.\\n${result.failedEmails ? `Failed: ${result.failedEmails.length}` : ''}`);
-                    selectedLeads.clear();
-                    loadWaitlist(); // Refresh the list
-                } else {
-                    alert(`Failed to send invitations: ${result.message}`);
-                }
-            } catch (error) {
-                console.error('Bulk invite error:', error);
-                alert('Failed to send invitations. Please try again.');
-            }
+            // Show centered modal instead of basic confirm
+            showInvitationModal(selectedLeads.size, 'leads', () => {
+                sendBulkInvitations(selectedLeads, 'leads');
+            });
         }
         
         // Sync registered hotels with waitlist
@@ -3739,40 +3958,14 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         
         async function bulkSendEmailInvitations() {
             if (selectedEmailContacts.size === 0) {
-                alert('Please select at least one contact to send invitations to.');
+                showCenteredNotification('Please select at least one contact to send invitations to.', 'error');
                 return;
             }
             
-            const confirmed = confirm(`Send invitation emails to ${selectedEmailContacts.size} selected hotels?\\n\\nThis will:\\n- Mark them as "Invited"\\n- Send them registration invitation\\n- Update invitation tracking`);
-            if (!confirmed) return;
-            
-            try {
-                const sessionId = localStorage.getItem('fedevent_session');
-                const response = await fetch(`${API_BASE}/api/admin/email-contacts/bulk-invite`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${sessionId}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        contactIds: Array.from(selectedEmailContacts),
-                        sendEmail: true
-                    })
-                });
-                
-                const result = await response.json();
-                
-                if (result.ok) {
-                    alert(`✅ Success!\\n\\nInvitations sent to ${result.successCount} hotels.\\n${result.failedEmails ? `Failed: ${result.failedEmails.length}` : ''}`);
-                    selectedEmailContacts.clear();
-                    loadEmailContacts(); // Refresh
-                } else {
-                    alert(`Failed to send invitations: ${result.message}`);
-                }
-            } catch (error) {
-                console.error('Bulk invite error:', error);
-                alert('Failed to send invitations. Please try again.');
-            }
+            // Show centered modal instead of basic confirm
+            showInvitationModal(selectedEmailContacts.size, 'contacts', () => {
+                sendBulkInvitations(selectedEmailContacts, 'contacts');
+            });
         }
         
         async function exportEmailContactsToExcel() {
