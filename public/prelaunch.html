@@ -1646,12 +1646,25 @@
     </footer>
 
     <!-- Google Places Autocomplete Script - Simplified Working Version -->
+    <!-- D.A.N.A Custom Agent -->
+    <script src="/dana-agent.js"></script>
+    
     <script>
         let placeData = {};
         let autocomplete;
         let isInitialized = false;
         let suppressAddressOverwriteUntil = 0;
         let userInteracted = false;
+        
+        // Initialize D.A.N.A Custom Agent
+        let danaAgent;
+        if (typeof DanaAgent !== 'undefined') {
+            danaAgent = new DanaAgent();
+            window.danaAgent = danaAgent;
+            console.log('🤖 D.A.N.A Custom Agent initialized successfully!');
+        } else {
+            console.warn('⚠️ D.A.N.A Agent not loaded, using fallback responses');
+        }
         
         // Country code mapping for international phone numbers
         function getCountryCode(countryShort) {
@@ -2565,6 +2578,16 @@
                 },
                 
                 generateResponse(userMessage) {
+                    // Use custom D.A.N.A agent for intelligent responses
+                    if (window.danaAgent) {
+                        return window.danaAgent.processMessage(userMessage, {
+                            userInteractions: this.userInteractions,
+                            isTyping: this.isTyping,
+                            voiceEnabled: this.voiceEnabled
+                        });
+                    }
+                    
+                    // Fallback to original system if agent not available
                     const message = userMessage.toLowerCase();
                     
                     // Eligibility questions
