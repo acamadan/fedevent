@@ -1335,7 +1335,10 @@
                         required
                         class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
                         placeholder="Full hotel address will be auto-filled from hotel selection"
-                        autocomplete="off"
+                        autocomplete="new-password"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
                         data-lpignore="true"
                         data-form-type="other"
                     >
@@ -1634,6 +1637,42 @@
         let suppressAddressOverwriteUntil = 0;
         let userInteracted = false;
         
+        // Country code mapping for international phone numbers
+        function getCountryCode(countryShort) {
+            const countryCodes = {
+                'TR': '90', 'DE': '49', 'FR': '33', 'GB': '44', 'IT': '39', 'ES': '34',
+                'NL': '31', 'BE': '32', 'CH': '41', 'AT': '43', 'SE': '46', 'NO': '47',
+                'DK': '45', 'FI': '358', 'PL': '48', 'CZ': '420', 'HU': '36', 'RO': '40',
+                'BG': '359', 'HR': '385', 'SI': '386', 'SK': '421', 'EE': '372', 'LV': '371',
+                'LT': '370', 'IE': '353', 'PT': '351', 'GR': '30', 'CY': '357', 'LU': '352',
+                'MT': '356', 'IS': '354', 'LI': '423', 'MC': '377', 'SM': '378', 'VA': '39',
+                'AD': '376', 'CA': '1', 'MX': '52', 'BR': '55', 'AR': '54', 'CL': '56',
+                'CO': '57', 'PE': '51', 'VE': '58', 'UY': '598', 'PY': '595', 'BO': '591',
+                'EC': '593', 'GY': '592', 'SR': '597', 'GF': '594', 'FK': '500', 'GS': '500',
+                'JP': '81', 'KR': '82', 'CN': '86', 'IN': '91', 'TH': '66', 'VN': '84',
+                'MY': '60', 'SG': '65', 'ID': '62', 'PH': '63', 'TW': '886', 'HK': '852',
+                'MO': '853', 'MN': '976', 'KH': '855', 'LA': '856', 'MM': '95', 'BD': '880',
+                'LK': '94', 'MV': '960', 'NP': '977', 'BT': '975', 'AF': '93', 'PK': '92',
+                'IR': '98', 'IQ': '964', 'SA': '966', 'AE': '971', 'KW': '965', 'QA': '974',
+                'BH': '973', 'OM': '968', 'YE': '967', 'JO': '962', 'LB': '961', 'SY': '963',
+                'IL': '972', 'PS': '970', 'EG': '20', 'LY': '218', 'TN': '216', 'DZ': '213',
+                'MA': '212', 'SD': '249', 'SS': '211', 'ET': '251', 'ER': '291', 'DJ': '253',
+                'SO': '252', 'KE': '254', 'UG': '256', 'TZ': '255', 'RW': '250', 'BI': '257',
+                'CD': '243', 'CG': '242', 'CF': '236', 'TD': '235', 'CM': '237', 'GQ': '240',
+                'GA': '241', 'ST': '239', 'AO': '244', 'ZM': '260', 'ZW': '263', 'BW': '267',
+                'NA': '264', 'ZA': '27', 'LS': '266', 'SZ': '268', 'MG': '261', 'MU': '230',
+                'SC': '248', 'KM': '269', 'YT': '262', 'RE': '262', 'MZ': '258', 'MW': '265',
+                'AU': '61', 'NZ': '64', 'FJ': '679', 'PG': '675', 'SB': '677', 'VU': '678',
+                'NC': '687', 'PF': '689', 'WF': '681', 'WS': '685', 'TO': '676', 'KI': '686',
+                'TV': '688', 'NR': '674', 'FM': '691', 'MH': '692', 'PW': '680', 'MP': '1',
+                'GU': '1', 'AS': '1', 'VI': '1', 'PR': '1', 'DM': '1', 'KN': '1', 'LC': '1',
+                'VC': '1', 'AG': '1', 'BB': '1', 'GD': '1', 'TT': '1', 'JM': '1', 'BS': '1',
+                'CU': '53', 'HT': '509', 'DO': '1', 'BZ': '501', 'GT': '502', 'SV': '503',
+                'HN': '504', 'NI': '505', 'CR': '506', 'PA': '507'
+            };
+            return countryCodes[countryShort] || '';
+        }
+        
         function initAutocomplete() {
             // Prevent multiple initializations
             if (isInitialized) {
@@ -1665,7 +1704,10 @@
                 };
                 
                 // Prevent browser autofill from interfering
-                input.setAttribute('autocomplete', 'off');
+                input.setAttribute('autocomplete', 'new-password');
+                input.setAttribute('autocapitalize', 'off');
+                input.setAttribute('autocorrect', 'off');
+                input.setAttribute('spellcheck', 'false');
                 input.setAttribute('data-lpignore', 'true');
                 input.setAttribute('data-form-type', 'other');
                 
@@ -1681,7 +1723,10 @@
                 // Prevent browser autofill from overwriting the field
                 input.addEventListener('focus', function() {
                     // Ensure autocomplete is off when user focuses
-                    this.setAttribute('autocomplete', 'off');
+                    this.setAttribute('autocomplete', 'new-password');
+                    this.setAttribute('autocapitalize', 'off');
+                    this.setAttribute('autocorrect', 'off');
+                    this.setAttribute('spellcheck', 'false');
                 });
                 
                 // Prevent autofill from overwriting after Google Places sets a value
@@ -1867,8 +1912,15 @@
                     } else {
                         console.log('❌ No country data available');
                     }
+                    // Format phone number with country code for international hotels
+                    let displayPhone = place.formatted_phone_number || '';
+                    if (displayPhone && countryShort && countryShort !== 'US') {
+                        // For international hotels, show country code
+                        displayPhone = `+${getCountryCode(countryShort)} ${displayPhone}`;
+                    }
+                    
                     document.getElementById('hotelPhone').value = place.formatted_phone_number || '';
-                    document.getElementById('hotelPhoneDisplay').value = place.formatted_phone_number || '';
+                    document.getElementById('hotelPhoneDisplay').value = displayPhone;
                     document.getElementById('hotelWebsite').value = place.website || '';
                     document.getElementById('hotelWebsiteDisplay').value = place.website || '';
                     document.getElementById('hotelPlaceId').value = place.place_id || '';
