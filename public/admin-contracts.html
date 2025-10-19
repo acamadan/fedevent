@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contract Management - FEDEVENT Admin</title>
+    <link rel="stylesheet" href="site.css?v=5">
     
     <!-- Google Analytics 4 (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -434,47 +435,98 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">FEDEVENT Admin</div>
-            <div class="nav-links">
-                <a href="/admin-dashboard.html">Hotels</a>
-                <a href="/admin-contracts.html">Contracts</a>
-                <a href="/sam-search-admin.html">SAM Search</a>
-            </div>
-            <div class="user-menu">
-                <div class="user-info" id="userInfo">Loading...</div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
-    </header>
-    
-    <div class="container">
-        
-
-        <div class="page-header">
-            <h1 class="page-title">Contract Management</h1>
-            <div style="display: flex; gap: 1rem; align-items: center;">
-                <button class="btn" onclick="showCreateContractModal()">Create New Contract</button>
-            </div>
-        </div>
-
-        <div class="info-banner">
-            <strong>Reminder:</strong> Launch new live auctions from the <a href="/admin-dashboard.html" style="color:#1d4ed8; font-weight:600;">Create Live Auction</a> button on the admin dashboard. This contracts page is for maintaining supporting documents and access before hotels enter the bidding room.
-        </div>
-
-
-
-        <div class="contracts-table">
-            <div class="table-header">
-                <h2 class="table-title">Active Contracts</h2>
-            </div>
+    <div class="admin-layout">
+        <!-- Main Content Area (Sidebar + Content) -->
+        <div class="admin-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <a href="/admin-dashboard.html" class="admin-sidebar-logo">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></span>
+                    </a>
+                    <button onclick="toggleSidebar()" class="admin-sidebar-toggle" title="Toggle Menu">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <nav class="admin-sidebar-nav">
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Hotels">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Email Contacts">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Contacts</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Waitlist">
+                        <i class="fas fa-users"></i>
+                        <span>Waitlist</span>
+                    </a>
+                    <a href="/admin-contracts.html" class="admin-nav-item active" title="Contracts">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Contracts</span>
+                    </a>
+                    <a href="/sam-search-admin.html" class="admin-nav-item" title="SAM Search">
+                        <i class="fas fa-search"></i>
+                        <span>SAM Search</span>
+                    </a>
+                    <a href="/admin-settings.html" class="admin-nav-item" title="Settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </aside>
             
-            <div id="tableContent">
-                <div class="loading">Loading contracts...</div>
-            </div>
-        </div>
-    </div>
+            <!-- Main Content -->
+            <main class="admin-main-content">
+                <div class="admin-content">
+                    <!-- Hidden userInfo element for JavaScript compatibility -->
+                    <div id="userInfo" style="display: none;">Loading...</div>
+                    
+                    <!-- Page Header -->
+                    <div class="admin-page-header">
+                        <div class="page-header-content">
+                            <h1 class="page-title">Contract Management</h1>
+                            <div class="page-actions">
+                                <button class="btn btn-primary" onclick="showCreateContractModal()">
+                                    <i class="fas fa-plus"></i> Create New Contract
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Banner -->
+                    <div class="admin-info-banner">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Reminder:</strong> Launch new live auctions from the <a href="/admin-dashboard.html" class="admin-link">Create Live Auction</a> button on the admin dashboard. This contracts page is for maintaining supporting documents and access before hotels enter the bidding room.
+                    </div>
+
+                    <!-- Contracts Table -->
+                    <div class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Active Contracts</h2>
+                        </div>
+                        
+                        <div class="contracts-table">
+                            <div class="table-header">
+                                <h2 class="table-title">Active Contracts</h2>
+                            </div>
+                            
+                            <div id="tableContent">
+                                <div class="loading">Loading contracts...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
     
     <!-- Create Contract Modal -->
     <div id="createContractModal" class="modal">
@@ -1632,5 +1684,49 @@
         }
     }
 </style>
+
+    
+    <!-- Include CSS and Font Awesome for icons -->
+    <link rel="stylesheet" href="site.css?v=5">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Include sidebar JavaScript -->
+    <script src="admin-sidebar.js"></script>
+    
+    <!-- Authentication and User Management -->
+    <script>
+        // currentUser is already declared globally, just use it
+        
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            const userInfoElement = document.getElementById('userInfo');
+            if (userInfoElement) {
+                userInfoElement.textContent = `${user.first_name} ${user.last_name}`;
+            }
+            return true;
+        }
+        
+        function logout() {
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
 </body>
 </html>

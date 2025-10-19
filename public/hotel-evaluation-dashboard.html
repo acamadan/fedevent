@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Evaluation Dashboard - FEDEVENT</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="/site.css" rel="stylesheet">
+    <style>
+        .evaluation-card {
+            border-left: 4px solid #007bff;
+            transition: all 0.3s ease;
+        }
+        .evaluation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .tier-badge {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-weight: 600;
+        }
+        .tier-platinum { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .tier-preferred { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
+        .tier-active { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
+        .tier-probation { background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%); color: #8b4513; }
+        .tier-inactive { background: linear-gradient(135deg, #a8a8a8 0%, #696969 100%); color: white; }
+        
+        .compliance-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+        .compliance-fully { background-color: #28a745; }
+        .compliance-mostly { background-color: #ffc107; }
+        .compliance-partial { background-color: #fd7e14; }
+        .compliance-none { background-color: #dc3545; }
+        
+        .score-circle {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            margin: 0 auto;
+        }
+        .score-90-100 { background: linear-gradient(135deg, #667eea, #764ba2); }
+        .score-75-89 { background: linear-gradient(135deg, #f093fb, #f5576c); }
+        .score-60-74 { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+        .score-40-59 { background: linear-gradient(135deg, #ffecd2, #fcb69f); color: #8b4513; }
+        .score-0-39 { background: linear-gradient(135deg, #a8a8a8, #696969); }
+        
+        .founding-partner-badge {
+            background: linear-gradient(135deg, #ffd700, #ffed4e);
+            color: #8b4513;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.7rem;
+        }
+        
+        .filter-section {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .agreement-status {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+        .status-active { background: #d4edda; color: #155724; }
+        .status-signed { background: #cce5ff; color: #004085; }
+        .status-pending { background: #fff3cd; color: #856404; }
+        .status-expired { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <div class="row">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center py-3 border-bottom">
+                    <div>
+                        <h2 class="mb-0"><span style="color: #dc2626;">FED</span><span style="color: #2563eb;">EVENT</span> Hotel Evaluation Dashboard</h2>
+                        <p class="text-muted mb-0">Comprehensive hotel partnership scoring and compliance tracking</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-primary me-2" onclick="refreshData()">
+                            <i class="fas fa-sync-alt"></i> Refresh
+                        </button>
+                        <button class="btn btn-primary" onclick="exportData()">
+                            <i class="fas fa-download"></i> Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics Overview -->
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h3 id="totalHotels">-</h3>
+                    <p class="mb-0">Total Hotels</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h3 id="platinumPartners">-</h3>
+                    <p class="mb-0">Platinum Partners</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h3 id="compliantHotels">-</h3>
+                    <p class="mb-0">Fully Compliant</p>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card">
+                    <h3 id="foundingPartners">-</h3>
+                    <p class="mb-0">Founding Partners</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-3">
+                    <label class="form-label">Partnership Tier</label>
+                    <select class="form-select" id="tierFilter">
+                        <option value="">All Tiers</option>
+                        <option value="Platinum Partner">Platinum Partner</option>
+                        <option value="Preferred Partner">Preferred Partner</option>
+                        <option value="Active Vendor">Active Vendor</option>
+                        <option value="Probation">Probation</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Compliance Status</label>
+                    <select class="form-select" id="complianceFilter">
+                        <option value="">All Status</option>
+                        <option value="Fully Compliant">Fully Compliant</option>
+                        <option value="Mostly Compliant">Mostly Compliant</option>
+                        <option value="Partially Compliant">Partially Compliant</option>
+                        <option value="Non-Compliant">Non-Compliant</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Agreement Status</label>
+                    <select class="form-select" id="agreementFilter">
+                        <option value="">All Agreements</option>
+                        <option value="active">Active</option>
+                        <option value="signed">Signed</option>
+                        <option value="pending">Pending</option>
+                        <option value="expired">Expired</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Search Hotel</label>
+                    <input type="text" class="form-control" id="searchFilter" placeholder="Hotel name or email...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotels List -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Hotel Evaluations</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="hotelsList" class="row">
+                            <!-- Hotels will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hotel Details Modal -->
+    <div class="modal fade" id="hotelDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Hotel Evaluation Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="hotelDetailsContent">
+                    <!-- Content will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="editHotelEvaluation()">Edit Evaluation</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let allHotels = [];
+        let filteredHotels = [];
+
+        // Load hotel evaluations
+        async function loadHotelEvaluations() {
+            try {
+                const response = await fetch('/api/admin/hotel-evaluations');
+                allHotels = await response.json();
+                filteredHotels = [...allHotels];
+                updateStatistics();
+                renderHotels();
+            } catch (error) {
+                console.error('Error loading hotel evaluations:', error);
+                showAlert('Error loading hotel evaluations', 'danger');
+            }
+        }
+
+        // Update statistics
+        function updateStatistics() {
+            const totalHotels = allHotels.length;
+            const platinumPartners = allHotels.filter(h => h.tier === 'Platinum Partner').length;
+            const compliantHotels = allHotels.filter(h => h.compliance_status === 'Fully Compliant').length;
+            const foundingPartners = allHotels.filter(h => h.founding_status === 1).length;
+
+            document.getElementById('totalHotels').textContent = totalHotels;
+            document.getElementById('platinumPartners').textContent = platinumPartners;
+            document.getElementById('compliantHotels').textContent = compliantHotels;
+            document.getElementById('foundingPartners').textContent = foundingPartners;
+        }
+
+        // Render hotels list
+        function renderHotels() {
+            const container = document.getElementById('hotelsList');
+            
+            if (filteredHotels.length === 0) {
+                container.innerHTML = '<div class="col-12 text-center py-5"><p class="text-muted">No hotels found matching your criteria.</p></div>';
+                return;
+            }
+
+            container.innerHTML = filteredHotels.map(hotel => `
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card evaluation-card h-100" onclick="showHotelDetails(${hotel.id})">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <h6 class="card-title mb-0">${hotel.name}</h6>
+                                ${hotel.founding_status === 1 ? '<span class="founding-partner-badge">Founding Partner</span>' : ''}
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-6 text-center">
+                                    <div class="score-circle ${getScoreClass(hotel.total_score || 0)}">
+                                        ${hotel.total_score || 0}
+                                    </div>
+                                    <small class="text-muted">Partnership Score</small>
+                                </div>
+                                <div class="col-6">
+                                    <div class="mb-2">
+                                        <span class="tier-badge ${getTierClass(hotel.tier || 'Inactive')}">
+                                            ${hotel.tier || 'Inactive'}
+                                        </span>
+                                    </div>
+                                    <div class="mb-1">
+                                        <span class="compliance-indicator ${getComplianceClass(hotel.compliance_status || 'Non-Compliant')}"></span>
+                                        <small>${hotel.compliance_status || 'Non-Compliant'}</small>
+                                    </div>
+                                    <div>
+                                        <span class="agreement-status ${getAgreementStatusClass(hotel.agreement_status || 'pending')}">
+                                            ${hotel.agreement_status || 'Not Started'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-6">
+                                    <small class="text-muted">Location</small><br>
+                                    <small>${hotel.city || 'N/A'}, ${hotel.state || 'N/A'}</small>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted">Last Updated</small><br>
+                                    <small>${formatDate(hotel.score_updated)}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Get CSS class for score
+        function getScoreClass(score) {
+            if (score >= 90) return 'score-90-100';
+            if (score >= 75) return 'score-75-89';
+            if (score >= 60) return 'score-60-74';
+            if (score >= 40) return 'score-40-59';
+            return 'score-0-39';
+        }
+
+        // Get CSS class for tier
+        function getTierClass(tier) {
+            return tier.toLowerCase().replace(' ', '-').replace('partner', 'partner');
+        }
+
+        // Get CSS class for compliance
+        function getComplianceClass(status) {
+            if (status === 'Fully Compliant') return 'compliance-fully';
+            if (status === 'Mostly Compliant') return 'compliance-mostly';
+            if (status === 'Partially Compliant') return 'compliance-partial';
+            return 'compliance-none';
+        }
+
+        // Get CSS class for agreement status
+        function getAgreementStatusClass(status) {
+            if (status === 'active') return 'status-active';
+            if (status === 'signed') return 'status-signed';
+            if (status === 'pending') return 'status-pending';
+            if (status === 'expired') return 'status-expired';
+            return 'status-pending';
+        }
+
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleDateString();
+        }
+
+        // Show hotel details
+        async function showHotelDetails(hotelId) {
+            const hotel = allHotels.find(h => h.id === hotelId);
+            if (!hotel) return;
+
+            const content = document.getElementById('hotelDetailsContent');
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Hotel Information</h6>
+                        <p><strong>Name:</strong> ${hotel.name}</p>
+                        <p><strong>Email:</strong> ${hotel.email || 'N/A'}</p>
+                        <p><strong>Location:</strong> ${hotel.city || 'N/A'}, ${hotel.state || 'N/A'}</p>
+                        <p><strong>Founding Partner:</strong> ${hotel.founding_status === 1 ? 'Yes' : 'No'}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Partnership Score</h6>
+                        <div class="text-center mb-3">
+                            <div class="score-circle ${getScoreClass(hotel.total_score || 0)} mx-auto" style="width: 80px; height: 80px; font-size: 1.5rem;">
+                                ${hotel.total_score || 0}
+                            </div>
+                            <p class="mt-2"><strong>Tier:</strong> ${hotel.tier || 'Inactive'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <h6>Compliance Status</h6>
+                        <p><strong>Status:</strong> 
+                            <span class="compliance-indicator ${getComplianceClass(hotel.compliance_status || 'Non-Compliant')}"></span>
+                            ${hotel.compliance_status || 'Non-Compliant'}
+                        </p>
+                        <p><strong>Percentage:</strong> ${hotel.compliance_percentage || 0}%</p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Partnership Agreement</h6>
+                        <p><strong>Status:</strong> 
+                            <span class="agreement-status ${getAgreementStatusClass(hotel.agreement_status || 'pending')}">
+                                ${hotel.agreement_status || 'Not Started'}
+                            </span>
+                        </p>
+                        <p><strong>Hotel Signed:</strong> ${hotel.hotel_signed_at ? 'Yes' : 'No'}</p>
+                        <p><strong>CREATA Approved:</strong> ${hotel.creata_approved_at ? 'Yes' : 'No'}</p>
+                    </div>
+                </div>
+            `;
+
+            const modal = new bootstrap.Modal(document.getElementById('hotelDetailsModal'));
+            modal.show();
+        }
+
+        // Filter hotels
+        function filterHotels() {
+            const tierFilter = document.getElementById('tierFilter').value;
+            const complianceFilter = document.getElementById('complianceFilter').value;
+            const agreementFilter = document.getElementById('agreementFilter').value;
+            const searchFilter = document.getElementById('searchFilter').value.toLowerCase();
+
+            filteredHotels = allHotels.filter(hotel => {
+                const matchesTier = !tierFilter || hotel.tier === tierFilter;
+                const matchesCompliance = !complianceFilter || hotel.compliance_status === complianceFilter;
+                const matchesAgreement = !agreementFilter || hotel.agreement_status === agreementFilter;
+                const matchesSearch = !searchFilter || 
+                    hotel.name.toLowerCase().includes(searchFilter) || 
+                    (hotel.email && hotel.email.toLowerCase().includes(searchFilter));
+
+                return matchesTier && matchesCompliance && matchesAgreement && matchesSearch;
+            });
+
+            renderHotels();
+        }
+
+        // Refresh data
+        function refreshData() {
+            loadHotelEvaluations();
+        }
+
+        // Export data
+        function exportData() {
+            const csvContent = [
+                ['Hotel Name', 'Email', 'City', 'State', 'Partnership Score', 'Tier', 'Compliance Status', 'Agreement Status', 'Founding Partner'],
+                ...filteredHotels.map(hotel => [
+                    hotel.name,
+                    hotel.email || '',
+                    hotel.city || '',
+                    hotel.state || '',
+                    hotel.total_score || 0,
+                    hotel.tier || 'Inactive',
+                    hotel.compliance_status || 'Non-Compliant',
+                    hotel.agreement_status || 'Not Started',
+                    hotel.founding_status === 1 ? 'Yes' : 'No'
+                ])
+            ].map(row => row.join(',')).join('\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `hotel-evaluations-${new Date().toISOString().split('T')[0]}.csv`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+        }
+
+        // Show alert
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type} alert-dismissible fade show`;
+            alertDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.body.insertBefore(alertDiv, document.body.firstChild);
+        }
+
+        // Event listeners
+        document.getElementById('tierFilter').addEventListener('change', filterHotels);
+        document.getElementById('complianceFilter').addEventListener('change', filterHotels);
+        document.getElementById('agreementFilter').addEventListener('change', filterHotels);
+        document.getElementById('searchFilter').addEventListener('input', filterHotels);
+
+        // Load data on page load
+        document.addEventListener('DOMContentLoaded', loadHotelEvaluations);
+    </script>
+</body>
+</html>

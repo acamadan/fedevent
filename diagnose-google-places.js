@@ -48,7 +48,7 @@ try {
         if (testData.error && testData.error.message) {
             if (testData.error.message.includes('API key not valid')) {
                 console.log('\n   💡 Troubleshooting tip: Check Google Cloud Console API key restrictions');
-                console.log('      - Ensure API key is restricted to HTTP referrer: http://localhost:5050/*');
+                console.log('      - Ensure API key is restricted to HTTP referrer: http://localhost:7070/*');
                 console.log('      - Verify "Places API (New)" is enabled in APIs & Services');
                 console.log('      - Confirm billing is enabled for your project');
             } else if (testData.error.message.includes('PERMISSION_DENIED')) {
@@ -68,7 +68,7 @@ console.log('   Please verify in Google Cloud Console:');
 console.log('   ✅ "Maps JavaScript API" is enabled');
 console.log('   ✅ "Places API" is enabled');
 console.log('   ✅ "Places API (New)" is enabled');
-console.log('   ✅ API key is restricted to HTTP referrer: http://localhost:5050/*');
+console.log('   ✅ API key is restricted to HTTP referrer: http://localhost:7070/*');
 console.log('   ✅ API key has access to all three APIs listed above');
 console.log('   ✅ Billing is enabled for your project');
 

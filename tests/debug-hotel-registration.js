@@ -7,7 +7,7 @@ async function debugRegistrationFlow() {
   try {
     // Step 1: Login as hotel user
     console.log('1. Attempting login...');
-    const loginResponse = await fetch('http://localhost:5050/api/auth/login', {
+    const loginResponse = await fetch('http://localhost:7070/api/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -30,7 +30,7 @@ async function debugRegistrationFlow() {
     
     // Step 2: Test session validation (like /api/auth/me)
     console.log('2. Testing session validation with /api/auth/me...');
-    const meResponse = await fetch('http://localhost:5050/api/auth/me', {
+    const meResponse = await fetch('http://localhost:7070/api/auth/me', {
       headers: { 'Authorization': `Bearer ${sessionId}` }
     });
     
@@ -45,7 +45,7 @@ async function debugRegistrationFlow() {
     
     // Step 3: Test hotel profile access (the failing endpoint)
     console.log('\n3. Testing hotel profile access...');
-    const profileResponse = await fetch('http://localhost:5050/api/hotel/profile', {
+    const profileResponse = await fetch('http://localhost:7070/api/hotel/profile', {
       headers: { 'Authorization': `Bearer ${sessionId}` }
     });
     
@@ -65,7 +65,7 @@ async function debugRegistrationFlow() {
     
     // Step 4: Test form submission endpoint
     console.log('\n4. Testing form submission endpoint...');
-    const submitResponse = await fetch('http://localhost:5050/api/submit', {
+    const submitResponse = await fetch('http://localhost:7070/api/submit', {
       method: 'POST',
       headers: { 
         'Authorization': `Bearer ${sessionId}`,

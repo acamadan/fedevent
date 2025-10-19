@@ -8,7 +8,7 @@ console.log('==============================');
 
 // Test the per diem API endpoint
 async function testPerDiemApi() {
-  const baseUrl = 'http://localhost:5050/api/perdiem';
+  const baseUrl = 'http://localhost:7070/api/perdiem';
   
   // Test 1: Montana state data
   console.log('\n--- Test 1: Montana State Data ---');

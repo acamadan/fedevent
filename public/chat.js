@@ -19,6 +19,16 @@
     <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline></video>
     <div class="bubble-pulse"></div>
   `;
+  
+  // Set video to end (smiley face) when it loads
+  document.addEventListener('DOMContentLoaded', () => {
+    const danaVideo = document.getElementById('danaVideo');
+    if (danaVideo) {
+      danaVideo.addEventListener('loadedmetadata', () => {
+        danaVideo.currentTime = danaVideo.duration || 0;
+      });
+    }
+  });
 
   // Create chat panel
   const panel = document.createElement('div');
@@ -534,17 +544,30 @@
         // Hide the entire DANA sphere when chat opens
         bubble.style.display = 'none';
       } else {
-        // Show the entire DANA sphere when chat closes and restore DANA video
+        // Show the entire DANA sphere when chat closes
         bubble.style.display = 'grid';
-        // Ensure DANA video is properly restored
+        // Restore DANA video content
         bubble.innerHTML = `
           <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline></video>
           <div class="bubble-pulse"></div>
         `;
+        // Set video to end (smiley face) and re-attach event listeners
+        const danaVideo = document.getElementById('danaVideo');
+        if (danaVideo) {
+          danaVideo.addEventListener('loadedmetadata', () => {
+            danaVideo.currentTime = danaVideo.duration || 0;
+          });
+          // Set initial position to end
+          danaVideo.currentTime = danaVideo.duration || 0;
+        }
+        // Re-attach hover event listeners
+        bubble.addEventListener('mouseenter', playDanaVideo);
+        bubble.addEventListener('mouseleave', pauseDanaVideo);
+        console.log('DANA sphere restored and should be visible');
       }
     });
 
-    // DANA video hover events
+    // DANA video hover events (initial setup)
     bubble.addEventListener('mouseenter', playDanaVideo);
     bubble.addEventListener('mouseleave', pauseDanaVideo);
 
@@ -664,7 +687,8 @@
   function playDanaVideo() {
     const danaVideo = document.getElementById('danaVideo');
     if (danaVideo) {
-      danaVideo.currentTime = 0;
+      // Start video at the end (smiley face) instead of beginning
+      danaVideo.currentTime = danaVideo.duration || 0;
       danaVideo.play().catch(e => console.log('Video play failed:', e));
     }
   }

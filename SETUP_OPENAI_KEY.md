@@ -1,6 +1,6 @@
-# 🤖 OpenAI API Key Setup Guide
+# 🤖 Claude API Key Setup Guide
 
-This guide will help you set up your OpenAI API key for the FEDEVENT project to enable AI-powered features like meeting space extraction and document processing.
+This guide will help you set up your Claude API key for the FEDEVENT project to enable AI-powered features like meeting space extraction and document processing.
 
 ## Quick Start
 
@@ -26,13 +26,13 @@ The script will:
 
 ### Option 2: Manual Setup
 
-#### Step 1: Get Your OpenAI API Key
+#### Step 1: Get Your Claude API Key
 
-1. Visit [OpenAI Platform](https://platform.openai.com/api-keys)
-2. Sign up or log in to your OpenAI account
-3. Click **"Create new secret key"**
+1. Visit [Anthropic Console](https://console.anthropic.com)
+2. Sign up or log in to your Anthropic account
+3. Click **"Create Key"**
 4. Give it a name (e.g., "FEDEVENT Project")
-5. **Copy the API key** (starts with `sk-`)
+5. **Copy the API key** (starts with `sk-ant-`)
    - ⚠️ **Important:** You'll only see this key once!
 
 #### Step 2: Create .env File
@@ -48,13 +48,13 @@ cp env-template.txt .env
 Open the `.env` file and find this line:
 
 ```bash
-OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
 ```
 
 Replace it with your key:
 
 ```bash
-OPENAI_API_KEY=sk-your-actual-key-here
+ANTHROPIC_API_KEY=sk-ant-your-actual-key-here
 ```
 
 #### Step 4: Test the Integration
@@ -62,7 +62,7 @@ OPENAI_API_KEY=sk-your-actual-key-here
 Run the test script:
 
 ```bash
-npm run test:openai
+npm run test:claude
 ```
 
 You should see output like:
@@ -124,7 +124,7 @@ OpenAI API usage is billed per token. The project uses `gpt-4o-mini` by default,
 ### Testing Connection
 Run the test script to diagnose issues:
 ```bash
-npm run test:openai
+npm run test:claude
 ```
 
 ### Check Environment Variables
@@ -178,7 +178,7 @@ OPENAI_BASE_URL=https://your-custom-endpoint.com/v1
 ## Need Help?
 
 - 📖 See [OPENAI_INTEGRATION.md](./OPENAI_INTEGRATION.md) for detailed API documentation
-- 🧪 Run `npm run test:openai` to test your setup
+- 🧪 Run `npm run test:claude` to test your setup
 - 📧 Contact support if you encounter issues
 
 ## Quick Reference
@@ -186,7 +186,7 @@ OPENAI_BASE_URL=https://your-custom-endpoint.com/v1
 | Task | Command |
 |------|---------|
 | Setup wizard | `./setup-openai.sh` (Mac/Linux) or `setup-openai.bat` (Windows) |
-| Test integration | `npm run test:openai` |
+| Test integration | `npm run test:claude` |
 | View documentation | Open `OPENAI_INTEGRATION.md` |
 | Access AI Assistant | `http://localhost:5050/openai-assistant.html` |
 

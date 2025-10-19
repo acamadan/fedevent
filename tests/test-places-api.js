@@ -4,7 +4,7 @@ async function testGooglePlacesAPI() {
         console.log('Testing Google Places API key endpoint...');
         
         // Test the API key endpoint
-        const response = await fetch('http://localhost:5050/api/google-places-key');
+        const response = await fetch('http://localhost:7070/api/google-places-key');
         
         if (!response.ok) {
             console.log(`Failed to get API key: ${response.status} ${response.statusText}`);

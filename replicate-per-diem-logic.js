@@ -7,7 +7,7 @@ console.log('Replicating Per Diem Results Page Logic');
 console.log('=====================================');
 
 async function fetchPerDiemOnce(params) {
-  const url = new URL('http://localhost:5050/api/perdiem');
+  const url = new URL('http://localhost:7070/api/perdiem');
   if (params.state) url.searchParams.set('state', params.state);
   if (params.city) url.searchParams.set('city', params.city);
   if (params.zip) url.searchParams.set('zip', params.zip);

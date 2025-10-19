@@ -1,21 +1,21 @@
-# OpenAI Integration for FEDEVENT
+# Claude Integration for FEDEVENT
 
-This document explains how to set up and use the OpenAI integration in your FEDEVENT project.
+This document explains how to set up and use the Claude integration in your FEDEVENT project.
 
 ## 🚀 Setup Instructions
 
 ### 1. Environment Configuration
 
-Add your OpenAI API key to your `.env` file:
+Add your Claude API key to your `.env` file:
 
 ```bash
-# OpenAI API
-OPENAI_API_KEY=your_openai_api_key_here
+# Anthropic Claude API
+ANTHROPIC_API_KEY=your_claude_api_key_here
 ```
 
-### 2. Get an OpenAI API Key
+### 2. Get a Claude API Key
 
-1. Visit [OpenAI Platform](https://platform.openai.com/api-keys)
+1. Visit [Anthropic Console](https://console.anthropic.com)
 2. Sign up or log in to your account
 3. Create a new API key
 4. Copy the key and add it to your `.env` file
@@ -25,12 +25,12 @@ OPENAI_API_KEY=your_openai_api_key_here
 Run the test script to verify everything is working:
 
 ```bash
-npm run test:openai
+npm run test:claude
 ```
 
 ## 🔧 Available API Endpoints
 
-### 1. Code Review (`POST /api/openai/code-review`)
+### 1. Code Review (`POST /api/claude/code-review`)
 
 Reviews code for quality, security, performance, and maintainability.
 
@@ -49,7 +49,7 @@ Reviews code for quality, security, performance, and maintainability.
 - `performance` - Performance optimizations
 - `refactor` - Refactoring suggestions
 
-### 2. Document Analysis (`POST /api/openai/analyze-document`)
+### 2. Document Analysis (`POST /api/claude/analyze-document`)
 
 Analyzes documents for summaries, key points, requirements, or action items.
 
@@ -67,7 +67,7 @@ Analyzes documents for summaries, key points, requirements, or action items.
 - `requirements` - Extract requirements
 - `action_items` - Identify action items
 
-### 3. Proposal Generation (`POST /api/openai/generate-proposal`)
+### 3. Proposal Generation (`POST /api/claude/generate-proposal`)
 
 Generates professional contract proposals based on requirements.
 
@@ -80,7 +80,7 @@ Generates professional contract proposals based on requirements.
 }
 ```
 
-### 4. General Assistant (`POST /api/openai/assistant`)
+### 4. General Assistant (`POST /api/claude/assistant`)
 
 General AI assistant for federal contracting and hotel management questions.
 
@@ -96,7 +96,7 @@ General AI assistant for federal contracting and hotel management questions.
 
 Access the OpenAI Assistant interface at:
 ```
-http://localhost:5050/openai-assistant.html
+http://localhost:5050/claude-assistant.html
 ```
 
 The interface provides:
@@ -116,9 +116,9 @@ Each API call returns token usage information:
 }
 ```
 
-**Estimated Costs (GPT-3.5-turbo):**
-- Input: $0.0005 per 1K tokens
-- Output: $0.0015 per 1K tokens
+**Estimated Costs (Claude-3-Haiku):**
+- Input: $0.25 per 1M tokens
+- Output: $1.25 per 1M tokens
 
 **Example costs per feature:**
 - Code Review: ~$0.002-0.005 per review

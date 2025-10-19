@@ -2156,7 +2156,7 @@ app.get('/api/sam/notice/:id', async (req, res) => {
 app.get('/api/admin/solicitation/:id', async (req, res) => {
   // Delegate to the SAM notice endpoint
   try {
-    const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/notice/${encodeURIComponent(req.params.id)}`);
+    const r = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/notice/${encodeURIComponent(req.params.id)}`);
     const data = await r.json();
     if (!data || data.error) return fail(res, 404, data?.error || 'Not found');
 
@@ -2202,7 +2202,7 @@ app.get('/api/opps', async (req, res) => {
 
     if (noticeid) {
       // Delegate to our notice lookup
-      const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/notice/${encodeURIComponent(noticeid)}`);
+      const r = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/notice/${encodeURIComponent(noticeid)}`);
       const data = await r.json();
       if (!data || data.error) return fail(res, 404, data?.error || 'Not found', { detail: data?.detail, raw: data?.raw });
       return ok(res, { ok: true, totalRecords: 1, results: [data.notice] });
@@ -2214,7 +2214,7 @@ app.get('/api/opps', async (req, res) => {
     if (postedTo) params.set('postedTo', postedTo);
     params.set('limit', limit);
 
-    const r = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/search?${params.toString()}`);
+    const r = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/search?${params.toString()}`);
     const data = await r.json();
     if (!data || data.error) return fail(res, 400, data?.error || 'Search failed', { detail: data?.detail });
     return ok(res, data);
@@ -2231,7 +2231,7 @@ app.post('/api/sam/search-and-email', async (req, res) => {
     const q = (Array.isArray(keywords) ? keywords : String(keywords||'').split(',')).map(s=>String(s||'').trim()).filter(Boolean).join(' OR ') || 'lodging OR hotel OR conference';
 
     // Fetch real results via our search endpoint
-    const searchResponse = await fetch(`http://localhost:${process.env.PORT || 5050}/api/sam/search?${new URLSearchParams({ q, naics, limit: '20' })}`);
+    const searchResponse = await fetch(`http://localhost:${process.env.PORT || 7070}/api/sam/search?${new URLSearchParams({ q, naics, limit: '20' })}`);
     const searchData = await searchResponse.json();
     const results = searchData.results || [];
 

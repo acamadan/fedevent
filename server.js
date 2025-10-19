@@ -1145,17 +1145,17 @@ console.log('Resolved DB_PATH:', DB_PATH);
 // Use local data directory (persists in Render's container filesystem)
 const db = new Database(DB_PATH);
 
-// ---------- OpenAI client (lazy loaded) ----------
-let openai = null;
-async function getOpenAI() {
-  if (!openai && process.env.OPENAI_API_KEY) {
-    const OpenAI = await import('openai');
-    openai = new OpenAI.default({
-      apiKey: process.env.OPENAI_API_KEY,
+// ---------- Claude client (lazy loaded) ----------
+let claude = null;
+async function getClaude() {
+  if (!claude && process.env.ANTHROPIC_API_KEY) {
+    const Anthropic = await import('@anthropic-ai/sdk');
+    claude = new Anthropic.default({
+      apiKey: process.env.ANTHROPIC_API_KEY,
     });
-    console.log('OpenAI client initialized');
+    console.log('Claude client initialized');
   }
-  return openai;
+  return claude;
 }
 
 db.exec(`
@@ -6000,7 +6000,7 @@ app.get('/api/admin/hotels/export-emails', requireAuth, requireAdmin, async (req
   }
 });
 
-// Import email contacts from CSV (Admin only) - for invitation campaigns
+// Import email contacts from CSV/Excel (Admin only) - for invitation campaigns
 app.post('/api/admin/email-contacts/import-csv', requireAuth, requireAdmin, upload.single('csvFile'), async (req, res) => {
   try {
     if (!req.file) {
@@ -6008,20 +6008,69 @@ app.post('/api/admin/email-contacts/import-csv', requireAuth, requireAdmin, uplo
     }
     
     const filePath = req.file.path;
-    const fileContent = fs.readFileSync(filePath, 'utf8');
+    const fileExt = path.extname(req.file.originalname).toLowerCase();
+    let records = [];
     
-    // Parse CSV using csv-parse
-    const { parse } = await import('csv-parse/sync');
-    const records = parse(fileContent, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true,
-      bom: true // Handle UTF-8 BOM
-    });
+    // Handle Excel files (.xlsx, .xls)
+    if (fileExt === '.xlsx' || fileExt === '.xls') {
+      try {
+        const ExcelJS = (await import('exceljs')).default;
+        const workbook = new ExcelJS.Workbook();
+        await workbook.xlsx.readFile(filePath);
+        const worksheet = workbook.worksheets[0];
+        
+        // Convert Excel to array of objects
+        const headers = [];
+        const data = [];
+        
+        worksheet.eachRow((row, rowNumber) => {
+          if (rowNumber === 1) {
+            // First row is headers
+            row.eachCell((cell, colNumber) => {
+              headers[colNumber - 1] = cell.value;
+            });
+          } else {
+            // Data rows
+            const rowData = {};
+            row.eachCell((cell, colNumber) => {
+              const header = headers[colNumber - 1];
+              if (header) {
+                rowData[header] = cell.value;
+              }
+            });
+            if (Object.keys(rowData).length > 0) {
+              data.push(rowData);
+            }
+          }
+        });
+        
+        records = data;
+      } catch (excelError) {
+        console.error('Excel parsing error:', excelError);
+        fs.unlinkSync(filePath); // Clean up
+        return fail(res, 400, `Failed to parse Excel file: ${excelError.message}`);
+      }
+    } else {
+      // Handle CSV files
+      try {
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const { parse } = await import('csv-parse/sync');
+        records = parse(fileContent, {
+          columns: true,
+          skip_empty_lines: true,
+          trim: true,
+          bom: true // Handle UTF-8 BOM
+        });
+      } catch (csvError) {
+        console.error('CSV parsing error:', csvError);
+        fs.unlinkSync(filePath); // Clean up
+        return fail(res, 400, `Failed to parse CSV file: ${csvError.message}`);
+      }
+    }
     
     if (records.length === 0) {
       fs.unlinkSync(filePath); // Clean up
-      return fail(res, 400, 'CSV file is empty or invalid');
+      return fail(res, 400, 'File is empty or contains no valid data');
     }
     
     let imported = 0;
@@ -6128,6 +6177,194 @@ app.post('/api/admin/email-contacts/import-csv', requireAuth, requireAdmin, uplo
       fs.unlinkSync(req.file.path);
     }
     return fail(res, 500, `Failed to import CSV: ${error.message}`);
+  }
+});
+
+// Manual waitlist entry (Admin only)
+app.post('/api/admin/waitlist/manual-entry', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { firstName, lastName, email, hotelName, phone, city, state, title, priority, notes } = req.body;
+    
+    // Validate required fields
+    if (!firstName || !lastName || !email || !hotelName) {
+      return fail(res, 400, 'First name, last name, email, and hotel name are required');
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return fail(res, 400, 'Invalid email format');
+    }
+    
+    // Check if contact already exists in waitlist
+    const existing = db.prepare('SELECT id FROM hotel_leads WHERE email = ?').get(email);
+    
+    if (existing) {
+      // Update existing waitlist entry
+      const updates = [];
+      const params = [];
+      
+      if (firstName) { updates.push('contact_name = ?'); params.push(`${firstName} ${lastName}`); }
+      if (hotelName) { updates.push('hotel_name = ?'); params.push(hotelName); }
+      if (phone) { updates.push('phone = ?'); params.push(phone); }
+      if (city) { updates.push('city = ?'); params.push(city); }
+      if (state) { updates.push('state = ?'); params.push(state); }
+      if (title) { updates.push('title = ?'); params.push(title); }
+      if (notes) { updates.push('interests = ?'); params.push(notes); }
+      
+      if (updates.length > 0) {
+        params.push(existing.id);
+        db.prepare(`UPDATE hotel_leads SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+        
+        return ok(res, {
+          message: 'Waitlist entry updated successfully',
+          leadId: existing.id,
+          action: 'updated'
+        });
+      } else {
+        return ok(res, {
+          message: 'Waitlist entry already exists with same information',
+          leadId: existing.id,
+          action: 'no_changes'
+        });
+      }
+    } else {
+      // Generate unique user code (FEV-XXXXX format)
+      let userCode = '';
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      while (attempts < maxAttempts) {
+        const randomNum = Math.floor(10000 + Math.random() * 90000);
+        userCode = `FEV-${randomNum}`;
+
+        const existingCode = db.prepare(`SELECT id FROM hotel_leads WHERE user_code = ?`).get(userCode);
+        if (!existingCode) break;
+
+        attempts++;
+      }
+
+      if (attempts >= maxAttempts) {
+        return fail(res, 500, 'Failed to generate unique user code');
+      }
+
+      // Insert new waitlist entry
+      const result = db.prepare(`
+        INSERT INTO hotel_leads (
+          user_code, hotel_name, contact_name, email, phone, city, state, title, interests,
+          currently_operating, accept_net30, accept_direct_bill, notified
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        userCode,
+        hotelName,
+        `${firstName} ${lastName}`,
+        email,
+        phone || null,
+        city || null,
+        state || null,
+        title || null,
+        notes || null,
+        'yes', // Default to currently operating
+        'yes', // Default to accepts NET30
+        'yes', // Default to accepts direct bill
+        0 // Not notified yet
+      );
+      
+      return ok(res, {
+        message: 'Waitlist entry added successfully',
+        leadId: result.lastInsertRowid,
+        userCode: userCode,
+        action: 'created'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Manual waitlist entry error:', error);
+    return fail(res, 500, `Failed to add waitlist entry: ${error.message}`);
+  }
+});
+
+// Manual email contact entry (Admin only)
+app.post('/api/admin/email-contacts/manual-entry', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { firstName, lastName, email, hotelName, phone, city, state, title, priority, notes } = req.body;
+    
+    // Validate required fields
+    if (!firstName || !lastName || !email || !hotelName) {
+      return fail(res, 400, 'First name, last name, email, and hotel name are required');
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return fail(res, 400, 'Invalid email format');
+    }
+    
+    // Check if contact already exists in email_contacts
+    const existing = db.prepare('SELECT id FROM email_contacts WHERE email = ?').get(email);
+    
+    if (existing) {
+      // Update existing email contact
+      const updates = [];
+      const params = [];
+      
+      if (firstName) { updates.push('contact_name = ?'); params.push(`${firstName} ${lastName}`); }
+      if (hotelName) { updates.push('hotel_name = ?'); params.push(hotelName); }
+      if (phone) { updates.push('phone = ?'); params.push(phone); }
+      if (city) { updates.push('city = ?'); params.push(city); }
+      if (state) { updates.push('state = ?'); params.push(state); }
+      if (title) { updates.push('title = ?'); params.push(title); }
+      if (priority) { updates.push('priority_level = ?'); params.push(priority); }
+      if (notes) { updates.push('notes = ?'); params.push(notes); }
+      
+      if (updates.length > 0) {
+        params.push(existing.id);
+        db.prepare(`UPDATE email_contacts SET ${updates.join(', ')} WHERE id = ?`).run(...params);
+        
+        return ok(res, {
+          message: 'Email contact updated successfully',
+          contactId: existing.id,
+          action: 'updated'
+        });
+      } else {
+        return ok(res, {
+          message: 'Email contact already exists with same information',
+          contactId: existing.id,
+          action: 'no_changes'
+        });
+      }
+    } else {
+      // Insert new email contact
+      const result = db.prepare(`
+        INSERT INTO email_contacts (
+          email, hotel_name, contact_name, city, state, country,
+          phone, title, notes, priority_level, invitation_status, registered
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      `).run(
+        email,
+        hotelName,
+        `${firstName} ${lastName}`,
+        city || null,
+        state || null,
+        'USA',
+        phone || null,
+        title || null,
+        notes || null,
+        priority || 'normal',
+        'not_invited',
+        'No'
+      );
+      
+      return ok(res, {
+        message: 'Email contact added successfully',
+        contactId: result.lastInsertRowid,
+        action: 'created'
+      });
+    }
+    
+  } catch (error) {
+    console.error('Manual email contact entry error:', error);
+    return fail(res, 500, `Failed to add email contact: ${error.message}`);
   }
 });
 
@@ -6382,11 +6619,11 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
       size: file.size
     });
 
-    // Initialize OpenAI client
-    const openai = await getOpenAI();
+    // Initialize Claude client
+    const claude = await getClaude();
 
-    if (!openai) {
-      return fail(res, 500, 'OpenAI API key not configured on server');
+    if (!claude) {
+      return fail(res, 500, 'Claude API key not configured on server');
     }
 
     // Determine handling based on MIME type
@@ -6532,16 +6769,18 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
           { type: 'image_url', image_url: { url: `data:${mimeType};base64,${base64Data}` } }
         ] }
       ];
-      const response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages,
+      const response = await claude.messages.create({
+        model: 'claude-3-haiku-20240307',
         max_tokens: 4000,
-        temperature: 0.1
+        temperature: 0.1,
+        messages: [
+          { role: 'user', content: userPrompt + `\n\nImage data: data:${mimeType};base64,${base64Data}` }
+        ]
       });
-      if (!response.choices || !response.choices[0] || !response.choices[0].message) {
-        return fail(res, 500, 'Invalid response from OpenAI API');
+      if (!response.content || !response.content[0]) {
+        return fail(res, 500, 'Invalid response from Claude API');
       }
-      const content = response.choices[0].message.content || '';
+      const content = response.content[0].text || '';
       consolidatedRooms = tryParseRooms(content);
     } else {
       const text = (extractedText || '').trim();
@@ -6561,8 +6800,15 @@ app.post('/api/process-meeting-layout', requireAuth, upload.single('file'), asyn
         let content = '';
         for (let attempt = 1; attempt <= 2; attempt++) {
           try {
-            const resp = await openai.chat.completions.create({ model: 'gpt-4o-mini', messages, max_tokens: 4000, temperature: 0.1 });
-            content = (resp && resp.choices && resp.choices[0] && resp.choices[0].message && resp.choices[0].message.content) || '';
+            const resp = await claude.messages.create({ 
+              model: 'claude-3-haiku-20240307', 
+              max_tokens: 4000, 
+              temperature: 0.1,
+              messages: [
+                { role: 'user', content: `${systemPrompt}\n\n${userPrompt}\n\nDocument text (chunk ${i+1}/${chunks.length}):\n\n${chunk}` }
+              ]
+            });
+            content = (resp && resp.content && resp.content[0] && resp.content[0].text) || '';
             break;
           } catch (e) {
             if (attempt === 2) throw e;
@@ -6774,16 +7020,16 @@ app.post('/uploadFactSheetHybrid', upload.single('factSheet'), async (req, res) 
       console.log(`🎯 Sample candidates:`, candidateRooms.slice(0, 5).map(r => ({ name: r.name, numbers: r.allNumbers })));
     }
 
-    // Step 4: Send to OpenAI for validation and JSON normalization
-    const openai = await getOpenAI();
+    // Step 4: Send to Claude for validation and JSON normalization
+    const claude = await getClaude();
     
-    if (!openai) {
-      // If OpenAI is not available, return the candidate rooms as-is
-      console.log('⚠️  OpenAI not available, returning candidate rooms without validation');
+    if (!claude) {
+      // If Claude is not available, return the candidate rooms as-is
+      console.log('⚠️  Claude not available, returning candidate rooms without validation');
       return res.json({ meetingRooms: candidateRooms });
     }
 
-    console.log('🤖 Sending to OpenAI for validation and normalization...');
+    console.log('🤖 Sending to Claude for validation and normalization...');
     console.log('🤖 Candidates found:', candidateRooms.length);
     console.log('🤖 OCR text length:', rawText.length);
     
@@ -6896,18 +7142,17 @@ ${rawText}
 Return JSON with ALL rooms, reading each column in the exact order above!`;
 
     try {
-      const completion = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+      const completion = await claude.messages.create({
+        model: 'claude-3-haiku-20240307',
         messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: userPrompt }
+          { role: 'user', content: `${systemPrompt}\n\n${userPrompt}` }
         ],
         temperature: 0.1,
         max_tokens: 16000  // Increased for extracting ALL rooms (up to ~30 rooms)
       });
 
-      const textOutput = completion.choices[0].message.content || '';
-      console.log('🤖 OpenAI response received, length:', textOutput.length);
+      const textOutput = completion.content[0].text || '';
+      console.log('🤖 Claude response received, length:', textOutput.length);
       console.log('🤖 First 500 chars:', textOutput.substring(0, 500));
       
       // Try to parse the JSON response
@@ -6940,8 +7185,8 @@ Return JSON with ALL rooms, reading each column in the exact order above!`;
       return res.json(parsed);
 
     } catch (aiError) {
-      console.error('🤖 OpenAI processing error:', aiError.message);
-      // Fallback to candidate rooms if OpenAI fails
+      console.error('🤖 Claude processing error:', aiError.message);
+      // Fallback to candidate rooms if Claude fails
       return res.json({ 
         meetingRooms: candidateRooms,
         warning: 'AI validation failed, returning OCR results'
@@ -7042,16 +7287,16 @@ app.post('/uploadHotelProfile', upload.single('hotelProfile'), async (req, res) 
     console.log(`📖 Extracted ${rawText.length} characters from document`);
     console.log(`📄 First 500 chars:\n${rawText.substring(0, 500)}`);
     
-    // Step 2: Send to OpenAI for comprehensive extraction
-    const openaiKey = process.env.OPENAI_API_KEY;
-    if (!openaiKey) {
-      return res.status(500).json({ error: 'OpenAI API key not configured' });
+    // Step 2: Send to Claude for comprehensive extraction
+    const claudeKey = process.env.ANTHROPIC_API_KEY;
+    if (!claudeKey) {
+      return res.status(500).json({ error: 'Claude API key not configured' });
     }
     
-    const { default: OpenAI } = await import('openai');
-    const openai = new OpenAI({ apiKey: openaiKey });
+    const { default: Anthropic } = await import('@anthropic-ai/sdk');
+    const claude = new Anthropic({ apiKey: claudeKey });
     
-    console.log('🤖 Sending to OpenAI for comprehensive extraction...');
+    console.log('🤖 Sending to Claude for comprehensive extraction...');
     
     const systemPrompt = `You are an expert hotel data extraction AI. Extract ALL hotel information from the provided text.
 
@@ -7130,17 +7375,16 @@ Return ONLY valid JSON in this exact format:
 }
 If a field is not found, use null. Do NOT invent data. Extract only what is clearly stated.`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+    const completion = await claude.messages.create({
+      model: 'claude-3-5-sonnet-20241022',
       messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user', content: `Extract all hotel information from this text:\n\n${rawText}` }
+        { role: 'user', content: `${systemPrompt}\n\nExtract all hotel information from this text:\n\n${rawText}` }
       ],
       max_tokens: 16000,
       temperature: 0.1
     });
     
-    const aiResponse = completion.choices[0].message.content;
+    const aiResponse = completion.content[0].text;
     console.log(`🤖 AI response length: ${aiResponse.length}`);
     console.log(`🤖 First 500 chars: ${aiResponse.substring(0, 500)}`);
     
@@ -10974,14 +11218,15 @@ app.get('/api/google-places-key', (req, res) => {
   }
 });
 
-// ---------- OpenAI API Endpoints ----------
+// ---------- Claude API Endpoints ----------
 
 // Code review endpoint
-app.post('/api/openai/code-review', requireAuth, async (req, res) => {
-  if (!openai) {
+app.post('/api/claude/code-review', requireAuth, async (req, res) => {
+  const claude = await getClaude();
+  if (!claude) {
     return res.status(503).json({ 
-      error: 'OpenAI service not available',
-      message: 'OpenAI API key not configured'
+      error: 'Claude service not available',
+      message: 'Claude API key not configured'
     });
   }
 
@@ -11044,8 +11289,8 @@ ${code}
 
     const prompt = prompts[focus] || prompts.general;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    const completion = await claude.messages.create({
+      model: 'claude-3-haiku-20240307',
       messages: [{
         role: 'user',
         content: prompt
@@ -11054,7 +11299,7 @@ ${code}
       temperature: 0.3
     });
 
-    const review = completion.choices[0]?.message?.content;
+    const review = completion.content[0]?.text;
     
     res.json({
       review,
@@ -11108,8 +11353,8 @@ ${text}`
 
     const prompt = prompts[analysis_type] || prompts.summary;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    const completion = await claude.messages.create({
+      model: 'claude-3-haiku-20240307',
       messages: [{
         role: 'user',
         content: prompt
@@ -11118,7 +11363,7 @@ ${text}`
       temperature: 0.3
     });
 
-    const analysis = completion.choices[0]?.message?.content;
+    const analysis = completion.content[0]?.text;
     
     res.json({
       analysis,
@@ -11169,8 +11414,8 @@ Please create a structured proposal including:
 
 Format as a professional business proposal.`;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    const completion = await claude.messages.create({
+      model: 'claude-3-haiku-20240307',
       messages: [{
         role: 'user',
         content: prompt
@@ -11179,7 +11424,7 @@ Format as a professional business proposal.`;
       temperature: 0.4
     });
 
-    const proposal = completion.choices[0]?.message?.content;
+    const proposal = completion.content[0]?.text;
     
     res.json({
       proposal,
@@ -11224,23 +11469,19 @@ Be professional, helpful, and accurate.`;
 
 Question: ${message}` : message;
 
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
+    const completion = await claude.messages.create({
+      model: 'claude-3-haiku-20240307',
       messages: [
         {
-          role: 'system',
-          content: systemPrompt
-        },
-        {
           role: 'user',
-          content: userPrompt
+          content: `${systemPrompt}\n\n${userPrompt}`
         }
       ],
       max_tokens: 800,
       temperature: 0.7
     });
 
-    const response = completion.choices[0]?.message?.content;
+    const response = completion.content[0]?.text;
     
     res.json({
       response,
@@ -11376,11 +11617,11 @@ app.post('/api/chat/assistant', async (req, res) => {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Initialize OpenAI client
-    const openaiClient = await getOpenAI();
+    // Initialize Claude client
+    const claudeClient = await getClaude();
     
-    if (!openaiClient) {
-      // Fallback to rule-based responses if OpenAI is not available
+    if (!claudeClient) {
+      // Fallback to rule-based responses if Claude is not available
       return res.json({
         response: "I'm here to help! While my AI capabilities are temporarily limited, I can still assist you. Please contact us at (305) 850-7848 or info@fedevent.com for immediate assistance.",
         isAiResponse: false
@@ -11668,9 +11909,95 @@ If users need help filling out the registration form:
 
 Use the comprehensive knowledge base below to answer questions accurately:
 
-${knowledgeBase}`;
+${knowledgeBase}
+
+## Hotel Evaluation System (INTERNAL ADMIN ACCESS ONLY)
+**⚠️ IMPORTANT: This system is for internal admin use only. Do not discuss specific hotel scores or compliance details with external users.**
+
+### Partnership Scoring System
+FEDEVENT uses a comprehensive 100-point scoring system to evaluate hotel partnerships:
+
+**Scoring Components:**
+- Response Time Score: 0-20 points (how quickly hotels respond to RFPs)
+- Rate Competitiveness: 0-25 points (pricing vs. per diem rates)
+- Compliance Score: 0-25 points (business licenses, insurance, certifications)
+- Performance History: 0-30 points (event feedback and performance ratings)
+
+**Partnership Tiers:**
+- 90-100 points: Platinum Partner (highest priority for RFPs)
+- 75-89 points: Preferred Partner (first-tier RFP distribution)
+- 60-74 points: Active Vendor (standard participation)
+- Below 60: Probation or Inactive status
+
+### Compliance Requirements
+All hotels must maintain:
+- Valid business licenses and local safety certifications
+- Up-to-date insurance covering liability and property
+- Commercial invoice capability
+- US territory operation
+- NET 30 payment terms acceptance
+- No direct government contact (all communication through CREATA)
+
+### Partnership Agreement Management
+- Digital signature workflow (hotel signer + CREATA approver)
+- Annual renewal cycles with automatic reminders
+- Status tracking: pending, signed, active, expired, terminated
+- Green status = fully signed and approved
+- Red status = blocks all bidding functions
+
+### Founding Partner Benefits
+Early participants receive:
+- Complimentary onboarding (no fees)
+- Priority support and listing visibility
+- Subscription discounts
+- Beta feature access
+- Lifetime tracking and marketing privileges
+
+### Preferred Hotel Network (PHN)
+- Management group tagging (e.g., "MasterKey Hospitality", "Aimbridge Hospitality")
+- First-tier RFP distribution
+- Enhanced visibility to federal event managers
+- Automatic targeting for relevant management clusters
+
+### Communication Standards
+- Official channels only: info@creataglobal.com, support@creataglobal.com
+- No direct government contact allowed
+- All communication archived for audit
+- Professional tone required for all interactions
+
+### Performance Monitoring
+- Event-based feedback collection
+- Response time tracking
+- Rate competitiveness analysis
+- Compliance monitoring
+- Automatic score updates after each event cycle
+
+**Admin Access:**
+- Hotel Evaluation Dashboard: /hotel-evaluation-dashboard.html
+- Comprehensive scoring and compliance tracking
+- Export functionality for reporting
+- Real-time statistics and filtering
+- Individual hotel detail views
+
+**DANA's Role in Hotel Evaluation:**
+- Explain the evaluation process to hotels (high-level only)
+- Guide hotels on compliance requirements
+- Assist with partnership agreement questions
+- Provide general information about scoring system
+- NEVER disclose specific hotel scores or internal data
+- Direct detailed questions to admin team`;
 
     const systemPromptDana = `You are Dana, FEDEVENT's AI. On the public landing page, you have no topical restrictions. Freely explain all FEDEVENT services, processes, policies, and offerings in clear, direct language. If users ask for examples or templates, provide them. Keep responses helpful, candid, and solution-oriented. Avoid making legal guarantees or disclosing private data. When in doubt, be transparent and give best-practice guidance.
+
+**IMPORTANT - Hotel Evaluation System:**
+- You can explain the general evaluation process to hotels (scoring system, compliance requirements, partnership tiers)
+- You can guide hotels on how to improve their scores and maintain compliance
+- You can explain partnership agreement requirements and founding partner benefits
+- You can provide general information about the Preferred Hotel Network
+- NEVER disclose specific hotel scores, compliance status, or internal evaluation data
+- NEVER reveal which hotels are in which tiers or their specific performance metrics
+- If asked about specific hotel evaluations, redirect to admin team
+- Always maintain confidentiality of internal scoring and evaluation data
 
 Context:
 - Page: ${currentPage || 'home'}
@@ -11710,17 +12037,15 @@ Use the knowledge base for accurate high-level answers, but avoid granular walkt
       content: message
     });
 
-    // Call OpenAI API
-    const completion = await openaiClient.chat.completions.create({
-      model: 'gpt-4o-mini', // Using gpt-4o-mini for better quality and lower cost
+    // Call Claude API
+    const completion = await claudeClient.messages.create({
+      model: 'claude-3-haiku-20240307',
       messages: messages,
       max_tokens: 1000,
-      temperature: 0.7,
-      presence_penalty: 0.6,
-      frequency_penalty: 0.3
+      temperature: 0.7
     });
 
-    const response = completion.choices[0]?.message?.content;
+    const response = completion.content[0]?.text;
     
     if (!response) {
       return res.status(500).json({ error: 'No response generated' });
@@ -11753,6 +12078,490 @@ try {
 } catch (error) {
   console.warn('Log rotation failed on startup:', error.message);
 }
+
+// Hotel Evaluation System Tables
+try {
+  // Partnership Agreements
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS partnership_agreements (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      agreement_version TEXT DEFAULT '1.0',
+      status TEXT DEFAULT 'pending', -- pending, signed, expired, terminated
+      hotel_signer_name TEXT,
+      hotel_signer_title TEXT,
+      hotel_signer_email TEXT,
+      hotel_signed_at TEXT,
+      creata_approver_name TEXT,
+      creata_approver_email TEXT,
+      creata_approved_at TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      expires_at TEXT,
+      renewal_reminder_sent INTEGER DEFAULT 0,
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Hotel Partnership Scores
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS hotel_partnership_scores (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      response_time_score INTEGER DEFAULT 0, -- 0-20 points
+      rate_competitiveness_score INTEGER DEFAULT 0, -- 0-25 points
+      compliance_score INTEGER DEFAULT 0, -- 0-25 points
+      performance_score INTEGER DEFAULT 0, -- 0-30 points
+      total_score INTEGER DEFAULT 0, -- 0-100 points
+      tier TEXT DEFAULT 'Inactive', -- Platinum, Preferred, Active, Probation, Inactive
+      last_updated TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Compliance Tracking
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS hotel_compliance (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      business_license_valid INTEGER DEFAULT 0,
+      safety_certifications_valid INTEGER DEFAULT 0,
+      insurance_coverage_valid INTEGER DEFAULT 0,
+      commercial_invoice_capable INTEGER DEFAULT 0,
+      us_territory_operating INTEGER DEFAULT 0,
+      net_30_terms_accepted INTEGER DEFAULT 0,
+      last_compliance_check TEXT DEFAULT (datetime('now')),
+      compliance_notes TEXT,
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Performance History
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS hotel_performance_history (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      event_id INTEGER,
+      event_name TEXT,
+      performance_rating INTEGER, -- 1-5 stars
+      feedback_text TEXT,
+      response_time_hours INTEGER,
+      rate_competitiveness_score INTEGER,
+      compliance_issues TEXT,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Preferred Hotel Network
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS preferred_hotel_network (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      management_group TEXT,
+      network_status TEXT DEFAULT 'pending', -- pending, active, suspended
+      joined_at TEXT DEFAULT (datetime('now')),
+      benefits_tier TEXT DEFAULT 'standard', -- standard, premium, platinum
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Founding Partner Status
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS founding_partners (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      founding_status INTEGER DEFAULT 1, -- 1 = founding partner
+      onboarding_fee_waived INTEGER DEFAULT 1,
+      priority_support INTEGER DEFAULT 1,
+      subscription_discount_percent INTEGER DEFAULT 0,
+      beta_access INTEGER DEFAULT 1,
+      created_at TEXT DEFAULT (datetime('now')),
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Communication Audit
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS communication_audit (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      communication_type TEXT NOT NULL, -- email, portal, phone, social
+      channel TEXT NOT NULL, -- info@creataglobal.com, support@creataglobal.com, etc.
+      subject TEXT,
+      message_preview TEXT,
+      sent_at TEXT DEFAULT (datetime('now')),
+      compliance_violation INTEGER DEFAULT 0,
+      violation_notes TEXT,
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  // Rate Commitments
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS hotel_rate_commitments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      hotel_id INTEGER NOT NULL,
+      bpa_id TEXT,
+      agreed_rate DECIMAL(10,2),
+      rate_type TEXT, -- government, self_pay, group
+      commitment_start TEXT,
+      commitment_end TEXT,
+      availability_updated_at TEXT DEFAULT (datetime('now')),
+      capacity_limit INTEGER,
+      current_availability INTEGER,
+      FOREIGN KEY (hotel_id) REFERENCES hotels (id)
+    )
+  `);
+
+  console.log('✅ Hotel Evaluation System tables created successfully');
+} catch (error) {
+  console.error('❌ Error creating hotel evaluation tables:', error);
+}
+
+// Hotel Evaluation System API Endpoints
+
+// Get hotel partnership score and tier
+app.get('/api/hotel/partnership-score/:hotelId', (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    
+    const score = db.prepare(`
+      SELECT * FROM hotel_partnership_scores 
+      WHERE hotel_id = ? 
+      ORDER BY last_updated DESC 
+      LIMIT 1
+    `).get(hotelId);
+    
+    if (!score) {
+      return res.json({
+        hotel_id: hotelId,
+        response_time_score: 0,
+        rate_competitiveness_score: 0,
+        compliance_score: 0,
+        performance_score: 0,
+        total_score: 0,
+        tier: 'Inactive',
+        last_updated: new Date().toISOString()
+      });
+    }
+    
+    res.json(score);
+  } catch (error) {
+    console.error('Error fetching partnership score:', error);
+    res.status(500).json({ error: 'Failed to fetch partnership score' });
+  }
+});
+
+// Update hotel partnership score
+app.post('/api/hotel/update-partnership-score', (req, res) => {
+  try {
+    const { 
+      hotelId, 
+      response_time_score, 
+      rate_competitiveness_score, 
+      compliance_score, 
+      performance_score 
+    } = req.body;
+    
+    const total_score = (response_time_score || 0) + 
+                       (rate_competitiveness_score || 0) + 
+                       (compliance_score || 0) + 
+                       (performance_score || 0);
+    
+    // Determine tier based on total score
+    let tier = 'Inactive';
+    if (total_score >= 90) tier = 'Platinum Partner';
+    else if (total_score >= 75) tier = 'Preferred Partner';
+    else if (total_score >= 60) tier = 'Active Vendor';
+    else if (total_score > 0) tier = 'Probation';
+    
+    const stmt = db.prepare(`
+      INSERT OR REPLACE INTO hotel_partnership_scores 
+      (hotel_id, response_time_score, rate_competitiveness_score, compliance_score, 
+       performance_score, total_score, tier, last_updated)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'))
+    `);
+    
+    stmt.run(hotelId, response_time_score, rate_competitiveness_score, 
+             compliance_score, performance_score, total_score, tier);
+    
+    res.json({ 
+      success: true, 
+      total_score, 
+      tier,
+      message: `Partnership score updated. Hotel is now ${tier}` 
+    });
+  } catch (error) {
+    console.error('Error updating partnership score:', error);
+    res.status(500).json({ error: 'Failed to update partnership score' });
+  }
+});
+
+// Get hotel compliance status
+app.get('/api/hotel/compliance/:hotelId', (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    
+    const compliance = db.prepare(`
+      SELECT * FROM hotel_compliance 
+      WHERE hotel_id = ? 
+      ORDER BY last_compliance_check DESC 
+      LIMIT 1
+    `).get(hotelId);
+    
+    if (!compliance) {
+      return res.json({
+        hotel_id: hotelId,
+        business_license_valid: 0,
+        safety_certifications_valid: 0,
+        insurance_coverage_valid: 0,
+        commercial_invoice_capable: 0,
+        us_territory_operating: 0,
+        net_30_terms_accepted: 0,
+        compliance_status: 'Not Checked',
+        last_compliance_check: new Date().toISOString()
+      });
+    }
+    
+    // Calculate overall compliance status
+    const compliance_checks = [
+      compliance.business_license_valid,
+      compliance.safety_certifications_valid,
+      compliance.insurance_coverage_valid,
+      compliance.commercial_invoice_capable,
+      compliance.us_territory_operating,
+      compliance.net_30_terms_accepted
+    ];
+    
+    const passed_checks = compliance_checks.filter(check => check === 1).length;
+    const total_checks = compliance_checks.length;
+    const compliance_percentage = Math.round((passed_checks / total_checks) * 100);
+    
+    let compliance_status = 'Non-Compliant';
+    if (compliance_percentage === 100) compliance_status = 'Fully Compliant';
+    else if (compliance_percentage >= 80) compliance_status = 'Mostly Compliant';
+    else if (compliance_percentage >= 60) compliance_status = 'Partially Compliant';
+    
+    res.json({
+      ...compliance,
+      compliance_percentage,
+      compliance_status,
+      passed_checks,
+      total_checks
+    });
+  } catch (error) {
+    console.error('Error fetching compliance status:', error);
+    res.status(500).json({ error: 'Failed to fetch compliance status' });
+  }
+});
+
+// Update hotel compliance
+app.post('/api/hotel/update-compliance', (req, res) => {
+  try {
+    const { 
+      hotelId, 
+      business_license_valid, 
+      safety_certifications_valid, 
+      insurance_coverage_valid, 
+      commercial_invoice_capable, 
+      us_territory_operating, 
+      net_30_terms_accepted,
+      compliance_notes 
+    } = req.body;
+    
+    const stmt = db.prepare(`
+      INSERT OR REPLACE INTO hotel_compliance 
+      (hotel_id, business_license_valid, safety_certifications_valid, 
+       insurance_coverage_valid, commercial_invoice_capable, us_territory_operating, 
+       net_30_terms_accepted, last_compliance_check, compliance_notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, datetime('now'), ?)
+    `);
+    
+    stmt.run(hotelId, business_license_valid, safety_certifications_valid, 
+             insurance_coverage_valid, commercial_invoice_capable, us_territory_operating, 
+             net_30_terms_accepted, compliance_notes);
+    
+    res.json({ success: true, message: 'Compliance status updated successfully' });
+  } catch (error) {
+    console.error('Error updating compliance:', error);
+    res.status(500).json({ error: 'Failed to update compliance status' });
+  }
+});
+
+// Get partnership agreement status
+app.get('/api/hotel/partnership-agreement/:hotelId', (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    
+    const agreement = db.prepare(`
+      SELECT * FROM partnership_agreements 
+      WHERE hotel_id = ? 
+      ORDER BY created_at DESC 
+      LIMIT 1
+    `).get(hotelId);
+    
+    if (!agreement) {
+      return res.json({
+        hotel_id: hotelId,
+        status: 'Not Started',
+        agreement_version: '1.0',
+        hotel_signed: false,
+        creata_approved: false,
+        days_until_expiry: null,
+        renewal_required: false
+      });
+    }
+    
+    const now = new Date();
+    const expiry_date = agreement.expires_at ? new Date(agreement.expires_at) : null;
+    const days_until_expiry = expiry_date ? Math.ceil((expiry_date - now) / (1000 * 60 * 60 * 24)) : null;
+    const renewal_required = days_until_expiry !== null && days_until_expiry <= 30;
+    
+    res.json({
+      ...agreement,
+      hotel_signed: !!agreement.hotel_signed_at,
+      creata_approved: !!agreement.creata_approved_at,
+      days_until_expiry,
+      renewal_required
+    });
+  } catch (error) {
+    console.error('Error fetching partnership agreement:', error);
+    res.status(500).json({ error: 'Failed to fetch partnership agreement' });
+  }
+});
+
+// Update partnership agreement
+app.post('/api/hotel/update-partnership-agreement', (req, res) => {
+  try {
+    const { 
+      hotelId, 
+      hotel_signer_name, 
+      hotel_signer_title, 
+      hotel_signer_email,
+      creata_approver_name,
+      creata_approver_email,
+      action // 'hotel_sign' or 'creata_approve'
+    } = req.body;
+    
+    let stmt;
+    if (action === 'hotel_sign') {
+      stmt = db.prepare(`
+        INSERT OR REPLACE INTO partnership_agreements 
+        (hotel_id, hotel_signer_name, hotel_signer_title, hotel_signer_email, 
+         hotel_signed_at, status, created_at, expires_at)
+        VALUES (?, ?, ?, ?, datetime('now'), 'signed', datetime('now'), 
+                datetime('now', '+1 year'))
+      `);
+      stmt.run(hotelId, hotel_signer_name, hotel_signer_title, hotel_signer_email);
+    } else if (action === 'creata_approve') {
+      stmt = db.prepare(`
+        UPDATE partnership_agreements 
+        SET creata_approver_name = ?, creata_approver_email = ?, 
+            creata_approved_at = datetime('now'), status = 'active'
+        WHERE hotel_id = ?
+      `);
+      stmt.run(creata_approver_name, creata_approver_email, hotelId);
+    }
+    
+    res.json({ success: true, message: 'Partnership agreement updated successfully' });
+  } catch (error) {
+    console.error('Error updating partnership agreement:', error);
+    res.status(500).json({ error: 'Failed to update partnership agreement' });
+  }
+});
+
+// Get founding partner status
+app.get('/api/hotel/founding-partner/:hotelId', (req, res) => {
+  try {
+    const { hotelId } = req.params;
+    
+    const foundingPartner = db.prepare(`
+      SELECT * FROM founding_partners 
+      WHERE hotel_id = ?
+    `).get(hotelId);
+    
+    if (!foundingPartner) {
+      return res.json({
+        hotel_id: hotelId,
+        is_founding_partner: false,
+        benefits: {
+          onboarding_fee_waived: false,
+          priority_support: false,
+          subscription_discount: 0,
+          beta_access: false
+        }
+      });
+    }
+    
+    res.json({
+      ...foundingPartner,
+      is_founding_partner: foundingPartner.founding_status === 1,
+      benefits: {
+        onboarding_fee_waived: foundingPartner.onboarding_fee_waived === 1,
+        priority_support: foundingPartner.priority_support === 1,
+        subscription_discount: foundingPartner.subscription_discount_percent,
+        beta_access: foundingPartner.beta_access === 1
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching founding partner status:', error);
+    res.status(500).json({ error: 'Failed to fetch founding partner status' });
+  }
+});
+
+// Get all hotels with evaluation data
+app.get('/api/admin/hotel-evaluations', (req, res) => {
+  try {
+    const hotels = db.prepare(`
+      SELECT 
+        h.id, h.name, h.email, h.city, h.state,
+        ps.total_score, ps.tier, ps.last_updated as score_updated,
+        pa.status as agreement_status, pa.hotel_signed_at, pa.creata_approved_at,
+        c.compliance_percentage, c.compliance_status,
+        fp.founding_status, fp.onboarding_fee_waived,
+        phn.network_status, phn.benefits_tier
+      FROM hotels h
+      LEFT JOIN hotel_partnership_scores ps ON h.id = ps.hotel_id
+      LEFT JOIN partnership_agreements pa ON h.id = pa.hotel_id
+      LEFT JOIN (
+        SELECT hotel_id, 
+               CASE 
+                 WHEN (business_license_valid + safety_certifications_valid + 
+                       insurance_coverage_valid + commercial_invoice_capable + 
+                       us_territory_operating + net_30_terms_accepted) = 6 THEN 100
+                 WHEN (business_license_valid + safety_certifications_valid + 
+                       insurance_coverage_valid + commercial_invoice_capable + 
+                       us_territory_operating + net_30_terms_accepted) >= 5 THEN 80
+                 WHEN (business_license_valid + safety_certifications_valid + 
+                       insurance_coverage_valid + commercial_invoice_capable + 
+                       us_territory_operating + net_30_terms_accepted) >= 3 THEN 60
+                 ELSE 40
+               END as compliance_percentage,
+               CASE 
+                 WHEN (business_license_valid + safety_certifications_valid + 
+                       insurance_coverage_valid + commercial_invoice_capable + 
+                       us_territory_operating + net_30_terms_accepted) = 6 THEN 'Fully Compliant'
+                 WHEN (business_license_valid + safety_certifications_valid + 
+                       insurance_coverage_valid + commercial_invoice_capable + 
+                       us_territory_operating + net_30_terms_accepted) >= 5 THEN 'Mostly Compliant'
+                 WHEN (business_license_valid + safety_certifications_valid + 
+                       insurance_coverage_valid + commercial_invoice_capable + 
+                       us_territory_operating + net_30_terms_accepted) >= 3 THEN 'Partially Compliant'
+                 ELSE 'Non-Compliant'
+               END as compliance_status
+        FROM hotel_compliance
+      ) c ON h.id = c.hotel_id
+      LEFT JOIN founding_partners fp ON h.id = fp.hotel_id
+      LEFT JOIN preferred_hotel_network phn ON h.id = phn.hotel_id
+      ORDER BY ps.total_score DESC, h.name ASC
+    `).all();
+    
+    res.json(hotels);
+  } catch (error) {
+    console.error('Error fetching hotel evaluations:', error);
+    res.status(500).json({ error: 'Failed to fetch hotel evaluations' });
+  }
+});
 
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 FEDEVENT server running on port ${PORT}`);

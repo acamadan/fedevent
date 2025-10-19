@@ -11,6 +11,18 @@ document.addEventListener('DOMContentLoaded', function() {
         sidebarToggle.addEventListener('click', function() {
             sidebar.classList.toggle('collapsed');
             
+            // Update width and icon
+            const toggleIcon = document.querySelector('.admin-sidebar-toggle i');
+            if (sidebar.classList.contains('collapsed')) {
+                sidebar.style.width = '70px';
+                if (mainContent) mainContent.style.width = 'calc(100% - 70px)';
+                if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+            } else {
+                sidebar.style.width = '214px';
+                if (mainContent) mainContent.style.width = 'calc(100% - 214px)';
+                if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
+            }
+            
             // Save state to localStorage
             const isCollapsed = sidebar.classList.contains('collapsed');
             localStorage.setItem('admin-sidebar-collapsed', isCollapsed);
@@ -34,9 +46,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Restore sidebar state from localStorage
-    const savedState = localStorage.getItem('admin-sidebar-collapsed');
-    if (savedState === 'true') {
+    const savedCollapsedState = localStorage.getItem('admin-sidebar-collapsed');
+    if (savedCollapsedState === 'true') {
         sidebar.classList.add('collapsed');
+        sidebar.style.width = '70px';
+        if (mainContent) mainContent.style.width = 'calc(100% - 70px)';
+        const toggleIcon = document.querySelector('.admin-sidebar-toggle i');
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-right';
+    } else {
+        sidebar.classList.remove('collapsed');
+        sidebar.style.width = '214px';
+        if (mainContent) mainContent.style.width = 'calc(100% - 214px)';
+        const toggleIcon = document.querySelector('.admin-sidebar-toggle i');
+        if (toggleIcon) toggleIcon.className = 'fas fa-chevron-left';
     }
     
     // Handle window resize
@@ -59,12 +81,15 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', function (e) {
             e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
+            const href = this.getAttribute('href');
+            if (href && href !== '#') {
+                const target = document.querySelector(href);
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
             }
         });
     });

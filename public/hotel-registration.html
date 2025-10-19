@@ -3514,8 +3514,8 @@
                 <input type="hidden" name="busy_season_months" id="busy_season_months_input">
               </div>
               
-              <div id="season_validation_message" style="display:none; margin-top:12px; padding:12px; background:#fef2f2; border:1px solid #fecaca; border-radius:8px; color:#dc2626;">
-                <strong>⚠️ Validation Error:</strong> <span id="season_error_text"></span>
+              <div id="season_validation_message" style="display:block; margin-top:12px; padding:12px; background:#eff6ff; border:1px solid #dbeafe; border-radius:8px; color:#1e40af;">
+                <strong>💡 Helpful Tip:</strong> <span id="season_error_text">Click on each month to assign seasons: 1 click = Low Season (Blue), 2 clicks = Shoulder Season (Yellow), 3 clicks = Busy Season (Red).</span>
               </div>
             </div>
           </div>
@@ -4219,12 +4219,14 @@
 
       <!-- Blockout Date template -->
       <template id="blockout-template">
-        <div class="item blockout-item" style="border:1px solid #e6ecf2; border-radius:8px; padding:12px; margin:8px 0; background:#fafcff;">
+        <div class="item blockout-item" style="border:1px solid #e6ecf2; border-radius:8px; padding:16px; margin:8px 0; background:#fafcff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <div class="row">
             <div class="col-3"><label>Start Date</label><input type="date" name="blockout_start_date[]" required /></div>
             <div class="col-3"><label>End Date</label><input type="date" name="blockout_end_date[]" required /></div>
-            <div class="col-5"><label>Additional Information (Optional)</label><input name="blockout_notes[]" placeholder="Reason for blockout, special considerations, etc." /></div>
-            <div class="col-1"><label>&nbsp;</label><button type="button" class="btn danger remove-blockout" style="width:100%;">×</button></div>
+            <div class="col-6"><label>&nbsp;</label><button type="button" class="btn danger remove-blockout" style="width:100%;">×</button></div>
+          </div>
+          <div class="row" style="margin-top: 12px;">
+            <div class="col-12"><label>Additional Information (Optional)</label><input name="blockout_notes[]" placeholder="Reason for blockout, special considerations, etc." /></div>
           </div>
         </div>
       </template>
@@ -4244,12 +4246,14 @@
 
       <!-- Cancelled Space template -->
       <template id="cancelled-template">
-        <div class="item cancelled-item" style="border:1px solid #e6ecf2; border-radius:8px; padding:12px; margin:8px 0; background:#fafcff;">
+        <div class="item cancelled-item" style="border:1px solid #e6ecf2; border-radius:8px; padding:16px; margin:8px 0; background:#fafcff; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
           <div class="row">
             <div class="col-3"><label>Start Date</label><input type="date" name="cancelled_start_date[]" required /></div>
             <div class="col-3"><label>End Date</label><input type="date" name="cancelled_end_date[]" required /></div>
-            <div class="col-5"><label>Additional Information (Optional)</label><input name="cancelled_notes[]" placeholder="Original event details, cancellation fee received, flexibility level, etc." /></div>
-            <div class="col-1"><label>&nbsp;</label><button type="button" class="btn danger remove-cancelled" style="width:100%;">×</button></div>
+            <div class="col-6"><label>&nbsp;</label><button type="button" class="btn danger remove-cancelled" style="width:100%;">×</button></div>
+          </div>
+          <div class="row" style="margin-top: 12px;">
+            <div class="col-12"><label>Additional Information (Optional)</label><input name="cancelled_notes[]" placeholder="Original event details, cancellation fee received, flexibility level, etc." /></div>
           </div>
         </div>
       </template>
@@ -8119,7 +8123,7 @@ Thank you!`;
     const missingMonths = allMonths.filter(month => !coveredMonths.includes(month));
     
     if (missingMonths.length > 0) {
-      errorText.textContent = `Please assign all months to a season. Missing months: ${missingMonths.join(', ')}.`;
+      errorText.innerHTML = `Almost there! Please click on each month to assign seasons: 1 click = Low Season (Blue), 2 clicks = Shoulder Season (Yellow), 3 clicks = Busy Season (Red). Still need to assign: <span style="color: #dc2626; font-weight: bold;">${missingMonths.join(', ')}</span>.`;
       validationMessage.style.display = 'block';
       return false;
     }
@@ -8130,6 +8134,7 @@ Thank you!`;
   }
   
   function setupSeasonValidation() {
+    console.log('🔄 Setting up seasonal calendar validation');
     // Initialize the visual season grid
     initializeSeasonGrid();
     
@@ -8139,7 +8144,11 @@ Thank you!`;
   
   function initializeSeasonGrid() {
     const grid = document.getElementById('season_month_grid');
-    if (!grid) return;
+    if (!grid) {
+      console.log('❌ Season grid not found');
+      return;
+    }
+    console.log('✅ Initializing seasonal calendar grid');
     
     const months = ['January', 'February', 'March', 'April', 'May', 'June', 
                    'July', 'August', 'September', 'October', 'November', 'December'];

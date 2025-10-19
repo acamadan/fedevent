@@ -7,7 +7,7 @@ async function testHotelRegistrationFlow() {
   
   // We can't access localStorage from Node.js, so we'll simulate having a valid session
   // Let's login first to get a valid session
-  const loginResponse = await fetch('http://localhost:5050/api/auth/login', {
+  const loginResponse = await fetch('http://localhost:7070/api/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -32,7 +32,7 @@ async function testHotelRegistrationFlow() {
   console.log('2. Simulating form session validation...');
   
   try {
-    const sessionCheck = await fetch('http://localhost:5050/api/auth/me', {
+    const sessionCheck = await fetch('http://localhost:7070/api/auth/me', {
       headers: {
         'Authorization': `Bearer ${sessionId}`
       }
@@ -68,7 +68,7 @@ async function testHotelRegistrationFlow() {
   formData.append('accepts_po', 'Yes');
   
   try {
-    const submitResponse = await fetch('http://localhost:5050/api/submit', {
+    const submitResponse = await fetch('http://localhost:7070/api/submit', {
       method: 'POST',
       body: formData,
       headers: {

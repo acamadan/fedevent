@@ -6,7 +6,7 @@ async function testHotelRegistration() {
   
   // 1. Login as hotel user
   console.log('1. Logging in as hotel user...');
-  const loginResponse = await fetch('http://localhost:5050/api/auth/login', {
+  const loginResponse = await fetch('http://localhost:7070/api/auth/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json'
@@ -30,7 +30,7 @@ async function testHotelRegistration() {
   
   // 2. Test session validation (like the form does)
   console.log('2. Validating session (like form does)...');
-  const sessionCheck = await fetch('http://localhost:5050/api/auth/me', {
+  const sessionCheck = await fetch('http://localhost:7070/api/auth/me', {
     headers: {
       'Authorization': `Bearer ${sessionId}`
     }
@@ -50,7 +50,7 @@ async function testHotelRegistration() {
   // 3. Test accessing hotel contracts (another check the form might do)
   console.log('\n3. Testing hotel contracts access...');
   try {
-    const contractsResponse = await fetch('http://localhost:5050/api/hotel/contracts', {
+    const contractsResponse = await fetch('http://localhost:7070/api/hotel/contracts', {
       headers: {
         'Authorization': `Bearer ${sessionId}`
       }

@@ -55,7 +55,7 @@ try {
             if (testData1.error.message.includes('API key not valid')) {
                 console.log('\n   💡 Troubleshooting tip: API key validation failed');
                 console.log('      - Check Google Cloud Console API key restrictions');
-                console.log('      - Ensure API key is restricted to HTTP referrer: http://localhost:5050/*');
+                console.log('      - Ensure API key is restricted to HTTP referrer: http://localhost:7070/*');
                 console.log('      - Verify "Places API (New)" is enabled in APIs & Services');
                 console.log('      - Confirm billing is enabled for your project');
             } else if (testData1.error.message.includes('PERMISSION_DENIED')) {
@@ -144,7 +144,7 @@ console.log('Based on the tests above, here are recommendations:');
 
 console.log('\n1. If API key validation failed:');
 console.log('   - Double-check your API key in Google Cloud Console');
-console.log('   - Verify API key restrictions include http://localhost:5050/*');
+console.log('   - Verify API key restrictions include http://localhost:7070/*');
 console.log('   - Ensure "Places API (New)" is enabled');
 console.log('   - Confirm billing is enabled for your project');
 

@@ -594,38 +594,8 @@
 </head>
 <body>
     <div class="admin-layout">
-        <!-- Top Header -->
-        <header class="admin-top-header">
-            <div class="admin-top-header-content">
-                <div class="admin-top-header-left">
-                    <h1 class="admin-top-header-title">FEDEVENT Admin</h1>
-                </div>
-                <div class="admin-top-header-right">
-                    <div class="user-menu">
-                        <a href="#" class="user-trigger">
-                            <div class="user-avatar">A</div>
-                            <span id="userInfo">Loading...</span>
-                            <i class="fas fa-chevron-down"></i>
-                        </a>
-                        <div class="user-dropdown">
-                            <a href="/admin-profile.html">
-                                <i class="fas fa-user"></i>
-                                Profile
-                            </a>
-                            <a href="/admin-settings.html">
-                                <i class="fas fa-cog"></i>
-                                Settings
-                            </a>
-                            <button onclick="logout()">
-                                <i class="fas fa-sign-out-alt"></i>
-                                Logout
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
         
+
         <!-- Main Content Area (Sidebar + Content) -->
         <div class="admin-content-wrapper">
             <!-- Sidebar -->
@@ -635,41 +605,44 @@
                         <i class="fas fa-calendar-alt"></i>
                         <span><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></span>
                     </a>
-                    <button class="admin-sidebar-toggle">
-                        <i class="fas fa-bars"></i>
+                    <button onclick="toggleSidebar()" class="admin-sidebar-toggle" title="Toggle Menu">
+                        <i class="fas fa-chevron-right"></i>
                     </button>
                 </div>
-                
                 <nav class="admin-sidebar-nav">
-                    <a href="#" class="admin-nav-item active" onclick="showTab('dashboard')">
+                    <a href="#" class="admin-nav-item active" onclick="showTab('dashboard')" title="Dashboard">
                         <i class="fas fa-tachometer-alt"></i>
                         <span>Dashboard</span>
                     </a>
-                    <a href="#" class="admin-nav-item" onclick="showTab('hotels')">
+                    <a href="#" class="admin-nav-item" onclick="showTab('hotels')" title="Hotels">
                         <i class="fas fa-hotel"></i>
                         <span>Hotels</span>
                     </a>
-                    <a href="#" class="admin-nav-item" onclick="showTab('emailContacts')">
+                    <a href="#" class="admin-nav-item" onclick="showTab('emailContacts')" title="Email Contacts">
                         <i class="fas fa-envelope"></i>
                         <span>Email Contacts</span>
                     </a>
-                    <a href="#" class="admin-nav-item" onclick="showTab('waitlist')">
+                    <a href="#" class="admin-nav-item" onclick="showTab('waitlist')" title="Waitlist">
                         <i class="fas fa-users"></i>
                         <span>Waitlist</span>
                     </a>
-                    <a href="/admin-contracts.html" class="admin-nav-item">
+                    <a href="#" class="admin-nav-item" onclick="showTab('contracts')" title="Contracts">
                         <i class="fas fa-file-contract"></i>
                         <span>Contracts</span>
                     </a>
-                    <a href="/sam-search-admin.html" class="admin-nav-item">
+                    <a href="#" class="admin-nav-item" onclick="showTab('samSearch')" title="SAM Search">
                         <i class="fas fa-search"></i>
                         <span>SAM Search</span>
                     </a>
-                    <a href="/admin-settings.html" class="admin-nav-item">
+                    <a href="/hotel-evaluation-dashboard.html" class="admin-nav-item" title="Hotel Evaluations">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Hotel Evaluations</span>
+                    </a>
+                    <a href="/admin-settings.html" class="admin-nav-item" title="Settings">
                         <i class="fas fa-cog"></i>
                         <span>Settings</span>
                     </a>
-                    <a href="#" class="admin-nav-item" onclick="logout()">
+                    <a href="#" class="admin-nav-item" onclick="logout()" title="Logout">
                         <i class="fas fa-sign-out-alt"></i>
                         <span>Logout</span>
                     </a>
@@ -694,10 +667,8 @@
             
             <!-- Page Content -->
             <div class="admin-content">
-                <div class="admin-page-header">
-                    <h1>Admin Dashboard</h1>
-                    <p>Manage your FEDEVENT system from this central dashboard.</p>
-                </div>
+                <!-- Hidden userInfo element for JavaScript compatibility -->
+                <div id="userInfo" style="display: none;">Loading...</div>
         
         <!-- Tab Content -->
         <div id="dashboardTab" class="tab-content active">
@@ -1333,6 +1304,10 @@ You can use these placeholders:
                         style="background: #dc2626; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
                     📤 Import from Excel/CSV
                 </button>
+                <button onclick="showManualEntryModal()" 
+                        style="background: #059669; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    ✏️ Add Contact Manually
+                </button>
                 <button onclick="showPrelaunchEmailModal()" 
                         style="background: #1e40af; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
                     📧 Send Prelaunch Emails
@@ -1457,6 +1432,7 @@ You can use these placeholders:
             </div>
         </div>
     </div>
+    
 
     <!-- Quick View Modal for Waitlist Hotels -->
     <div id="waitlistQuickViewModal" class="modal" style="display:none; position: fixed; z-index: 10000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5);">
@@ -1472,11 +1448,105 @@ You can use these placeholders:
       </div>
     </div>
 
+    <!-- Contracts Tab -->
+    <div id="contractsTab" class="tab-content">
+        <!-- Contract Management -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+                <h2 style="margin: 0; font-size: 1.5rem; font-weight: 600;">📋 Contract Management</h2>
+                <button class="btn btn-primary" onclick="showCreateContractModal()" style="background: #3b82f6; color: white; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer;">
+                    <i class="fas fa-plus"></i> Create New Contract
+                </button>
+            </div>
+            
+            <!-- Info Banner -->
+            <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 1rem; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.75rem; color: #1e40af; font-size: 0.875rem;">
+                <i class="fas fa-info-circle" style="color: #3b82f6;"></i>
+                <strong>Reminder:</strong> Launch new live auctions from the <a href="#" style="color:#1d4ed8; font-weight:600;">Create Live Auction</a> button on the admin dashboard. This contracts page is for maintaining supporting documents and access before hotels enter the bidding room.
+            </div>
+
+            <!-- Contracts Table -->
+            <div style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: visible;">
+                <div style="padding: 1rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600;">Active Contracts</h3>
+                </div>
+                
+                <div style="padding: 1.5rem;">
+                    <div id="contractsTableContent">
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 0.75rem; padding: 3rem; color: #6b7280; font-size: 1rem;">
+                            <i class="fas fa-spinner fa-spin"></i>
+                            Loading contracts...
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SAM Search Tab -->
+    <div id="samSearchTab" class="tab-content">
+        <!-- SAM.gov Search -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 1.5rem; font-size: 1.5rem; font-weight: 600;">🔍 SAM.gov Search</h2>
+            
+            <!-- Search Options -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <i class="fas fa-search" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;">Keyword Search</h3>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+                        <input type="text" id="samSearchInput" placeholder="Enter keywords (e.g., hotel, lodging, conference)" style="flex: 1; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;">
+                        <button onclick="performSamSearch()" style="background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 1.5rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem;">
+                        <i class="fas fa-tags" style="color: #3b82f6; font-size: 1.25rem;"></i>
+                        <h3 style="margin: 0; font-size: 1.125rem; font-weight: 600;">NAICS Code Search</h3>
+                    </div>
+                    <div style="display: flex; gap: 0.75rem; align-items: flex-end;">
+                        <div style="flex: 1; position: relative;">
+                            <input type="text" id="samNaicsCode" placeholder="Enter NAICS code or description..." oninput="showNaicsSuggestions(this.value)" style="width: 100%; padding: 0.75rem 1rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 1rem;">
+                            <div id="samNaicsSuggestions" style="position: absolute; top: 100%; left: 0; right: 0; background: white; border: 1px solid #d1d5db; border-radius: 6px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); z-index: 1000; max-height: 200px; overflow-y: auto; display: none;"></div>
+                        </div>
+                        <button onclick="performNaicsSearch()" style="background: #3b82f6; color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;">
+                            <i class="fas fa-search"></i> Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Results Section -->
+            <div style="background: white; border-radius: 8px; border: 1px solid #e5e7eb; overflow: hidden;">
+                <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+                    <h3 style="margin: 0; font-size: 1.25rem; font-weight: 600;">Search Results</h3>
+                </div>
+                
+                <div style="padding: 1.5rem;">
+                    <div id="samResultsContainer">
+                        <div style="text-align: center; padding: 3rem; color: #6b7280;">
+                            <i class="fas fa-search" style="font-size: 3rem; color: #d1d5db; margin-bottom: 1rem;"></i>
+                            <h3 style="font-size: 1.25rem; font-weight: 600; color: #374151; margin: 0 0 0.5rem;">Ready to Search</h3>
+                            <p style="margin: 0; font-size: 1rem;">Enter search criteria above and click search to see results</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         const API_BASE = '';
         let allHotels = [];
         let allWaitlist = [];
         let allEmailContacts = [];
+        let allContracts = [];
+        let naicsData = [];
         let currentUser = null;
         
         // Country name mapping - convert abbreviations to full names
@@ -1518,6 +1588,8 @@ You can use these placeholders:
             return countryNames[country] || country;
         }
         
+        // Sidebar toggle functionality
+
         // Tab switching functionality
         function showTab(tabName) {
             // Hide all tab contents
@@ -1549,6 +1621,10 @@ You can use these placeholders:
                 loadWaitlist();
             } else if (tabName === 'emailContacts') {
                 loadEmailContacts();
+            } else if (tabName === 'contracts') {
+                loadContracts();
+            } else if (tabName === 'samSearch') {
+                loadNaicsData();
             }
             
             // Update page title in breadcrumb
@@ -1562,6 +1638,10 @@ You can use these placeholders:
                     pageTitle.textContent = 'Email Contacts';
                 } else if (tabName === 'waitlist') {
                     pageTitle.textContent = 'Waitlist';
+                } else if (tabName === 'contracts') {
+                    pageTitle.textContent = 'Contracts';
+                } else if (tabName === 'samSearch') {
+                    pageTitle.textContent = 'SAM Search';
                 }
             }
             
@@ -3885,6 +3965,142 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
     </div>
 </div>
 
+<!-- Manual Entry Modal -->
+<div id="manualEntryModal" class="modal">
+    <div class="modal-content" style="max-width: 600px;">
+        <div class="modal-header">
+            <h3 class="modal-title">✏️ Add Contact Manually</h3>
+            <button class="close-btn" onclick="closeModal('manualEntryModal')">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f0fdf4; border-left: 4px solid #059669; border-radius: 6px;">
+                <strong style="color: #047857;">📝 Manual Contact Entry</strong>
+                <p style="margin: 0.5rem 0 0 0; color: #047857;">
+                    Add a single contact manually. All fields marked with * are required.
+                </p>
+            </div>
+            
+            <form id="manualEntryForm">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                            First Name *
+                        </label>
+                        <input type="text" 
+                               id="manualFirstName" 
+                               required
+                               style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                            Last Name *
+                        </label>
+                        <input type="text" 
+                               id="manualLastName" 
+                               required
+                               style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                        Email Address *
+                    </label>
+                    <input type="email" 
+                           id="manualEmail" 
+                           required
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                        Hotel Name *
+                    </label>
+                    <input type="text" 
+                           id="manualHotelName" 
+                           required
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                        Phone Number
+                    </label>
+                    <input type="tel" 
+                           id="manualPhone" 
+                           placeholder="(555) 123-4567"
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                            City
+                        </label>
+                        <input type="text" 
+                               id="manualCity" 
+                               style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                            State
+                        </label>
+                        <input type="text" 
+                               id="manualState" 
+                               style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                    </div>
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                        Title/Position
+                    </label>
+                    <input type="text" 
+                           id="manualTitle" 
+                           placeholder="e.g., General Manager, Sales Director"
+                           style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                </div>
+                
+                <div style="margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                        Priority Level
+                    </label>
+                    <select id="manualPriority" 
+                            style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem;">
+                        <option value="normal">Normal</option>
+                        <option value="high">High</option>
+                        <option value="urgent">Urgent</option>
+                    </select>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: #374151;">
+                        Notes
+                    </label>
+                    <textarea id="manualNotes" 
+                              rows="3"
+                              placeholder="Any additional notes about this contact..."
+                              style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px; font-size: 0.875rem; resize: vertical;"></textarea>
+                </div>
+                
+                <div id="manualEntryResults" style="display: none; margin-bottom: 1rem;"></div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button type="button" onclick="closeModal('manualEntryModal')" 
+                            style="background: #6b7280; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            id="manualEntryButton"
+                            style="background: #059669; color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+                        ✏️ Add Contact
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <!-- Prelaunch Email Modal -->
 <div id="prelaunchEmailModal" class="modal">
     <div class="modal-content" style="max-width: 900px;">
@@ -4168,6 +4384,124 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         }
     }
     
+    // Manual Entry Functions
+    function showManualEntryModal() {
+        document.getElementById('manualEntryModal').style.display = 'block';
+        document.getElementById('manualEntryForm').reset();
+        document.getElementById('manualEntryResults').style.display = 'none';
+    }
+    
+    // Handle manual entry form submission
+    document.getElementById('manualEntryForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        const button = document.getElementById('manualEntryButton');
+        const resultsDiv = document.getElementById('manualEntryResults');
+        
+        // Get form data
+        const formData = {
+            firstName: document.getElementById('manualFirstName').value.trim(),
+            lastName: document.getElementById('manualLastName').value.trim(),
+            email: document.getElementById('manualEmail').value.trim(),
+            hotelName: document.getElementById('manualHotelName').value.trim(),
+            phone: document.getElementById('manualPhone').value.trim(),
+            city: document.getElementById('manualCity').value.trim(),
+            state: document.getElementById('manualState').value.trim(),
+            title: document.getElementById('manualTitle').value.trim(),
+            priority: document.getElementById('manualPriority').value,
+            notes: document.getElementById('manualNotes').value.trim()
+        };
+        
+        // Validate required fields
+        if (!formData.firstName || !formData.lastName || !formData.email || !formData.hotelName) {
+            resultsDiv.innerHTML = `
+                <div style="padding: 1rem; border-radius: 6px; border: 2px solid #dc2626; background: #fee2e2;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Validation Error</h4>
+                    <p style="margin: 0; color: #b91c1c;">Please fill in all required fields (First Name, Last Name, Email, Hotel Name).</p>
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+            return;
+        }
+        
+        // Validate email format
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(formData.email)) {
+            resultsDiv.innerHTML = `
+                <div style="padding: 1rem; border-radius: 6px; border: 2px solid #dc2626; background: #fee2e2;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Invalid Email</h4>
+                    <p style="margin: 0; color: #b91c1c;">Please enter a valid email address.</p>
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+            return;
+        }
+        
+        // Disable button and show loading
+        button.disabled = true;
+        button.textContent = 'Adding Contact...';
+        
+        try {
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
+            const response = await fetch(`${API_BASE}/api/admin/email-contacts/manual-entry`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${sessionId}`
+                },
+                body: JSON.stringify(formData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.ok) {
+                resultsDiv.innerHTML = `
+                    <div style="padding: 1rem; border-radius: 6px; border: 2px solid #10b981; background: #d1fae5;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #047857;">✅ Email Contact Added Successfully!</h4>
+                        <p style="margin: 0; color: #065f46;">
+                            ${formData.firstName} ${formData.lastName} from ${formData.hotelName} has been added to your email contacts.
+                        </p>
+                    </div>
+                `;
+                resultsDiv.style.display = 'block';
+                
+                // Reset form
+                document.getElementById('manualEntryForm').reset();
+                
+                // Reload email contacts
+                loadEmailContacts();
+                
+                // Auto-close modal after 2 seconds
+                setTimeout(() => {
+                    closeModal('manualEntryModal');
+                }, 2000);
+                
+            } else {
+                resultsDiv.innerHTML = `
+                    <div style="padding: 1rem; border-radius: 6px; border: 2px solid #dc2626; background: #fee2e2;">
+                        <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Failed to Add Contact</h4>
+                        <p style="margin: 0; color: #b91c1c;">${result.error || 'Unknown error occurred'}</p>
+                    </div>
+                `;
+                resultsDiv.style.display = 'block';
+            }
+            
+        } catch (error) {
+            console.error('Manual entry error:', error);
+            resultsDiv.innerHTML = `
+                <div style="padding: 1rem; border-radius: 6px; border: 2px solid #dc2626; background: #fee2e2;">
+                    <h4 style="margin: 0 0 0.5rem 0; color: #991b1b;">❌ Error</h4>
+                    <p style="margin: 0; color: #b91c1c;">Failed to add contact. Please try again.</p>
+                </div>
+            `;
+            resultsDiv.style.display = 'block';
+        } finally {
+            // Re-enable button
+            button.disabled = false;
+            button.textContent = '✏️ Add Contact';
+        }
+    });
+    
     // Prelaunch Email Functions
     async function showPrelaunchEmailModal() {
         document.getElementById('prelaunchEmailModal').style.display = 'block';
@@ -4324,6 +4658,177 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             document.getElementById('sendEmailButton').disabled = false;
         }
     }
+
+    // Contracts functionality
+    async function loadContracts() {
+        try {
+            const response = await fetch('/api/contracts');
+            const result = await response.json();
+            
+            if (result && result.ok) {
+                allContracts = result.contracts;
+                renderContractsTable();
+            } else {
+                document.getElementById('contractsTableContent').innerHTML = 
+                    '<div style="color: #dc2626; text-align: center; padding: 2rem;">Failed to load contracts</div>';
+            }
+        } catch (error) {
+            console.error('Load contracts error:', error);
+            document.getElementById('contractsTableContent').innerHTML = 
+                '<div style="color: #dc2626; text-align: center; padding: 2rem;">Failed to load contracts</div>';
+        }
+    }
+
+    function renderContractsTable() {
+        const tableContent = document.getElementById('contractsTableContent');
+        
+        if (allContracts.length === 0) {
+            tableContent.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">No contracts found</div>';
+            return;
+        }
+        
+        const tableHTML = `
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead>
+                    <tr style="background: #f9fafb; border-bottom: 1px solid #e5e7eb;">
+                        <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Contract Title</th>
+                        <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Location</th>
+                        <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Status</th>
+                        <th style="padding: 0.75rem; text-align: left; font-weight: 600;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${allContracts.map(contract => `
+                        <tr style="border-bottom: 1px solid #f3f4f6;">
+                            <td style="padding: 0.75rem;">${contract.title || 'N/A'}</td>
+                            <td style="padding: 0.75rem;">${contract.location || 'N/A'}</td>
+                            <td style="padding: 0.75rem;">
+                                <span style="padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 500; background: #dcfce7; color: #166534;">
+                                    ${contract.status || 'Active'}
+                                </span>
+                            </td>
+                            <td style="padding: 0.75rem;">
+                                <button onclick="viewContract('${contract.id}')" style="background: #3b82f6; color: white; border: none; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.75rem;">
+                                    View
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+        
+        tableContent.innerHTML = tableHTML;
+    }
+
+    function showCreateContractModal() {
+        alert('Create Contract functionality would be implemented here');
+    }
+
+    function viewContract(contractId) {
+        alert(`View contract ${contractId} functionality would be implemented here`);
+    }
+
+    // SAM Search functionality
+    async function loadNaicsData() {
+        try {
+            const response = await fetch('/naics.json');
+            naicsData = await response.json();
+        } catch (error) {
+            console.error('Failed to load NAICS data:', error);
+        }
+    }
+
+    function showNaicsSuggestions(input) {
+        const suggestionsContainer = document.getElementById('samNaicsSuggestions');
+        
+        if (!input || input.length < 1) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        const filtered = naicsData.filter(item => 
+            item.code.includes(input) || 
+            item.title.toLowerCase().includes(input.toLowerCase())
+        ).slice(0, 10);
+        
+        if (filtered.length === 0) {
+            suggestionsContainer.style.display = 'none';
+            return;
+        }
+        
+        let html = '';
+        filtered.forEach(item => {
+            html += `<div onclick="selectNaics('${item.code}', '${item.title.replace(/'/g, "&#39;")}')" style="padding: 0.75rem 1rem; cursor: pointer; border-bottom: 1px solid #f3f4f6; font-size: 0.875rem;">${item.code} - ${item.title}</div>`;
+        });
+        
+        suggestionsContainer.innerHTML = html;
+        suggestionsContainer.style.display = 'block';
+    }
+
+    function selectNaics(code, title) {
+        document.getElementById('samNaicsCode').value = `${code} - ${title}`;
+        document.getElementById('samNaicsSuggestions').style.display = 'none';
+    }
+
+    function performNaicsSearch() {
+        const input = document.getElementById('samNaicsCode').value;
+        const code = input.split(' - ')[0].trim();
+        if (!code) return;
+        document.getElementById('samSearchInput').value = '';
+        performSamSearch();
+    }
+
+    async function performSamSearch() {
+        const searchTerm = document.getElementById('samSearchInput').value;
+        const naicsInput = document.getElementById('samNaicsCode').value;
+        const naicsCode = naicsInput.split(' - ')[0].trim() || '721110';
+        
+        const resultsContainer = document.getElementById('samResultsContainer');
+        resultsContainer.innerHTML = '<div style="text-align: center; padding: 2rem;"><div style="border: 4px solid #f3f3f3; border-top: 4px solid #1e40af; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div><p style="margin-top: 1rem;">Searching SAM.gov database...</p></div>';
+
+        try {
+            const params = new URLSearchParams({
+                search: searchTerm,
+                naics: naicsCode
+            });
+            
+            const response = await fetch(`/api/sam/search?${params}`);
+            const data = await response.json();
+            
+            if (data && data.results) {
+                displaySamResults(data.results);
+            } else {
+                resultsContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc2626;">No results found</div>';
+            }
+        } catch (error) {
+            console.error('SAM search error:', error);
+            resultsContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #dc2626;">Search failed. Please try again.</div>';
+        }
+    }
+
+    function displaySamResults(results) {
+        const resultsContainer = document.getElementById('samResultsContainer');
+        
+        if (results.length === 0) {
+            resultsContainer.innerHTML = '<div style="text-align: center; padding: 2rem; color: #6b7280;">No results found</div>';
+            return;
+        }
+        
+        const resultsHTML = results.map(result => `
+            <div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 1rem; margin-bottom: 1rem; background: white;">
+                <h4 style="margin: 0 0 0.5rem; color: #1f2937;">${result.title || 'Untitled'}</h4>
+                <p style="margin: 0 0 0.5rem; color: #6b7280; font-size: 0.875rem;">${result.description || 'No description available'}</p>
+                <div style="display: flex; gap: 1rem; font-size: 0.75rem; color: #6b7280;">
+                    <span>NAICS: ${result.naics || 'N/A'}</span>
+                    <span>Posted: ${result.postedDate || 'N/A'}</span>
+                    <span>Due: ${result.dueDate || 'N/A'}</span>
+                </div>
+            </div>
+        `).join('');
+        
+        resultsContainer.innerHTML = resultsHTML;
+    }
 </script>
 
             </div> <!-- admin-content -->
@@ -4332,11 +4837,14 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
     </div> <!-- admin-layout -->
     
     <!-- Include CSS and Font Awesome for icons -->
-    <link rel="stylesheet" href="site.css?v=2">
+    <link rel="stylesheet" href="site.css?v=5">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
     <!-- Include sidebar JavaScript -->
     <script src="admin-sidebar.js"></script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
 
 </body>
 </html>

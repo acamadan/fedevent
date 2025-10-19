@@ -4,7 +4,7 @@ async function debugPlacesAPI() {
         console.log('Fetching API key from server...');
         
         // Get the API key
-        const keyResponse = await fetch('http://localhost:5050/api/google-places-key');
+        const keyResponse = await fetch('http://localhost:7070/api/google-places-key');
         if (!keyResponse.ok) {
             console.error('Failed to get API key:', keyResponse.status, await keyResponse.text());
             return;

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SAM Search - FEDEVENT Admin</title>
+    <link rel="stylesheet" href="site.css?v=5">
     
     <!-- Google Analytics 4 (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -480,54 +481,130 @@
     </style>
 </head>
 <body>
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">FEDEVENT Admin</div>
-            <div class="nav-links">
-                <a href="/admin-dashboard.html">Hotels</a>
-                <a href="/admin-contracts.html">Contracts</a>
-                <a href="/sam-search-admin.html">SAM Search</a>
-            </div>
-            <div class="user-menu">
-                <div class="user-info" id="userInfo">Loading...</div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
-            </div>
-        </div>
-    </header>
-    
-    <div class="main-container">
-        <!-- Right Content Area -->
-        <div class="content-area">
-            <a href="/admin-dashboard.html" class="back-btn">← Back to Dashboard</a>
-            <h1 class="page-title">SAM.gov Search</h1>
-            
-            <!-- Search Options at Top -->
-            <div class="search-options-top">
-                <div class="search-option-top">
-                    <div class="search-title">Keyword Search</div>
-                    <div class="search-input-container">
-                        <input type="text" class="search-input" id="searchInput" placeholder="Enter keywords...">
-                        <button class="search-button" id="searchBtn" onclick="performSamSearch()">Search</button>
-                    </div>
+    <div class="admin-layout">
+        <!-- Main Content Area (Sidebar + Content) -->
+        <div class="admin-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <a href="/admin-dashboard.html" class="admin-sidebar-logo">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></span>
+                    </a>
+                    <button onclick="toggleSidebar()" class="admin-sidebar-toggle" title="Toggle Menu">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
-                
-                <div class="search-option-top">
-                    <div class="search-title">NAICS Code</div>
-                    <div class="form-group" style="position: relative; display:flex; gap:.5rem; align-items:center;">
-                        <input type="text" class="form-control" id="naicsCode" placeholder="Enter NAICS code or description..." oninput="showNaicsSuggestions(this.value)" style="flex:1;">
-                        <button class="search-button" onclick="performNaicsSearch()">Search</button>
-                        <div id="naicsSuggestions" class="autocomplete-suggestions" style="display: none; position:absolute; left:0; right:0; top:100%;"></div>
-                    </div>
-                </div>
-            </div>
+                <nav class="admin-sidebar-nav">
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Hotels">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Email Contacts">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Contacts</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Waitlist">
+                        <i class="fas fa-users"></i>
+                        <span>Waitlist</span>
+                    </a>
+                    <a href="/admin-contracts.html" class="admin-nav-item" title="Contracts">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Contracts</span>
+                    </a>
+                    <a href="/sam-search-admin.html" class="admin-nav-item active" title="SAM Search">
+                        <i class="fas fa-search"></i>
+                        <span>SAM Search</span>
+                    </a>
+                    <a href="/admin-settings.html" class="admin-nav-item" title="Settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </aside>
             
-            <div id="resultsContainer" class="results-container">
-                Enter search criteria above and click search to see results
-            </div>
+            <!-- Main Content -->
+            <main class="admin-main-content">
+                <div class="admin-content">
+                    <!-- Hidden userInfo element for JavaScript compatibility -->
+                    <div id="userInfo" style="display: none;">Loading...</div>
+                    
+                    <!-- Page Header -->
+                    <div class="admin-page-header">
+                        <div class="page-header-content">
+                            <h1 class="page-title">SAM.gov Search</h1>
+                            <div class="page-actions">
+                                <a href="/admin-dashboard.html" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
 
-            <!-- Removed left/extra section per request -->
-        </div>
-    </div>
+                    <!-- Search Options -->
+                    <div class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Search Government Contracts</h2>
+                        </div>
+                        
+                        <div class="search-options-grid">
+                            <div class="search-option-card">
+                                <div class="search-option-header">
+                                    <i class="fas fa-search"></i>
+                                    <h3>Keyword Search</h3>
+                                </div>
+                                <div class="search-input-group">
+                                    <input type="text" class="admin-input" id="searchInput" placeholder="Enter keywords (e.g., hotel, lodging, conference)">
+                                    <button class="btn btn-primary" id="searchBtn" onclick="performSamSearch()">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="search-option-card">
+                                <div class="search-option-header">
+                                    <i class="fas fa-tags"></i>
+                                    <h3>NAICS Code Search</h3>
+                                </div>
+                                <div class="search-input-group">
+                                    <div class="naics-input-container">
+                                        <input type="text" class="admin-input" id="naicsCode" placeholder="Enter NAICS code or description..." oninput="showNaicsSuggestions(this.value)">
+                                        <div id="naicsSuggestions" class="autocomplete-suggestions"></div>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="performNaicsSearch()">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Search Results</h2>
+                        </div>
+                        
+                        <div class="admin-results-container">
+                            <div id="resultsContainer" class="results-container">
+                                <div class="admin-empty-state">
+                                    <i class="fas fa-search"></i>
+                                    <h3>Ready to Search</h3>
+                                    <p>Enter search criteria above and click search to see results</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
 
     <script>
         // Load NAICS data
@@ -977,5 +1054,49 @@
         }
     }
 </style>
+
+    
+    <!-- Include CSS and Font Awesome for icons -->
+    <link rel="stylesheet" href="site.css?v=5">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Include sidebar JavaScript -->
+    <script src="admin-sidebar.js"></script>
+    
+    <!-- Authentication and User Management -->
+    <script>
+        // currentUser is already declared globally, just use it
+        
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            const userInfoElement = document.getElementById('userInfo');
+            if (userInfoElement) {
+                userInfoElement.textContent = `${user.first_name} ${user.last_name}`;
+            }
+            return true;
+        }
+        
+        function logout() {
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
 </body>
 </html>
