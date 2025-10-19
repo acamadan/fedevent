@@ -1345,43 +1345,6 @@
                     <p class="text-xs text-gray-500 mt-1">Address will be auto-filled when you select a hotel from the dropdown</p>
                 </div>
                 
-                <!-- Hotel Phone Number (auto-filled from Google Places) -->
-                <div class="form-section-after-eligibility mb-6">
-                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelPhoneDisplay">
-                        Hotel Phone Number
-                    </label>
-                    <input 
-                        type="tel" 
-                        id="hotelPhoneDisplay" 
-                        name="hotelPhoneDisplay" 
-                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
-                        placeholder="Phone number will be auto-filled from hotel selection"
-                        readonly
-                    >
-                    <input type="hidden" id="hotelPhone" name="hotelPhone">
-                    <p class="text-xs text-gray-500 mt-1">Phone number will be auto-filled when you select a hotel</p>
-                </div>
-                
-                <!-- Hotel Website (auto-filled from Google Places) -->
-                <div class="form-section-after-eligibility mb-6">
-                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelWebsiteDisplay">
-                        Hotel Website
-                    </label>
-                    <input 
-                        type="url" 
-                        id="hotelWebsiteDisplay" 
-                        name="hotelWebsiteDisplay" 
-                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
-                        placeholder="Website will be auto-filled from hotel selection"
-                        readonly
-                    >
-                    <input type="hidden" id="hotelWebsite" name="hotelWebsite">
-                    <p class="text-xs text-gray-500 mt-1">Website will be auto-filled when you select a hotel</p>
-                </div>
-                
-                <!-- Hidden fields for additional details -->
-                <input type="hidden" id="hotelPlaceId" name="hotelPlaceId">
-                
                 <!-- City, State, and Zip Code (auto-filled from Google Places) -->
                 <div class="form-section-after-eligibility grid md:grid-cols-3 gap-6 mb-6">
                     <div>
@@ -1425,6 +1388,43 @@
                         >
                     </div>
                 </div>
+                
+                <!-- Hotel Phone Number (auto-filled from Google Places) -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelPhoneDisplay">
+                        Hotel Phone Number
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="hotelPhoneDisplay" 
+                        name="hotelPhoneDisplay" 
+                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Phone number will be auto-filled from hotel selection"
+                        readonly
+                    >
+                    <input type="hidden" id="hotelPhone" name="hotelPhone">
+                    <p class="text-xs text-gray-500 mt-1">Phone number will be auto-filled when you select a hotel</p>
+                </div>
+                
+                <!-- Hotel Website (auto-filled from Google Places) -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelWebsiteDisplay">
+                        Hotel Website
+                    </label>
+                    <input 
+                        type="url" 
+                        id="hotelWebsiteDisplay" 
+                        name="hotelWebsiteDisplay" 
+                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Website will be auto-filled from hotel selection"
+                        readonly
+                    >
+                    <input type="hidden" id="hotelWebsite" name="hotelWebsite">
+                    <p class="text-xs text-gray-500 mt-1">Website will be auto-filled when you select a hotel</p>
+                </div>
+                
+                <!-- Hidden fields for additional details -->
+                <input type="hidden" id="hotelPlaceId" name="hotelPlaceId">
                 
                 <!-- Country (auto-filled text, not a dropdown) -->
                 <div class="form-section-after-eligibility mb-6">
