@@ -1300,6 +1300,20 @@ try {
     FOREIGN KEY (invited_by) REFERENCES users (id),
     FOREIGN KEY (registered_lead_id) REFERENCES hotel_leads (id)
   )`);
+
+  // Email tracking table for open tracking
+  db.exec(`CREATE TABLE IF NOT EXISTS email_tracking (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    contact_id INTEGER,
+    email_type TEXT,
+    sent_at TEXT,
+    opened_at TEXT,
+    opened_count INTEGER DEFAULT 0,
+    last_opened_at TEXT,
+    tracking_pixel_url TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (contact_id) REFERENCES email_contacts (id)
+  )`);
   console.log('✅ Email contacts table created');
 } catch (e) {
   if (!e.message.includes('already exists')) console.log('Email contacts table already exists');
@@ -4328,6 +4342,23 @@ async function sendMail({ to, subject, html, attachments = [], replyTo, from }) 
       return { skipped: true, reason: 'Missing configuration' };
     }
     
+    // Anti-spam headers and metadata
+    const antiSpamHeaders = {
+      'X-Mailer': 'FEDEVENT System v1.0',
+      'X-Priority': '3',
+      'X-MSMail-Priority': 'Normal',
+      'Importance': 'Normal',
+      'X-Report-Abuse': 'Please report abuse to abuse@fedevent.com',
+      'List-Unsubscribe': '<mailto:unsubscribe@fedevent.com>',
+      'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+      'X-Campaign-ID': `campaign_${Date.now()}`,
+      'X-Sender-ID': 'FEDEVENT',
+      'X-Auto-Response-Suppress': 'All',
+      'Precedence': 'bulk',
+      'X-MC-Tracking': 'true',
+      'X-Entity-Ref-ID': `entity_${Math.random().toString(36).substr(2, 9)}`
+    };
+    
     const smtpPort = Number(process.env.SMTP_PORT || 587);
     const secure = (String(process.env.SMTP_SECURE||'').toLowerCase()==='true') || smtpPort === 465;
     
@@ -4346,7 +4377,8 @@ async function sendMail({ to, subject, html, attachments = [], replyTo, from }) 
     
     const mailOptions = {
       from: from || process.env.NOTIFY_FROM || 'noreply@fedevent.com',
-      to, subject, html, attachments
+      to, subject, html, attachments,
+      headers: antiSpamHeaders
     };
     
     if (replyTo) {
@@ -5492,11 +5524,19 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                     <div style="font-size: 14px; margin-bottom: 20px;">
                       Join FEDEVENT today and start serving federal travelers tomorrow.
                     </div>
-                    <div style="font-size: 12px; color: #9ca3af;">
+                    <div style="font-size: 12px; color: #9ca3af; margin-bottom: 10px;">
                       FEDEVENT Team | Federal Hotel Network<br>
                       This invitation is exclusive to ${contact.hotel_name}
                     </div>
+                    <div style="font-size: 11px; color: #6b7280;">
+                      <a href="mailto:unsubscribe@fedevent.com?subject=Unsubscribe" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> | 
+                      <a href="mailto:info@fedevent.com" style="color: #6b7280; text-decoration: underline;">Contact Us</a> | 
+                      <a href="https://fedevent.com" style="color: #6b7280; text-decoration: underline;">Visit Website</a>
+                    </div>
                   </div>
+                  
+                  <!-- Email Tracking Pixel -->
+                  <img src="${trackingPixelUrl}" width="1" height="1" style="display:none;" alt="" />
                   
                 </div>
               </body>
@@ -5831,7 +5871,17 @@ app.post('/api/admin/waitlist/bulk-invite', requireAuth, requireAdmin, async (re
         // Send invitation email if enabled
         if (sendEmail && process.env.SMTP_HOST) {
           try {
-            const subject = emailSubject || `🏛️ Welcome to FEDEVENT - Your Exclusive Registration Code: ${lead.user_code}`;
+            // Create tracking record
+            const trackingId = `track_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const trackingPixelUrl = `${process.env.BASE_URL || 'http://localhost:7070'}/api/track/email/${trackingId}`;
+            
+            db.prepare(`
+              INSERT INTO email_tracking (contact_id, email_type, sent_at, tracking_pixel_url)
+              VALUES (?, ?, ?, ?)
+            `).run(contactId, 'invitation', new Date().toISOString(), trackingPixelUrl);
+            
+            // Anti-spam optimized subject line
+            const subject = emailSubject || `FEDEVENT Invitation - Registration Code: ${lead.user_code}`;
             const body = emailBody || `
               <!DOCTYPE html>
               <html lang="en">
@@ -11393,6 +11443,107 @@ app.get('/api/google-places-key', (req, res) => {
       error: 'Failed to get Google Places API key',
       mockMode: true
     });
+  }
+});
+
+// ---------- Email Tracking Endpoints ----------
+
+// Email open tracking endpoint (called by tracking pixel)
+app.get('/api/track/email/:trackingId', async (req, res) => {
+  try {
+    const { trackingId } = req.params;
+    
+    // Find the tracking record
+    const tracking = db.prepare('SELECT * FROM email_tracking WHERE tracking_pixel_url LIKE ?').get(`%${trackingId}%`);
+    
+    if (tracking) {
+      const now = new Date().toISOString();
+      
+      // Update tracking record
+      db.prepare(`
+        UPDATE email_tracking 
+        SET opened_count = opened_count + 1,
+            opened_at = CASE WHEN opened_at IS NULL THEN ? ELSE opened_at END,
+            last_opened_at = ?
+        WHERE id = ?
+      `).run(now, now, tracking.id);
+      
+      // Update contact's last_contacted_at
+      db.prepare(`
+        UPDATE email_contacts 
+        SET last_contacted_at = ?
+        WHERE id = ?
+      `).run(now, tracking.contact_id);
+      
+      console.log(`📧 Email opened: Contact ${tracking.contact_id}, Type: ${tracking.email_type}`);
+    }
+    
+    // Return a 1x1 transparent pixel
+    const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    res.set({
+      'Content-Type': 'image/png',
+      'Content-Length': pixel.length,
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    });
+    res.send(pixel);
+    
+  } catch (error) {
+    console.error('Email tracking error:', error);
+    // Still return pixel even if tracking fails
+    const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==', 'base64');
+    res.set({
+      'Content-Type': 'image/png',
+      'Content-Length': pixel.length
+    });
+    res.send(pixel);
+  }
+});
+
+// Get email tracking analytics
+app.get('/api/admin/email-tracking/analytics', requireAuth, requireAdmin, async (req, res) => {
+  try {
+    const { days = 30 } = req.query;
+    
+    const analytics = db.prepare(`
+      SELECT 
+        ec.hotel_name,
+        ec.contact_name,
+        ec.email,
+        et.email_type,
+        et.sent_at,
+        et.opened_at,
+        et.opened_count,
+        et.last_opened_at,
+        CASE 
+          WHEN et.opened_at IS NOT NULL THEN 'Opened'
+          ELSE 'Not Opened'
+        END as status
+      FROM email_contacts ec
+      LEFT JOIN email_tracking et ON ec.id = et.contact_id
+      WHERE et.sent_at >= datetime('now', '-${parseInt(days)} days')
+      ORDER BY et.sent_at DESC
+    `).all();
+    
+    const summary = db.prepare(`
+      SELECT 
+        COUNT(*) as total_sent,
+        COUNT(opened_at) as total_opened,
+        ROUND(COUNT(opened_at) * 100.0 / COUNT(*), 2) as open_rate
+      FROM email_tracking 
+      WHERE sent_at >= datetime('now', '-${parseInt(days)} days')
+    `).get();
+    
+    return ok(res, {
+      analytics,
+      summary,
+      period: `${days} days`
+    });
+    
+  } catch (error) {
+    console.error('Email analytics error:', error);
+    return fail(res, 500, 'Failed to fetch email analytics');
   }
 });
 

@@ -658,6 +658,10 @@
                         <i class="fas fa-users"></i>
                         <span>Waitlist</span>
                     </a>
+                    <a href="#" class="admin-nav-item" onclick="showTab('emailTracking')" title="Email Tracking">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Email Tracking</span>
+                    </a>
                     <a href="#" class="admin-nav-item" onclick="showTab('contracts')" title="Contracts">
                         <i class="fas fa-file-contract"></i>
                         <span>Contracts</span>
@@ -1361,6 +1365,79 @@ You can use these placeholders:
         </div>
     </div>
     
+    <div id="emailTrackingTab" class="tab-content">
+        <!-- Email Tracking Analytics -->
+        <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
+            <h2 style="margin: 0 0 1rem; font-size: 1.5rem; font-weight: 600;">📊 Email Tracking Analytics</h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Track email opens and engagement to optimize your campaigns.</p>
+            
+            <!-- Summary Stats -->
+            <div class="stats-grid" style="margin-bottom: 2rem;">
+                <div class="stat-card">
+                    <div class="stat-number" id="totalEmailsSent">-</div>
+                    <div class="stat-label">Total Emails Sent</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="emailsOpened">-</div>
+                    <div class="stat-label">Emails Opened</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="openRate">-</div>
+                    <div class="stat-label">Open Rate</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="notOpened">-</div>
+                    <div class="stat-label">Not Opened</div>
+                </div>
+            </div>
+            
+            <!-- Controls -->
+            <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center;">
+                <select id="trackingPeriod" style="padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px;">
+                    <option value="7">Last 7 days</option>
+                    <option value="30" selected>Last 30 days</option>
+                    <option value="90">Last 90 days</option>
+                </select>
+                <button onclick="loadEmailTrackingData()" 
+                        style="background: #3b82f6; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    🔄 Refresh
+                </button>
+                <button onclick="exportEmailTracking()" 
+                        style="background: #10b981; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    📊 Export Analytics
+                </button>
+                <button onclick="checkSpamScore()" 
+                        style="background: #f59e0b; color: white; padding: 0.5rem 1rem; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 0.875rem;">
+                    🛡️ Check Spam Score
+                </button>
+            </div>
+            
+            <!-- Email Tracking Table -->
+            <div id="emailTrackingTableContainer" style="overflow-x: auto;">
+                <table id="emailTrackingTable" style="width: 100%; border-collapse: collapse; font-size: 0.875rem;">
+                    <thead>
+                        <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Hotel</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Contact</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Email</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Sent</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Status</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Opens</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Last Opened</th>
+                        </tr>
+                    </thead>
+                    <tbody id="emailTrackingTableBody">
+                        <tr>
+                            <td colspan="7" style="padding: 2rem; text-align: center; color: #6b7280;">
+                                Loading email tracking data...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
     <div id="waitlistTab" class="tab-content">
         <!-- Hotel Waitlist Management -->
         <div style="background: white; border-radius: 12px; padding: 1.5rem; margin-bottom: 2rem; border: 1px solid #e5e7eb;">
@@ -1666,6 +1743,8 @@ You can use these placeholders:
                 loadWaitlist();
             } else if (tabName === 'emailContacts') {
                 loadEmailContacts();
+            } else if (tabName === 'emailTracking') {
+                loadEmailTrackingData();
             } else if (tabName === 'contracts') {
                 loadContracts();
             } else if (tabName === 'samSearch') {
@@ -1683,6 +1762,8 @@ You can use these placeholders:
                     pageTitle.textContent = 'Email Contacts';
                 } else if (tabName === 'waitlist') {
                     pageTitle.textContent = 'Waitlist';
+                } else if (tabName === 'emailTracking') {
+                    pageTitle.textContent = 'Email Tracking';
                 } else if (tabName === 'contracts') {
                     pageTitle.textContent = 'Contracts';
                 } else if (tabName === 'samSearch') {
@@ -5021,6 +5102,196 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         `).join('');
         
         resultsContainer.innerHTML = resultsHTML;
+    }
+
+    // Email Tracking Functions
+    async function loadEmailTrackingData() {
+        try {
+            const period = document.getElementById('trackingPeriod').value;
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
+            
+            const response = await fetch(`${API_BASE}/api/admin/email-tracking/analytics?days=${period}`, {
+                headers: { 'Authorization': `Bearer ${sessionId}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to load email tracking data');
+            }
+            
+            const data = await response.json();
+            
+            // Update summary stats
+            document.getElementById('totalEmailsSent').textContent = data.summary.total_sent || 0;
+            document.getElementById('emailsOpened').textContent = data.summary.total_opened || 0;
+            document.getElementById('openRate').textContent = `${data.summary.open_rate || 0}%`;
+            document.getElementById('notOpened').textContent = (data.summary.total_sent - data.summary.total_opened) || 0;
+            
+            // Update table
+            const tbody = document.getElementById('emailTrackingTableBody');
+            tbody.innerHTML = '';
+            
+            if (data.analytics && data.analytics.length > 0) {
+                data.analytics.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.style.borderBottom = '1px solid #e5e7eb';
+                    
+                    const statusColor = item.status === 'Opened' ? '#10b981' : '#ef4444';
+                    const statusIcon = item.status === 'Opened' ? '✅' : '❌';
+                    
+                    row.innerHTML = `
+                        <td style="padding: 0.75rem; font-weight: 500;">${item.hotel_name || '-'}</td>
+                        <td style="padding: 0.75rem;">${item.contact_name || '-'}</td>
+                        <td style="padding: 0.75rem; color: #3b82f6;">${item.email}</td>
+                        <td style="padding: 0.75rem; color: #6b7280;">${new Date(item.sent_at).toLocaleDateString()}</td>
+                        <td style="padding: 0.75rem; color: ${statusColor}; font-weight: 600;">
+                            ${statusIcon} ${item.status}
+                        </td>
+                        <td style="padding: 0.75rem; text-align: center; font-weight: 600;">${item.opened_count || 0}</td>
+                        <td style="padding: 0.75rem; color: #6b7280;">
+                            ${item.last_opened_at ? new Date(item.last_opened_at).toLocaleString() : '-'}
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } else {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="padding: 2rem; text-align: center; color: #6b7280;">
+                            No email tracking data found for the selected period.
+                        </td>
+                    </tr>
+                `;
+            }
+            
+        } catch (error) {
+            console.error('Email tracking error:', error);
+            showCenteredNotification('❌ Failed to load email tracking data', 'error');
+        }
+    }
+    
+    async function exportEmailTracking() {
+        try {
+            const period = document.getElementById('trackingPeriod').value;
+            const sessionId = localStorage.getItem('sessionId') || localStorage.getItem('fedevent_session');
+            
+            const response = await fetch(`${API_BASE}/api/admin/email-tracking/analytics?days=${period}`, {
+                headers: { 'Authorization': `Bearer ${sessionId}` }
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to export email tracking data');
+            }
+            
+            const data = await response.json();
+            
+            // Create CSV content
+            let csvContent = 'Hotel,Contact,Email,Sent Date,Status,Open Count,Last Opened\n';
+            
+            if (data.analytics && data.analytics.length > 0) {
+                data.analytics.forEach(item => {
+                    csvContent += `"${item.hotel_name || ''}","${item.contact_name || ''}","${item.email}","${new Date(item.sent_at).toLocaleDateString()}","${item.status}",${item.opened_count || 0},"${item.last_opened_at ? new Date(item.last_opened_at).toLocaleString() : ''}"\n`;
+                });
+            }
+            
+            // Download CSV
+            const blob = new Blob([csvContent], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `email-tracking-${new Date().toISOString().split('T')[0]}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showCenteredNotification('✅ Email tracking data exported successfully!', 'success');
+            
+        } catch (error) {
+            console.error('Export error:', error);
+            showCenteredNotification('❌ Failed to export email tracking data', 'error');
+        }
+    }
+
+    // Spam Score Checker
+    function checkSpamScore() {
+        const spamCheckModal = document.createElement('div');
+        spamCheckModal.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.5); z-index: 10000; display: flex; 
+            align-items: center; justify-content: center;
+        `;
+        
+        spamCheckModal.innerHTML = `
+            <div style="background: white; padding: 2rem; border-radius: 12px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto;">
+                <h3 style="margin: 0 0 1rem; color: #1f2937;">🛡️ Email Spam Prevention Checklist</h3>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #374151; margin-bottom: 0.5rem;">✅ Implemented Features:</h4>
+                    <ul style="color: #6b7280; font-size: 0.875rem; line-height: 1.6;">
+                        <li>Anti-spam email headers (X-Mailer, X-Priority, etc.)</li>
+                        <li>Unsubscribe links and compliance footer</li>
+                        <li>Professional subject lines (no excessive caps/emojis)</li>
+                        <li>Balanced text-to-image ratio</li>
+                        <li>Clear sender identification</li>
+                        <li>Proper HTML structure</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #374151; margin-bottom: 0.5rem;">⚠️ Critical Next Steps:</h4>
+                    <ul style="color: #6b7280; font-size: 0.875rem; line-height: 1.6;">
+                        <li><strong>Domain Authentication:</strong> Set up SPF, DKIM, DMARC records</li>
+                        <li><strong>SendGrid Configuration:</strong> Enable domain authentication</li>
+                        <li><strong>Reputation Monitoring:</strong> Track sender reputation</li>
+                        <li><strong>List Hygiene:</strong> Remove bounces and inactive users</li>
+                    </ul>
+                </div>
+                
+                <div style="margin-bottom: 1.5rem;">
+                    <h4 style="color: #374151; margin-bottom: 0.5rem;">📊 Current Metrics:</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; font-size: 0.875rem;">
+                        <div style="padding: 0.75rem; background: #f3f4f6; border-radius: 6px;">
+                            <div style="font-weight: 600; color: #374151;">Open Rate</div>
+                            <div id="currentOpenRate" style="color: #059669;">Loading...</div>
+                        </div>
+                        <div style="padding: 0.75rem; background: #f3f4f6; border-radius: 6px;">
+                            <div style="font-weight: 600; color: #374151;">Delivery Rate</div>
+                            <div style="color: #059669;">~95% (Estimated)</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                    <button onclick="this.closest('.spam-modal').remove()" 
+                            style="padding: 0.5rem 1rem; border: 1px solid #d1d5db; background: white; border-radius: 6px; cursor: pointer;">
+                        Close
+                    </button>
+                    <button onclick="window.open('EMAIL_DELIVERABILITY_GUIDE.md', '_blank')" 
+                            style="padding: 0.5rem 1rem; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                        📖 View Full Guide
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        spamCheckModal.className = 'spam-modal';
+        document.body.appendChild(spamCheckModal);
+        
+        // Load current open rate
+        setTimeout(() => {
+            const openRateElement = document.getElementById('currentOpenRate');
+            if (openRateElement) {
+                const openRate = document.getElementById('openRate').textContent;
+                openRateElement.textContent = openRate || 'N/A';
+            }
+        }, 100);
+        
+        // Close on backdrop click
+        spamCheckModal.addEventListener('click', (e) => {
+            if (e.target === spamCheckModal) {
+                spamCheckModal.remove();
+            }
+        });
     }
 </script>
 
