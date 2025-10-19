@@ -1358,7 +1358,12 @@
                             required
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled from hotel selection"
-                            autocomplete="address-level2"
+                            autocomplete="new-password"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
                         >
                     </div>
                     <div>
@@ -1371,7 +1376,12 @@
                             name="state" 
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled (optional)"
-                            autocomplete="address-level1"
+                            autocomplete="new-password"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
                         >
                     </div>
                     <div>
@@ -1384,7 +1394,12 @@
                             name="zipCode" 
                             class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
                             placeholder="Auto-filled (optional)"
-                            autocomplete="postal-code"
+                            autocomplete="new-password"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
                         >
                     </div>
                 </div>
@@ -1735,6 +1750,26 @@
                     if (this.value && !this.value.includes('•')) {
                         // This is likely browser autofill, ignore it
                         return;
+                    }
+                });
+                
+                // Add autofill protection to city, state, zip fields
+                ['city', 'state', 'zipCode'].forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.setAttribute('autocomplete', 'new-password');
+                        field.setAttribute('autocapitalize', 'off');
+                        field.setAttribute('autocorrect', 'off');
+                        field.setAttribute('spellcheck', 'false');
+                        field.setAttribute('data-lpignore', 'true');
+                        field.setAttribute('data-form-type', 'other');
+                        
+                        field.addEventListener('focus', function() {
+                            this.setAttribute('autocomplete', 'new-password');
+                            this.setAttribute('autocapitalize', 'off');
+                            this.setAttribute('autocorrect', 'off');
+                            this.setAttribute('spellcheck', 'false');
+                        });
                     }
                 });
                 
