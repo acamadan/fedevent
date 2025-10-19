@@ -2030,16 +2030,16 @@
             }
         });
 
-        // Enable video playback on first user interaction
+        // Enable video playback only on click interaction
         function enableVideoPlayback() {
             if (!userInteracted) {
                 userInteracted = true;
-                console.log('🎬 User interaction detected - video playback now enabled');
+                console.log('🎬 User click detected - DANA video playback now enabled');
             }
         }
 
-        // Listen for any user interaction to enable video playback
-        ['click', 'touchstart', 'keydown', 'mousemove', 'scroll'].forEach(event => {
+        // Listen only for click interactions to enable video playback
+        ['click', 'touchstart'].forEach(event => {
             document.addEventListener(event, enableVideoPlayback, { once: true });
         });
         
@@ -2628,10 +2628,10 @@
                 enableDanaAudio() {
                     const video = this.$refs.danaVideo || document.getElementById('danaVideo');
                     if (video) {
-                        console.log('🔓 Enabling DANA audio with user interaction...');
+                        console.log('🔓 Enabling DANA audio with user click...');
                         video.muted = false;
                         video.volume = 0.8;
-                        userInteracted = true; // Mark as interacted
+                        userInteracted = true; // Mark as clicked
                         
                         // If video is currently playing, restart it to enable audio
                         if (!video.paused) {
@@ -2670,17 +2670,17 @@
                     const video = this.$refs.danaVideo || document.getElementById('danaVideo');
                     console.log('🎬 playDanaVideo called, video:', video, 'userInteracted:', userInteracted);
                     if (video) {
-                        // Only play if user has interacted with the site
+                        // Only play if user has clicked somewhere on the page
                         if (!userInteracted) {
-                            console.log('😊 DANA staying with smiley face - no interaction yet');
-                            return; // Don't play, stay with smiley face
+                            console.log('😊 DANA staying frozen with smiley face - no click interaction yet');
+                            return; // Don't play, stay frozen at smiley face
                         }
                         
                         console.log('🎬 Playing DANA video from start...');
                         video.currentTime = 0;
                         video.muted = false;
                         video.volume = 0.8;
-                        console.log('🔊 Playing with audio (user interacted)');
+                        console.log('🔊 Playing with audio (user clicked)');
                         
                         video.play().then(() => {
                             console.log('✅ Video playing successfully with audio');
