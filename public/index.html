@@ -1354,8 +1354,8 @@
               </div>
             </div>
             
-            <!-- Advanced Search Options -->
-            <div class="advanced-search-options" id="advancedSearchOptions" style="display: none;">
+            <!-- Radius Search Options -->
+            <div class="radius-search-options" id="radiusSearchOptions" style="display: none;">
               <div class="search-row-single">
                 <div class="search-field radius-field">
                   <label for="radiusMiles">Search Radius</label>
@@ -1367,50 +1367,14 @@
                     </select>
                   </div>
                 </div>
-                
-                <div class="search-field keywords-field">
-                  <label for="hotelKeywords">Hotel Name/Brand</label>
-                  <input type="text" id="hotelKeywords" name="keywords" placeholder="Marriott, Hilton, Holiday Inn...">
-                </div>
-                
-                <div class="search-field amenities-field">
-                  <label for="amenities">Amenities</label>
-                  <select id="amenities" name="amenities">
-                    <option value="">Any Amenities</option>
-                    <option value="meeting_space">Meeting Space</option>
-                    <option value="parking">Parking</option>
-                    <option value="airport_shuttle">Airport Shuttle</option>
-                    <option value="fitness_center">Fitness Center</option>
-                    <option value="pool">Pool</option>
-                    <option value="restaurant">Restaurant</option>
-                  </select>
-                </div>
-                
-                <div class="search-field government-field">
-                  <label for="governmentQualified">Government Qualified</label>
-                  <select id="governmentQualified" name="governmentQualified">
-                    <option value="">Any</option>
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
-                
-                <div class="search-field net30-field">
-                  <label for="net30Terms">NET30 Terms</label>
-                  <select id="net30Terms" name="net30Terms">
-                    <option value="">Any</option>
-                    <option value="true">Yes</option>
-                    <option value="false">No</option>
-                  </select>
-                </div>
               </div>
             </div>
             
-            <!-- Toggle Advanced Search -->
-            <div class="advanced-search-toggle">
-              <button type="button" id="toggleAdvancedSearch" class="toggle-advanced-btn">
-                <span id="advancedToggleText">Show Advanced Options</span>
-                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="advancedToggleIcon">
+            <!-- Toggle Radius Search -->
+            <div class="radius-search-toggle">
+              <button type="button" id="toggleRadiusSearch" class="toggle-radius-btn">
+                <span id="radiusToggleText">Add Radius Search</span>
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="radiusToggleIcon">
                   <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
               </button>
@@ -2275,22 +2239,22 @@
         // Map button event listener
         document.getElementById('mapButton').addEventListener('click', openMapPopup);
         
-        // Advanced search toggle
-        const toggleBtn = document.getElementById('toggleAdvancedSearch');
-        const advancedOptions = document.getElementById('advancedSearchOptions');
-        const toggleText = document.getElementById('advancedToggleText');
-        const toggleIcon = document.getElementById('advancedToggleIcon');
+        // Radius search toggle
+        const toggleBtn = document.getElementById('toggleRadiusSearch');
+        const radiusOptions = document.getElementById('radiusSearchOptions');
+        const toggleText = document.getElementById('radiusToggleText');
+        const toggleIcon = document.getElementById('radiusToggleIcon');
         
-        if (toggleBtn && advancedOptions) {
+        if (toggleBtn && radiusOptions) {
           toggleBtn.addEventListener('click', function() {
-            const isVisible = advancedOptions.style.display !== 'none';
+            const isVisible = radiusOptions.style.display !== 'none';
             if (isVisible) {
-              advancedOptions.style.display = 'none';
-              toggleText.textContent = 'Show Advanced Options';
+              radiusOptions.style.display = 'none';
+              toggleText.textContent = 'Add Radius Search';
               toggleIcon.style.transform = 'rotate(0deg)';
             } else {
-              advancedOptions.style.display = 'block';
-              toggleText.textContent = 'Hide Advanced Options';
+              radiusOptions.style.display = 'block';
+              toggleText.textContent = 'Remove Radius Search';
               toggleIcon.style.transform = 'rotate(180deg)';
             }
           });
@@ -2311,13 +2275,9 @@
         const lat = locationInput.dataset.lat || '';
         const lng = locationInput.dataset.lng || '';
         
-        // Get advanced search parameters
+        // Get radius search parameters
         const radiusMiles = document.getElementById('radiusMiles').value;
         const radiusUnit = document.getElementById('radiusUnit').value;
-        const keywords = document.getElementById('hotelKeywords').value;
-        const amenities = document.getElementById('amenities').value;
-        const governmentQualified = document.getElementById('governmentQualified').value;
-        const net30Terms = document.getElementById('net30Terms').value;
         
         searchParams.append('location', location);
         searchParams.append('startDate', formData.get('startDate'));
@@ -2328,7 +2288,7 @@
         searchParams.append('lat', lat);
         searchParams.append('lng', lng);
         
-        // Add advanced search parameters to URL
+        // Add radius search parameters to URL
         if (radiusMiles) {
           if (radiusUnit === 'miles') {
             searchParams.append('radius_miles', radiusMiles);
@@ -2336,54 +2296,9 @@
             searchParams.append('radius_km', radiusMiles);
           }
         }
-        if (keywords) searchParams.append('keywords', keywords);
-        if (amenities) searchParams.append('amenities', amenities);
-        if (governmentQualified) searchParams.append('government_qualified', governmentQualified);
-        if (net30Terms) searchParams.append('net30_terms', net30Terms);
         
-        // Send search request to database first
-        const searchData = {
-          location: location,
-          placeId: placeId,
-          lat: lat,
-          lng: lng,
-          startDate: formData.get('startDate'),
-          endDate: formData.get('endDate'),
-          roomCount: formData.get('roomCount'),
-          attendeeCount: formData.get('attendeeCount'),
-          // Advanced search parameters
-          radius_miles: radiusMiles && radiusUnit === 'miles' ? radiusMiles : '',
-          radius_km: radiusMiles && radiusUnit === 'km' ? radiusMiles : '',
-          center_lat: lat,
-          center_lng: lng,
-          center_address: location,
-          keywords: keywords,
-          amenities: amenities,
-          government_qualified: governmentQualified,
-          net30_terms: net30Terms
-        };
-        
-        console.log('Searching hotels in database:', searchData);
-        
-        // Try to search database first
-        fetch('/api/hotels/search', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(searchData)
-        })
-        .then(response => response.json())
-        .then(data => {
-          console.log('Hotel search results:', data);
-          // Redirect to search results page with the data
-          window.location.href = `/hotel-search-results.html?${searchParams.toString()}`;
-        })
-        .catch(error => {
-          console.error('Error searching hotels:', error);
-          // Fallback to direct redirect if API fails
-          window.location.href = `/hotel-search-results.html?${searchParams.toString()}`;
-        });
+        // Redirect to results page with search parameters
+        window.location.href = `/hotel-results.html?${searchParams.toString()}`;
       });
     </script>
 </body>

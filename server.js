@@ -16,7 +16,6 @@ import { Storage } from '@google-cloud/storage';
 // import Tesseract from 'tesseract.js';
 // import OpenAI from 'openai';
 import bcrypt from 'bcryptjs';
-import { randomBytes } from 'crypto';
 // guessFields will be imported dynamically in the autofill endpoint
 import { spawnSync } from 'child_process';
 import { rotateLogs } from './scripts/log-rotation.js';
@@ -5834,7 +5833,7 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                     
                     <!-- CTA Section -->
                     <div style="text-align: center; margin: 35px 0;">
-                      <a href="mailto:info@creataglobal.com?subject=FEDEVENT%20Registration%20Request&body=Hello%2C%20I%20would%20like%20to%20register%20for%20FEDEVENT%20as%20a%20hotel%20partner.%20Please%20send%20me%20the%20registration%20form." 
+                      <a href="https://fedevent.com/prelaunch.html" 
                          style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
                                 color: white; text-decoration: none; padding: 18px 40px; 
                                 border-radius: 12px; font-size: 18px; font-weight: 600; 
@@ -5884,7 +5883,7 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                     </div>
                     <div style="font-size: 11px; color: #6b7280;">
                       <a href="mailto:unsubscribe@fedevent.com?subject=Unsubscribe" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> | 
-                      <a href="mailto:info@creataglobal.com" style="color: #6b7280; text-decoration: underline;">Contact Us</a>
+                      <a href="https://fedevent.com" style="color: #6b7280; text-decoration: underline;">Visit Website</a>
                     </div>
                   </div>
                   
@@ -12867,6 +12866,20 @@ async function backupDatabase() {
     console.error('❌ Backup failed:', error);
   }
 }
+
+// ---------- Routes ----------
+// Serve static files from public directory
+app.use(express.static('public'));
+
+// Root route - redirect to prelaunch page
+app.get('/', (req, res) => {
+  res.redirect('/prelaunch.html');
+});
+
+// Health check route
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
 
 // ---------- Start Server ----------
 const PORT = process.env.PORT || 7070;

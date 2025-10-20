@@ -623,8 +623,8 @@
         .add-btn { background:#ffffff; color:#1e40af; border:1px solid #c7d2fe; padding:.5rem 1rem; border-radius:999px; font-weight:700; cursor:pointer; }
         .select-wrap { display:flex; align-items:center; gap:.5rem; color:#475569; font-size:.9rem; }
         
-        /* Advanced Search Controls */
-        .advanced-search-controls {
+        /* Simple Search Controls */
+        .simple-search-controls {
             margin-top: 1rem;
             padding: 1rem;
             background: #f8fafc;
@@ -679,7 +679,7 @@
             min-width: 80px;
         }
         
-        .toggle-advanced-btn {
+        .toggle-simple-btn {
             background: #ffffff;
             border: 1px solid #d1d5db;
             color: #6b7280;
@@ -693,13 +693,13 @@
             transition: all 0.2s ease;
         }
         
-        .toggle-advanced-btn:hover {
+        .toggle-simple-btn:hover {
             background: #f3f4f6;
             color: #374151;
             border-color: #9ca3af;
         }
         
-        .toggle-advanced-btn svg {
+        .toggle-simple-btn svg {
             transition: transform 0.2s ease;
         }
     </style>
@@ -968,20 +968,9 @@
                 <div class="header-actions">
                     <input type="text" class="search-input" id="searchInput" placeholder="Search hotels...">
                     
-                    <!-- Advanced Search Options -->
-                    <div class="advanced-search-controls" id="advancedSearchControls" style="display: none;">
+                    <!-- Simple Search Options -->
+                    <div class="simple-search-controls" id="simpleSearchControls" style="display: none;">
                         <div class="search-filters">
-                            <div class="filter-group">
-                                <label for="radiusSearch">Search Radius</label>
-                                <div class="radius-input-group">
-                                    <input type="number" id="radiusSearch" placeholder="25" min="1" max="500" step="1">
-                                    <select id="radiusUnit">
-                                        <option value="miles">Miles</option>
-                                        <option value="km">Kilometers</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
                             <div class="filter-group">
                                 <label for="cityFilter">City</label>
                                 <input type="text" id="cityFilter" placeholder="Filter by city...">
@@ -1053,23 +1042,13 @@
                                     <option value="false">Non-Priority</option>
                                 </select>
                             </div>
-                            
-                            <div class="filter-group">
-                                <label for="sortBy">Sort By</label>
-                                <select id="sortBy">
-                                    <option value="name">Name</option>
-                                    <option value="city">City</option>
-                                    <option value="created_at">Registration Date</option>
-                                    <option value="distance">Distance (if radius search)</option>
-                                </select>
-                            </div>
                         </div>
                     </div>
                     
-                    <!-- Toggle Advanced Search -->
-                    <button type="button" id="toggleAdvancedSearch" class="toggle-advanced-btn">
-                        <span id="advancedToggleText">Advanced Search</span>
-                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="advancedToggleIcon">
+                    <!-- Toggle Simple Search -->
+                    <button type="button" id="toggleSimpleSearch" class="toggle-simple-btn">
+                        <span id="simpleToggleText">Filter Hotels</span>
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="simpleToggleIcon">
                             <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </button>
@@ -2102,21 +2081,21 @@ You can use these placeholders:
         
         // Advanced search functionality
         function setupAdvancedSearch() {
-            const toggleBtn = document.getElementById('toggleAdvancedSearch');
-            const advancedControls = document.getElementById('advancedSearchControls');
-            const toggleText = document.getElementById('advancedToggleText');
-            const toggleIcon = document.getElementById('advancedToggleIcon');
+            const toggleBtn = document.getElementById('toggleSimpleSearch');
+            const simpleControls = document.getElementById('simpleSearchControls');
+            const toggleText = document.getElementById('simpleToggleText');
+            const toggleIcon = document.getElementById('simpleToggleIcon');
             
-            if (toggleBtn && advancedControls) {
+            if (toggleBtn && simpleControls) {
                 toggleBtn.addEventListener('click', function() {
-                    const isVisible = advancedControls.style.display !== 'none';
+                    const isVisible = simpleControls.style.display !== 'none';
                     if (isVisible) {
-                        advancedControls.style.display = 'none';
-                        toggleText.textContent = 'Advanced Search';
+                        simpleControls.style.display = 'none';
+                        toggleText.textContent = 'Filter Hotels';
                         toggleIcon.style.transform = 'rotate(0deg)';
                     } else {
-                        advancedControls.style.display = 'block';
-                        toggleText.textContent = 'Hide Advanced';
+                        simpleControls.style.display = 'block';
+                        toggleText.textContent = 'Hide Filters';
                         toggleIcon.style.transform = 'rotate(180deg)';
                     }
                 });
@@ -2124,8 +2103,7 @@ You can use these placeholders:
             
             // Add event listeners to all filter inputs
             const filterInputs = [
-                'radiusSearch', 'radiusUnit', 'cityFilter', 'stateFilter', 
-                'priorityFilter', 'sortBy'
+                'cityFilter', 'stateFilter', 'priorityFilter'
             ];
             
             filterInputs.forEach(inputId => {
@@ -2137,15 +2115,12 @@ You can use these placeholders:
             });
         }
         
-        // Apply all filters including radius search
+        // Apply simple filters
         function applyFilters() {
             const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            const radiusSearch = document.getElementById('radiusSearch').value;
-            const radiusUnit = document.getElementById('radiusUnit').value;
             const cityFilter = document.getElementById('cityFilter').value.toLowerCase();
             const stateFilter = document.getElementById('stateFilter').value;
             const priorityFilter = document.getElementById('priorityFilter').value;
-            const sortBy = document.getElementById('sortBy').value;
             
             let filtered = allHotels.filter(hotel => {
                 // Basic search query
@@ -2169,22 +2144,6 @@ You can use these placeholders:
                 
                 return matchesSearch && matchesCity && matchesState && matchesPriority;
             });
-            
-            // Apply radius search if specified
-            if (radiusSearch && hotel.latitude && hotel.longitude) {
-                // This would require a center point - for now we'll skip radius search in admin
-                // In a full implementation, you'd need to get the center coordinates
-                console.log('Radius search not implemented in admin dashboard yet');
-            }
-            
-            // Sort results
-            if (sortBy === 'name') {
-                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
-            } else if (sortBy === 'city') {
-                filtered.sort((a, b) => (a.city || '').localeCompare(b.city || ''));
-            } else if (sortBy === 'created_at') {
-                filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
-            }
             
             renderHotelsTable(filtered);
         }
