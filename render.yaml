@@ -1,7 +1,7 @@
 services:
-  # FEDEVENT Main Site - Deploy to fedevent.com
+  # FEDEVENT Prelaunch Site - Deploy to fedevent.com
   - type: web
-    name: fedevent-main
+    name: fedevent-prelaunch
     runtime: node
     buildCommand: npm install
     startCommand: node server.js

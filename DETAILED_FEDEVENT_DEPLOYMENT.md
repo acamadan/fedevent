@@ -1,14 +1,15 @@
-# 🚀 DETAILED FEDEVENT.COM DEPLOYMENT GUIDE
+# 🚀 DETAILED FEDEVENT PRELAUNCH DEPLOYMENT GUIDE
 
-## STEP-BY-STEP DEPLOYMENT TO FEDEVENT.COM
+## STEP-BY-STEP DEPLOYMENT OF PRELAUNCH SITE TO FEDEVENT.COM
 
-### STEP 1: PREPARE YOUR CODE (ALREADY DONE ✅)
+### STEP 1: PREPARE YOUR PRELAUNCH CODE (ALREADY DONE ✅)
 
-Your code is already ready with:
+Your prelaunch code is already ready with:
 - ✅ Flag video on prelaunch page
-- ✅ Email links pointing to fedevent.com
+- ✅ Email links pointing to fedevent.com/prelaunch.html
 - ✅ All recent updates
 - ✅ BASE_URL configured for production
+- ✅ Prelaunch page at /prelaunch.html
 
 ### STEP 2: CREATE RENDER.COM ACCOUNT
 
@@ -32,7 +33,7 @@ Your code is already ready with:
 
 3. **Configure the Service:**
    ```
-   Name: fedevent-main
+   Name: fedevent-prelaunch
    Environment: Web Service
    Region: Oregon (US West) - closest to you
    Branch: main
@@ -143,7 +144,7 @@ Your code is already ready with:
      ```
      Type: CNAME
      Name: www
-     Value: fedevent-main.onrender.com
+     Value: fedevent-prelaunch.onrender.com
      TTL: 600
      ```
 
