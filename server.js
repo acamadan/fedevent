@@ -4448,7 +4448,7 @@ async function createQuickBooksInvoice(email, name, amount, accountNumber, userI
 
 // ---------- Authentication helpers ----------
 function generateSessionId() {
-  return randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString('hex');
 }
 
 function generateSecurePassword() {
@@ -10420,7 +10420,7 @@ app.post('/api/sign-agreement', async (req, res) => {
 
     // If approver provided, create approval record and email link
     if (approverEmail) {
-      const token = (randomBytes(16).toString('hex'));
+      const token = (crypto.randomBytes(16).toString('hex'));
       db.prepare(`
         INSERT INTO agreement_approvals (agreement_id, approver_name, approver_email, token, status)
         VALUES (?, ?, ?, ?, 'pending')
@@ -11030,7 +11030,7 @@ app.post('/api/team/invite', requireAuth, async (req, res) => {
     }
     
     // Generate invitation token
-    const invitationToken = randomBytes(32).toString('hex');
+    const invitationToken = crypto.randomBytes(32).toString('hex');
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(); // 7 days
     
     // Create invitation
