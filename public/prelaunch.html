@@ -1258,7 +1258,7 @@
             </div>
             
             <!-- Form -->
-            <form x-show="!showSuccess" @submit.prevent="submitForm($event)" onsubmit="alert('Form onsubmit triggered!'); return false;" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm" autocomplete="off">
+            <form x-show="!showSuccess" @submit.prevent="submitForm($event)" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm" autocomplete="off">
                 
                 <!-- Property Eligibility Requirement -->
                 <div id="eligibility-section" style="background: #fef2f2; border-radius: 8px; border: 2px solid #dc2626; padding: 16px; margin: 0 0 16px 0;">
@@ -1580,14 +1580,12 @@
                 <!-- Submit Button -->
                 <div class="form-section-after-eligibility text-center">
                     <button 
-                        type="button"
-                        @click="submitForm($event)"
+                        type="submit"
                         :disabled="isSubmitting"
                         class="w-full md:w-auto patriotic-gradient text-white text-lg font-bold px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                         x-text="isSubmitting ? 'Submitting...' : 'Join the Waitlist →'"
                     >
                     </button>
-                    
                 </div>
             </form>
         </div>
@@ -2277,7 +2275,6 @@
                 
                 submitForm(event) {
                     console.log('🚀 Form submission started');
-                    alert('Form submission started!'); // TEST ALERT
                     
                     // Get the form element properly
                     const form = document.getElementById('waitlistForm');
@@ -2291,7 +2288,6 @@
                     console.log('🔍 Checking required policies...');
                     if (!checkRequiredPolicies()) {
                         console.log('❌ Policy check failed, stopping submission');
-                        alert('Policy check failed!'); // TEST ALERT
                         return false; // Stop submission if policies not accepted
                     }
                     console.log('✅ Policy check passed, continuing submission');
@@ -2342,14 +2338,20 @@
             const hotelPhone = formData.get('hotelPhone') || document.getElementById('hotelPhone').value;
             const hotelPlaceId = formData.get('hotelPlaceId') || document.getElementById('hotelPlaceId').value;
             
-            // Prepare data object
+            // Build payload mapped to API expectations
+            let stateValue = formData.get('state') || '';
+            if (!stateValue) {
+                const stateEl = document.getElementById('state');
+                if (stateEl && stateEl.value) stateValue = stateEl.value;
+            }
+
             const data = {
                 hotelName: formData.get('hotelName'),
                 hotelAddress: hotelAddress,
                 hotelPhone: hotelPhone,
                 hotelPlaceId: hotelPlaceId,
                 city: formData.get('city'),
-                state: formData.get('state') || '',
+                state: stateValue,
                 zipCode: formData.get('zipCode') || '',
                 country: formData.get('country') || '',
                 contactName: formData.get('contactName'),
@@ -2357,10 +2359,10 @@
                 email: formData.get('email'),
                 phone: formData.get('phone') || '',
                 interests: interests.join(', '),
-                indoorProperty: indoorProperty,
-                acceptsNet30: acceptsNet30,
-                acceptsPo: acceptsPo,
-                acceptsDiscount: acceptsDiscount
+                // API fields
+                currentlyOperating: indoorProperty === 'Yes' ? 'yes' : 'no',
+                acceptNet30: acceptsNet30 ? 'yes' : 'no',
+                acceptDirectBill: acceptsPo ? 'yes' : 'no'
             };
             
             // Submit to API
