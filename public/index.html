@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>FEDEVENT - Government Event Planning & Logistics Solutions</title>
-    <meta name="description" content="Professional event planning services for U.S. Government agencies. Connect with qualified hotels and venues for your next government event.">
+    <title><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span> - Global Government Event Planning & Logistics Solutions</title>
+    <meta name="description" content="Professional event planning services for government agencies worldwide, including UN departments and international organizations. Connect with qualified hotels and venues for your next government event.">
     <link rel="stylesheet" href="/site.css">
     
     <!-- Google Places API - Commented out until valid API key is provided -->
@@ -1353,6 +1353,68 @@
                 </button>
               </div>
             </div>
+            
+            <!-- Advanced Search Options -->
+            <div class="advanced-search-options" id="advancedSearchOptions" style="display: none;">
+              <div class="search-row-single">
+                <div class="search-field radius-field">
+                  <label for="radiusMiles">Search Radius</label>
+                  <div class="radius-input-group">
+                    <input type="number" id="radiusMiles" name="radiusMiles" placeholder="25" min="1" max="500" step="1">
+                    <select id="radiusUnit" name="radiusUnit">
+                      <option value="miles">Miles</option>
+                      <option value="km">Kilometers</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="search-field keywords-field">
+                  <label for="hotelKeywords">Hotel Name/Brand</label>
+                  <input type="text" id="hotelKeywords" name="keywords" placeholder="Marriott, Hilton, Holiday Inn...">
+                </div>
+                
+                <div class="search-field amenities-field">
+                  <label for="amenities">Amenities</label>
+                  <select id="amenities" name="amenities">
+                    <option value="">Any Amenities</option>
+                    <option value="meeting_space">Meeting Space</option>
+                    <option value="parking">Parking</option>
+                    <option value="airport_shuttle">Airport Shuttle</option>
+                    <option value="fitness_center">Fitness Center</option>
+                    <option value="pool">Pool</option>
+                    <option value="restaurant">Restaurant</option>
+                  </select>
+                </div>
+                
+                <div class="search-field government-field">
+                  <label for="governmentQualified">Government Qualified</label>
+                  <select id="governmentQualified" name="governmentQualified">
+                    <option value="">Any</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+                
+                <div class="search-field net30-field">
+                  <label for="net30Terms">NET30 Terms</label>
+                  <select id="net30Terms" name="net30Terms">
+                    <option value="">Any</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Toggle Advanced Search -->
+            <div class="advanced-search-toggle">
+              <button type="button" id="toggleAdvancedSearch" class="toggle-advanced-btn">
+                <span id="advancedToggleText">Show Advanced Options</span>
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="advancedToggleIcon">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
           </form>
         </div>
       </section>
@@ -1757,7 +1819,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h3><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></h3>
-                    <p>Professional event planning services for U.S. Government agencies.</p>
+                    <p>Professional event planning services for government agencies worldwide, including UN departments and international organizations.</p>
                 </div>
                 <div class="footer-section">
                     <h3>Services</h3>
@@ -2212,6 +2274,27 @@
         
         // Map button event listener
         document.getElementById('mapButton').addEventListener('click', openMapPopup);
+        
+        // Advanced search toggle
+        const toggleBtn = document.getElementById('toggleAdvancedSearch');
+        const advancedOptions = document.getElementById('advancedSearchOptions');
+        const toggleText = document.getElementById('advancedToggleText');
+        const toggleIcon = document.getElementById('advancedToggleIcon');
+        
+        if (toggleBtn && advancedOptions) {
+          toggleBtn.addEventListener('click', function() {
+            const isVisible = advancedOptions.style.display !== 'none';
+            if (isVisible) {
+              advancedOptions.style.display = 'none';
+              toggleText.textContent = 'Show Advanced Options';
+              toggleIcon.style.transform = 'rotate(0deg)';
+            } else {
+              advancedOptions.style.display = 'block';
+              toggleText.textContent = 'Hide Advanced Options';
+              toggleIcon.style.transform = 'rotate(180deg)';
+            }
+          });
+        }
       });
       
       // Hotel Search Form Handler
@@ -2228,6 +2311,14 @@
         const lat = locationInput.dataset.lat || '';
         const lng = locationInput.dataset.lng || '';
         
+        // Get advanced search parameters
+        const radiusMiles = document.getElementById('radiusMiles').value;
+        const radiusUnit = document.getElementById('radiusUnit').value;
+        const keywords = document.getElementById('hotelKeywords').value;
+        const amenities = document.getElementById('amenities').value;
+        const governmentQualified = document.getElementById('governmentQualified').value;
+        const net30Terms = document.getElementById('net30Terms').value;
+        
         searchParams.append('location', location);
         searchParams.append('startDate', formData.get('startDate'));
         searchParams.append('endDate', formData.get('endDate'));
@@ -2236,6 +2327,19 @@
         searchParams.append('placeId', placeId);
         searchParams.append('lat', lat);
         searchParams.append('lng', lng);
+        
+        // Add advanced search parameters to URL
+        if (radiusMiles) {
+          if (radiusUnit === 'miles') {
+            searchParams.append('radius_miles', radiusMiles);
+          } else {
+            searchParams.append('radius_km', radiusMiles);
+          }
+        }
+        if (keywords) searchParams.append('keywords', keywords);
+        if (amenities) searchParams.append('amenities', amenities);
+        if (governmentQualified) searchParams.append('government_qualified', governmentQualified);
+        if (net30Terms) searchParams.append('net30_terms', net30Terms);
         
         // Send search request to database first
         const searchData = {
@@ -2246,7 +2350,17 @@
           startDate: formData.get('startDate'),
           endDate: formData.get('endDate'),
           roomCount: formData.get('roomCount'),
-          attendeeCount: formData.get('attendeeCount')
+          attendeeCount: formData.get('attendeeCount'),
+          // Advanced search parameters
+          radius_miles: radiusMiles && radiusUnit === 'miles' ? radiusMiles : '',
+          radius_km: radiusMiles && radiusUnit === 'km' ? radiusMiles : '',
+          center_lat: lat,
+          center_lng: lng,
+          center_address: location,
+          keywords: keywords,
+          amenities: amenities,
+          government_qualified: governmentQualified,
+          net30_terms: net30Terms
         };
         
         console.log('Searching hotels in database:', searchData);

@@ -1,19 +1,23 @@
 services:
-  # FEDEVENT Prelaunch Server
+  # FEDEVENT Main Site - Deploy to fedevent.com
   - type: web
-    name: fedevent-prelaunch
+    name: fedevent-main
     runtime: node
     buildCommand: npm install
-    startCommand: node prelaunch-server.js
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PORT
+        value: 10000
+      - key: BASE_URL
+        value: https://fedevent.com
       - key: SMTP_HOST
         sync: false
       - key: SMTP_PORT
-        value: 465
+        value: 587
       - key: SMTP_SECURE
-        value: true
+        value: false
       - key: SMTP_USER
         sync: false
       - key: SMTP_PASS
@@ -22,3 +26,17 @@ services:
         sync: false
       - key: NOTIFY_FROM
         value: noreply@fedevent.com
+      - key: ADMIN_EMAIL
+        value: admin@fedevent.com
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: SAM_API_KEY
+        sync: false
+      - key: GSA_API_KEY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: GOOGLE_PLACES_API_KEY
+        sync: false
+    healthCheckPath: /
+    autoDeploy: true

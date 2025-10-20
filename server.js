@@ -1311,8 +1311,34 @@ try {
     opened_count INTEGER DEFAULT 0,
     last_opened_at TEXT,
     tracking_pixel_url TEXT,
+    status TEXT DEFAULT 'pending',
+    bounce_reason TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (contact_id) REFERENCES email_contacts (id)
+  )`);
+  
+  // Add status column if it doesn't exist
+  try {
+    db.exec(`ALTER TABLE email_tracking ADD COLUMN status TEXT DEFAULT 'pending'`);
+  } catch (e) {
+    // Column already exists, ignore error
+  }
+  
+  // Add bounce_reason column if it doesn't exist
+  try {
+    db.exec(`ALTER TABLE email_tracking ADD COLUMN bounce_reason TEXT`);
+  } catch (e) {
+    // Column already exists, ignore error
+  }
+
+  // Email clicks table for tracking link clicks
+  db.exec(`CREATE TABLE IF NOT EXISTS email_clicks (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tracking_id INTEGER,
+    url TEXT,
+    clicked_at TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (tracking_id) REFERENCES email_tracking (id)
   )`);
   console.log('✅ Email contacts table created');
 } catch (e) {
@@ -1398,6 +1424,18 @@ try {
   // Column already exists, which is fine
   if (!e.message.includes('duplicate column name')) {
     console.log('is_priority column already exists');
+  }
+}
+
+// Add latitude and longitude columns for radius search
+try { 
+  db.exec(`ALTER TABLE hotels ADD COLUMN latitude REAL`);
+  db.exec(`ALTER TABLE hotels ADD COLUMN longitude REAL`);
+  console.log('Added latitude and longitude columns to hotels table');
+} catch (e) {
+  // Columns already exist, which is fine
+  if (!e.message.includes('duplicate column name')) {
+    console.log('latitude and longitude columns already exist');
   }
 }
 db.exec(`
@@ -3531,7 +3569,7 @@ app.post('/api/leads', async (req, res) => {
       const html = `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
           <div style="background: linear-gradient(135deg, #0071e3 0%, #8e44ad 100%); padding: 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800;">FEDEVENT</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800;"><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></h1>
             <p style="color: #ffffff; margin: 10px 0 0 0; font-size: 14px;">New Waitlist Registration</p>
           </div>
           
@@ -3651,7 +3689,7 @@ app.post('/api/leads', async (req, res) => {
       const confirmationHtml = `
         <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 600px; margin: 0 auto; background: #ffffff;">
           <div style="background: linear-gradient(135deg, #0071e3 0%, #8e44ad 100%); padding: 40px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800;">FEDEVENT</h1>
+            <h1 style="color: #ffffff; margin: 0; font-size: 36px; font-weight: 800;"><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></h1>
             <p style="color: #ffffff; margin: 15px 0 0 0; font-size: 16px; opacity: 0.95;">Government Contracts Simplified</p>
           </div>
           
@@ -3746,7 +3784,307 @@ app.post('/api/leads', async (req, res) => {
   }
 });
 
-// ---------- simple hotel search (stubbed from stored hotels table) ----------
+// ---------- Enhanced hotel search with radius search ----------
+app.get('/api/hotels/search', (req, res) => {
+  try {
+    const {
+      q = '', // search query
+      city = '',
+      state = '',
+      country = '',
+      location_type = '', // CONUS/OCONUS
+      continent = '',
+      checkin = '',
+      checkout = '',
+      rooms = '',
+      keywords = '',
+      amenities = '',
+      min_rooms = '',
+      max_rooms = '',
+      has_meeting_space = '',
+      has_parking = '',
+      has_airport_shuttle = '',
+      government_qualified = '',
+      net30_terms = '',
+      per_diem_rates = '',
+      // Radius search parameters
+      radius_miles = '',
+      radius_km = '',
+      center_lat = '',
+      center_lng = '',
+      center_address = '',
+      sort_by = 'name', // name, city, created_at, rating, distance
+      sort_order = 'asc', // asc, desc
+      page = 1,
+      limit = 20
+    } = req.query;
+
+    // Build WHERE conditions
+    const conditions = [];
+    const params = [];
+
+    // Basic search query
+    if (q) {
+      conditions.push(`(h.name LIKE ? OR h.city LIKE ? OR h.state LIKE ? OR h.country LIKE ? OR h.tags LIKE ?)`);
+      const searchTerm = `%${q}%`;
+      params.push(searchTerm, searchTerm, searchTerm, searchTerm, searchTerm);
+    }
+
+    // Location filters
+    if (city) {
+      conditions.push(`h.city LIKE ?`);
+      params.push(`%${city}%`);
+    }
+    if (state) {
+      conditions.push(`h.state = ?`);
+      params.push(state);
+    }
+    if (country) {
+      conditions.push(`h.country = ?`);
+      params.push(country);
+    }
+
+    // Location type filters
+    if (location_type === 'CONUS') {
+      conditions.push(`h.country = 'US'`);
+    } else if (location_type === 'OCONUS') {
+      conditions.push(`h.country != 'US'`);
+    }
+
+    // Continent filter (for OCONUS)
+    if (continent) {
+      const continentCountries = {
+        'North America': ['CA', 'MX'],
+        'Europe': ['UK', 'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'CH', 'AT', 'IE', 'PT', 'SE', 'NO', 'DK', 'FI', 'PL', 'CZ', 'HU', 'GR', 'RO', 'BG', 'HR', 'SI', 'SK', 'LT', 'LV', 'EE'],
+        'Asia': ['JP', 'KR', 'SG', 'TH', 'PH', 'IN', 'MY', 'ID', 'VN', 'TW', 'HK', 'MO', 'BD', 'PK', 'LK', 'MM', 'KH', 'LA', 'MN', 'NP', 'BT', 'MV'],
+        'Oceania': ['AU', 'NZ', 'FJ', 'PG', 'NC', 'VU', 'SB', 'TO', 'WS', 'KI', 'TV', 'NR', 'PW', 'FM', 'MH'],
+        'South America': ['BR', 'AR', 'CL', 'CO', 'PE', 'VE', 'EC', 'BO', 'PY', 'UY', 'GY', 'SR', 'GF'],
+        'Africa': ['ZA', 'EG', 'NG', 'KE', 'GH', 'MA', 'TN', 'DZ', 'ET', 'UG', 'TZ', 'ZW', 'BW', 'NA', 'ZM', 'MW', 'MZ', 'MG', 'MU', 'SC', 'RW', 'BI', 'DJ', 'SO', 'ER', 'SD', 'SS', 'CF', 'TD', 'NE', 'ML', 'BF', 'CI', 'LR', 'SL', 'GN', 'GW', 'GM', 'SN', 'MR', 'CV', 'ST', 'GQ', 'GA', 'CG', 'CD', 'AO', 'CM'],
+        'Middle East': ['AE', 'SA', 'IL', 'TR', 'IQ', 'IR', 'JO', 'LB', 'SY', 'KW', 'QA', 'BH', 'OM', 'YE', 'AF', 'PK', 'UZ', 'KZ', 'KG', 'TJ', 'TM', 'AZ', 'AM', 'GE']
+      };
+      
+      if (continentCountries[continent]) {
+        const placeholders = continentCountries[continent].map(() => '?').join(',');
+        conditions.push(`h.country IN (${placeholders})`);
+        params.push(...continentCountries[continent]);
+      }
+    }
+
+    // Keywords filter (hotel name or brand)
+    if (keywords) {
+      conditions.push(`(h.name LIKE ? OR h.tags LIKE ?)`);
+      const keywordTerm = `%${keywords}%`;
+      params.push(keywordTerm, keywordTerm);
+    }
+
+    // Room count filters
+    if (min_rooms) {
+      conditions.push(`h.total_rooms >= ?`);
+      params.push(parseInt(min_rooms));
+    }
+    if (max_rooms) {
+      conditions.push(`h.total_rooms <= ?`);
+      params.push(parseInt(max_rooms));
+    }
+
+    // Amenity filters (these would need to be stored in hotel_profiles or a separate amenities table)
+    if (has_meeting_space === 'true') {
+      conditions.push(`hp.profile_data LIKE '%meeting_space%'`);
+    }
+    if (has_parking === 'true') {
+      conditions.push(`hp.profile_data LIKE '%parking%'`);
+    }
+    if (has_airport_shuttle === 'true') {
+      conditions.push(`hp.profile_data LIKE '%airport_shuttle%'`);
+    }
+
+    // Government qualification filters
+    if (government_qualified === 'true') {
+      conditions.push(`h.is_priority = 1`);
+    }
+    if (net30_terms === 'true') {
+      conditions.push(`hc.net_30_terms_accepted = 1`);
+    }
+    if (per_diem_rates === 'true') {
+      conditions.push(`h.per_diem_rates = 1`);
+    }
+
+    // Build the main query
+    let query = `
+      SELECT DISTINCT
+        h.id,
+        h.name,
+        h.email,
+        h.phone,
+        h.city,
+        h.state,
+        h.country,
+        h.tags,
+        h.total_rooms,
+        h.meeting_space_sqft,
+        h.largest_room_capacity,
+        h.website,
+        h.created_at,
+        h.is_priority,
+        h.per_diem_rates,
+        h.latitude,
+        h.longitude,
+        hp.profile_data,
+        hc.net_30_terms_accepted,
+        hc.business_license_valid,
+        hc.safety_certifications_valid,
+        hc.insurance_coverage_valid,
+        hps.total_score,
+        hps.tier
+    `;
+
+    // Add distance calculation if radius search is requested
+    if (center_lat && center_lng && (radius_miles || radius_km)) {
+      const radius = radius_miles ? parseFloat(radius_miles) : (parseFloat(radius_km) * 0.621371);
+      query += `,
+        (3959 * acos(cos(radians(?)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(?)) + sin(radians(?)) * sin(radians(h.latitude)))) AS distance_miles
+      `;
+      params.unshift(parseFloat(center_lat), parseFloat(center_lng), parseFloat(center_lat));
+    }
+
+    query += `
+      FROM hotels h
+      LEFT JOIN hotel_profiles hp ON h.id = hp.hotel_id
+      LEFT JOIN hotel_compliance hc ON h.id = hc.hotel_id
+      LEFT JOIN hotel_partnership_scores hps ON h.id = hps.hotel_id
+    `;
+
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
+    }
+
+    // Add radius filter if specified
+    if (center_lat && center_lng && (radius_miles || radius_km)) {
+      const radius = radius_miles ? parseFloat(radius_miles) : (parseFloat(radius_km) * 0.621371);
+      if (conditions.length > 0) {
+        query += ` AND (3959 * acos(cos(radians(?)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(?)) + sin(radians(?)) * sin(radians(h.latitude)))) <= ?`;
+      } else {
+        query += ` WHERE (3959 * acos(cos(radians(?)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(?)) + sin(radians(?)) * sin(radians(h.latitude)))) <= ?`;
+      }
+      params.push(parseFloat(center_lat), parseFloat(center_lng), parseFloat(center_lat), radius);
+    }
+
+    // Add sorting
+    const validSortFields = ['name', 'city', 'created_at', 'total_score', 'distance'];
+    const sortField = validSortFields.includes(sort_by) ? sort_by : 'name';
+    let sortDirection = sort_order === 'desc' ? 'DESC' : 'ASC';
+    
+    if (sortField === 'distance' && center_lat && center_lng) {
+      query += ` ORDER BY distance_miles ${sortDirection}`;
+    } else {
+      query += ` ORDER BY h.${sortField} ${sortDirection}`;
+    }
+
+    // Add pagination
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+    query += ` LIMIT ? OFFSET ?`;
+    params.push(parseInt(limit), offset);
+
+    // Execute query
+    const hotels = db.prepare(query).all(...params);
+
+    // Get total count for pagination
+    let countQuery = `
+      SELECT COUNT(DISTINCT h.id) as total
+      FROM hotels h
+      LEFT JOIN hotel_profiles hp ON h.id = hp.hotel_id
+      LEFT JOIN hotel_compliance hc ON h.id = hc.hotel_id
+      LEFT JOIN hotel_partnership_scores hps ON h.id = hps.hotel_id
+    `;
+    if (conditions.length > 0) {
+      countQuery += ` WHERE ${conditions.join(' AND ')}`;
+    }
+    
+    // Add radius filter to count query if specified
+    if (center_lat && center_lng && (radius_miles || radius_km)) {
+      const radius = radius_miles ? parseFloat(radius_miles) : (parseFloat(radius_km) * 0.621371);
+      if (conditions.length > 0) {
+        countQuery += ` AND (3959 * acos(cos(radians(?)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(?)) + sin(radians(?)) * sin(radians(h.latitude)))) <= ?`;
+      } else {
+        countQuery += ` WHERE (3959 * acos(cos(radians(?)) * cos(radians(h.latitude)) * cos(radians(h.longitude) - radians(?)) + sin(radians(?)) * sin(radians(h.latitude)))) <= ?`;
+      }
+    }
+    
+    const countResult = db.prepare(countQuery).get(...params.slice(0, -2)); // Remove LIMIT and OFFSET params
+    const total = countResult.total;
+
+    // Process hotel data
+    const processedHotels = hotels.map(hotel => {
+      let profileData = {};
+      try {
+        profileData = hotel.profile_data ? JSON.parse(hotel.profile_data) : {};
+      } catch (e) {
+        console.log('Error parsing profile data for hotel', hotel.id);
+      }
+
+      return {
+        id: hotel.id,
+        name: hotel.name,
+        email: hotel.email,
+        phone: hotel.phone,
+        city: hotel.city,
+        state: hotel.state,
+        country: hotel.country,
+        tags: hotel.tags,
+        total_rooms: hotel.total_rooms,
+        meeting_space_sqft: hotel.meeting_space_sqft,
+        largest_room_capacity: hotel.largest_room_capacity,
+        website: hotel.website,
+        created_at: hotel.created_at,
+        is_priority: hotel.is_priority,
+        per_diem_rates: hotel.per_diem_rates,
+        government_qualified: hotel.is_priority,
+        net30_terms: hotel.net_30_terms_accepted,
+        compliance: {
+          business_license: hotel.business_license_valid,
+          safety_certifications: hotel.safety_certifications_valid,
+          insurance_coverage: hotel.insurance_coverage_valid
+        },
+        partnership_score: hotel.total_score,
+        partnership_tier: hotel.tier,
+        profile_data: profileData,
+        latitude: hotel.latitude,
+        longitude: hotel.longitude,
+        distance_miles: hotel.distance_miles || null
+      };
+    });
+
+    return ok(res, {
+      hotels: processedHotels,
+      pagination: {
+        page: parseInt(page),
+        limit: parseInt(limit),
+        total: total,
+        total_pages: Math.ceil(total / parseInt(limit))
+      },
+      search_center: center_lat && center_lng ? {
+        latitude: parseFloat(center_lat),
+        longitude: parseFloat(center_lng),
+        address: center_address,
+        radius_miles: radius_miles ? parseFloat(radius_miles) : null,
+        radius_km: radius_km ? parseFloat(radius_km) : null
+      } : null,
+      filters_applied: {
+        q, city, state, country, location_type, continent,
+        checkin, checkout, rooms, keywords, amenities,
+        min_rooms, max_rooms, has_meeting_space, has_parking,
+        has_airport_shuttle, government_qualified, net30_terms, per_diem_rates,
+        radius_miles, radius_km, center_lat, center_lng, center_address
+      }
+    });
+
+  } catch (error) {
+    console.error('Hotel search error:', error);
+    return fail(res, 500, 'Hotel search failed');
+  }
+});
+
+// ---------- Legacy simple hotel search (for backward compatibility) ----------
 app.get('/api/search', (req, res) => {
   try {
     const q = String(req.query.q||'').toLowerCase();
@@ -4229,7 +4567,7 @@ function generatePrelaunchInvitationEmail({ hotelName, contactName, unsubscribeT
               <!-- Header -->
               <tr>
                 <td style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); padding: 40px 40px 30px 40px; text-align: center;">
-                  <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">FEDEVENT</h1>
+                  <h1 style="color: #ffffff; margin: 0 0 10px 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;"><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></h1>
                   <p style="color: #e0e7ff; margin: 0; font-size: 16px; font-weight: 500;">Government Contracts Simplified</p>
                 </td>
               </tr>
@@ -4239,18 +4577,18 @@ function generatePrelaunchInvitationEmail({ hotelName, contactName, unsubscribeT
                 <td style="padding: 40px;">
                   <p style="color: #1f2937; font-size: 18px; font-weight: 600; margin: 0 0 20px 0;">Dear ${contactName || 'Hotel Partner'},</p>
                   
-                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
-                    Thank you for your previous interest in government contract opportunities. We're excited to introduce you to <strong>FEDEVENT</strong> – a revolutionary platform that makes winning government hotel contracts easier than ever before.
-                  </p>
+                    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                      We're excited to invite you to join <strong>FEDEVENT</strong> – our revolutionary platform that connects hotels with government agencies worldwide, including UN departments and international organizations. Whether you're a valued partner from our previous work together at <strong>CREATA Global Event Agency LLC</strong> or joining us through a referral, you're about to discover an incredible global opportunity.
+                    </p>
                   
                   <div style="background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%); border-left: 4px solid #1e40af; padding: 20px; margin: 30px 0; border-radius: 8px;">
                     <h2 style="color: #1e40af; font-size: 20px; font-weight: 700; margin: 0 0 15px 0;">🎯 Why FEDEVENT?</h2>
                     <ul style="color: #374151; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                      <li><strong>Direct Access</strong> to federal government hotel contracts</li>
-                      <li><strong>Competitive Bidding</strong> with real-time notifications</li>
-                      <li><strong>Streamlined Process</strong> – no more complex paperwork</li>
-                      <li><strong>Guaranteed Payments</strong> from government agencies</li>
-                      <li><strong>Exclusive Opportunities</strong> for registered hotels</li>
+                      <li><strong>Global Government Access</strong> to contracts with agencies worldwide</li>
+                      <li><strong>UN Department Connections</strong> for international opportunities</li>
+                      <li><strong>Worldwide Network</strong> of partner hotels across all continents</li>
+                      <li><strong>International Support</strong> for global government events</li>
+                      <li><strong>Exclusive Global Opportunities</strong> for registered hotels</li>
                     </ul>
                   </div>
                   
@@ -4745,7 +5083,7 @@ app.post('/api/auth/register', async (req, res) => {
       const welcomeHtml = `
         <div style="font-family:system-ui,Segoe UI,Roboto,Arial; max-width:600px; margin:0 auto;">
           <div style="background:#1f2937; padding:2rem; text-align:center;">
-            <h1 style="color:white; margin:0;">Welcome to FEDEVENT</h1>
+            <h1 style="color:white; margin:0;">Welcome to <span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></h1>
             <p style="color:#d1d5db; margin:0.5rem 0 0;">Professional Government Event Solutions</p>
           </div>
           
@@ -5428,7 +5766,16 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
         // Send invitation email if enabled
         if (sendEmail && process.env.SMTP_HOST) {
           try {
-            const subject = emailSubject || `🏛️ Join FEDEVENT - Federal Hotel Network Invitation`;
+            // Create tracking record
+            const trackingId = `track_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            const trackingPixelUrl = `${process.env.BASE_URL || 'http://localhost:7070'}/api/track/email/${trackingId}`;
+            
+            db.prepare(`
+              INSERT INTO email_tracking (contact_id, email_type, sent_at, tracking_pixel_url, status)
+              VALUES (?, ?, ?, ?, 'pending')
+            `).run(contactId, 'bulk_invitation', new Date().toISOString(), trackingPixelUrl);
+            
+            const subject = emailSubject || `🚨 URGENT: $2.3B+ Government Hotel Contracts Available - Limited Time Access`;
             const body = emailBody || `
               <!DOCTYPE html>
               <html>
@@ -5446,7 +5793,7 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                       <span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span>
                     </div>
                     <div style="color: #6b7280; font-size: 18px; font-weight: 500;">
-                      The Premier Federal Hotel Network
+                      The Premier Global Government Hotel Network
                     </div>
                   </div>
                   
@@ -5470,11 +5817,11 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                         🚀 Why Join FEDEVENT?
                       </h3>
                       <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                        <li><strong>💰 Revenue Opportunity:</strong> Access to $2.3B+ in annual federal travel spending</li>
-                        <li><strong>🏛️ Government Events:</strong> Connect with federal agencies through our platform</li>
-                        <li><strong>⭐ Global Network:</strong> Join our worldwide network of partner hotels</li>
-                        <li><strong>📈 Growth Opportunity:</strong> Expand your business through our platform</li>
-                        <li><strong>🛡️ Verified Process:</strong> Secure, compliant booking system</li>
+                        <li><strong>💰 Global Revenue:</strong> Access to $2.3B+ in worldwide government travel spending</li>
+                        <li><strong>🌍 International Agencies:</strong> Connect with UN departments and global governments</li>
+                        <li><strong>⭐ Worldwide Network:</strong> Join our global network of partner hotels</li>
+                        <li><strong>📈 International Growth:</strong> Expand your business across all continents</li>
+                        <li><strong>🛡️ Global Compliance:</strong> Secure, internationally compliant booking system</li>
                       </ul>
                     </div>
                     
@@ -5498,21 +5845,21 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                       <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
                         <div style="text-align: center;">
                           <div style="color: #dc2626; font-size: 24px; font-weight: bold;">$2.3B+</div>
-                          <div style="color: #6b7280; font-size: 14px;">Annual Federal Travel</div>
+                          <div style="color: #6b7280; font-size: 14px;">Global Government Travel</div>
                         </div>
                         <div style="text-align: center;">
-                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">Global</div>
-                          <div style="color: #6b7280; font-size: 14px;">Partner Network</div>
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">195+</div>
+                          <div style="color: #6b7280; font-size: 14px;">Countries & UN Departments</div>
                         </div>
                         <div style="text-align: center;">
-                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">50+</div>
-                          <div style="color: #6b7280; font-size: 14px;">Federal Agencies</div>
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">Worldwide</div>
+                          <div style="color: #6b7280; font-size: 14px;">Government Agencies</div>
                         </div>
                       </div>
                     </div>
                     
                     <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 30px 0 0 0; text-align: center;">
-                      <strong>Limited Time:</strong> Join now and get priority placement in our federal agency directory.
+                      <strong>Limited Time:</strong> Join now and get priority placement in our global government agency directory.
                     </p>
                   </div>
                   
@@ -5876,8 +6223,8 @@ app.post('/api/admin/waitlist/bulk-invite', requireAuth, requireAdmin, async (re
             const trackingPixelUrl = `${process.env.BASE_URL || 'http://localhost:7070'}/api/track/email/${trackingId}`;
             
             db.prepare(`
-              INSERT INTO email_tracking (contact_id, email_type, sent_at, tracking_pixel_url)
-              VALUES (?, ?, ?, ?)
+              INSERT INTO email_tracking (contact_id, email_type, sent_at, tracking_pixel_url, status)
+              VALUES (?, ?, ?, ?, 'pending')
             `).run(contactId, 'invitation', new Date().toISOString(), trackingPixelUrl);
             
             // Anti-spam optimized subject line
@@ -11446,6 +11793,95 @@ app.get('/api/google-places-key', (req, res) => {
   }
 });
 
+// ---------- SendGrid Webhook Endpoint ----------
+
+// SendGrid webhook for email events (no email notifications)
+app.post('/api/webhooks/sendgrid', express.raw({type: 'application/json'}), async (req, res) => {
+  try {
+    const events = JSON.parse(req.body);
+    
+    for (const event of events) {
+      const { event: eventType, email, timestamp, sg_event_id, sg_message_id, url, reason, status } = event;
+      
+      // Update email tracking record
+      if (sg_message_id) {
+        const trackingRecord = db.prepare('SELECT * FROM email_tracking WHERE tracking_pixel_url LIKE ?').get(`%${sg_message_id}%`);
+        
+        if (trackingRecord) {
+          const now = new Date().toISOString();
+          
+          switch (eventType) {
+            case 'processed':
+              db.prepare(`
+                UPDATE email_tracking 
+                SET sent_at = ?, status = 'sent'
+                WHERE id = ?
+              `).run(timestamp, trackingRecord.id);
+              break;
+              
+            case 'delivered':
+              db.prepare(`
+                UPDATE email_tracking 
+                SET status = 'delivered'
+                WHERE id = ?
+              `).run(trackingRecord.id);
+              break;
+              
+            case 'open':
+              db.prepare(`
+                UPDATE email_tracking 
+                SET opened_count = opened_count + 1,
+                    opened_at = CASE WHEN opened_at IS NULL THEN ? ELSE opened_at END,
+                    last_opened_at = ?,
+                    status = 'opened'
+                WHERE id = ?
+              `).run(timestamp, timestamp, trackingRecord.id);
+              break;
+              
+            case 'click':
+              // Store click data
+              db.prepare(`
+                INSERT INTO email_clicks (tracking_id, url, clicked_at)
+                VALUES (?, ?, ?)
+              `).run(trackingRecord.id, url, timestamp);
+              break;
+              
+            case 'bounce':
+              db.prepare(`
+                UPDATE email_tracking 
+                SET status = 'bounced', bounce_reason = ?
+                WHERE id = ?
+              `).run(reason, trackingRecord.id);
+              break;
+              
+            case 'spam_report':
+              db.prepare(`
+                UPDATE email_tracking 
+                SET status = 'spam_reported'
+                WHERE id = ?
+              `).run(trackingRecord.id);
+              break;
+              
+            case 'unsubscribe':
+              db.prepare(`
+                UPDATE email_tracking 
+                SET status = 'unsubscribed'
+                WHERE id = ?
+              `).run(trackingRecord.id);
+              break;
+          }
+        }
+      }
+    }
+    
+    res.status(200).send('OK');
+    
+  } catch (error) {
+    console.error('SendGrid webhook error:', error);
+    res.status(500).send('Error');
+  }
+});
+
 // ---------- Email Tracking Endpoints ----------
 
 // Email open tracking endpoint (called by tracking pixel)
@@ -11516,10 +11952,9 @@ app.get('/api/admin/email-tracking/analytics', requireAuth, requireAdmin, async 
         et.opened_at,
         et.opened_count,
         et.last_opened_at,
-        CASE 
-          WHEN et.opened_at IS NOT NULL THEN 'Opened'
-          ELSE 'Not Opened'
-        END as status
+        et.status,
+        et.bounce_reason,
+        (SELECT COUNT(*) FROM email_clicks WHERE tracking_id = et.id) as click_count
       FROM email_contacts ec
       LEFT JOIN email_tracking et ON ec.id = et.contact_id
       WHERE et.sent_at >= datetime('now', '-${parseInt(days)} days')

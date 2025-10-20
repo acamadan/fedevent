@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - FEDEVENT</title>
+    <title>Admin Dashboard - <span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></title>
     
     <!-- Google Analytics 4 (GA4) -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
@@ -622,6 +622,86 @@
         .right-col { display:flex; align-items:center; gap:.75rem; }
         .add-btn { background:#ffffff; color:#1e40af; border:1px solid #c7d2fe; padding:.5rem 1rem; border-radius:999px; font-weight:700; cursor:pointer; }
         .select-wrap { display:flex; align-items:center; gap:.5rem; color:#475569; font-size:.9rem; }
+        
+        /* Advanced Search Controls */
+        .advanced-search-controls {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .search-filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .filter-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            padding: 0.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .radius-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .radius-input-group input {
+            flex: 1;
+        }
+        
+        .radius-input-group select {
+            flex: 0 0 auto;
+            min-width: 80px;
+        }
+        
+        .toggle-advanced-btn {
+            background: #ffffff;
+            border: 1px solid #d1d5db;
+            color: #6b7280;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+        }
+        
+        .toggle-advanced-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+            border-color: #9ca3af;
+        }
+        
+        .toggle-advanced-btn svg {
+            transition: transform 0.2s ease;
+        }
     </style>
 </head>
 <body>
@@ -650,10 +730,10 @@
                         <i class="fas fa-hotel"></i>
                         <span>Hotels</span>
                     </a>
-                    <a href="#" class="admin-nav-item" onclick="showTab('emailContacts')" title="Email Contacts">
-                        <i class="fas fa-envelope"></i>
-                        <span>Email Contacts</span>
-                    </a>
+            <a href="#" class="admin-nav-item" onclick="showTab('emailContacts')" title="Invitation Email">
+                <i class="fas fa-envelope"></i>
+                <span>Invitation Email</span>
+            </a>
                     <a href="#" class="admin-nav-item" onclick="showTab('waitlist')" title="Waitlist">
                         <i class="fas fa-users"></i>
                         <span>Waitlist</span>
@@ -887,6 +967,112 @@
                 <h2 class="table-title">Registered Hotels</h2>
                 <div class="header-actions">
                     <input type="text" class="search-input" id="searchInput" placeholder="Search hotels...">
+                    
+                    <!-- Advanced Search Options -->
+                    <div class="advanced-search-controls" id="advancedSearchControls" style="display: none;">
+                        <div class="search-filters">
+                            <div class="filter-group">
+                                <label for="radiusSearch">Search Radius</label>
+                                <div class="radius-input-group">
+                                    <input type="number" id="radiusSearch" placeholder="25" min="1" max="500" step="1">
+                                    <select id="radiusUnit">
+                                        <option value="miles">Miles</option>
+                                        <option value="km">Kilometers</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="cityFilter">City</label>
+                                <input type="text" id="cityFilter" placeholder="Filter by city...">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="stateFilter">State</label>
+                                <select id="stateFilter">
+                                    <option value="">All States</option>
+                                    <option value="AL">Alabama</option>
+                                    <option value="AK">Alaska</option>
+                                    <option value="AZ">Arizona</option>
+                                    <option value="AR">Arkansas</option>
+                                    <option value="CA">California</option>
+                                    <option value="CO">Colorado</option>
+                                    <option value="CT">Connecticut</option>
+                                    <option value="DE">Delaware</option>
+                                    <option value="DC">District of Columbia</option>
+                                    <option value="FL">Florida</option>
+                                    <option value="GA">Georgia</option>
+                                    <option value="HI">Hawaii</option>
+                                    <option value="ID">Idaho</option>
+                                    <option value="IL">Illinois</option>
+                                    <option value="IN">Indiana</option>
+                                    <option value="IA">Iowa</option>
+                                    <option value="KS">Kansas</option>
+                                    <option value="KY">Kentucky</option>
+                                    <option value="LA">Louisiana</option>
+                                    <option value="ME">Maine</option>
+                                    <option value="MD">Maryland</option>
+                                    <option value="MA">Massachusetts</option>
+                                    <option value="MI">Michigan</option>
+                                    <option value="MN">Minnesota</option>
+                                    <option value="MS">Mississippi</option>
+                                    <option value="MO">Missouri</option>
+                                    <option value="MT">Montana</option>
+                                    <option value="NE">Nebraska</option>
+                                    <option value="NV">Nevada</option>
+                                    <option value="NH">New Hampshire</option>
+                                    <option value="NJ">New Jersey</option>
+                                    <option value="NM">New Mexico</option>
+                                    <option value="NY">New York</option>
+                                    <option value="NC">North Carolina</option>
+                                    <option value="ND">North Dakota</option>
+                                    <option value="OH">Ohio</option>
+                                    <option value="OK">Oklahoma</option>
+                                    <option value="OR">Oregon</option>
+                                    <option value="PA">Pennsylvania</option>
+                                    <option value="RI">Rhode Island</option>
+                                    <option value="SC">South Carolina</option>
+                                    <option value="SD">South Dakota</option>
+                                    <option value="TN">Tennessee</option>
+                                    <option value="TX">Texas</option>
+                                    <option value="UT">Utah</option>
+                                    <option value="VT">Vermont</option>
+                                    <option value="VA">Virginia</option>
+                                    <option value="WA">Washington</option>
+                                    <option value="WV">West Virginia</option>
+                                    <option value="WI">Wisconsin</option>
+                                    <option value="WY">Wyoming</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="priorityFilter">Priority Status</label>
+                                <select id="priorityFilter">
+                                    <option value="">All</option>
+                                    <option value="true">Priority</option>
+                                    <option value="false">Non-Priority</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label for="sortBy">Sort By</label>
+                                <select id="sortBy">
+                                    <option value="name">Name</option>
+                                    <option value="city">City</option>
+                                    <option value="created_at">Registration Date</option>
+                                    <option value="distance">Distance (if radius search)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Toggle Advanced Search -->
+                    <button type="button" id="toggleAdvancedSearch" class="toggle-advanced-btn">
+                        <span id="advancedToggleText">Advanced Search</span>
+                        <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="advancedToggleIcon">
+                            <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
                     
                     <!-- Bulk Actions Menu -->
                     <div class="bulk-actions" id="bulkActions" style="display: none;">
@@ -1423,12 +1609,13 @@ You can use these placeholders:
                             <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Sent</th>
                             <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Status</th>
                             <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Opens</th>
-                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Last Opened</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Clicks</th>
+                            <th style="padding: 0.75rem; text-align: left; font-weight: 600; color: #374151;">Last Activity</th>
                         </tr>
                     </thead>
                     <tbody id="emailTrackingTableBody">
                         <tr>
-                            <td colspan="7" style="padding: 2rem; text-align: center; color: #6b7280;">
+                            <td colspan="8" style="padding: 2rem; text-align: center; color: #6b7280;">
                                 Loading email tracking data...
                             </td>
                         </tr>
@@ -1758,9 +1945,9 @@ You can use these placeholders:
                     pageTitle.textContent = 'Dashboard';
                 } else if (tabName === 'hotels') {
                     pageTitle.textContent = 'Hotels';
-                } else if (tabName === 'emailContacts') {
-                    pageTitle.textContent = 'Email Contacts';
-                } else if (tabName === 'waitlist') {
+                }             else if (tabName === 'emailContacts') {
+                pageTitle.textContent = 'Invitation Email';
+            } else if (tabName === 'waitlist') {
                     pageTitle.textContent = 'Waitlist';
                 } else if (tabName === 'emailTracking') {
                     pageTitle.textContent = 'Email Tracking';
@@ -1909,16 +2096,97 @@ You can use these placeholders:
         function setupSearch() {
             const searchInput = document.getElementById('searchInput');
             searchInput.addEventListener('input', (e) => {
-                const query = e.target.value.toLowerCase();
-                const filtered = allHotels.filter(hotel => 
-                    (hotel.name || '').toLowerCase().includes(query) ||
-                    (hotel.email || '').toLowerCase().includes(query) ||
-                    (hotel.city || '').toLowerCase().includes(query) ||
-                    (hotel.state || '').toLowerCase().includes(query) ||
-                    (hotel.country || '').toLowerCase().includes(query)
-                );
-                renderHotelsTable(filtered);
+                applyFilters();
             });
+        }
+        
+        // Advanced search functionality
+        function setupAdvancedSearch() {
+            const toggleBtn = document.getElementById('toggleAdvancedSearch');
+            const advancedControls = document.getElementById('advancedSearchControls');
+            const toggleText = document.getElementById('advancedToggleText');
+            const toggleIcon = document.getElementById('advancedToggleIcon');
+            
+            if (toggleBtn && advancedControls) {
+                toggleBtn.addEventListener('click', function() {
+                    const isVisible = advancedControls.style.display !== 'none';
+                    if (isVisible) {
+                        advancedControls.style.display = 'none';
+                        toggleText.textContent = 'Advanced Search';
+                        toggleIcon.style.transform = 'rotate(0deg)';
+                    } else {
+                        advancedControls.style.display = 'block';
+                        toggleText.textContent = 'Hide Advanced';
+                        toggleIcon.style.transform = 'rotate(180deg)';
+                    }
+                });
+            }
+            
+            // Add event listeners to all filter inputs
+            const filterInputs = [
+                'radiusSearch', 'radiusUnit', 'cityFilter', 'stateFilter', 
+                'priorityFilter', 'sortBy'
+            ];
+            
+            filterInputs.forEach(inputId => {
+                const input = document.getElementById(inputId);
+                if (input) {
+                    input.addEventListener('change', applyFilters);
+                    input.addEventListener('input', applyFilters);
+                }
+            });
+        }
+        
+        // Apply all filters including radius search
+        function applyFilters() {
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const radiusSearch = document.getElementById('radiusSearch').value;
+            const radiusUnit = document.getElementById('radiusUnit').value;
+            const cityFilter = document.getElementById('cityFilter').value.toLowerCase();
+            const stateFilter = document.getElementById('stateFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            let filtered = allHotels.filter(hotel => {
+                // Basic search query
+                const matchesSearch = !searchQuery || 
+                    (hotel.name || '').toLowerCase().includes(searchQuery) ||
+                    (hotel.email || '').toLowerCase().includes(searchQuery) ||
+                    (hotel.city || '').toLowerCase().includes(searchQuery) ||
+                    (hotel.state || '').toLowerCase().includes(searchQuery) ||
+                    (hotel.country || '').toLowerCase().includes(searchQuery);
+                
+                // City filter
+                const matchesCity = !cityFilter || 
+                    (hotel.city || '').toLowerCase().includes(cityFilter);
+                
+                // State filter
+                const matchesState = !stateFilter || hotel.state === stateFilter;
+                
+                // Priority filter
+                const matchesPriority = !priorityFilter || 
+                    (priorityFilter === 'true' ? hotel.is_priority : !hotel.is_priority);
+                
+                return matchesSearch && matchesCity && matchesState && matchesPriority;
+            });
+            
+            // Apply radius search if specified
+            if (radiusSearch && hotel.latitude && hotel.longitude) {
+                // This would require a center point - for now we'll skip radius search in admin
+                // In a full implementation, you'd need to get the center coordinates
+                console.log('Radius search not implemented in admin dashboard yet');
+            }
+            
+            // Sort results
+            if (sortBy === 'name') {
+                filtered.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            } else if (sortBy === 'city') {
+                filtered.sort((a, b) => (a.city || '').localeCompare(b.city || ''));
+            } else if (sortBy === 'created_at') {
+                filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+            }
+            
+            renderHotelsTable(filtered);
         }
         
         // Show hotel details page
@@ -2459,7 +2727,7 @@ You can use these placeholders:
                     if (type === 'leads') {
                         loadWaitlistData();
                     } else {
-                        loadEmailContactsData();
+                        loadEmailContacts();
                     }
                 } else {
                     showCenteredNotification(`❌ Error: ${result.error || 'Failed to send invitations'}`, 'error');
@@ -3273,6 +3541,7 @@ This action cannot be undone.`)) {
         if (checkAuth()) {
             loadDashboard();
             setupSearch();
+            setupAdvancedSearch();
         }
 
         // Add keyboard support for closing popup
@@ -4093,7 +4362,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
     <div class="container">
         <div class="footer-content">
             <div class="footer-section">
-                <h3>FEDEVENT</h3>
+                <h3><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></h3>
                 <p>Professional event planning services for U.S. Government agencies.</p>
             </div>
             <div class="footer-section">
@@ -4114,7 +4383,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         </div>
         <div class="footer-bottom">
             <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
-            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p>&copy; 2025 <span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span>. All rights reserved.</p>
             <p style="margin-top: 10px; font-size: 0.9rem;">
                 <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
                     🔐 Admin Sign In
@@ -4384,9 +4653,9 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
         </div>
         <div class="modal-body">
             <div style="margin-bottom: 1.5rem; padding: 1rem; background: #eff6ff; border-left: 4px solid #1e40af; border-radius: 6px;">
-                <strong style="color: #1e40af;">📧 Prelaunch Email Campaign</strong>
+                <strong style="color: #1e40af;">📧 Global Government Email Campaign</strong>
                 <p style="margin: 0.5rem 0 0 0; color: #1e40af;">
-                    Send professional invitation emails to your hotel contacts inviting them to join FEDEVENT's prelaunch waitlist.
+                    Send professional invitation emails to your hotel contacts inviting them to join FEDEVENT's global government network, including UN departments and international agencies.
                 </p>
             </div>
             
@@ -4395,22 +4664,22 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                 <h4 style="margin-bottom: 1rem; color: #1f2937;">📧 Email Template Preview</h4>
                 <div style="border: 1px solid #e5e7eb; border-radius: 8px; overflow: hidden;">
                     <div style="background: linear-gradient(135deg, #1e40af 0%, #7c3aed 100%); padding: 20px; text-align: center; color: white;">
-                        <h2 style="margin: 0; font-size: 24px;">FEDEVENT</h2>
+                        <h2 style="margin: 0; font-size: 24px;"><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span></h2>
                         <p style="margin: 5px 0 0 0; opacity: 0.9;">Government Contracts Simplified</p>
                     </div>
                     <div style="padding: 20px; background: white;">
                         <p style="margin: 0 0 15px 0; font-weight: 600;">Dear [Contact Name],</p>
                         <p style="margin: 0 0 15px 0; line-height: 1.6;">
-                            Thank you for your previous interest in government contract opportunities. We're excited to introduce you to <strong>FEDEVENT</strong> – a revolutionary platform that makes winning government hotel contracts easier than ever before.
+                            We're excited to invite you to join <strong>FEDEVENT</strong> – our revolutionary platform that connects hotels with government agencies worldwide, including UN departments and international organizations. Whether you're a valued partner from our previous work together at <strong>CREATA Global Event Agency LLC</strong> or joining us through a referral, you're about to discover an incredible global opportunity.
                         </p>
                         <div style="background: #f8fafc; border-left: 4px solid #1e40af; padding: 15px; margin: 15px 0; border-radius: 6px;">
                             <h4 style="margin: 0 0 10px 0; color: #1e40af;">🎯 Why FEDEVENT?</h4>
                             <ul style="margin: 0; padding-left: 20px; line-height: 1.8;">
-                                <li><strong>Direct Access</strong> to federal government hotel contracts</li>
-                                <li><strong>Competitive Bidding</strong> with real-time notifications</li>
-                                <li><strong>Streamlined Process</strong> – no more complex paperwork</li>
-                                <li><strong>Guaranteed Payments</strong> from government agencies</li>
-                                <li><strong>Exclusive Opportunities</strong> for registered hotels</li>
+                                <li><strong>Global Government Access</strong> to contracts with agencies worldwide</li>
+                                <li><strong>UN Department Connections</strong> for international opportunities</li>
+                                <li><strong>Worldwide Network</strong> of partner hotels across all continents</li>
+                                <li><strong>International Support</strong> for global government events</li>
+                                <li><strong>Exclusive Global Opportunities</strong> for registered hotels</li>
                             </ul>
                         </div>
                         <p style="margin: 15px 0;">
@@ -4442,10 +4711,17 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div>
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Subject Line:</label>
-                        <input type="text" 
-                               id="emailSubject" 
-                               value="🏨 Exclusive Invitation: Join FEDEVENT Early Access"
-                               style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                        <select id="emailSubject" 
+                                style="width: 100%; padding: 0.75rem; border: 2px solid #e5e7eb; border-radius: 6px;">
+                            <option value="🚨 CREATA Partner: $2.3B+ Government Hotel Contracts - Exclusive Access">🚨 CREATA Partner: $2.3B+ Government Hotel Contracts - Exclusive Access</option>
+                            <option value="💰 CREATA Global: Federal Hotels Making $50K+ Monthly - Join FEDEVENT">💰 CREATA Global: Federal Hotels Making $50K+ Monthly - Join FEDEVENT</option>
+                            <option value="⚡ CREATA Partner Invitation: Government Hotel Network - FEDEVENT Launch">⚡ CREATA Partner Invitation: Government Hotel Network - FEDEVENT Launch</option>
+                            <option value="🎯 CREATA Global: Direct Access to Federal Travel Spending - FEDEVENT">🎯 CREATA Global: Direct Access to Federal Travel Spending - FEDEVENT</option>
+                            <option value="🏛️ CREATA Partner: Government Hotel Contracts - FEDEVENT Platform">🏛️ CREATA Partner: Government Hotel Contracts - FEDEVENT Platform</option>
+                            <option value="📈 CREATA Global: Secure Your Share of $2.3B Federal Travel Budget">📈 CREATA Global: Secure Your Share of $2.3B Federal Travel Budget</option>
+                            <option value="🔒 CREATA Partner: VIP Access to Government Hotel Network - FEDEVENT">🔒 CREATA Partner: VIP Access to Government Hotel Network - FEDEVENT</option>
+                            <option value="💼 CREATA Global: Federal Hotel Contracts - FEDEVENT Platform Launch">💼 CREATA Global: Federal Hotel Contracts - FEDEVENT Platform Launch</option>
+                        </select>
                     </div>
                     <div>
                         <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Send Mode:</label>
@@ -5135,8 +5411,42 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                     const row = document.createElement('tr');
                     row.style.borderBottom = '1px solid #e5e7eb';
                     
-                    const statusColor = item.status === 'Opened' ? '#10b981' : '#ef4444';
-                    const statusIcon = item.status === 'Opened' ? '✅' : '❌';
+                    // Enhanced status display
+                    let statusColor, statusIcon, statusText;
+                    switch(item.status) {
+                        case 'opened':
+                            statusColor = '#10b981';
+                            statusIcon = '✅';
+                            statusText = 'Opened';
+                            break;
+                        case 'delivered':
+                            statusColor = '#3b82f6';
+                            statusIcon = '📧';
+                            statusText = 'Delivered';
+                            break;
+                        case 'bounced':
+                            statusColor = '#ef4444';
+                            statusIcon = '❌';
+                            statusText = 'Bounced';
+                            break;
+                        case 'spam_reported':
+                            statusColor = '#f59e0b';
+                            statusIcon = '⚠️';
+                            statusText = 'Spam';
+                            break;
+                        case 'unsubscribed':
+                            statusColor = '#6b7280';
+                            statusIcon = '🚫';
+                            statusText = 'Unsubscribed';
+                            break;
+                        default:
+                            statusColor = '#6b7280';
+                            statusIcon = '⏳';
+                            statusText = 'Pending';
+                    }
+                    
+                    // Get last activity
+                    const lastActivity = item.last_opened_at || item.sent_at;
                     
                     row.innerHTML = `
                         <td style="padding: 0.75rem; font-weight: 500;">${item.hotel_name || '-'}</td>
@@ -5144,11 +5454,12 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
                         <td style="padding: 0.75rem; color: #3b82f6;">${item.email}</td>
                         <td style="padding: 0.75rem; color: #6b7280;">${new Date(item.sent_at).toLocaleDateString()}</td>
                         <td style="padding: 0.75rem; color: ${statusColor}; font-weight: 600;">
-                            ${statusIcon} ${item.status}
+                            ${statusIcon} ${statusText}
                         </td>
                         <td style="padding: 0.75rem; text-align: center; font-weight: 600;">${item.opened_count || 0}</td>
+                        <td style="padding: 0.75rem; text-align: center; font-weight: 600; color: #3b82f6;">${item.click_count || 0}</td>
                         <td style="padding: 0.75rem; color: #6b7280;">
-                            ${item.last_opened_at ? new Date(item.last_opened_at).toLocaleString() : '-'}
+                            ${lastActivity ? new Date(lastActivity).toLocaleString() : '-'}
                         </td>
                     `;
                     tbody.appendChild(row);
@@ -5156,7 +5467,7 @@ Registered: ${new Date(lead.created_at).toLocaleString()}
             } else {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="7" style="padding: 2rem; text-align: center; color: #6b7280;">
+                        <td colspan="8" style="padding: 2rem; text-align: center; color: #6b7280;">
                             No email tracking data found for the selected period.
                         </td>
                     </tr>
