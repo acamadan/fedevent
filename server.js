@@ -7,6 +7,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import Database from 'better-sqlite3';
 import nodemailer from 'nodemailer';
+import crypto from 'crypto';
+import { Storage } from '@google-cloud/storage';
 // Lazy load heavy libraries to improve startup time
 // import mammoth from 'mammoth';
 // import unzipper from 'unzipper';
@@ -1317,19 +1319,21 @@ try {
     FOREIGN KEY (contact_id) REFERENCES email_contacts (id)
   )`);
   
-  // Add status column if it doesn't exist
-  try {
-    db.exec(`ALTER TABLE email_tracking ADD COLUMN status TEXT DEFAULT 'pending'`);
-  } catch (e) {
-    // Column already exists, ignore error
-  }
-  
-  // Add bounce_reason column if it doesn't exist
-  try {
-    db.exec(`ALTER TABLE email_tracking ADD COLUMN bounce_reason TEXT`);
-  } catch (e) {
-    // Column already exists, ignore error
-  }
+// Add status column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE email_tracking ADD COLUMN status TEXT DEFAULT 'pending'`);
+  console.log('✅ Added status column to email_tracking table');
+} catch (e) {
+  // Column already exists, ignore error
+}
+
+// Add bounce_reason column if it doesn't exist
+try {
+  db.exec(`ALTER TABLE email_tracking ADD COLUMN bounce_reason TEXT`);
+  console.log('✅ Added bounce_reason column to email_tracking table');
+} catch (e) {
+  // Column already exists, ignore error
+}
 
   // Email clicks table for tracking link clicks
   db.exec(`CREATE TABLE IF NOT EXISTS email_clicks (
@@ -3544,6 +3548,9 @@ app.post('/api/leads', async (req, res) => {
     
     console.log(`✅ New prelaunch lead: ${userCode} - ${hotelName} (${city}, ${state})`);
 
+    // Backup database to Google Cloud Storage
+    backupDatabase().catch(err => console.error('Backup error:', err));
+
     // Check if this email was in email_contacts (invitation campaign)
     // If yes, mark them as registered and link to this lead
     try {
@@ -4584,11 +4591,11 @@ function generatePrelaunchInvitationEmail({ hotelName, contactName, unsubscribeT
                   <div style="background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%); border-left: 4px solid #1e40af; padding: 20px; margin: 30px 0; border-radius: 8px;">
                     <h2 style="color: #1e40af; font-size: 20px; font-weight: 700; margin: 0 0 15px 0;">🎯 Why FEDEVENT?</h2>
                     <ul style="color: #374151; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                      <li><strong>Global Government Access</strong> to contracts with agencies worldwide</li>
-                      <li><strong>UN Department Connections</strong> for international opportunities</li>
+                      <li><strong>Major Government Access</strong> to contracts with 15+ key departments</li>
+                      <li><strong>Federal Agency Connections</strong> for direct booking opportunities</li>
                       <li><strong>Worldwide Network</strong> of partner hotels across all continents</li>
                       <li><strong>International Support</strong> for global government events</li>
-                      <li><strong>Exclusive Global Opportunities</strong> for registered hotels</li>
+                      <li><strong>Exclusive Government Opportunities</strong> for registered hotels</li>
                     </ul>
                   </div>
                   
@@ -5817,17 +5824,17 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                         🚀 Why Join FEDEVENT?
                       </h3>
                       <ul style="color: #374151; font-size: 16px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                        <li><strong>💰 Global Revenue:</strong> Access to $2.3B+ in worldwide government travel spending</li>
-                        <li><strong>🌍 International Agencies:</strong> Connect with UN departments and global governments</li>
+                        <li><strong>💰 Government Revenue:</strong> Access to $7B+ in government travel spending</li>
+                        <li><strong>🏛️ Major Departments:</strong> Connect with 15+ key government departments</li>
                         <li><strong>⭐ Worldwide Network:</strong> Join our global network of partner hotels</li>
-                        <li><strong>📈 International Growth:</strong> Expand your business across all continents</li>
-                        <li><strong>🛡️ Global Compliance:</strong> Secure, internationally compliant booking system</li>
+                        <li><strong>📈 Federal Growth:</strong> Expand your business with government contracts</li>
+                        <li><strong>🛡️ Government Compliance:</strong> Secure, government-compliant booking system</li>
                       </ul>
                     </div>
                     
                     <!-- CTA Section -->
                     <div style="text-align: center; margin: 35px 0;">
-                      <a href="${process.env.BASE_URL || 'https://fedevent.com'}/prelaunch.html" 
+                      <a href="mailto:info@creataglobal.com?subject=FEDEVENT%20Registration%20Request&body=Hello%2C%20I%20would%20like%20to%20register%20for%20FEDEVENT%20as%20a%20hotel%20partner.%20Please%20send%20me%20the%20registration%20form." 
                          style="display: inline-block; background: linear-gradient(135deg, #059669 0%, #10b981 100%); 
                                 color: white; text-decoration: none; padding: 18px 40px; 
                                 border-radius: 12px; font-size: 18px; font-weight: 600; 
@@ -5840,16 +5847,16 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                     <!-- Stats Section -->
                     <div style="background: #f8fafc; padding: 25px; border-radius: 12px; margin: 30px 0; text-align: center;">
                       <h3 style="color: #dc2626; font-size: 18px; margin: 0 0 15px 0; font-weight: 600;">
-                        📊 FEDEVENT by the Numbers
+                        📊 <span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span> by the Numbers
                       </h3>
                       <div style="display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px;">
                         <div style="text-align: center;">
-                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">$2.3B+</div>
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">$7B+</div>
                           <div style="color: #6b7280; font-size: 14px;">Global Government Travel</div>
                         </div>
                         <div style="text-align: center;">
-                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">195+</div>
-                          <div style="color: #6b7280; font-size: 14px;">Countries & UN Departments</div>
+                          <div style="color: #dc2626; font-size: 24px; font-weight: bold;">15+</div>
+                          <div style="color: #6b7280; font-size: 14px;">Major Government Departments</div>
                         </div>
                         <div style="text-align: center;">
                           <div style="color: #dc2626; font-size: 24px; font-weight: bold;">Worldwide</div>
@@ -5877,8 +5884,7 @@ app.post('/api/admin/email-contacts/bulk-invite', requireAuth, requireAdmin, asy
                     </div>
                     <div style="font-size: 11px; color: #6b7280;">
                       <a href="mailto:unsubscribe@fedevent.com?subject=Unsubscribe" style="color: #6b7280; text-decoration: underline;">Unsubscribe</a> | 
-                      <a href="mailto:info@fedevent.com" style="color: #6b7280; text-decoration: underline;">Contact Us</a> | 
-                      <a href="https://fedevent.com" style="color: #6b7280; text-decoration: underline;">Visit Website</a>
+                      <a href="mailto:info@creataglobal.com" style="color: #6b7280; text-decoration: underline;">Contact Us</a>
                     </div>
                   </div>
                   
@@ -6844,6 +6850,9 @@ app.post('/api/admin/waitlist/manual-entry', requireAuth, requireAdmin, async (r
         'yes', // Default to accepts direct bill
         0 // Not notified yet
       );
+
+      // Backup database to Google Cloud Storage
+      backupDatabase().catch(err => console.error('Backup error:', err));
       
       return ok(res, {
         message: 'Waitlist entry added successfully',
@@ -12828,6 +12837,36 @@ Use the knowledge base for accurate high-level answers, but avoid granular walkt
     });
   }
 });
+
+// ---------- Google Cloud Storage Backup ----------
+const gcsStorage = new Storage({
+  projectId: 'fedevent-site',
+  keyFilename: path.join(__dirname, 'fedevent-site-d85ba67fc5a2.json')
+});
+
+const bucketName = 'fedevent-hotel-data';
+
+// Backup database to Google Cloud Storage
+async function backupDatabase() {
+  try {
+    const dbPath = path.join(DATA_DIR, 'creata.db');
+    const backupFileName = `backup-${new Date().toISOString().replace(/[:.]/g, '-')}.db`;
+    
+    await gcsStorage.bucket(bucketName).upload(dbPath, {
+      destination: backupFileName,
+      metadata: {
+        metadata: {
+          description: 'FEDEVENT hotel database backup',
+          timestamp: new Date().toISOString()
+        }
+      }
+    });
+    
+    console.log(`✅ Database backed up to Google Cloud Storage: ${backupFileName}`);
+  } catch (error) {
+    console.error('❌ Backup failed:', error);
+  }
+}
 
 // ---------- Start Server ----------
 const PORT = process.env.PORT || 7070;
