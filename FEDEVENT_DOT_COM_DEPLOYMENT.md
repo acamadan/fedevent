@@ -47,12 +47,12 @@ ADMIN_PASSWORD=[secure-password]
 
 7. **Click "Create Web Service"**
 
-### Step 3: Connect to fedevent.com Domain
+### Step 3: Connect to fedevent.com Domain (MAIN DOMAIN - NO SUBDOMAIN)
 
 1. **In Render Dashboard:**
    - Go to your service → Settings → Custom Domain
-   - Add: `fedevent.com`
-   - Add: `www.fedevent.com`
+   - Add: `fedevent.com` (MAIN DOMAIN)
+   - Add: `www.fedevent.com` (optional)
 
 2. **In GoDaddy DNS:**
    - Go to DNS Management for `fedevent.com`
@@ -73,18 +73,20 @@ ADMIN_PASSWORD=[secure-password]
 
 3. **Wait 10-30 minutes** for DNS propagation
 
-### Step 4: Your Live URLs
+### Step 4: Your Live URLs (MAIN DOMAIN - NO SUBDOMAIN)
 
 - **Main Site:** https://fedevent.com
-- **Prelaunch Page:** https://fedevent.com/prelaunch.html
+- **Prelaunch Page:** https://fedevent.com/prelaunch.html ⭐
 - **Admin Dashboard:** https://fedevent.com/admin-dashboard.html
 - **Hotel Portal:** https://fedevent.com/hotel-login.html
+
+**The prelaunch site will be at fedevent.com/prelaunch.html (main domain, no subdomain)**
 
 ### Step 5: Email Links Configuration
 
 All email templates are already configured to use:
 - `process.env.BASE_URL` which is set to `https://fedevent.com`
-- This means all email links will point to the correct domain
+- **All email links will point to fedevent.com/prelaunch.html (main domain, no subdomain)**
 
 ### Step 6: Local Development (Unchanged)
 
