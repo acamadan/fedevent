@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Bidding Opportunities - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: #111827;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+        .page-title {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        .back-btn {
+            background: #6b7280;
+            color: #fff;
+            border-radius: 8px;
+            padding: 0.7rem 1.4rem;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .back-btn:hover { background: #4b5563; }
+        .filter-bar {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .filter-select, .search-input {
+            padding: 0.6rem 1rem;
+            border-radius: 6px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            font-size: 0.9rem;
+        }
+        .search-input { min-width: 220px; }
+        .btn {
+            padding: 0.6rem 1.2rem;
+            border-radius: 6px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+        .btn-primary { background: #1f2937; color: white; }
+        .btn-primary:hover { background: #111827; }
+        .btn-secondary { background: #f3f4f6; color: #1f2937; border: 1px solid #d1d5db; }
+        .btn-secondary:hover { background: #e5e7eb; }
+        .btn-success { background: #059669; color: white; }
+        .opportunities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 1.5rem;
+        }
+        .opportunity-card {
+            background: #fff;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.05);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .opportunity-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+        .opportunity-title { font-size: 1.25rem; font-weight: 600; }
+        .opportunity-id { font-size: 0.85rem; color: #6b7280; font-family: monospace; }
+        .status-badge {
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        .status-open { background: #dcfce7; color: #166534; }
+        .status-closing-soon { background: #fef3c7; color: #92400e; }
+        .status-closed { background: #fee2e2; color: #991b1b; }
+        .opportunity-details {
+            display: grid;
+            gap: 0.35rem;
+            font-size: 0.9rem;
+        }
+        .detail-row { display: flex; justify-content: space-between; }
+        .detail-label { color: #6b7280; }
+        .detail-value { font-weight: 600; color: #111827; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+        .empty-state-icon { font-size: 3rem; }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(17, 24, 39, 0.45);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+        .modal-content {
+            background: #fff;
+            margin: 3% auto;
+            padding: 2rem;
+            border-radius: 14px;
+            width: 92%;
+            max-width: 900px;
+            position: relative;
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        .modal-title { margin: 0; font-size: 1.4rem; font-weight: 600; }
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.8rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        #bidMessage .error { background: #fee2e2; color: #b91c1c; padding: .75rem; border-radius: 6px; }
+        #bidMessage .success { background: #dcfce7; color: #166534; padding: .75rem; border-radius: 6px; }
+        @media (max-width: 768px) {
+            .container { padding: 1rem; }
+            .opportunities-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="page-header">
+            <h1 class="page-title">🎯 Government Bidding Opportunities</h1>
+            <a href="/hotel-dashboard.html" class="back-btn">← Back to Dashboard</a>
+        </div>
+
+        <div class="filter-bar">
+            <select class="filter-select" id="statusFilter">
+                <option value="">All Status</option>
+                <option value="open">Open</option>
+                <option value="closing-soon">Closing Soon</option>
+                <option value="closed">Closed</option>
+            </select>
+            <input type="text" class="search-input" id="searchInput" placeholder="Search opportunities...">
+            <button class="btn btn-primary" onclick="refreshOpportunities()">🔄 Refresh</button>
+        </div>
+
+        <div id="opportunitiesContainer">
+            <div class="opportunities-grid" id="opportunitiesGrid"></div>
+        </div>
+
+        <div id="emptyState" class="empty-state" style="display:none;">
+            <div class="empty-state-icon">🎯</div>
+            <h3>No Bidding Opportunities Found</h3>
+            <p>No current bidding opportunities match your criteria. Check back regularly for new opportunities.</p>
+        </div>
+    </div>
+
+    <div id="biddingModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modalTitle">Contract</h3>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modalBody" style="display:flex;flex-direction:column;gap:1.5rem;"></div>
+        </div>
+    </div>
+
+    <script>
+        let allContracts = [];
+        let opportunities = [];
+        let currentUser = null;
+        let currentContract = null;
+        let currentStandings = [];
+
+        async function checkAuth() {
+            const sessionId = localStorage.getItem('fedevent_session');
+            if (!sessionId) {
+                window.location.href = 'hotel-login.html';
+                return false;
+            }
+            try {
+                const res = await fetch('/api/auth/me', { headers: { 'Authorization': `Bearer ${sessionId}` } });
+                const data = await res.json();
+                if (!data.ok) throw new Error('auth');
+                currentUser = data.user;
+                if (!currentUser.hotel_id) {
+                    showAccessError('Your account is not linked to a hotel profile yet. Please complete your hotel registration to access bidding opportunities.');
+                    setTimeout(() => {
+                        window.location.href = '/hotel-registration.html';
+                    }, 3000);
+                    return false;
+                }
+                return true;
+            } catch (err) {
+                logout();
+                return false;
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('fedevent_session');
+            localStorage.removeItem('fedevent_user');
+            localStorage.removeItem('fedevent_hotel');
+            window.location.href = 'hotel-login.html';
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('fedevent_session');
+            const headers = {
+                'Authorization': `Bearer ${sessionId}`,
+                ...(options.headers || {})
+            };
+            if (options.body && !(options.body instanceof FormData) && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+            const response = await fetch(endpoint, { ...options, headers });
+            const result = await response.json();
+            if (!result.ok && response.status === 401) {
+                logout();
+                return null;
+            }
+            return result;
+        }
+
+        function showEmptyState() {
+            document.getElementById('opportunitiesGrid').innerHTML = '';
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        function showAccessError(message) {
+            const container = document.getElementById('opportunitiesContainer');
+            const empty = document.getElementById('emptyState');
+            if (empty) empty.style.display = 'none';
+            if (container) {
+                container.innerHTML = `
+                    <div class="empty-state" style="background:#fff1f2;border:1px solid #fecdd3;border-radius:12px;">
+                        <div class="empty-state-icon" style="font-size:3rem;">🚫</div>
+                        <h3 style="color:#be123c;">Hotel Access Required</h3>
+                        <p style="max-width:520px;margin:0 auto;color:#9f1239;line-height:1.6;">${escapeHtml(message)}</p>
+                    </div>`;
+            }
+        }
+
+        async function loadOpportunities() {
+            const grid = document.getElementById('opportunitiesGrid');
+            grid.innerHTML = '<div class="loading" style="grid-column:1/-1;">Loading opportunities...</div>';
+            const result = await apiCall('/api/hotel/contracts');
+            if (result && result.ok) {
+                allContracts = Array.isArray(result.contracts) ? result.contracts : [];
+                opportunities = allContracts.map(enrichContractForDisplay);
+                filterOpportunities();
+            } else {
+                showEmptyState();
+            }
+        }
+
+        function enrichContractForDisplay(contract) {
+            const deadline = contract.bidding_deadline ? new Date(contract.bidding_deadline) : null;
+            const now = new Date();
+            let status = 'open';
+            if (deadline) {
+                const diffDays = (deadline - now) / (1000 * 60 * 60 * 24);
+                if (diffDays < 0) status = 'closed';
+                else if (diffDays <= 3) status = 'closing-soon';
+            }
+            return {
+                original: contract,
+                id: contract.id,
+                title: contract.title,
+                location: [contract.location_city, contract.location_state, contract.location_country].filter(Boolean).join(', ') || 'TBD',
+                dueDate: contract.bidding_deadline || null,
+                status,
+                description: contract.requirements || contract.description || 'Requirements will be provided in the bidding room.',
+                rank: contract.my_position,
+                bidCount: contract.bid_count || 0
+            };
+        }
+
+        function filterOpportunities() {
+            const status = document.getElementById('statusFilter').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = opportunities.filter(item => {
+                const matchesStatus = !status || item.status === status;
+                const text = `${item.title} ${item.location} ${item.description}`.toLowerCase();
+                const matchesSearch = !search || text.includes(search);
+                return matchesStatus && matchesSearch;
+            });
+            renderOpportunities(filtered);
+        }
+
+        function renderOpportunities(list) {
+            const grid = document.getElementById('opportunitiesGrid');
+            const emptyState = document.getElementById('emptyState');
+            if (!list.length) {
+                showEmptyState();
+                return;
+            }
+            emptyState.style.display = 'none';
+            grid.innerHTML = list.map(item => {
+                const rankText = item.rank ? `Your Rank: ${item.rank}` : 'No bid yet';
+                return `
+                <div class="opportunity-card">
+                    <div class="opportunity-header">
+                        <div>
+                            <div class="opportunity-title">${escapeHtml(item.title)}</div>
+                            <div class="opportunity-id">Opportunity #${item.id}</div>
+                        </div>
+                        <div class="status-badge ${getStatusClass(item.status)}">${getStatusText(item.status)}</div>
+                    </div>
+                    <div class="opportunity-details">
+                        <div class="detail-row"><span class="detail-label">Location</span><span class="detail-value">${escapeHtml(item.location)}</span></div>
+                        <div class="detail-row"><span class="detail-label">Deadline</span><span class="detail-value">${item.dueDate ? formatDate(item.dueDate) : 'TBD'}</span></div>
+                        <div class="detail-row"><span class="detail-label">Active Bidders</span><span class="detail-value">${item.bidCount}</span></div>
+                        <div class="detail-row"><span class="detail-label">Your Standing</span><span class="detail-value">${rankText}</span></div>
+                    </div>
+                    <p style="color:#4b5563;font-size:.95rem;line-height:1.5;">${escapeHtml(item.description)}</p>
+                    <div class="opportunity-actions">
+                        <button class="btn btn-primary" onclick="showBiddingModal(${item.id})">👀 View / Submit Bid</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        function refreshOpportunities() { loadOpportunities(); }
+
+        function getStatusClass(status) {
+            switch (status) {
+                case 'open': return 'status-open';
+                case 'closing-soon': return 'status-closing-soon';
+                case 'closed': return 'status-closed';
+                default: return '';
+            }
+        }
+
+        function getStatusText(status) {
+            switch (status) {
+                case 'open': return 'Open';
+                case 'closing-soon': return 'Closing Soon';
+                case 'closed': return 'Closed';
+                default: return status;
+            }
+        }
+
+        function escapeHtml(str = '') {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+        }
+
+        function buildBidModal(contract, standings, myEntry) {
+            const infoSection = `
+                <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:1.25rem;">
+                    <h4 style="margin:0 0 .75rem;color:#1f2937;font-size:1.1rem;">Opportunity Snapshot</h4>
+                    <div style="display:grid;gap:.5rem;font-size:.95rem;color:#1f2937;">
+                        <div><strong>Location:</strong> ${escapeHtml(([contract.location_city, contract.location_state, contract.location_country].filter(Boolean).join(', ')) || 'TBD')}</div>
+                        <div><strong>Timeline:</strong> ${contract.start_date || 'TBD'} → ${contract.end_date || 'TBD'}</div>
+                        <div><strong>Bidding Deadline:</strong> ${contract.bidding_deadline ? formatDate(contract.bidding_deadline) : 'TBD'}</div>
+                        <div><strong>Rooms:</strong> ${contract.room_count || '—'}</div>
+                    </div>
+                    ${contract.requirements ? `<div style="margin-top:1rem;"><strong>Requirements:</strong><p style="margin-top:.5rem; line-height:1.6;">${escapeHtml(contract.requirements)}</p></div>` : ''}
+                </div>`;
+
+            const standingsSection = standings && standings.length ? `
+                <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:1.25rem;">
+                    <h4 style="margin:0 0 .75rem;color:#9a3412;font-size:1.05rem;">Current Ranking</h4>
+                    <ul style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.5rem;">
+                        ${standings.map(entry => `
+                            <li style="display:flex;justify-content:space-between;align-items:center;padding:.75rem 1rem;border-radius:8px;${entry.isYou ? 'background:#eff6ff;border:1px solid #bfdbfe;' : 'background:#fefce8;border:1px solid #fde68a;'}">
+                                <div>
+                                    <strong>${entry.isYou ? 'Your Bid' : `Bidder ${entry.position}`}</strong>
+                                    <div style="font-size:.85rem;color:#64748b;">${entry.isYou ? 'Visible only to you' : 'Sealed bid'}</div>
+                                </div>
+                                <span style="font-weight:600;color:${entry.position === 1 ? '#047857' : '#9a3412'};">Rank ${entry.position}</span>
+                            </li>`).join('')}
+                    </ul>
+                </div>` : '';
+
+            const myBid = myEntry || {};
+            const contractedRate = myBid.contracted_rate != null ? myBid.contracted_rate : '';
+            const selfPayRate = myBid.self_pay_rate != null ? myBid.self_pay_rate : '';
+            const autoActive = myBid.auto_bid_active ? 'checked' : '';
+            const autoFloor = myBid.auto_bid_floor != null ? myBid.auto_bid_floor : '';
+            const autoStep = myBid.auto_bid_step != null ? myBid.auto_bid_step : 1;
+
+            const formSection = `
+                <form id="bidForm" style="display:flex;flex-direction:column;gap:1rem;">
+                    <h4 style="margin:0;color:#1f2937;font-size:1.05rem;">Submit Your Bid</h4>
+                    <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));">
+                        <div>
+                            <label for="contracted_rate">Contracted Rate (USD)</label>
+                            <input type="number" id="contracted_rate" step="0.01" min="0" value="${contractedRate}">
+                        </div>
+                        <div>
+                            <label for="self_pay_rate">Self-Pay Rate (USD)</label>
+                            <input type="number" id="self_pay_rate" step="0.01" min="0" value="${selfPayRate}">
+                        </div>
+                    </div>
+                    <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:1rem;">
+                        <label style="display:flex;align-items:center;gap:.5rem;">
+                            <input type="checkbox" id="auto_bid_active" ${autoActive}>
+                            <span>Enable auto-stop bidding</span>
+                        </label>
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:.75rem;margin-top:.75rem;">
+                            <div>
+                                <label for="auto_bid_floor">Auto-Stop Floor (USD)</label>
+                                <input type="number" id="auto_bid_floor" step="0.01" min="0" value="${autoFloor}">
+                            </div>
+                            <div>
+                                <label for="auto_bid_step">Step Down Amount (USD)</label>
+                                <input type="number" id="auto_bid_step" step="0.1" min="0.1" value="${autoStep}">
+                            </div>
+                        </div>
+                        <p style="margin-top:.5rem;font-size:.85rem;color:#1f2937;">We will automatically reduce your bid when you are out-ranked until your floor is reached.</p>
+                    </div>
+                    <div>
+                        <label for="additional_notes">Notes for FEDEVENT (optional)</label>
+                        <textarea id="additional_notes" rows="3" placeholder="Share context, concessions, or blackout dates.">${myBid.additional_notes || ''}</textarea>
+                    </div>
+                    <div>
+                        <label for="bid_file">Attach File (PDF/DOC)</label>
+                        <input type="file" id="bid_file" accept=".pdf,.doc,.docx,.txt">
+                    </div>
+                    <div id="bidMessage"></div>
+                    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+                        <button type="submit" class="btn btn-success" id="saveBidBtn">Save Bid</button>
+                        <button type="button" class="btn btn-primary" id="finalSubmitBtn">Submit Final Bid</button>
+                        <button type="button" class="btn btn-secondary" onclick="closeModal()">Close</button>
+                    </div>
+                </form>`;
+
+            return infoSection + standingsSection + formSection;
+        }
+
+        async function showBiddingModal(contractId) {
+            const result = await apiCall(`/api/hotel/contracts/${contractId}`);
+            if (!result || !result.ok) {
+                alert(result?.error || 'Failed to load bidding room');
+                return;
+            }
+            currentContract = result.contract;
+            currentStandings = result.standings || [];
+            const myEntry = currentStandings.find(item => item.isYou) || null;
+            document.getElementById('modalTitle').textContent = currentContract.title;
+            document.getElementById('modalBody').innerHTML = buildBidModal(currentContract, currentStandings, myEntry);
+            document.getElementById('biddingModal').style.display = 'block';
+            setupBidForm(contractId);
+        }
+
+        function setupBidForm(contractId) {
+            const form = document.getElementById('bidForm');
+            if (!form) return;
+            const autoToggle = document.getElementById('auto_bid_active');
+            const autoFloorInput = document.getElementById('auto_bid_floor');
+            const autoStepInput = document.getElementById('auto_bid_step');
+            const syncAuto = () => {
+                const enabled = autoToggle && autoToggle.checked;
+                if (autoFloorInput) {
+                    autoFloorInput.disabled = !enabled;
+                    autoFloorInput.required = enabled;
+                }
+                if (autoStepInput) {
+                    autoStepInput.disabled = !enabled;
+                    autoStepInput.required = enabled;
+                }
+            };
+            if (autoToggle) {
+                autoToggle.addEventListener('change', syncAuto);
+                syncAuto();
+            }
+
+            form.addEventListener('submit', async (event) => {
+                event.preventDefault();
+                const message = document.getElementById('bidMessage');
+                const saveBtn = document.getElementById('saveBidBtn');
+                message.innerHTML = '';
+                if (saveBtn) {
+                    saveBtn.disabled = true;
+                    saveBtn.textContent = 'Saving...';
+                }
+                const payload = {
+                    contracted_rate: parseFloat(document.getElementById('contracted_rate').value),
+                    self_pay_rate: parseFloat(document.getElementById('self_pay_rate').value),
+                    additional_notes: document.getElementById('additional_notes').value,
+                    auto_bid_active: autoToggle?.checked || false,
+                    auto_bid_floor: autoFloorInput?.value,
+                    auto_bid_step: autoStepInput?.value
+                };
+                try {
+                    const result = await apiCall(`/api/hotel/contracts/${contractId}/bid`, {
+                        method: 'POST',
+                        body: JSON.stringify(payload)
+                    });
+                    if (result && result.ok) {
+                        const fileInput = document.getElementById('bid_file');
+                        if (fileInput && fileInput.files && fileInput.files[0]) {
+                            const fd = new FormData();
+                            fd.append('file', fileInput.files[0]);
+                            const sessionId = localStorage.getItem('fedevent_session');
+                            await fetch(`/api/hotel/contracts/${contractId}/bid/upload`, {
+                                method: 'POST',
+                                headers: { 'Authorization': `Bearer ${sessionId}` },
+                                body: fd
+                            });
+                        }
+                        message.innerHTML = '<div class="success">Bid saved.</div>';
+                        loadOpportunities();
+                    } else {
+                        message.innerHTML = `<div class="error">${result?.error || 'Failed to save bid'}</div>`;
+                    }
+                } catch (error) {
+                    console.error('Bid save error', error);
+                    message.innerHTML = '<div class="error">Failed to save bid</div>';
+                } finally {
+                    if (saveBtn) {
+                        saveBtn.disabled = false;
+                        saveBtn.textContent = 'Save Bid';
+                    }
+                    syncAuto();
+                }
+            });
+
+            const finalBtn = document.getElementById('finalSubmitBtn');
+            if (finalBtn) {
+                finalBtn.addEventListener('click', async () => {
+                    finalBtn.disabled = true;
+                    const message = document.getElementById('bidMessage');
+                    message.innerHTML = '';
+                    try {
+                        const result = await apiCall(`/api/hotel/contracts/${contractId}/bid/submit`, { method: 'POST' });
+                        if (result && result.ok) {
+                            message.innerHTML = '<div class="success">Bid submitted. You can continue updating until the deadline.</div>';
+                            loadOpportunities();
+                        } else {
+                            message.innerHTML = `<div class="error">${result?.error || 'Failed to submit bid'}</div>`;
+                            finalBtn.disabled = false;
+                        }
+                    } catch (error) {
+                        console.error('Final submit error', error);
+                        message.innerHTML = '<div class="error">Failed to submit bid</div>';
+                        finalBtn.disabled = false;
+                    }
+                });
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('biddingModal').style.display = 'none';
+            currentContract = null;
+            currentStandings = [];
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const authed = await checkAuth();
+            if (authed) {
+                loadOpportunities();
+                document.getElementById('statusFilter').addEventListener('change', filterOpportunities);
+                document.getElementById('searchInput').addEventListener('input', filterOpportunities);
+            }
+        });
+
+        window.addEventListener('click', (event) => {
+            if (event.target === document.getElementById('biddingModal')) {
+                closeModal();
+            }
+        });
+
+        window.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+
+        console.log('🎯 Government Bidding page loaded');
+    </script>
+
+    <script src="/nav.js"></script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
+</body>
+</html>

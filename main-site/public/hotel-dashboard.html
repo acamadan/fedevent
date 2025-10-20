@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Dashboard - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+			background: #f9fafb;
+            min-height: 100vh;
+			color: #1f2937;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+		.logo {
+			font-size: 1.5rem;
+			font-weight: 700;
+			color: var(--ink);
+		}
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-info {
+            font-size: 0.9rem;
+            color: #6b7280;
+        }
+
+		.logout-btn {
+			background: #111827;
+			color: #fff;
+			border: none;
+			padding: 0.5rem 1rem;
+			border-radius: 6px;
+			cursor: pointer;
+			font-size: 0.875rem;
+			font-weight: 500;
+			transition: all 0.2s;
+		}
+
+		.logout-btn:hover {
+			background: #000000;
+			transform: translateY(-1px);
+		}
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .welcome-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .welcome-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1.125rem;
+            color: #6b7280;
+            margin-bottom: 2rem;
+        }
+        
+        .hotel-info-display {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        .hotel-info-header {
+            text-align: center;
+        }
+        
+        .hotel-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-address {
+            font-size: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            margin-bottom: 0;
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 1.5rem;
+            border-radius: 16px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+        
+        .stat-card-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-card-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+        
+        nav .container {
+            padding: 0 1rem;
+        }
+        
+        nav {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 1rem 0;
+            gap: 24px;
+        }
+        
+        .logo {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        .logo:hover {
+            color: var(--primary-dark);
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.25rem;
+            margin-left: 16px;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu { 
+            position: relative; 
+        }
+        
+        .user-trigger { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            color: var(--text); 
+            text-decoration: none; 
+        }
+        
+        .user-avatar { 
+            width: 28px; 
+            height: 28px; 
+            border-radius: 50%; 
+            background: #e5e7eb; 
+            display: grid; 
+            place-items: center; 
+            font-size: 0.85rem; 
+            color: #374151; 
+        }
+        
+        .user-dropdown { 
+            position: absolute; 
+            right: 0; 
+            top: calc(100% + 8px); 
+            background: #fff; 
+            border: 1px solid #e5e7eb; 
+            box-shadow: 0 8px 24px rgba(0,0,0,.08); 
+            border-radius: 10px; 
+            min-width: 200px; 
+            padding: 6px; 
+            display: none; 
+            z-index: 1002; 
+        }
+        
+        .user-dropdown a, .user-dropdown button { 
+            display: block; 
+            width: 100%; 
+            text-align: left; 
+            padding: 10px 12px; 
+            border-radius: 8px; 
+            background: transparent; 
+            border: 0; 
+            font: inherit; 
+            color: #111827; 
+            cursor: pointer; 
+            text-decoration: none; 
+        }
+        
+        .user-dropdown a:hover, .user-dropdown button:hover { 
+            background: #f3f4f6; 
+        }
+
+		.dashboard-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+			gap: 1.5rem;
+			margin-top: 0;
+		}
+
+		.card {
+			background: rgba(255, 255, 255, 0.95);
+			backdrop-filter: blur(20px);
+			border-radius: 20px;
+			padding: 2rem;
+			box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+			border: 1px solid rgba(255, 255, 255, 0.3);
+			transition: all 0.3s ease;
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.card::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: 0;
+			right: 0;
+			height: 4px;
+			background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+		}
+
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 25px 70px rgba(102, 126, 234, 0.25);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+		.card-icon {
+			width: 56px;
+			height: 56px;
+			border-radius: 16px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 1.75rem;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: white;
+			box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+		}
+
+		.card-title {
+			font-size: 1.375rem;
+			font-weight: 700;
+			color: #111827;
+		}
+
+        .card-content {
+            color: #6b7280;
+            line-height: 1.6;
+        }
+
+		.btn {
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: #ffffff;
+			border: none;
+			padding: 0.875rem 1.75rem;
+			border-radius: 12px;
+			cursor: pointer;
+			font-size: 0.9375rem;
+			font-weight: 600;
+			transition: all 0.3s;
+			text-decoration: none;
+			display: inline-block;
+			margin-top: 1rem;
+			box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+		}
+
+		.btn:hover {
+			transform: translateY(-2px);
+			box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+		}
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-secondary:hover {
+            background: #4b5563;
+        }
+
+		.status-badge {
+			display: inline-block;
+			padding: 0.25rem 0.75rem;
+			border-radius: 9999px;
+			font-size: 0.75rem;
+			font-weight: 500;
+			margin-top: 0.5rem;
+			background: #f3f4f6;
+			color: #111827;
+			border: 1px solid #e5e7eb;
+		}
+
+		.status-pending {
+			background: #f3f4f6;
+			color: #111827;
+		}
+
+		.status-approved {
+			background: #f3f4f6;
+			color: #111827;
+		}
+
+		.status-completed {
+			background: #f3f4f6;
+			color: #111827;
+		}
+
+        .quick-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 1.5rem;
+        }
+
+        .quick-action-btn {
+            background: white;
+            color: #374151;
+            border: 2px solid #e5e7eb;
+            padding: 0.875rem 1.25rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 0.625rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        .quick-action-btn:hover {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Debug styles for View Profile button */
+        #viewProfileBtn {
+            position: relative !important;
+            z-index: 10 !important;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+		.stat-number {
+			font-size: 2rem;
+			font-weight: 700;
+			color: #111827;
+		}
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+		.error {
+			background: #f9fafb;
+			color: #111827;
+			padding: 1rem;
+			border-radius: 8px;
+			border: 1px solid #e5e7eb;
+			margin-top: 1rem;
+		}
+
+		.success {
+			background: #f9fafb;
+			color: #111827;
+			padding: 1rem;
+			border-radius: 8px;
+			border: 1px solid #e5e7eb;
+			margin-top: 1rem;
+		}
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .quick-actions {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared header will be injected by nav.js -->
+
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1 class="welcome-title">Welcome to Your Dashboard</h1>
+            <p class="welcome-subtitle">Manage your hotel profile, contracts, and opportunities all in one place.</p>
+            
+            <!-- Hotel Info Display -->
+            <div id="hotelInfoDisplay" class="hotel-info-display" style="display: none;">
+                <div class="hotel-info-header">
+                    <h2 id="hotelNameDisplay" class="hotel-name">Loading hotel information...</h2>
+                    <div id="hotelAddressDisplay" class="hotel-address">Loading address...</div>
+                </div>
+            </div>
+            
+            <div class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-card-number" id="dashboardActiveContracts">0</div>
+                    <div class="stat-card-label">Active Contracts</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-number" id="dashboardOpenBids">0</div>
+                    <div class="stat-card-label">Open Opportunities</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-number" id="dashboardTeamSize">0</div>
+                    <div class="stat-card-label">Team Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-card-number" id="dashboardProfileStatus">-</div>
+                    <div class="stat-card-label">Profile Status</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="dashboard-grid">
+            <!-- Hotel Profile Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🏨</div>
+                    <div class="card-title">Hotel Profile</div>
+                </div>
+                <div class="card-content">
+                    <p>Manage your hotel registration and profile information.</p>
+                    <div id="profileStatus" class="status-badge status-pending">Loading...</div>
+                    <div class="quick-actions">
+                        <a href="/hotel-registration.html?continue=true&signedIn=true" class="quick-action-btn">
+                            ✏️ Complete Registration
+                        </a>
+                        <a href="/hotel-profile.html" class="quick-action-btn">
+                            👁️ View Profile
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Members Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">👥</div>
+                    <div class="card-title">Team Members</div>
+                </div>
+                <div class="card-content">
+                    <p>Manage your hotel team members and their access.</p>
+                    <div id="teamStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="teamCount">-</div>
+                            <div class="stat-label">Total Members</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="activeCount">-</div>
+                            <div class="stat-label">Active</div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="addTeamMember()">
+                            ➕ Add Member
+                        </button>
+                        <button class="quick-action-btn" onclick="viewTeamMembers()">
+                            📋 View All
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contracts Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📝</div>
+                    <div class="card-title">Hotel Contracts</div>
+                </div>
+                <div class="card-content">
+                    <p>View and manage your active government contracts and agreements.</p>
+                    <div id="contractStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="activeContracts">-</div>
+                            <div class="stat-label">Active Contracts</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="completedContracts">-</div>
+                            <div class="stat-label">Completed</div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <a href="/hotel-contracts.html" class="quick-action-btn">
+                            📝 View Contracts
+                        </a>
+                        <button class="quick-action-btn" onclick="viewContractHistory()">
+                            📈 Contract History
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bidding Opportunities Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🎯</div>
+                    <div class="card-title">Bidding Opportunities</div>
+                </div>
+                <div class="card-content">
+                    <p>Browse and bid on government contract opportunities for your hotel.</p>
+                    <div id="biddingStats" class="stats-grid">
+                        <div class="stat-item">
+                            <div class="stat-number" id="openOpportunities">-</div>
+                            <div class="stat-label">Open Opportunities</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number" id="submittedBids">-</div>
+                            <div class="stat-label">Bids Submitted</div>
+                        </div>
+                    </div>
+                    <div class="quick-actions">
+                        <a href="/hotel-bidding.html" class="quick-action-btn">
+                            🎯 Browse Opportunities
+                        </a>
+                        <button class="quick-action-btn" onclick="viewMyBids()">
+                            📊 My Bids
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Documents & Agreements Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">📄</div>
+                    <div class="card-title">Documents & Agreements</div>
+                </div>
+                <div class="card-content">
+                    <p>Access important documents, agreements, and legal forms for your hotel partnership.</p>
+                    <div class="quick-actions">
+                        <a href="/hotelagreemnt.html" class="quick-action-btn">
+                            ✍️ Sign Partnership Agreement
+                        </a>
+                        <button class="quick-action-btn" onclick="viewDocuments()">
+                            📁 View All Documents
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support & Resources Card -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-icon">🆘</div>
+                    <div class="card-title">Support & Resources</div>
+                </div>
+                <div class="card-content">
+                    <p>Get help, access resources, and contact support.</p>
+                    <div class="quick-actions">
+                        <button class="quick-action-btn" onclick="contactSupport()">
+                            💬 Contact Support
+                        </button>
+                        <a href="/resources.html" class="quick-action-btn">
+                            📚 Resources
+                        </a>
+                        <button class="quick-action-btn" onclick="viewHelp()">
+                            ❓ Help Center
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" style="display: none;"></div>
+    </div>
+
+    <script>
+        // Dropdown functionality
+        function toggleLogoDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('logoDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (userDropdown) userDropdown.style.display = 'none';
+        }
+        
+        function toggleUserDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('userDropdown');
+            const logoDropdown = document.getElementById('logoDropdown');
+            
+            dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+            if (logoDropdown) logoDropdown.style.display = 'none';
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            const logoDropdown = document.getElementById('logoDropdown');
+            const userDropdown = document.getElementById('userDropdown');
+            const logoMenu = document.querySelector('.logo-menu');
+            const userMenu = document.getElementById('userMenu');
+            
+            if (logoDropdown && logoMenu && !logoMenu.contains(event.target)) {
+                logoDropdown.style.display = 'none';
+            }
+            
+            if (userDropdown && userMenu && !userMenu.contains(event.target)) {
+                userDropdown.style.display = 'none';
+            }
+        });
+
+        // Global variables
+        let currentUser = null;
+        let currentHotel = null;
+
+        // Initialize dashboard
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Dashboard initializing...');
+            initializeDashboard();
+        });
+
+        // Initialize dashboard
+        async function initializeDashboard() {
+            try {
+                // Check authentication
+                if (!checkAuth()) {
+                    redirectToLogin();
+                    return;
+                }
+
+                // Load user data
+                await loadUserData();
+                
+                // Load dashboard data
+                await loadDashboardData();
+                
+                console.log('✅ Dashboard initialized successfully');
+                
+            } catch (error) {
+                console.error('❌ Dashboard initialization error:', error);
+                showError('Failed to initialize dashboard. Please refresh the page.');
+            }
+        }
+
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('fedevent_session');
+            if (!sessionId) {
+                console.log('❌ No session found');
+                return false;
+            }
+            return true;
+        }
+
+        // Redirect to login
+        function redirectToLogin() {
+            localStorage.clear();
+            window.location.href = '/hotel-login.html';
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const userData = localStorage.getItem('fedevent_user');
+                if (userData) {
+                    currentUser = JSON.parse(userData);
+                    const name = (currentUser.first_name && currentUser.last_name)
+                      ? `${currentUser.first_name} ${currentUser.last_name}`
+                      : (currentUser.first_name || currentUser.username || currentUser.email || '');
+                    document.getElementById('userInfo').textContent = name;
+                } else {
+                    document.getElementById('userInfo').textContent = '';
+                }
+
+                const hotelData = localStorage.getItem('fedevent_hotel');
+                if (hotelData) {
+                    currentHotel = JSON.parse(hotelData);
+                }
+                
+                // Load hotel information for display
+                await loadHotelInfo();
+            } catch (error) {
+                console.error('Error loading user data:', error);
+            }
+        }
+        
+        // Load hotel information for display
+        async function loadHotelInfo() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    return;
+                }
+
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.ok && result.hotel) {
+                        // Store hotel data
+                        currentHotel = result.hotel;
+                        localStorage.setItem('fedevent_hotel', JSON.stringify(result.hotel));
+                        
+                        // Display hotel info
+                        displayHotelInfo(result.hotel);
+                    } else {
+                        // Try to get basic hotel info from user data
+                        if (currentUser && currentUser.hotel_name) {
+                            displayBasicHotelInfo();
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading hotel info:', error);
+                // Try to display basic info from stored data
+                if (currentHotel) {
+                    displayHotelInfo(currentHotel);
+                } else if (currentUser && currentUser.hotel_name) {
+                    displayBasicHotelInfo();
+                }
+            }
+        }
+        
+        // Display hotel information
+        function displayHotelInfo(hotel) {
+            const hotelInfoDisplay = document.getElementById('hotelInfoDisplay');
+            const hotelNameDisplay = document.getElementById('hotelNameDisplay');
+            const hotelAddressDisplay = document.getElementById('hotelAddressDisplay');
+            
+            if (hotel && (hotel.name || hotel.property_name)) {
+                hotelNameDisplay.textContent = hotel.name || hotel.property_name || 'Hotel';
+                
+                // Build address from available fields
+                const addressParts = [];
+                if (hotel.address) addressParts.push(hotel.address);
+                else {
+                    if (hotel.street_address) addressParts.push(hotel.street_address);
+                    if (hotel.city) addressParts.push(hotel.city);
+                    if (hotel.state) addressParts.push(hotel.state);
+                    if (hotel.zip_code) addressParts.push(hotel.zip_code);
+                    if (hotel.country && hotel.country !== 'US') addressParts.push(hotel.country);
+                }
+                
+                hotelAddressDisplay.textContent = addressParts.length > 0 ? addressParts.join(', ') : 'Address not available';
+                
+                hotelInfoDisplay.style.display = 'block';
+            }
+        }
+        
+        // Display basic hotel info from user data
+        function displayBasicHotelInfo() {
+            const hotelInfoDisplay = document.getElementById('hotelInfoDisplay');
+            const hotelNameDisplay = document.getElementById('hotelNameDisplay');
+            const hotelAddressDisplay = document.getElementById('hotelAddressDisplay');
+            
+            if (currentUser && currentUser.hotel_name) {
+                hotelNameDisplay.textContent = currentUser.hotel_name;
+                hotelAddressDisplay.textContent = currentUser.hotel_address || 'Address not available';
+                hotelInfoDisplay.style.display = 'block';
+            }
+        }
+
+        // Load dashboard data
+        async function loadDashboardData() {
+            try {
+                // Load profile status
+                await loadProfileStatus();
+                
+                // Load team stats
+                await loadTeamStats();
+                
+                // Load contract stats
+                await loadContractStats();
+                
+            } catch (error) {
+                console.error('Error loading dashboard data:', error);
+            }
+        }
+
+        // Load profile status
+        async function loadProfileStatus() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.ok && result.hotel) {
+                        document.getElementById('profileStatus').textContent = 'Profile Complete';
+                        document.getElementById('profileStatus').className = 'status-badge status-completed';
+                    } else {
+                        document.getElementById('profileStatus').textContent = 'Registration Pending';
+                        document.getElementById('profileStatus').className = 'status-badge status-pending';
+                    }
+                } else {
+                    document.getElementById('profileStatus').textContent = 'Registration Pending';
+                    document.getElementById('profileStatus').className = 'status-badge status-pending';
+                }
+            } catch (error) {
+                console.error('Error loading profile status:', error);
+                document.getElementById('profileStatus').textContent = 'Registration Pending';
+                document.getElementById('profileStatus').className = 'status-badge status-pending';
+            }
+        }
+
+        // Load team stats
+        async function loadTeamStats() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    document.getElementById('teamCount').textContent = '0';
+                    document.getElementById('activeCount').textContent = '0';
+                    return;
+                }
+
+                // Fetch real team data from the API
+                const response = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.ok && result.users) {
+                        // Count total team members and active members
+                        const totalMembers = result.users.length;
+                        // For now, consider all members as active
+                        // In a more sophisticated system, we could check last_login or other status fields
+                        const activeMembers = result.users.filter(user => user.last_login).length || totalMembers;
+                        
+                        document.getElementById('teamCount').textContent = totalMembers;
+                        document.getElementById('activeCount').textContent = activeMembers;
+                    } else {
+                        document.getElementById('teamCount').textContent = '0';
+                        document.getElementById('activeCount').textContent = '0';
+                    }
+                } else {
+                    document.getElementById('teamCount').textContent = '0';
+                    document.getElementById('activeCount').textContent = '0';
+                }
+            } catch (error) {
+                console.error('Error loading team stats:', error);
+                document.getElementById('teamCount').textContent = '0';
+                document.getElementById('activeCount').textContent = '0';
+            }
+        }
+
+        // Load contract stats
+        async function loadContractStats() {
+            try {
+                // Load contract stats
+                document.getElementById('activeContracts').textContent = '2';
+                document.getElementById('completedContracts').textContent = '8';
+                
+                // Load bidding stats
+                document.getElementById('openOpportunities').textContent = '5';
+                document.getElementById('submittedBids').textContent = '3';
+            } catch (error) {
+                console.error('Error loading contract stats:', error);
+                document.getElementById('activeContracts').textContent = '0';
+                document.getElementById('completedContracts').textContent = '0';
+                document.getElementById('openOpportunities').textContent = '0';
+                document.getElementById('submittedBids').textContent = '0';
+            }
+        }
+
+        // Handle logout
+        function handleLogout() {
+            console.log('🚪 Logout initiated');
+            
+            // Show confirmation
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect to login
+                window.location.href = '/hotel-login.html';
+            }
+        }
+
+        // View profile
+        function viewProfile() {
+            console.log('🔍 View Profile clicked');
+            console.log('🔍 currentHotel:', currentHotel);
+            console.log('🔍 currentUser:', currentUser);
+            
+            if (currentHotel && currentHotel.id) {
+                console.log('🔍 Navigating to hotel profile with ID:', currentHotel.id);
+                window.location.href = `/hotel-profile.html?id=${currentHotel.id}`;
+            } else {
+                console.log('🔍 No currentHotel.id, trying fallback...');
+                // Fallback - try to get hotel ID from user data or show error
+                const userData = localStorage.getItem('fedevent_user');
+                console.log('🔍 userData from localStorage:', userData);
+                
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    console.log('🔍 parsed user:', user);
+                    if (user.hotel_id) {
+                        console.log('🔍 Navigating with user hotel_id:', user.hotel_id);
+                        window.location.href = `/hotel-profile.html?id=${user.hotel_id}`;
+                    } else {
+                        console.log('🔍 No hotel_id in user data');
+                        showMessage('Hotel profile not available. Please complete hotel registration first to link your account to a hotel.', 'error');
+                    }
+                } else {
+                    console.log('🔍 No userData in localStorage');
+                    showMessage('Please log in to view your hotel profile.', 'error');
+                }
+            }
+        }
+
+        // Add team member
+        function addTeamMember() {
+            const email = prompt('Enter team member email address:');
+            if (email && email.trim()) {
+                // In a real implementation, this would send an invitation
+                sendTeamInvitation(email);
+            }
+        }
+
+        // Send team invitation
+        async function sendTeamInvitation(email) {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    alert('You must be logged in to invite team members.');
+                    return;
+                }
+
+                const response = await fetch('/api/team/invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionId}`
+                    },
+                    body: JSON.stringify({
+                        email: email,
+                        firstName: '',
+                        lastName: '',
+                        jobTitle: 'Team Member',
+                        permissions: {}
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.ok) {
+                    showMessage(`Team member invitation sent to ${email}`, 'success');
+                    // Refresh team stats
+                    loadTeamStats();
+                } else {
+                    showMessage(`Error: ${result.error || 'Failed to send invitation'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                showMessage('Failed to send invitation. Please try again.', 'error');
+            }
+        }
+
+        // View team members
+        function viewTeamMembers() {
+            // In a real implementation, this would show the team management interface
+            loadTeamMembers();
+        }
+
+        // Load team members
+        async function loadTeamMembers() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                if (!sessionId) {
+                    alert('You must be logged in to view team members.');
+                    return;
+                }
+
+                // For now, show a simple message with refresh option
+                const confirmed = confirm('Team management interface is being prepared. Click OK to refresh team stats.');
+                if (confirmed) {
+                    loadTeamStats();
+                }
+            } catch (error) {
+                console.error('Error loading team members:', error);
+                showMessage('Failed to load team members. Please try again.', 'error');
+            }
+        }
+
+        // View contract history
+        function viewContractHistory() {
+            // Navigate to contracts page with history filter
+            window.location.href = '/hotel-contracts.html#completed';
+        }
+
+        // View my bids
+        function viewMyBids() {
+            // Navigate to bidding page with my bids filter
+            window.location.href = '/hotel-bidding.html#my-bids';
+        }
+
+        // View bidding
+        function viewBidding() {
+            // Navigate to contracts & bidding page
+            window.location.href = '/hotel-contracts.html';
+        }
+
+        // View documents
+        function viewDocuments() {
+            // Navigate to documents page or show document list
+            alert('Documents section - coming soon! For now, use the signature links above to access agreements.');
+        }
+
+        // Contact support
+        function contactSupport() {
+            const message = prompt('Please describe your issue:');
+            if (message) {
+                showMessage('Support request sent! We\'ll respond within 24 hours.', 'success');
+            }
+        }
+
+        // View help
+        function viewHelp() {
+            window.location.href = '/help-center.html';
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            const messageDiv = document.getElementById('statusMessage');
+            messageDiv.textContent = text;
+            messageDiv.className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'status-badge status-pending';
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show error
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        // Emergency logout function
+        window.emergencyLogout = function() {
+            console.log('🚨 EMERGENCY LOGOUT');
+            localStorage.clear();
+            sessionStorage.clear();
+            window.location.href = '/hotel-login.html';
+        };
+
+        // Console help
+        console.log('🏨 FEDEVENT Hotel Dashboard');
+        console.log('Available functions:');
+        console.log('• handleLogout() - Normal logout');
+        console.log('• window.emergencyLogout() - Emergency logout');
+        console.log('• showMessage(text, type) - Show status message');
+    </script>
+    
+    <!-- Universal Logout System -->
+    <script src="/logout-universal.js"></script>
+    <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+
+<!-- DANA AI Assistant -->
+<script src="/chat.js"></script>
+</body>
+</html>

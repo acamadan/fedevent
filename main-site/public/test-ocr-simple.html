@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OCR Button Test - FEDEVENT</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #0b2545;
+            margin-bottom: 10px;
+        }
+        .status {
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+        .status.info { background: #e3f2fd; color: #1565c0; }
+        .status.success { background: #e8f5e9; color: #2e7d32; }
+        .status.error { background: #ffebee; color: #c62828; }
+        .btn {
+            padding: 12px 24px;
+            margin: 10px 5px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .btn-blue { background: #3b82f6; color: white; }
+        .btn-blue:hover { background: #2563eb; }
+        .btn-green { background: #10b981; color: white; }
+        .btn-green:hover { background: #059669; }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        input[type="file"] {
+            padding: 10px;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            margin: 15px 0;
+            width: 100%;
+        }
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 OCR Button Test Page</h1>
+        <p style="color: #6b7280;">This page helps diagnose OCR button functionality</p>
+
+        <!-- Test 1: Endpoint Availability -->
+        <div class="test-section">
+            <h3>Test 1: Check Endpoints</h3>
+            <button class="btn btn-blue" onclick="testEndpoints()">Test Endpoints</button>
+            <div id="endpoint-status"></div>
+        </div>
+
+        <!-- Test 2: File Upload -->
+        <div class="test-section">
+            <h3>Test 2: Upload & Process File</h3>
+            <input type="file" id="testFile" accept=".pdf,.png,.jpg,.jpeg">
+            
+            <div style="margin-top: 10px;">
+                <button class="btn btn-blue" id="btnSimple" onclick="testSimpleOCR()">
+                    📄 Test Simple OCR
+                </button>
+                <button class="btn btn-green" id="btnHybrid" onclick="testHybridOCR()">
+                    🤖 Test Hybrid OCR
+                </button>
+            </div>
+            
+            <div id="upload-status"></div>
+            <div id="results" class="result" style="display:none;">
+                <h4>Results:</h4>
+                <pre id="results-content"></pre>
+            </div>
+        </div>
+
+        <!-- Test 3: Console Log -->
+        <div class="test-section">
+            <h3>Test 3: JavaScript Console</h3>
+            <p style="color: #6b7280; font-size: 14px;">
+                Open browser DevTools (F12) and check the Console tab for any errors.
+            </p>
+            <button class="btn btn-blue" onclick="testConsole()">Log Test Message</button>
+        </div>
+    </div>
+
+    <script>
+        // Test 1: Check if endpoints exist
+        async function testEndpoints() {
+            const statusDiv = document.getElementById('endpoint-status');
+            statusDiv.innerHTML = '<div class="status info">Testing endpoints...</div>';
+            
+            try {
+                const tests = [
+                    { name: 'Simple OCR', url: '/uploadFactSheet' },
+                    { name: 'Hybrid OCR', url: '/uploadFactSheetHybrid' }
+                ];
+                
+                let html = '';
+                for (const test of tests) {
+                    try {
+                        const response = await fetch(test.url, { method: 'POST' });
+                        const data = await response.json();
+                        
+                        if (data.error === 'No file uploaded.') {
+                            html += `<div class="status success">✅ ${test.name} endpoint: Working!</div>`;
+                        } else {
+                            html += `<div class="status error">❌ ${test.name} endpoint: Unexpected response</div>`;
+                        }
+                    } catch (err) {
+                        html += `<div class="status error">❌ ${test.name} endpoint: ${err.message}</div>`;
+                    }
+                }
+                
+                statusDiv.innerHTML = html;
+            } catch (err) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${err.message}</div>`;
+            }
+        }
+
+        // Test 2: Simple OCR
+        async function testSimpleOCR() {
+            const fileInput = document.getElementById('testFile');
+            const btn = document.getElementById('btnSimple');
+            const statusDiv = document.getElementById('upload-status');
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('results-content');
+            
+            if (!fileInput.files.length) {
+                statusDiv.innerHTML = '<div class="status error">⚠️ Please select a file first!</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Processing...';
+            statusDiv.innerHTML = '<div class="status info">📄 Running Simple OCR...</div>';
+            resultsDiv.style.display = 'none';
+            
+            try {
+                const formData = new FormData();
+                formData.append('factSheet', fileInput.files[0]);
+                
+                const response = await fetch('/uploadFactSheet', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status success">✅ Success! Found ${data.meetingRooms?.length || 0} rooms</div>`;
+                    resultsContent.textContent = JSON.stringify(data, null, 2);
+                    resultsDiv.style.display = 'block';
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📄 Test Simple OCR';
+            }
+        }
+
+        // Test 3: Hybrid OCR
+        async function testHybridOCR() {
+            const fileInput = document.getElementById('testFile');
+            const btn = document.getElementById('btnHybrid');
+            const statusDiv = document.getElementById('upload-status');
+            const resultsDiv = document.getElementById('results');
+            const resultsContent = document.getElementById('results-content');
+            
+            if (!fileInput.files.length) {
+                statusDiv.innerHTML = '<div class="status error">⚠️ Please select a file first!</div>';
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.textContent = '⏳ Processing...';
+            statusDiv.innerHTML = '<div class="status info">🤖 Running Hybrid OCR + AI (this may take 15-45 seconds)...</div>';
+            resultsDiv.style.display = 'none';
+            
+            try {
+                const formData = new FormData();
+                formData.append('factSheet', fileInput.files[0]);
+                
+                const response = await fetch('/uploadFactSheetHybrid', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<div class="status success">✅ Success! Found ${data.meetingRooms?.length || 0} rooms with AI validation</div>`;
+                    resultsContent.textContent = JSON.stringify(data, null, 2);
+                    resultsDiv.style.display = 'block';
+                } else {
+                    statusDiv.innerHTML = `<div class="status error">❌ Error: ${data.error}</div>`;
+                }
+            } catch (err) {
+                statusDiv.innerHTML = `<div class="status error">❌ Error: ${err.message}</div>`;
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🤖 Test Hybrid OCR';
+            }
+        }
+
+        // Test console
+        function testConsole() {
+            console.log('✅ Console is working!');
+            console.log('Current URL:', window.location.href);
+            console.log('Test timestamp:', new Date().toISOString());
+            alert('Check your browser console (F12) - you should see test messages!');
+        }
+
+        // Auto-run endpoint test on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 OCR Test Page Loaded');
+            console.log('Server URL:', window.location.origin);
+            testEndpoints();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAM Search - FEDEVENT Admin</title>
+    <link rel="stylesheet" href="site.css?v=5">
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            min-height: calc(100vh - 80px);
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            gap: 2rem;
+        }
+        
+        .search-container {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            width: 100%;
+        }
+        
+        .content-area {
+            background: var(--white);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+        }
+        
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            color: var(--text);
+        }
+        
+        .search-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .search-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+        
+        .search-input-container {
+            display: flex;
+            align-items: center;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .search-dropdown {
+            background: var(--white);
+            border: none;
+            padding: 0.75rem 1rem;
+            font-size: 0.9rem;
+            border-right: 1px solid var(--border);
+            min-width: 120px;
+        }
+        
+        .search-input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+        }
+        
+        .search-button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        
+        .search-button:hover {
+            background: var(--primary-dark);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: var(--white);
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        .autocomplete-suggestions {
+            position: absolute;
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            width: calc(100% - 2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .autocomplete-suggestion {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .autocomplete-suggestion:hover {
+            background-color: var(--bg);
+        }
+        
+        .autocomplete-suggestion:last-child {
+            border-bottom: none;
+        }
+        
+        .results-container {
+            min-height: 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            display: block;
+            color: var(--text);
+        }
+        
+        .result-card {
+            border: 1px solid var(--border);
+            margin-bottom: 1rem;
+            padding: 1.5rem;
+            background: var(--white);
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .result-title {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        
+        .result-meta {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .meta-label {
+            font-weight: 600;
+            color: var(--text-light);
+            margin-bottom: 0.25rem;
+        }
+        
+        .meta-value {
+            color: var(--text);
+        }
+        
+        .result-description {
+            color: var(--text-light);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+        }
+        
+        .result-actions {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        
+        .action-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--primary);
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+        
+        .action-link:hover {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-light);
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .back-btn {
+            background: var(--text-light);
+            color: white;
+            text-decoration: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 1rem;
+        }
+        
+        .back-btn:hover {
+            background: var(--text);
+        }
+        
+        .search-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .search-option {
+            flex: 1;
+        }
+        
+        .requirements-section {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .requirements-section h2 {
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .requirements-section label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+        }
+        
+        .requirements-section input[type="file"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            background-color: var(--white);
+            margin-bottom: 0.5rem;
+        }
+        
+        .requirements-section .req-meta {
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .requirements-section .req-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 0.5rem;
+        }
+        
+        .requirements-section .req-table th,
+        .requirements-section .req-table td {
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+        }
+        
+        .requirements-section .req-table th {
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .requirements-section .req-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+        
+        .requirements-section .req-actions button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: background-color 0.2s;
+        }
+        
+        .requirements-section .req-actions button:hover {
+            background: var(--primary-dark);
+        }
+        
+        .search-options-top {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .search-option-top {
+            flex: 1;
+            min-width: 300px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Main Content Area (Sidebar + Content) -->
+        <div class="admin-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <a href="/admin-dashboard.html" class="admin-sidebar-logo">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></span>
+                    </a>
+                    <button onclick="toggleSidebar()" class="admin-sidebar-toggle" title="Toggle Menu">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <nav class="admin-sidebar-nav">
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Hotels">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Email Contacts">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Contacts</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Waitlist">
+                        <i class="fas fa-users"></i>
+                        <span>Waitlist</span>
+                    </a>
+                    <a href="/admin-contracts.html" class="admin-nav-item" title="Contracts">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Contracts</span>
+                    </a>
+                    <a href="/sam-search-admin.html" class="admin-nav-item active" title="SAM Search">
+                        <i class="fas fa-search"></i>
+                        <span>SAM Search</span>
+                    </a>
+                    <a href="/admin-settings.html" class="admin-nav-item" title="Settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="admin-main-content">
+                <div class="admin-content">
+                    <!-- Hidden userInfo element for JavaScript compatibility -->
+                    <div id="userInfo" style="display: none;">Loading...</div>
+                    
+                    <!-- Page Header -->
+                    <div class="admin-page-header">
+                        <div class="page-header-content">
+                            <h1 class="page-title">SAM.gov Search</h1>
+                            <div class="page-actions">
+                                <a href="/admin-dashboard.html" class="btn btn-secondary">
+                                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search Options -->
+                    <div class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Search Government Contracts</h2>
+                        </div>
+                        
+                        <div class="search-options-grid">
+                            <div class="search-option-card">
+                                <div class="search-option-header">
+                                    <i class="fas fa-search"></i>
+                                    <h3>Keyword Search</h3>
+                                </div>
+                                <div class="search-input-group">
+                                    <input type="text" class="admin-input" id="searchInput" placeholder="Enter keywords (e.g., hotel, lodging, conference)">
+                                    <button class="btn btn-primary" id="searchBtn" onclick="performSamSearch()">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="search-option-card">
+                                <div class="search-option-header">
+                                    <i class="fas fa-tags"></i>
+                                    <h3>NAICS Code Search</h3>
+                                </div>
+                                <div class="search-input-group">
+                                    <div class="naics-input-container">
+                                        <input type="text" class="admin-input" id="naicsCode" placeholder="Enter NAICS code or description..." oninput="showNaicsSuggestions(this.value)">
+                                        <div id="naicsSuggestions" class="autocomplete-suggestions"></div>
+                                    </div>
+                                    <button class="btn btn-primary" onclick="performNaicsSearch()">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Results Section -->
+                    <div class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Search Results</h2>
+                        </div>
+                        
+                        <div class="admin-results-container">
+                            <div id="resultsContainer" class="results-container">
+                                <div class="admin-empty-state">
+                                    <i class="fas fa-search"></i>
+                                    <h3>Ready to Search</h3>
+                                    <p>Enter search criteria above and click search to see results</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+
+    <script>
+        // Load NAICS data
+        let naicsData = [];
+        
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            document.getElementById('userInfo').textContent = `${user.first_name} ${user.last_name}`;
+            return true;
+        }
+        
+        // Load NAICS data on page load
+        async function loadNaicsData() {
+            try {
+                const response = await fetch('/naics.json');
+                naicsData = await response.json();
+            } catch (error) {
+                console.error('Failed to load NAICS data:', error);
+            }
+        }
+        
+        // Show NAICS suggestions
+        function showNaicsSuggestions(input) {
+            const suggestionsContainer = document.getElementById('naicsSuggestions');
+            
+            if (!input || input.length < 1) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            // Filter NAICS codes based on input
+            const filtered = naicsData.filter(item => 
+                item.code.includes(input) || 
+                item.title.toLowerCase().includes(input.toLowerCase())
+            ).slice(0, 10); // Limit to 10 suggestions
+            
+            if (filtered.length === 0) {
+                suggestionsContainer.style.display = 'none';
+                return;
+            }
+            
+            let html = '';
+            filtered.forEach(item => {
+                html += `<div class="autocomplete-suggestion" onclick="selectNaics('${item.code}', '${item.title.replace(/'/g, "&#39;")}')">${item.code} - ${item.title}</div>`;
+            });
+            
+            suggestionsContainer.innerHTML = html;
+            suggestionsContainer.style.display = 'block';
+        }
+        
+        // Select a NAICS code
+        function selectNaics(code, title) {
+            document.getElementById('naicsCode').value = `${code} - ${title}`;
+            document.getElementById('naicsSuggestions').style.display = 'none';
+        }
+
+        // Trigger search by NAICS only
+        function performNaicsSearch() {
+            const input = document.getElementById('naicsCode').value;
+            const code = input.split(' - ')[0].trim();
+            if (!code) return;
+            document.getElementById('searchInput').value = '';
+            // reuse performSamSearch flow with NAICS filled
+            performSamSearch();
+        }
+        
+        // Close suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#naicsCode') && !e.target.closest('#naicsSuggestions')) {
+                document.getElementById('naicsSuggestions').style.display = 'none';
+            }
+        });
+        
+        // Reset filters
+        function resetFilters() {
+            document.getElementById('searchInput').value = '';
+            document.getElementById('naicsCode').value = '';
+        }
+
+        // Perform SAM Search
+        async function performSamSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            // Extract just the code part if NAICS has title included
+            const naicsInput = document.getElementById('naicsCode').value;
+            const naicsCode = naicsInput.split(' - ')[0].trim() || '721110';
+            
+            const resultsContainer = document.getElementById('resultsContainer');
+            resultsContainer.innerHTML = '<div class="loading"><p>Searching SAM.gov database...</p><div style="margin-top: 20px;"><div style="border: 4px solid #f3f3f3; border-top: 4px solid #1e40af; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div></div></div>';
+
+            try {
+                const params = new URLSearchParams({
+                    q: searchTerm,
+                    naics: naicsCode,
+                    limit: 25,
+                    _t: Date.now() // Cache busting
+                });
+
+                const response = await fetch(`/api/sam/search?${params}`);
+                const data = await response.json();
+
+                if (data.ok && data.results) {
+                    displayResults(data.results);
+                    // Remove banners per request
+                } else {
+                    resultsContainer.innerHTML = '<div class="loading"><p style="color: #dc3545;">Search failed. Please try again or check your connection.</p></div>';
+                }
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsContainer.innerHTML = '<div class="loading"><p style="color: #dc3545;">Search failed. Please check your connection and try again.</p></div>';
+            }
+        }
+        
+        // Display search results with additional fields
+        function displayResults(results) {
+            const container = document.getElementById('resultsContainer');
+            
+            if (!results || results.length === 0) {
+                container.innerHTML = '<div class="loading"><p>No opportunities found matching your criteria</p></div>';
+                return;
+            }
+
+            let html = `
+                <div style="padding: 1rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; border-bottom: 2px solid #1e40af; padding-bottom: 15px;">
+                        <h3 style="margin: 0; color: #333;">Found ${results.length} Contract Opportunities</h3>
+                    </div>
+            `;
+
+            results.forEach((result, index) => {
+                // Format dates
+                const postedDate = result.postedDate ? new Date(result.postedDate).toLocaleDateString() : 'N/A';
+                const updatedDate = result.lastUpdatedDate ? new Date(result.lastUpdatedDate).toLocaleDateString() : 'N/A';
+                const publishedDate = result.publishedDate ? new Date(result.publishedDate).toLocaleDateString() : 'N/A';
+                const responseDeadline = result.responseDeadline ? new Date(result.responseDeadline).toLocaleDateString() : 'N/A';
+                
+                // Extract agency hierarchy
+                const agencyParts = (result.agency || '').split('.');
+                const department = agencyParts[0] || 'N/A';
+                const subtier = agencyParts[1] || 'N/A';
+                const office = agencyParts[2] || agencyParts.slice(1).join('.') || 'N/A';
+                
+                // Format office address if available
+                let officeAddress = 'N/A';
+                if (result.officeAddress) {
+                    const addr = result.officeAddress;
+                    officeAddress = `${addr.city || ''}, ${addr.state || ''} ${addr.zipcode || ''}`;
+                }
+                
+                // Format points of contact (show up to 2)
+                let pointOfContact = 'N/A';
+                if (result.pointOfContact && Array.isArray(result.pointOfContact) && result.pointOfContact.length > 0) {
+                    const pocs = result.pointOfContact.slice(0, 2).map(p => `${p.fullName || ''}${p.title ? ` (${p.title})` : ''}${p.email ? ` - ${p.email}` : ''}`).filter(Boolean);
+                    pointOfContact = pocs.length ? pocs.join(' | ') : 'N/A';
+                }
+                
+                html += `
+                    <div class="result-card">
+                        <h4 class="result-title"><a href="#" onclick="openNotice('${result.id || ''}'); return false;">${result.title || 'No Title Available'}</a></h4>
+                        
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Solicitation Number:</span>
+                                <span class="meta-value">${result.solicitationNumber || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Department/Ind.Agency:</span>
+                                <span class="meta-value">${department}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Subtier:</span>
+                                <span class="meta-value">${subtier}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Office:</span>
+                                <span class="meta-value">${office}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">NAICS Code:</span>
+                                <span class="meta-value">${result.naics || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Notice Type:</span>
+                                <span class="meta-value">${result.type || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Current Date Offers Due:</span>
+                                <span class="meta-value" style="${deadlineStyle(result.responseDeadline)}">${responseDeadline}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Posted Date:</span>
+                                <span class="meta-value">${postedDate}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Updated Date:</span>
+                                <span class="meta-value">${updatedDate}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Published Date:</span>
+                                <span class="meta-value">${publishedDate}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Set Aside:</span>
+                                <span class="meta-value">${result.setAside || 'N/A'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Active:</span>
+                                <span class="meta-value">${result.active || 'N/A'}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <div class="meta-item">
+                                <span class="meta-label">Office Address:</span>
+                                <span class="meta-value">${officeAddress}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Point of Contact:</span>
+                                <span class="meta-value">${pointOfContact}</span>
+                            </div>
+                            <div class="meta-item">
+                                <span class="meta-label">Classification Code:</span>
+                                <span class="meta-value">${result.classificationCode || 'N/A'}</span>
+                            </div>
+                            
+                        </div>
+
+                        <div class="result-description" id="desc-${index}">
+                            Loading description...
+                        </div>
+
+                        <div class="result-actions">
+                            ${result.uiLink ? `<a href="${result.uiLink}" target="_blank" class="action-link">View on SAM.gov</a>` : '<span style="color: #999;">No link available</span>'}
+                        </div>
+
+                        ${Array.isArray(result.resourceLinks) && result.resourceLinks.length ? `
+                        <div style="margin-top: .75rem;">
+                          <div class="search-title" style="margin-bottom:.5rem;">Documents</div>
+                          <ul style="list-style: none; padding:0; margin:0;">
+                            ${result.resourceLinks.map((href, i) => `<li style=\"margin-bottom:.35rem;\"><a class=\"action-link\" href=\"${href}\" target=\"_blank\">Download Document ${i+1}</a></li>`).join('')}
+                          </ul>
+                        </div>` : ''}
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            container.innerHTML = html;
+
+            // Fetch descriptions inline without leaving page
+            results.forEach((result, index) => {
+                if (result.description) {
+                    const url = result.description.includes('api_key') ? result.description : `${result.description}${result.description.includes('?') ? '&' : '?'}api_key=${encodeURIComponent(getSamApiKeyHint())}`;
+                    fetch(url)
+                      .then(r => r.text())
+                      .then(text => {
+                        const el = document.getElementById(`desc-${index}`);
+                        if (el) el.textContent = text.slice(0, 800) + (text.length > 800 ? '…' : '');
+                      })
+                      .catch(() => {
+                        const el = document.getElementById(`desc-${index}`);
+                        if (el) el.textContent = 'Description Not Found';
+                      });
+                } else {
+                    const el = document.getElementById(`desc-${index}`);
+                    if (el) el.textContent = 'No description available';
+                }
+            });
+        }
+
+        // Helper to hint API key usage for description endpoint
+        function getSamApiKeyHint() {
+            return 'SAM-34a0de14-8d52-4e37-8ac3-f8db8513eaf2';
+        }
+
+        // Deadline coloring legend helper
+        function deadlineStyle(dateStr) {
+            if (!dateStr) return '';
+            try {
+                const now = new Date();
+                const due = new Date(dateStr);
+                const diffDays = Math.ceil((due - now) / (1000 * 60 * 60 * 24));
+                // 1-2 days: red, 3-4 days: amber, up to 7 days: blue, up to 14 days: green
+                if (diffDays <= 2) return 'color:#dc2626; font-weight:700;';       // red
+                if (diffDays <= 4) return 'color:#f59e0b; font-weight:600;';       // amber
+                if (diffDays <= 7) return 'color:#0ea5e9; font-weight:600;';       // blue
+                if (diffDays <= 14) return 'color:#16a34a; font-weight:600;';      // green
+                return '';
+            } catch { return ''; }
+        }
+
+        // Open solicitation details inline (no external navigation)
+        async function openNotice(noticeId) {
+            if (!noticeId) return;
+            const container = document.getElementById('resultsContainer');
+            const res = await fetch(`/api/sam/notice/${encodeURIComponent(noticeId)}`);
+            const data = await res.json();
+            if (!data || !data.notice) return;
+            const n = data.notice;
+            const posted = n.postedDate ? new Date(n.postedDate).toLocaleDateString() : 'N/A';
+            const due = n.responseDeadline ? new Date(n.responseDeadline).toLocaleDateString() : 'N/A';
+            container.innerHTML = `
+              <div class="result-card">
+                <a href="#" class="back-btn" onclick="performSamSearch(); return false;">← Back to Results</a>
+                <h3 class="result-title">${n.title || 'No Title'}</h3>
+                <div class="result-meta" style="margin-top: .5rem;">
+                  <div class="meta-item"><span class="meta-label">Solicitation:</span><span class="meta-value">${n.solicitationNumber || n.id || ''}</span></div>
+                  <div class="meta-item"><span class="meta-label">Posted:</span><span class="meta-value">${posted}</span></div>
+                  <div class="meta-item"><span class="meta-label">Due:</span><span class="meta-value">${due}</span></div>
+                  <div class="meta-item"><span class="meta-label">NAICS:</span><span class="meta-value">${n.naics || ''}</span></div>
+                </div>
+                <div class="result-description" style="white-space: pre-wrap; margin-top: 1rem;">${n.description || 'No description available'}</div>
+                <div class="result-actions" style="margin-top: 1rem;">
+                  ${n.uiLink ? `<a href="${n.uiLink}" target="_blank" class="action-link">Open on SAM.gov</a>` : ''}
+                </div>
+              </div>
+            `;
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                const sessionId = localStorage.getItem('sessionId');
+                await fetch('/api/auth/logout', { 
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Initialize
+        if (checkAuth()) {
+            loadNaicsData();
+        }
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+
+    
+    <!-- Include CSS and Font Awesome for icons -->
+    <link rel="stylesheet" href="site.css?v=5">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Include sidebar JavaScript -->
+    <script src="admin-sidebar.js"></script>
+    
+    <!-- Authentication and User Management -->
+    <script>
+        // currentUser is already declared globally, just use it
+        
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            const userInfoElement = document.getElementById('userInfo');
+            if (userInfoElement) {
+                userInfoElement.textContent = `${user.first_name} ${user.last_name}`;
+            }
+            return true;
+        }
+        
+        function logout() {
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Debug OCR Output</title>
+    <style>
+        body { font-family: monospace; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        button { padding: 12px 24px; background: #3b82f6; color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer; margin: 10px 0; }
+        button:hover { background: #2563eb; }
+        pre { background: #1e293b; color: #e2e8f0; padding: 20px; border-radius: 6px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-size: 12px; line-height: 1.5; }
+        .stats { background: #e0f2fe; padding: 15px; border-radius: 6px; margin: 15px 0; }
+        .stats div { margin: 5px 0; }
+        input[type="file"] { padding: 10px; border: 2px solid #d1d5db; border-radius: 6px; margin: 15px 0; width: 100%; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Debug OCR Output</h1>
+        <p>This tool shows you the RAW text that Tesseract OCR extracts from your PDF/image.</p>
+        
+        <input type="file" id="debugFile" accept=".pdf,.png,.jpg,.jpeg">
+        <button onclick="debugOCR()">Extract & Show Raw OCR Text</button>
+        
+        <div id="stats" class="stats" style="display:none;">
+            <h3>OCR Statistics:</h3>
+            <div><strong>Total Characters:</strong> <span id="charCount"></span></div>
+            <div><strong>Total Lines:</strong> <span id="lineCount"></span></div>
+            <div><strong>File Type:</strong> <span id="fileType"></span></div>
+        </div>
+        
+        <h3>First 1000 Characters:</h3>
+        <pre id="preview" style="display:none;"></pre>
+        
+        <h3>Full OCR Text:</h3>
+        <pre id="fullText" style="display:none; max-height: 600px; overflow-y: auto;"></pre>
+        
+        <button onclick="copyToClipboard()" style="display:none;" id="copyBtn">📋 Copy Full Text to Clipboard</button>
+    </div>
+
+    <script>
+        let fullOcrText = '';
+        
+        async function debugOCR() {
+            const fileInput = document.getElementById('debugFile');
+            if (!fileInput.files.length) {
+                alert('Please select a file first!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('factSheet', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/debugOCR', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    fullOcrText = data.fullText;
+                    
+                    // Show stats
+                    document.getElementById('stats').style.display = 'block';
+                    document.getElementById('charCount').textContent = data.textLength;
+                    document.getElementById('lineCount').textContent = data.lines;
+                    document.getElementById('fileType').textContent = fileInput.files[0].name;
+                    
+                    // Show preview
+                    document.getElementById('preview').style.display = 'block';
+                    document.getElementById('preview').textContent = data.first1000;
+                    
+                    // Show full text
+                    document.getElementById('fullText').style.display = 'block';
+                    document.getElementById('fullText').textContent = data.fullText;
+                    
+                    // Show copy button
+                    document.getElementById('copyBtn').style.display = 'inline-block';
+                    
+                    console.log('OCR Debug Results:', data);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (err) {
+                alert('Error: ' + err.message);
+                console.error(err);
+            }
+        }
+        
+        function copyToClipboard() {
+            navigator.clipboard.writeText(fullOcrText).then(() => {
+                alert('✅ Full OCR text copied to clipboard!');
+            }).catch(err => {
+                alert('Failed to copy: ' + err.message);
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Profile - FEDEVENT</title>
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+    </script>
+    
+    <link rel="stylesheet" href="/site.css">
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+            --accent: #3b82f6;
+            --muted: #6b7280;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            scroll-behavior: smooth;
+        }
+        
+        html {
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        /* Header Styles */
+        .page-header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 0 0 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .hotel-info {
+            margin-bottom: 1.5rem;
+        }
+        
+        .hotel-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-address {
+            color: var(--text-light);
+            font-size: 1rem;
+        }
+        
+        .hotel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .hotel-info h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-address {
+            color: var(--text-light);
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .contact-link {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .contact-link:hover {
+            text-decoration: underline;
+        }
+        
+        .hotel-rating {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        
+        .stars {
+            display: flex;
+            gap: 0.25rem;
+        }
+        
+        .star {
+            width: 20px;
+            height: 20px;
+            fill: #10b981;
+        }
+        
+        .star.empty {
+            fill: #d1d5db;
+        }
+        
+        /* Navigation Tabs */
+        .nav-tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 1px solid var(--border);
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        
+        .nav-tab {
+            padding: 0.75rem 1rem;
+            text-decoration: none;
+            color: var(--text-light);
+            font-weight: 500;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+        }
+        
+        .nav-tab:hover {
+            color: var(--primary);
+        }
+        
+        /* Photo Gallery Container */
+        .photo-gallery-container {
+            width: 100%;
+            margin-bottom: 0;
+        }
+        
+        /* Photo Gallery */
+        .photo-gallery {
+            position: relative;
+            height: 500px;
+            overflow: hidden;
+            background: var(--white);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .main-photo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        
+        .photo-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-nav:hover {
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .photo-nav.prev {
+            left: 1rem;
+        }
+        
+        .photo-nav.next {
+            right: 1rem;
+        }
+        
+        .photo-dots {
+            position: absolute;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .photo-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .photo-dot.active {
+            background: white;
+        }
+        
+        /* Content Sections */
+        .content-section {
+            display: block;
+            padding-top: 2rem;
+            margin-bottom: 3rem;
+        }
+        
+        .content-section h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Overview Section */
+        .overview-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .venue-details {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .venue-details h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+        }
+        
+        .detail-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .detail-item:last-child {
+            border-bottom: none;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--text-light);
+        }
+
+        .detail-value {
+            color: var(--text);
+            text-align: right;
+        }
+
+        .amenities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .amenity-category {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .amenity-category h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            color: var(--primary);
+        }
+        
+        .amenity-list {
+            list-style: none;
+        }
+        
+        .amenity-list li {
+            padding: 0.25rem 0;
+            color: var(--text-light);
+        }
+        
+        .amenity-list li::before {
+            content: "✓";
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+        
+        /* Interactive Map */
+        .map-container {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .map-placeholder {
+            height: 400px;
+            background: var(--border);
+            border-radius: 8px;
+            width: 100%;
+        }
+        
+        .map-placeholder iframe {
+            width: 100%;
+            height: 100%;
+            border: 0;
+            border-radius: 8px;
+        }
+        
+        .location-info {
+            margin-top: 1.5rem;
+        }
+        
+        .location-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-light);
+        }
+        
+        /* Meeting Space Section */
+        .meeting-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: center;
+        }
+        
+        .meeting-control {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .meeting-control label {
+            font-weight: 600;
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .meeting-control input,
+        .meeting-control select {
+            padding: 0.5rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .meeting-table {
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .meeting-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .meeting-table th {
+            background: var(--bg);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .meeting-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            color: var(--text-light);
+        }
+        
+        .meeting-table tr:hover {
+            background: var(--bg);
+        }
+        
+        /* Guest Rooms Section */
+        .guest-rooms-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .room-summary-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .room-summary-card h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .room-summary-card .number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+        
+        .room-summary-card .description {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .pricing-info {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .pricing-item {
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+        
+        .pricing-item h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .pricing-item .rate {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--success);
+        }
+        
+        /* CTA Buttons */
+        .cta-section {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: #d97706;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        /* Vendor Marketplace Banner */
+        .vendor-banner {
+            background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+            color: white;
+            padding: 3rem 2rem;
+            border-radius: 12px;
+            margin: 2rem 0;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .vendor-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="25" cy="25" r="1" fill="white" opacity="0.1"/><circle cx="75" cy="75" r="1" fill="white" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+            opacity: 0.3;
+        }
+        
+        .vendor-banner-content {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .vendor-banner h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .vendor-banner p {
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        
+        .vendor-banner .btn {
+            background: var(--accent);
+            padding: 1rem 2rem;
+            font-size: 1rem;
+        }
+        
+        /* Additional Information */
+        .additional-info {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .info-section {
+            margin-bottom: 2rem;
+        }
+        
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-section h4 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .info-section p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+        
+        /* Loading States */
+        .loading {
+            text-align: center;
+            padding: 4rem;
+            color: var(--text-light);
+            font-size: 1.1rem;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 2rem;
+            border-radius: 8px;
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .overview-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-tabs {
+                overflow-x: auto;
+                gap: 1rem;
+            }
+            
+            .nav-tab {
+                white-space: nowrap;
+                padding: 0.75rem 0;
+            }
+            
+            .photo-gallery {
+                height: 250px;
+            }
+            
+            .meeting-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .meeting-table {
+                overflow-x: auto;
+            }
+            
+            .vendor-banner {
+                padding: 2rem 1rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            
+            .hotel-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .photo-gallery {
+                height: 200px;
+            }
+            
+            .amenities-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header will be injected by nav.js -->
+    
+    <!-- Photo Gallery at Top -->
+    <div class="photo-gallery-container">
+        <!-- Photo Gallery -->
+        <div class="photo-gallery" id="photoGallery">
+            <img src="/placeholder-hotel-main.jpg" alt="Hotel Main View" class="main-photo" id="mainPhoto">
+            <button class="photo-nav prev" id="prevPhoto">‹</button>
+            <button class="photo-nav next" id="nextPhoto">›</button>
+            <div class="photo-dots" id="photoDots">
+                <div class="photo-dot active"></div>
+                <div class="photo-dot"></div>
+                <div class="photo-dot"></div>
+                <div class="photo-dot"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Hotel Info Header -->
+        <div class="page-header">
+            <div class="hotel-info">
+                <h1 id="hotelName">Loading...</h1>
+                <div class="hotel-address" id="hotelAddress">Loading address...</div>
+        </div>
+
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs">
+                <a href="#overview" class="nav-tab active" data-section="overview">Overview</a>
+                <a href="#meeting-space" class="nav-tab" data-section="meeting-space">Meeting Space</a>
+                <a href="#guest-rooms" class="nav-tab" data-section="guest-rooms">Guest Rooms</a>
+                <a href="#location" class="nav-tab" data-section="location">Location</a>
+                <a href="#more" class="nav-tab" data-section="more">More</a>
+            </nav>
+        </div>
+
+        <!-- Overview Section -->
+        <div class="content-section active" id="overview">
+            <div class="overview-grid">
+                <div class="venue-details">
+                    <h3>Venue Details</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label">Chain</span>
+                            <span class="detail-value" id="chain">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Built</span>
+                            <span class="detail-value" id="built">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Total Meeting Space</span>
+                            <span class="detail-value" id="totalMeetingSpace">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Venue Type</span>
+                            <span class="detail-value" id="venueType">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Brand</span>
+                            <span class="detail-value" id="brand">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Renovated</span>
+                            <span class="detail-value" id="renovated">Loading...</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Guest Rooms</span>
+                            <span class="detail-value" id="guestRooms">Loading...</span>
+                </div>
+            </div>
+            
+                    <h3>Industry Ratings</h3>
+                    <div class="detail-item">
+                        <span class="detail-label">AAA Rating</span>
+                        <span class="detail-value" id="aaaRating">Loading...</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Overall Rating</span>
+                        <span class="detail-value">
+                            <span class="stars">
+                                <span class="star">❤️</span>
+                                <span class="star">❤️</span>
+                                <span class="star">❤️</span>
+                                <span class="star">❤️</span>
+                                <span class="star empty">🤍</span>
+                            </span>
+                        </span>
+                    </div>
+                    </div>
+                
+                <div class="map-container">
+                    <h3>Location</h3>
+                    <div class="map-placeholder" id="mapPlaceholder">
+                        <iframe 
+                            id="googleMap"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3445.2!2d-97.7431!3d30.2672!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzDCsDE2JzAyLjAiTiA5N8KwNDQnMzUuMiJX!5e0!3m2!1sen!2sus!4v1234567890"
+                            allowfullscreen="" 
+                            loading="lazy" 
+                            referrerpolicy="no-referrer-when-downgrade">
+                        </iframe>
+                    </div>
+                    <div class="location-info">
+                        <div class="location-item">
+                            <span>✈️</span>
+                            <span>Distance from airport: <strong id="airportDistance">Loading...</strong></span>
+                    </div>
+                        <div class="location-item">
+                            <span>🅿️</span>
+                            <span>Parking: <strong id="parkingInfo">Loading...</strong></span>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+
+            <!-- Amenities -->
+            <div class="amenities-grid">
+                <div class="amenity-category">
+                    <h4>🏨 Room Features & Guest Services</h4>
+                    <ul class="amenity-list" id="roomAmenities">
+                        <li>Loading amenities...</li>
+                    </ul>
+                    </div>
+                <div class="amenity-category">
+                    <h4>🏃 Recreational Activities</h4>
+                    <ul class="amenity-list" id="recreationalAmenities">
+                        <li>Loading amenities...</li>
+                    </ul>
+                    </div>
+                <div class="amenity-category">
+                    <h4>📺 AV Capabilities</h4>
+                    <ul class="amenity-list" id="avAmenities">
+                        <li>Loading amenities...</li>
+                    </ul>
+                    </div>
+                <div class="amenity-category">
+                    <h4>🏢 Facilities</h4>
+                    <ul class="amenity-list" id="facilityAmenities">
+                        <li>Loading amenities...</li>
+                    </ul>
+                    </div>
+                <div class="amenity-category">
+                    <h4>🚗 Transportation</h4>
+                    <ul class="amenity-list" id="transportAmenities">
+                        <li>Loading amenities...</li>
+                    </ul>
+                </div>
+                <div class="amenity-category">
+                    <h4>💼 Business Services</h4>
+                    <ul class="amenity-list" id="businessAmenities">
+                        <li>Loading amenities...</li>
+                    </ul>
+                    </div>
+                </div>
+
+                        </div>
+        
+        <!-- Meeting Space Section -->
+        <div class="content-section" id="meeting-space">
+            <h3>Meeting Space</h3>
+            
+            <div class="meeting-controls">
+                <div class="meeting-control">
+                    <label for="attendees">Attendees</label>
+                    <input type="number" id="attendees" placeholder="Enter number of attendees">
+                        </div>
+                <div class="meeting-control">
+                    <label for="setupType">Set up</label>
+                    <select id="setupType">
+                        <option value="">All Setups</option>
+                        <option value="theater">Theater</option>
+                        <option value="classroom">Classroom</option>
+                        <option value="banquet">Banquet Rounds</option>
+                        <option value="boardroom">Boardroom</option>
+                        <option value="u-shape">U-Shape</option>
+                    </select>
+                        </div>
+                <div class="meeting-control">
+                    <label for="features">Feature</label>
+                    <select id="features">
+                        <option value="">All Features</option>
+                        <option value="natural-light">Natural Light</option>
+                        <option value="pillar-free">Pillar-Free</option>
+                        <option value="divisible">Divisible</option>
+                    </select>
+                        </div>
+                    </div>
+            
+            <div class="meeting-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Room Size</th>
+                            <th>Ceiling Height</th>
+                            <th>Maximum Capacity</th>
+                            <th>Banquet Rounds</th>
+                            <th>Theater</th>
+                            <th>Classroom</th>
+                            <th>U-Shape</th>
+                            <th>Cocktail Rounds</th>
+                            <th>Boardroom</th>
+                        </tr>
+                    </thead>
+                    <tbody id="meetingRoomsTable">
+                        <tr>
+                            <td colspan="10" class="loading">Loading meeting rooms...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+                </div>
+
+        <!-- Guest Rooms Section -->
+        <div class="content-section" id="guest-rooms">
+            <h3>Guest Rooms</h3>
+            
+            <div class="guest-rooms-summary">
+                <div class="room-summary-card">
+                    <h4>Total Guest Rooms</h4>
+                    <div class="number" id="totalRooms">Loading...</div>
+                    <div class="description">Total available rooms</div>
+                    </div>
+                <div class="room-summary-card">
+                    <h4>Single (1 bed)</h4>
+                    <div class="number" id="singleRooms">Loading...</div>
+                    <div class="description">King or Queen bed</div>
+                    </div>
+                <div class="room-summary-card">
+                    <h4>Double (2 beds)</h4>
+                    <div class="number" id="doubleRooms">Loading...</div>
+                    <div class="description">Two beds</div>
+                </div>
+                <div class="room-summary-card">
+                    <h4>Suites</h4>
+                    <div class="number" id="suiteRooms">Loading...</div>
+                    <div class="description">Premium suites</div>
+                    </div>
+                </div>
+
+            <div class="pricing-info">
+                <h3>Pricing Information</h3>
+                <div class="pricing-grid">
+                    <div class="pricing-item">
+                        <h4>Single (1 bed) Rate</h4>
+                        <div class="rate" id="singleRate">Loading...</div>
+                    </div>
+                    <div class="pricing-item">
+                        <h4>Double (2 beds) Rate</h4>
+                        <div class="rate" id="doubleRate">Loading...</div>
+                    </div>
+                    <div class="pricing-item">
+                        <h4>Tax Rate</h4>
+                        <div class="rate" id="taxRate">Loading...</div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+
+        <!-- Location Section -->
+        <div class="content-section" id="location">
+            <h3>Location</h3>
+            <div class="map-container">
+                <div class="map-placeholder" id="locationMapPlaceholder">
+                    <iframe 
+                        id="locationGoogleMap"
+                        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3445.2!2d-97.7431!3d30.2672!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzDCsDE2JzAyLjAiTiA5N8KwNDQnMzUuMiJX!5e0!3m2!1sen!2sus!4v1234567890"
+                        allowfullscreen="" 
+                        loading="lazy" 
+                        referrerpolicy="no-referrer-when-downgrade">
+                    </iframe>
+                    </div>
+                <div class="location-info">
+                    <div class="location-item">
+                        <span>✈️</span>
+                        <span>Distance from airport: <strong id="locationAirportDistance">Loading...</strong></span>
+                    </div>
+                    <div class="location-item">
+                        <span>🅿️</span>
+                        <span>Complimentary parking: <strong>Available</strong></span>
+                    </div>
+                    <div class="location-item">
+                        <span>🚌</span>
+                        <span>Bus parking: <strong>Available</strong></span>
+                    </div>
+                </div>
+                    </div>
+                </div>
+
+        <!-- More Section -->
+        <div class="content-section" id="more">
+            <!-- Additional Information -->
+            <div class="additional-info">
+                <h3>Additional Information</h3>
+                
+                <div class="info-section">
+                    <h4>Cancellation Policy</h4>
+                    <p id="cancellationPolicy">Loading cancellation policy...</p>
+                    </div>
+                
+                <div class="info-section">
+                    <h4>Additional Details</h4>
+                    <p id="additionalDetails">Loading additional details...</p>
+                </div>
+                
+                <div class="info-section">
+                    <h4>Sustainability</h4>
+                    <p id="sustainabilityInfo">Loading sustainability information...</p>
+            </div>
+                
+                <div class="info-section">
+                    <h4>Diversity & Inclusion</h4>
+                    <p id="diversityInfo">Loading diversity and inclusion information...</p>
+                </div>
+                
+                <div class="info-section">
+                    <h4>Health & Safety</h4>
+                    <p id="healthSafetyInfo">Loading health and safety information...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3>FEDEVENT</h3>
+                    <p>Professional event planning services for U.S. Government agencies.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="/hotel-signup.html">Hotel Sourcing</a>
+                    <a href="/contact.html">Event Planning</a>
+                    <a href="/government-portal.html">Venue Matching</a>
+                    <a href="/support-ticket.html">Support Ticket</a>
+                </div>
+                <div class="footer-section footer-contact">
+                    <h3>Contact</h3>
+                    <p>Email: info@fedevent.com</p>
+                    <p>Phone: (305) 850-7848</p>
+                    <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                        🔐 Admin Access
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+                <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        const API_BASE = '';
+        let currentHotel = null;
+        let currentPhotoIndex = 0;
+        let hotelPhotos = [
+            {
+                src: '/placeholder-hotel-main.jpg',
+                title: 'Hotel Main View',
+                subtitle: 'Beautiful exterior and lobby'
+            },
+            {
+                src: '/placeholder-hotel-room.jpg',
+                title: 'Guest Rooms',
+                subtitle: 'Comfortable and modern accommodations'
+            },
+            {
+                src: '/placeholder-hotel-meeting.jpg',
+                title: 'Meeting Spaces',
+                subtitle: 'Flexible and well-equipped venues'
+            },
+            {
+                src: '/placeholder-hotel-amenities.jpg',
+                title: 'Hotel Amenities',
+                subtitle: 'Recreation and business facilities'
+            }
+        ];
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeNavigation();
+            initializePhotoGallery();
+            loadHotelData();
+        });
+        
+        // Navigation functionality
+        function initializeNavigation() {
+            const navTabs = document.querySelectorAll('.nav-tab');
+            
+            navTabs.forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    // Remove active class from all tabs
+                    navTabs.forEach(t => t.classList.remove('active'));
+                    
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+                    
+                    // Scroll to the section
+                    const sectionId = this.getAttribute('data-section');
+                    const targetSection = document.getElementById(sectionId);
+                    if (targetSection) {
+                        const headerHeight = document.querySelector('.page-header').offsetHeight;
+                        const targetPosition = targetSection.offsetTop - headerHeight - 20;
+                        window.scrollTo({
+                            top: targetPosition,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Update active tab on scroll
+            window.addEventListener('scroll', updateActiveTab);
+        }
+        
+        function updateActiveTab() {
+            const navTabs = document.querySelectorAll('.nav-tab');
+            const sections = document.querySelectorAll('.content-section');
+            const headerHeight = document.querySelector('.page-header')?.offsetHeight || 0;
+            
+            let currentSection = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop - headerHeight - 30;
+                if (window.pageYOffset >= sectionTop) {
+                    currentSection = section.getAttribute('id');
+                }
+            });
+            
+            navTabs.forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.getAttribute('data-section') === currentSection) {
+                    tab.classList.add('active');
+                }
+            });
+        }
+        
+        // Photo gallery functionality
+        function initializePhotoGallery() {
+            const prevBtn = document.getElementById('prevPhoto');
+            const nextBtn = document.getElementById('nextPhoto');
+            const photoDots = document.querySelectorAll('.photo-dot');
+            const mainPhoto = document.getElementById('mainPhoto');
+            const photoTitle = document.getElementById('photoTitle');
+            const photoSubtitle = document.getElementById('photoSubtitle');
+            
+            prevBtn.addEventListener('click', () => changePhoto(-1));
+            nextBtn.addEventListener('click', () => changePhoto(1));
+            
+            photoDots.forEach((dot, index) => {
+                dot.addEventListener('click', () => setPhoto(index));
+            });
+            
+            // Auto-advance photos every 5 seconds
+            setInterval(() => changePhoto(1), 5000);
+            
+            function changePhoto(direction) {
+                currentPhotoIndex += direction;
+                if (currentPhotoIndex >= hotelPhotos.length) {
+                    currentPhotoIndex = 0;
+                } else if (currentPhotoIndex < 0) {
+                    currentPhotoIndex = hotelPhotos.length - 1;
+                }
+                setPhoto(currentPhotoIndex);
+            }
+            
+            function setPhoto(index) {
+                currentPhotoIndex = index;
+                const photo = hotelPhotos[index];
+                
+                mainPhoto.src = photo.src;
+                photoTitle.textContent = photo.title;
+                photoSubtitle.textContent = photo.subtitle;
+                
+                // Update dots
+                photoDots.forEach((dot, i) => {
+                    dot.classList.toggle('active', i === index);
+                });
+            }
+        }
+        
+        // Load hotel data
+        async function loadHotelData() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const hotelId = urlParams.get('id');
+            
+            if (!hotelId) {
+                console.log('No hotel ID provided, showing demo data');
+                // Show demo data instead of error
+                const mockHotel = getMockHotelData('demo');
+                populateHotelData(mockHotel);
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/hotels/${hotelId}/profile`);
+                const result = await response.json();
+                
+                if (result.ok && result.hotel) {
+                    populateHotelData(result.hotel);
+            } else {
+                    // Fallback to mock data if API fails
+                    console.warn('API failed, using mock data:', result.message);
+                    const mockHotel = getMockHotelData(hotelId);
+                    populateHotelData(mockHotel);
+                }
+                
+            } catch (error) {
+                console.error('Error loading hotel data:', error);
+                // Fallback to mock data
+                const mockHotel = getMockHotelData(hotelId);
+                populateHotelData(mockHotel);
+            }
+        }
+        
+        // Mock data fallback
+        function getMockHotelData(hotelId) {
+            return {
+                id: hotelId,
+                name: "Aiden Austin City Hotel",
+                address: "2200 S IH 35, Austin, TX, USA, 78704",
+                chain: "BWH Hotels",
+                brand: "Aiden",
+                built: "1974",
+                renovated: "2019",
+                total_meeting_space: "3,900 sq ft",
+                venue_type: "Boutique hotel",
+                guest_rooms: 158,
+                aaa_rating: "3.5 stars",
+                airport_distance: "6.6 mi",
+                parking_info: "Complimentary parking, Bus parking",
+                single_rooms: 84,
+                double_rooms: 74,
+                suite_rooms: 9,
+                single_rate: "$99.00 - $180.00",
+                double_rate: "$99.00 - $180.00",
+                tax_rate: "17%",
+                cancellation_policy: "24 hours cancellation policy - Reservation must be cancelled by 4:00pm day prior to arrival.",
+                additional_details: "Start your day with a fresh, delicious and filling, FREE Hot Breakfast Buffet. Enjoy our outdoor pool, wading pool & heated hot tub set in a beautiful garden courtyard. Experience a level of service, amenities, and appearance associated with boutique hotels but at an affordable price.",
+                sustainability_info: "Yes, we recycle throughout the property in guest rooms, public areas and restaurant.",
+                diversity_info: "We are committed to diversity, equity, and inclusion in all our operations.",
+                health_safety_info: "Yes, Best Western We Care Clean program. Common areas and touch points sanitized every 4 hours.",
+                amenities: {
+                    room_features: ["Calls (local)", "Internet access", "Laundry service", "Voicemail box"],
+                    recreational: ["Health club", "Outdoor pool", "Spa or salon", "Whirlpool"],
+                    av_capabilities: ["AV equipment", "High speed internet (2000 Mbps)"],
+                    facilities: ["Onsite catering", "Onsite restaurant", "Pet friendly", "Wheelchair accessible"],
+                    transportation: ["Airport shuttle", "Bus", "Taxi"],
+                    business: ["Business center"]
+                },
+                meeting_rooms: [
+                    {
+                        name: "Full Ballroom (4 rooms)",
+                        size: "3,900 sq ft (88 x 44 sq ft)",
+                        ceiling_height: "10 ft",
+                        max_capacity: 250,
+                        banquet_rounds: 220,
+                        theater: 250,
+                        classroom: 200,
+                        u_shape: 200,
+                        cocktail_rounds: 220,
+                        boardroom: 220
+                    },
+                    {
+                        name: "Attic with Loft Meeting/Conference",
+                        size: "1,100 sq ft (33 x 36 sq ft)",
+                        ceiling_height: "12 ft",
+                        max_capacity: 50,
+                        banquet_rounds: 48,
+                        theater: "-",
+                        classroom: 40,
+                        u_shape: 25,
+                        cocktail_rounds: "-",
+                        boardroom: 24
+                    },
+                    {
+                        name: "Walnut, Oak, Mesquite, Cedar",
+                        size: "968 sq ft (22 x 44 sq ft)",
+                        ceiling_height: "10 ft",
+                        max_capacity: 64,
+                        banquet_rounds: 50,
+                        theater: 64,
+                        classroom: 50,
+                        u_shape: "-",
+                        cocktail_rounds: "-",
+                        boardroom: 36
+                    }
+                ]
+            };
+        }
+        
+        // Populate hotel data in the UI
+        function populateHotelData(hotel) {
+            currentHotel = hotel;
+            
+            // Debug: Log hotel data
+            console.log('🏨 HOTEL DATA RECEIVED:', hotel);
+            console.log('🏨 Room data:', hotel.sr_sleeping_json);
+            if (hotel.sr_sleeping_json) {
+              try {
+                const roomData = JSON.parse(hotel.sr_sleeping_json);
+                console.log('🏨 Parsed room data:', roomData);
+                console.log('🏨 Suites:', roomData.suites);
+              } catch (e) {
+                console.error('🏨 Error parsing room data:', e);
+              }
+            }
+            
+            // Basic info
+            document.getElementById('hotelName').textContent = hotel.name;
+            document.getElementById('hotelAddress').textContent = hotel.address;
+            
+            // Venue details
+            document.getElementById('chain').textContent = hotel.chain || '-';
+            document.getElementById('built').textContent = hotel.built || '-';
+            document.getElementById('totalMeetingSpace').textContent = hotel.total_meeting_space || '-';
+            document.getElementById('venueType').textContent = hotel.venue_type || '-';
+            document.getElementById('brand').textContent = hotel.brand || '-';
+            document.getElementById('renovated').textContent = hotel.renovated || '-';
+            document.getElementById('guestRooms').textContent = hotel.guest_rooms || '-';
+            document.getElementById('aaaRating').textContent = hotel.aaa_rating || '-';
+            
+            // Location info
+            document.getElementById('airportDistance').textContent = hotel.airport_distance || '-';
+            document.getElementById('parkingInfo').textContent = hotel.parking_info || '-';
+            document.getElementById('locationAirportDistance').textContent = hotel.airport_distance || '-';
+            
+            // Guest rooms
+            document.getElementById('totalRooms').textContent = hotel.guest_rooms || '-';
+            document.getElementById('singleRooms').textContent = hotel.single_rooms || '-';
+            document.getElementById('doubleRooms').textContent = hotel.double_rooms || '-';
+            document.getElementById('suiteRooms').textContent = hotel.suite_rooms || '-';
+            document.getElementById('singleRate').textContent = hotel.single_rate || '-';
+            document.getElementById('doubleRate').textContent = hotel.double_rate || '-';
+            document.getElementById('taxRate').textContent = hotel.tax_rate || '-';
+            
+            // Additional information
+            document.getElementById('cancellationPolicy').textContent = hotel.cancellation_policy || 'Policy not available';
+            document.getElementById('additionalDetails').textContent = hotel.additional_details || 'Details not available';
+            document.getElementById('sustainabilityInfo').textContent = hotel.sustainability_info || 'Information not available';
+            document.getElementById('diversityInfo').textContent = hotel.diversity_info || 'Information not available';
+            document.getElementById('healthSafetyInfo').textContent = hotel.health_safety_info || 'Information not available';
+            
+            // Amenities
+            populateAmenities(hotel.amenities);
+            
+            // Meeting rooms - try to get from room data first
+            let meetingRooms = hotel.meeting_rooms;
+            if (!meetingRooms && hotel.sr_sleeping_json) {
+              try {
+                const roomData = JSON.parse(hotel.sr_sleeping_json);
+                // Convert suite data to meeting room format for display
+                if (roomData.suites && roomData.suites.length > 0) {
+                  meetingRooms = roomData.suites.map(suite => ({
+                    name: suite.type || 'Suite',
+                    size: `${suite.rooms} rooms`,
+                    ceiling_height: 'Standard',
+                    max_capacity: suite.real_beds * 2, // Estimate based on beds
+                    banquet_rounds: '-',
+                    theater: '-',
+                    classroom: '-',
+                    u_shape: '-',
+                    cocktail_rounds: '-',
+                    boardroom: '-'
+                  }));
+                }
+              } catch (e) {
+                console.error('Error parsing room data for meeting rooms:', e);
+              }
+            }
+            populateMeetingRooms(meetingRooms);
+        }
+        
+        // Populate amenities
+        function populateAmenities(amenities) {
+            if (!amenities) return;
+            
+            const amenityLists = {
+                roomAmenities: amenities.room_features || [],
+                recreationalAmenities: amenities.recreational || [],
+                avAmenities: amenities.av_capabilities || [],
+                facilityAmenities: amenities.facilities || [],
+                transportAmenities: amenities.transportation || [],
+                businessAmenities: amenities.business || []
+            };
+            
+            Object.keys(amenityLists).forEach(listId => {
+                const list = document.getElementById(listId);
+                const items = amenityLists[listId];
+                
+                if (items.length > 0) {
+                    list.innerHTML = items.map(item => `<li>${item}</li>`).join('');
+                } else {
+                    list.innerHTML = '<li>No amenities listed</li>';
+                }
+            });
+        }
+        
+        // Populate meeting rooms table
+        function populateMeetingRooms(meetingRooms) {
+            const tableBody = document.getElementById('meetingRoomsTable');
+            
+            if (!meetingRooms || meetingRooms.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="10">No meeting rooms available</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = meetingRooms.map(room => `
+                <tr>
+                    <td>${room.name}</td>
+                    <td>${room.size}</td>
+                    <td>${room.ceiling_height}</td>
+                    <td>${room.max_capacity}</td>
+                    <td>${room.banquet_rounds}</td>
+                    <td>${room.theater}</td>
+                    <td>${room.classroom}</td>
+                    <td>${room.u_shape}</td>
+                    <td>${room.cocktail_rounds}</td>
+                    <td>${room.boardroom}</td>
+                </tr>
+            `).join('');
+        }
+        
+        
+        // Utility functions
+        function showError(message) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(errorDiv, container.firstChild);
+        }
+        
+        function showToast(message, type = 'info') {
+            // Simple toast notification
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#16a34a' : type === 'error' ? '#dc2626' : '#3b82f6'};
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+                z-index: 1000;
+                animation: slideIn 0.3s ease-out;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = 'slideOut 0.3s ease-in';
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+        
+        // Add CSS animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+    
+    <!-- Universal Logout System -->
+    <script src="/logout-universal.js"></script>
+<script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
+</body>
+</html>

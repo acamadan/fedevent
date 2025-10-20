@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hotel Partner Terms of Participation</title>
+  <link rel="stylesheet" href="/site.css">
+  <script src="/nav.js"></script>
+  <style>
+    body{background:#f8fafc}
+    .page-hero{padding:48px 0;background:#ffffff;border-bottom:1px solid #e5e7eb}
+    .page-hero .title{margin:0 0 8px;font-size:32px}
+    .page-hero .lead{color:#6b7280;max-width:820px}
+    .layout{display:grid;grid-template-columns:2fr 1fr;gap:20px}
+    .layout-narrow{display:block}
+    .section-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,.06);}
+    .section-card .section-body{padding:20px}
+    .section-title{font-size:18px;font-weight:700;margin:0 0 8px}
+    .terms-box{max-height:340px;overflow:auto;border:1px solid #e5e7eb;border-radius:12px;padding:14px;background:#ffffff}
+    .terms-box ol{margin:0;padding-left:20px}
+    .terms-box li{margin-bottom:16px}
+    .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .field{display:block}
+    .field label{display:block;font-weight:600;margin:8px 0 6px}
+    .field input{width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px}
+    .consent{display:flex;gap:10px;align-items:flex-start;margin-top:4px;color:#374151}
+    .sig-wrap{border:1px dashed #cbd5e1;border-radius:12px;background:#fff;padding:12px}
+    .sig-toolbar{display:flex;gap:10px;align-items:center;margin:8px 0}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap}
+    .aside{position:sticky;top:24px}
+    @media (max-width: 900px){.layout{display:block}.aside{position:static}.field-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+<header>
+  <nav class="container">
+    <div class="logo-menu" style="position: relative;">
+      <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+      <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+        <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+        <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+        <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+        <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+        <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+        <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+      </div>
+    </div>
+    <ul class="nav-links">
+      <li id="userMenu" class="user-menu" style="display:none;">
+        <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+          <span class="user-avatar" id="userInitial">U</span>
+          <span id="userNameLabel">User</span>
+          <span aria-hidden>▾</span>
+        </a>
+        <div class="user-dropdown" id="userDropdown">
+          <a href="/hotel-dashboard.html">Hotel Portal</a>
+          <a href="/hotel-profile.html">User Settings</a>
+          <button type="button" onclick="logoutUser()">Logout</button>
+        </div>
+      </li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <div class="page-hero">
+    <div class="container">
+      <h1 class="title">Hotel Partner Terms of Participation</h1>
+      <p class="lead">Review the terms below and complete the required signature. A signed PDF will be generated automatically.</p>
+    </div>
+  </div>
+
+  <div class="container" style="padding:24px 0;">
+    <div class="layout">
+      <!-- Left column: Terms + Signature Form -->
+      <div>
+        <div class="section-card">
+          <div class="section-body">
+            <div class="section-title">Agreement Terms</div>
+            <div class="terms-box">
+              <ol>
+                <li><strong>Relationship.</strong> CREATA Global Event Agency LLC ("CREATA"), a registered federal contractor in Florida, operates as Prime Contractor under applicable federal acquisition regulations. Hotels joining CREATA’s Preferred Partner Network ("Hotel") are subcontractors and must comply with flowed-down requirements.</li>
+                <li><strong>Partnership Contribution.</strong> The Hotel agrees to remit seven percent (7%) of the total contract value credited to the Hotel's invoice under any award facilitated by CREATA. The contribution is deducted after CREATA is paid by the Government; obligation exists only if the Hotel is selected and funds are received by CREATA.</li>
+                <li><strong>No Guarantee of Award.</strong> Participation does not guarantee award. Government selects awards.</li>
+                <li><strong>No Disclosure Obligation.</strong> CREATA is not obligated to disclose timing, status, or likelihood of award; procurement integrity rules apply.</li>
+                <li><strong>Compliance with Law.</strong> Governed by Florida law with due regard to applicable federal contracting statutes and regulations; federal law controls in case of conflict.</li>
+                <li><strong>Payment Terms.</strong> NET 30 consistent with FAR 52.232-25; no deposits or direct-bill applications; invoicing through CREATA only.</li>
+                <li><strong>No Direct Bill Applications.</strong> CREATA does not complete or submit hotel "direct bill application" forms. All invoicing for programs facilitated by CREATA flows exclusively through CREATA as Prime Contractor. The end-customer is the United States Government, and all funds are secured through U.S. Government departments under binding procurement contracts. Hotels may request to verify credibility, but any request for CREATA to complete a direct bill application will be declined as unnecessary. No direct billing relationship shall be established directly between the Hotel and any U.S. Government customer for awards facilitated by CREATA.</li>
+                <li><strong>No Direct Contact with Government Officials.</strong> Subcontractors (Hotels) are strictly prohibited from contacting any United States Government contracting or program officials regarding awards, solicitations, or contracts facilitated by CREATA. All communication with the Government shall be made solely by CREATA as the Prime Contractor. If government official contact information is inadvertently released or disclosed to the Hotel, the Hotel must immediately notify CREATA and permanently delete such information. Under no circumstances shall the Hotel initiate or respond to communications with Government officials regarding the contract. Any direct outreach by a Hotel to Government officials will (i) damage credibility as a professional federal subcontractor, (ii) result in Government officials refusing further communications, and (iii) may constitute a violation of federal procurement integrity rules. Please do not place CREATA or your property in this position.</li>
+                <li><strong>Entire Understanding.</strong> These Terms constitute the entire understanding between CREATA and the Hotel.</li>
+              </ol>
+              <p class="hint" style="margin-top:8px">By signing, the signer agrees this electronic record and signature are legally binding under ESIGN and UETA.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card" style="margin-top:16px">
+          <div class="section-body">
+            <div class="section-title">Sign Agreement</div>
+            <form id="signForm" class="form">
+              <div class="field-grid">
+                <label class="field"><span>Hotel Name</span><input id="hotelName" required></label>
+                <label class="field"><span>Representative Name</span><input id="repName" required></label>
+                <label class="field"><span>Title</span>
+                  <select id="repTitle" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px">
+                    <option value="">Select title…</option>
+                    <option>Owner</option>
+                    <option>General Manager</option>
+                    <option>Director of Sales</option>
+                    <option>Sales Manager</option>
+                    <option>Sales Coordinator</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+                <label class="field"><span>Email</span><input id="repEmail" type="email" required></label>
+              </div>
+              <div class="field-grid">
+                <label class="field"><span>Approver Name</span><input id="approverName" placeholder="" required></label>
+                <label class="field"><span>Approver Title</span>
+                  <select id="approverTitle" required style="width:100%;padding:10px 12px;border:1px solid #d1d5db;border-radius:10px">
+                    <option value="">Select title…</option>
+                    <option>Owner</option>
+                    <option>General Manager</option>
+                    <option>Director of Sales</option>
+                    <option>Sales Manager</option>
+                    <option>Sales Coordinator</option>
+                    <option>Other</option>
+                  </select>
+                </label>
+                <label class="field"><span>Approver Email</span><input id="approverEmail" type="email" placeholder="approver@hotel.com" required></label>
+              </div>
+              <label class="consent"><input type="checkbox" id="consent" required> <span>I consent to transact electronically under ESIGN/UETA and agree to the Terms.</span></label>
+
+              <div style="margin-top:12px">
+                <div class="kicker" style="margin-bottom:6px">Signature (required)</div>
+                <div class="sig-toolbar">
+                  <label style="display:flex;align-items:center;gap:6px"><input type="radio" name="sigMode" value="draw" checked> Draw</label>
+                  <label style="display:flex;align-items:center;gap:6px"><input type="radio" name="sigMode" value="type"> Type my name</label>
+                </div>
+                <input type="text" id="typedName" class="form-input" placeholder="Type your name" style="display:none;padding:8px 10px;border:1px solid #d1d5db;border-radius:10px;margin-top:8px;width:100%">
+                <div id="sigDrawWrap" class="sig-wrap">
+                  <canvas id="sigCanvas" style="width:100%;height:180px"></canvas>
+                  <div class="btn-row"><button type="button" class="btn ghost" id="sigClear">Clear</button></div>
+                </div>
+                <input type="hidden" id="signatureDataUrl">
+              </div>
+
+              <div class="btn-row" style="margin-top:14px">
+                <button class="btn ghost" type="button" onclick="goBackToDashboard()">← Back to Dashboard</button>
+                <button class="btn primary" type="submit">Submit & Download PDF</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right column: Summary/Help -->
+      <aside class="aside">
+        <div class="section-card">
+          <div class="section-body">
+            <div class="section-title">About This Agreement</div>
+            <p class="hint">This one-page agreement establishes participation in CREATA’s Preferred Partner Network. It does not guarantee award. All awards are made by the Government.</p>
+            <div class="hr" style="height:1px;background:#e5e7eb;margin:12px 0"></div>
+            <div class="section-title">Need Help?</div>
+            <p class="hint">Questions? <a href="mailto:support@fedevent.com">support@fedevent.com</a> and our team will assist.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+<script>
+  // Signature pad setup
+  const sigCanvas = document.getElementById('sigCanvas');
+  const sp = new window.SignaturePad(sigCanvas, { backgroundColor: 'white' });
+  function resize() {
+    const ratio = Math.max(window.devicePixelRatio || 1, 1);
+    const w = sigCanvas.parentElement.clientWidth;
+    sigCanvas.width = w * ratio; sigCanvas.height = 160 * ratio;
+    sigCanvas.style.width = w+'px'; sigCanvas.style.height = '160px';
+    const data = sp.toData(); sp.clear(); if (data) try { sp.fromData(data); } catch(e){}
+  }
+  window.addEventListener('resize', resize);
+  document.getElementById('sigClear').onclick = () => sp.clear();
+  resize();
+
+  function setSigMode(mode){
+    const typed = document.getElementById('typedName');
+    const drawWrap = document.getElementById('sigDrawWrap');
+    if (mode === 'type') {
+      typed.style.display = 'inline-block';
+      drawWrap.style.display = 'none';
+    } else {
+      typed.style.display = 'none';
+      drawWrap.style.display = 'block';
+    }
+  }
+  document.querySelectorAll('input[name="sigMode"]').forEach(r => {
+    r.addEventListener('change', (e) => setSigMode(e.target.value));
+  });
+  // initialize
+  setSigMode('draw');
+
+  // Submit
+  document.getElementById('signForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!document.getElementById('consent').checked) { alert('Please accept the consent.'); return; }
+    const mode = (document.querySelector('input[name="sigMode"]:checked')||{}).value;
+    let dataUrl = '';
+    if (mode === 'draw') {
+      if (sp.isEmpty()) { alert('Please draw your signature or choose “Type my name”.'); return; }
+      dataUrl = sp.toDataURL();
+    } else {
+      const name = document.getElementById('typedName').value.trim();
+      if (!name) { alert('Please type your name as signature.'); return; }
+      const tmp = document.createElement('canvas'); tmp.width=600; tmp.height=160;
+      const ctx = tmp.getContext('2d'); ctx.fillStyle='#fff'; ctx.fillRect(0,0,tmp.width,tmp.height);
+      ctx.fillStyle='#000'; ctx.font='48px serif'; ctx.fillText(name, 20, 100);
+      dataUrl = tmp.toDataURL('image/png');
+    }
+    document.getElementById('signatureDataUrl').value = dataUrl;
+
+    const payload = {
+      consent: true,
+      hotelName: document.getElementById('hotelName').value.trim(),
+      repName: document.getElementById('repName').value.trim(),
+      title: document.getElementById('repTitle').value.trim(),
+      email: document.getElementById('repEmail').value.trim(),
+      approverName: document.getElementById('approverName').value.trim(),
+      approverTitle: document.getElementById('approverTitle').value.trim(),
+      approverEmail: document.getElementById('approverEmail').value.trim(),
+      signatureDataUrl: dataUrl,
+      agreementVersion: '1.0',
+      agreementEffective: new Date().toISOString().slice(0,10),
+      timestamp: new Date().toISOString(),
+      userAgent: navigator.userAgent
+    };
+
+    try {
+      const resp = await fetch('/api/sign-agreement', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload) });
+      if (!resp.ok) { const t = await resp.text(); throw new Error(t || 'Submit failed'); }
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'CREATA-Hotel-Participation.pdf';
+      document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); a.remove();
+      location.href = '/hotel-sign-thank-you.html';
+    } catch (err) {
+      alert('Error: ' + (err.message || err));
+    }
+  });
+
+  // Header dropdown functionality
+  // Auto-fill from session profile or URL params
+  (async function autofillFromContext(){
+    try {
+      const params = new URLSearchParams(location.search);
+      const qHotel = params.get('hotel');
+      const qName  = params.get('name');
+      const qEmail = params.get('email');
+      if (qHotel) document.getElementById('hotelName').value = qHotel;
+      if (qName)  document.getElementById('repName').value = qName;
+      if (qEmail) document.getElementById('repEmail').value = qEmail;
+
+      // Attempt to load registration draft from localStorage
+      const localDraftRaw = localStorage.getItem('hotel_registration_draft');
+      if (localDraftRaw) {
+        try {
+          const draft = JSON.parse(localDraftRaw) || {};
+          const fd = draft.formData || {};
+          // Hotel name
+          if (!document.getElementById('hotelName').value && fd.hotel_name) {
+            document.getElementById('hotelName').value = fd.hotel_name;
+          }
+          // Contacts mapping: assume [0] is Signer, [1] is Approver per validation rules
+          const name0 = fd['sign_contacts[0][name]'] || '';
+          const email0 = fd['sign_contacts[0][email]'] || '';
+          const title0 = fd['sign_contacts[0][title]'] || '';
+          const role0  = fd['sign_contacts[0][role]'] || '';
+          const name1 = fd['sign_contacts[1][name]'] || '';
+          const email1 = fd['sign_contacts[1][email]'] || '';
+          const title1 = fd['sign_contacts[1][title]'] || '';
+          const role1  = fd['sign_contacts[1][role]'] || '';
+
+          // Determine representative (Signer) and approver
+          const rep = role0 === 'Signer' ? { name: name0, email: email0, title: title0 } : (role1 === 'Signer' ? { name: name1, email: email1, title: title1 } : null);
+          const appr = role0 === 'Approver' ? { name: name0, email: email0, title: title0 } : (role1 === 'Approver' ? { name: name1, email: email1, title: title1 } : null);
+
+          if (rep) {
+            if (!document.getElementById('repName').value && rep.name) document.getElementById('repName').value = rep.name;
+            if (!document.getElementById('repEmail').value && rep.email) document.getElementById('repEmail').value = rep.email;
+            if (rep.title) document.getElementById('repTitle').value = rep.title;
+          }
+          if (appr) {
+            if (appr.name) document.getElementById('approverName').value = appr.name;
+            if (appr.email) document.getElementById('approverEmail').value = appr.email;
+            if (appr.title) document.getElementById('approverTitle').value = appr.title;
+          }
+        } catch (e) { /* ignore parse errors */ }
+      }
+
+      // Attempt to load server draft if session exists and fields still empty
+      const sessionId = localStorage.getItem('fedevent_session');
+      if (sessionId && (!document.getElementById('repName').value || !document.getElementById('approverName').value)) {
+        try {
+          const resp = await fetch('/api/draft/load', { headers: { 'Authorization': `Bearer ${sessionId}` } });
+          if (resp.ok) {
+            const result = await resp.json();
+            const fd = (result && result.draft && result.draft.formData) || {};
+            if (fd.hotel_name && !document.getElementById('hotelName').value) document.getElementById('hotelName').value = fd.hotel_name;
+            const name0 = fd['sign_contacts[0][name]'] || '';
+            const email0 = fd['sign_contacts[0][email]'] || '';
+            const title0 = fd['sign_contacts[0][title]'] || '';
+            const role0  = fd['sign_contacts[0][role]'] || '';
+            const name1 = fd['sign_contacts[1][name]'] || '';
+            const email1 = fd['sign_contacts[1][email]'] || '';
+            const title1 = fd['sign_contacts[1][title]'] || '';
+            const role1  = fd['sign_contacts[1][role]'] || '';
+            const rep = role0 === 'Signer' ? { name: name0, email: email0, title: title0 } : (role1 === 'Signer' ? { name: name1, email: email1, title: title1 } : null);
+            const appr = role0 === 'Approver' ? { name: name0, email: email0, title: title0 } : (role1 === 'Approver' ? { name: name1, email: email1, title: title1 } : null);
+            if (rep) {
+              if (!document.getElementById('repName').value && rep.name) document.getElementById('repName').value = rep.name;
+              if (!document.getElementById('repEmail').value && rep.email) document.getElementById('repEmail').value = rep.email;
+              if (rep.title) document.getElementById('repTitle').value = rep.title;
+            }
+            if (appr) {
+              if (!document.getElementById('approverName').value && appr.name) document.getElementById('approverName').value = appr.name;
+              if (!document.getElementById('approverEmail').value && appr.email) document.getElementById('approverEmail').value = appr.email;
+              if (appr.title) document.getElementById('approverTitle').value = appr.title;
+            }
+          }
+        } catch (_) {}
+      }
+    } catch (_) {}
+  })();
+
+  // Header dropdown functionality
+  function toggleUserDropdown(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const dd = document.getElementById('userDropdown');
+    dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function toggleLogoDropdown(e) {
+    e.preventDefault();
+    e.stopPropagation();
+    const dd = document.getElementById('logoDropdown');
+    dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function logoutUser() {
+    localStorage.removeItem('fedevent_session');
+    localStorage.removeItem('fedevent_user');
+    window.location.href = '/hotel-login.html';
+  }
+
+  function goBackToDashboard() {
+    // Check if user is logged in
+    const sessionId = localStorage.getItem('fedevent_session');
+    if (sessionId) {
+      window.location.href = '/hotel-dashboard.html';
+    } else {
+      // If not logged in, go to login page
+      window.location.href = '/hotel-login.html';
+    }
+  }
+
+  // Close dropdowns when clicking outside
+  document.addEventListener('click', function(e) {
+    const logoDropdown = document.getElementById('logoDropdown');
+    const userDropdown = document.getElementById('userDropdown');
+    
+    if (!e.target.closest('.logo-menu')) {
+      logoDropdown.style.display = 'none';
+    }
+    
+    if (!e.target.closest('.user-menu')) {
+      userDropdown.style.display = 'none';
+    }
+  });
+</script>
+    <script src="/footer.js"></script>
+</body>
+</html>
+

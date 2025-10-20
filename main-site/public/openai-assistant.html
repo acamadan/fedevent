@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenAI Assistant - FEDEVENT</title>
+    <link rel="stylesheet" href="site.css">
+    <style>
+        .ai-container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .ai-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .ai-tab { padding: 10px 20px; cursor: pointer; border-radius: 5px 5px 0 0; background: #f5f5f5; }
+        .ai-tab.active { background: #007bff; color: white; }
+        .ai-panel { display: none; padding: 20px; border: 1px solid #ddd; border-radius: 5px; }
+        .ai-panel.active { display: block; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { 
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; 
+        }
+        .form-group textarea { min-height: 150px; resize: vertical; }
+        .btn { padding: 12px 25px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
+        .result-area { margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 4px; border-left: 4px solid #007bff; }
+        .loading { display: none; color: #007bff; }
+        .error { color: #dc3545; background: #f8d7da; padding: 10px; border-radius: 4px; }
+        .token-usage { font-size: 0.9em; color: #666; margin-top: 10px; }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="index.html" class="logo">FEDEVENT</a>
+        <div class="nav-links">
+            <a href="hotel-dashboard.html">Dashboard</a>
+            <a href="#" onclick="logout()">Logout</a>
+        </div>
+    </nav>
+
+    <div class="ai-container">
+        <h1>AI Assistant</h1>
+        
+        <div class="ai-tabs">
+            <div class="ai-tab active" onclick="showTab('code-review')">Code Review</div>
+            <div class="ai-tab" onclick="showTab('document-analysis')">Document Analysis</div>
+            <div class="ai-tab" onclick="showTab('proposal-generator')">Proposal Generator</div>
+            <div class="ai-tab" onclick="showTab('assistant')">General Assistant</div>
+        </div>
+
+        <!-- Code Review Panel -->
+        <div id="code-review" class="ai-panel active">
+            <h3>Code Review</h3>
+            <form onsubmit="performCodeReview(event)">
+                <div class="form-group">
+                    <label>Programming Language:</label>
+                    <select id="code-language">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="java">Java</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="sql">SQL</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Review Focus:</label>
+                    <select id="review-focus">
+                        <option value="general">General Review</option>
+                        <option value="security">Security Focus</option>
+                        <option value="performance">Performance Focus</option>
+                        <option value="refactor">Refactoring Suggestions</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Code to Review:</label>
+                    <textarea id="code-input" placeholder="Paste your code here..."></textarea>
+                </div>
+                <button type="submit" class="btn" id="review-btn">Review Code</button>
+                <div class="loading" id="review-loading">Analyzing code...</div>
+            </form>
+            <div id="review-result" class="result-area" style="display:none;"></div>
+        </div>
+
+        <!-- Document Analysis Panel -->
+        <div id="document-analysis" class="ai-panel">
+            <h3>Document Analysis</h3>
+            <form onsubmit="analyzeDocument(event)">
+                <div class="form-group">
+                    <label>Analysis Type:</label>
+                    <select id="analysis-type">
+                        <option value="summary">Summary</option>
+                        <option value="key_points">Key Points</option>
+                        <option value="requirements">Requirements Extraction</option>
+                        <option value="action_items">Action Items</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Document Text:</label>
+                    <textarea id="document-text" placeholder="Paste document content here..."></textarea>
+                </div>
+                <button type="submit" class="btn" id="analyze-btn">Analyze Document</button>
+                <div class="loading" id="analyze-loading">Analyzing document...</div>
+            </form>
+            <div id="analyze-result" class="result-area" style="display:none;"></div>
+        </div>
+
+        <!-- Proposal Generator Panel -->
+        <div id="proposal-generator" class="ai-panel">
+            <h3>Contract Proposal Generator</h3>
+            <form onsubmit="generateProposal(event)">
+                <div class="form-group">
+                    <label>Contract Requirements:</label>
+                    <textarea id="proposal-requirements" placeholder="Enter the contract requirements, specifications, and scope..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Hotel Information (Optional):</label>
+                    <textarea id="hotel-info" placeholder="Enter hotel details, capabilities, and relevant information..."></textarea>
+                </div>
+                <button type="submit" class="btn" id="proposal-btn">Generate Proposal</button>
+                <div class="loading" id="proposal-loading">Generating proposal...</div>
+            </form>
+            <div id="proposal-result" class="result-area" style="display:none;"></div>
+        </div>
+
+        <!-- General Assistant Panel -->
+        <div id="assistant" class="ai-panel">
+            <h3>General AI Assistant</h3>
+            <form onsubmit="askAssistant(event)">
+                <div class="form-group">
+                    <label>Context (Optional):</label>
+                    <textarea id="assistant-context" placeholder="Provide any relevant context for your question..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Your Question:</label>
+                    <textarea id="assistant-message" placeholder="Ask any question related to federal contracting, hotel management, or business processes..."></textarea>
+                </div>
+                <button type="submit" class="btn" id="assistant-btn">Ask Assistant</button>
+                <div class="loading" id="assistant-loading">Getting response...</div>
+            </form>
+            <div id="assistant-result" class="result-area" style="display:none;"></div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching
+        function showTab(tabName) {
+            document.querySelectorAll('.ai-tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.ai-panel').forEach(panel => panel.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+
+        // API call helper
+        async function makeAPICall(endpoint, data) {
+            const token = sessionStorage.getItem('authToken');
+            if (!token) {
+                throw new Error('Authentication required');
+            }
+
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || `HTTP ${response.status}`);
+            }
+
+            return await response.json();
+        }
+
+        // Code Review
+        async function performCodeReview(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('review-btn');
+            const loading = document.getElementById('review-loading');
+            const result = document.getElementById('review-result');
+            
+            const code = document.getElementById('code-input').value.trim();
+            if (!code) {
+                alert('Please enter code to review');
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                loading.style.display = 'block';
+                result.style.display = 'none';
+
+                const data = await makeAPICall('/api/openai/code-review', {
+                    code: code,
+                    language: document.getElementById('code-language').value,
+                    focus: document.getElementById('review-focus').value
+                });
+
+                result.innerHTML = `
+                    <h4>Code Review Results</h4>
+                    <div style="white-space: pre-wrap;">${data.review}</div>
+                    <div class="token-usage">Tokens used: ${data.tokens_used}</div>
+                `;
+                result.style.display = 'block';
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                result.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // Document Analysis
+        async function analyzeDocument(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('analyze-btn');
+            const loading = document.getElementById('analyze-loading');
+            const result = document.getElementById('analyze-result');
+            
+            const text = document.getElementById('document-text').value.trim();
+            if (!text) {
+                alert('Please enter document text to analyze');
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                loading.style.display = 'block';
+                result.style.display = 'none';
+
+                const data = await makeAPICall('/api/openai/analyze-document', {
+                    text: text,
+                    analysis_type: document.getElementById('analysis-type').value
+                });
+
+                result.innerHTML = `
+                    <h4>Document Analysis Results</h4>
+                    <div style="white-space: pre-wrap;">${data.analysis}</div>
+                    <div class="token-usage">Tokens used: ${data.tokens_used}</div>
+                `;
+                result.style.display = 'block';
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                result.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // Proposal Generation
+        async function generateProposal(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('proposal-btn');
+            const loading = document.getElementById('proposal-loading');
+            const result = document.getElementById('proposal-result');
+            
+            const requirements = document.getElementById('proposal-requirements').value.trim();
+            if (!requirements) {
+                alert('Please enter contract requirements');
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                loading.style.display = 'block';
+                result.style.display = 'none';
+
+                const data = await makeAPICall('/api/openai/generate-proposal', {
+                    requirements: requirements,
+                    hotel_info: document.getElementById('hotel-info').value.trim()
+                });
+
+                result.innerHTML = `
+                    <h4>Generated Proposal</h4>
+                    <div style="white-space: pre-wrap;">${data.proposal}</div>
+                    <div class="token-usage">Tokens used: ${data.tokens_used}</div>
+                `;
+                result.style.display = 'block';
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                result.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // General Assistant
+        async function askAssistant(event) {
+            event.preventDefault();
+            
+            const btn = document.getElementById('assistant-btn');
+            const loading = document.getElementById('assistant-loading');
+            const result = document.getElementById('assistant-result');
+            
+            const message = document.getElementById('assistant-message').value.trim();
+            if (!message) {
+                alert('Please enter a question');
+                return;
+            }
+
+            try {
+                btn.disabled = true;
+                loading.style.display = 'block';
+                result.style.display = 'none';
+
+                const data = await makeAPICall('/api/openai/assistant', {
+                    message: message,
+                    context: document.getElementById('assistant-context').value.trim()
+                });
+
+                result.innerHTML = `
+                    <h4>Assistant Response</h4>
+                    <div style="white-space: pre-wrap;">${data.response}</div>
+                    <div class="token-usage">Tokens used: ${data.tokens_used}</div>
+                `;
+                result.style.display = 'block';
+
+            } catch (error) {
+                result.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+                result.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                loading.style.display = 'none';
+            }
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.removeItem('authToken');
+            window.location.href = 'hotel-login.html';
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = sessionStorage.getItem('authToken');
+            if (!token) {
+                window.location.href = 'hotel-login.html';
+            }
+        });
+    </script>
+</body>
+</html>

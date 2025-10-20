@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Member Functionality - Implementation Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .implementation-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .implementation-section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        .code {
+            background: #f1f1f1;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .info {
+            color: #007bff;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Team Member Functionality - Implementation Summary</h1>
+        
+        <div class="implementation-section">
+            <h2>✅ Functionality Already Implemented</h2>
+            <p>The team member functionality has been successfully implemented in the hotel registration form with the following features:</p>
+            
+            <ul>
+                <li><span class="success">✓</span> "Add Team Member" button placed below the second primary contact's title field</li>
+                <li><span class="success">✓</span> Team member template with name, title, email, and phone fields</li>
+                <li><span class="success">✓</span> JavaScript functionality to add team members dynamically</li>
+                <li><span class="success">✓</span> Remove team member functionality with individual remove buttons</li>
+                <li><span class="success">✓</span> Form data collection for team members</li>
+                <li><span class="success">✓</span> Form data restoration for team members (draft saving/loading)</li>
+            </ul>
+        </div>
+        
+        <div class="implementation-section">
+            <h2>📍 Implementation Details</h2>
+            
+            <h3>1. HTML Structure</h3>
+            <p>The "Add Team Member" button is placed in the correct location:</p>
+            <div class="code">
+&lt;!-- Add Team Member Button --&gt;
+&lt;button type="button" class="btn subtle" id="addTeamMemberBtn" style="margin-top: 10px;"&gt;+ Add Team Member&lt;/button&gt;
+            </div>
+            
+            <p>Team members container:</p>
+            <div class="code">
+&lt;!-- Team Members Container --&gt;
+&lt;div id="teamMembersContainer"&gt;&lt;/div&gt;
+            </div>
+            
+            <p>Team member template:</p>
+            <div class="code">
+&lt;template id="team-member-template"&gt;
+  &lt;div class="item team-member" style="margin-top: 12px; position: relative;"&gt;
+    &lt;button type="button" class="btn danger remove-team-member" style="position: absolute; top: 10px; right: 10px; padding: 4px 8px; font-size: 0.8rem;"&gt;Remove&lt;/button&gt;
+    &lt;div class="row"&gt;
+      &lt;div class="col-4"&gt;
+        &lt;label&gt;Team Member Name&lt;/label&gt;
+        &lt;input type="text" class="team-member-name" /&gt;
+      &lt;/div&gt;
+      &lt;div class="col-4"&gt;
+        &lt;label&gt;Title/Position&lt;/label&gt;
+        &lt;input type="text" class="team-member-title" placeholder="Enter position title" /&gt;
+      &lt;/div&gt;
+      &lt;div class="col-4"&gt;
+        &lt;label&gt;Email&lt;/label&gt;
+        &lt;input type="email" class="team-member-email" /&gt;
+      &lt;/div&gt;
+      &lt;div class="col-4"&gt;
+        &lt;label&gt;Phone&lt;/label&gt;
+        &lt;input type="tel" class="team-member-phone" /&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+            </div>
+            
+            <h3>2. JavaScript Functionality</h3>
+            <p>Team member functionality implementation:</p>
+            <div class="code">
+// Team Member Functionality
+document.addEventListener('DOMContentLoaded', function() {
+  const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+  const teamMembersContainer = document.getElementById('teamMembersContainer');
+  const teamMemberTemplate = document.getElementById('team-member-template');
+  
+  if (addTeamMemberBtn && teamMembersContainer && teamMemberTemplate) {
+    // Add team member button click handler
+    addTeamMemberBtn.addEventListener('click', function() {
+      // Clone the template
+      const templateContent = teamMemberTemplate.content.cloneNode(true);
+      
+      // Add to container
+      teamMembersContainer.appendChild(templateContent);
+      
+      // Add event listener to the remove button of the newly added team member
+      const newTeamMember = teamMembersContainer.lastElementChild;
+      const removeBtn = newTeamMember.querySelector('.remove-team-member');
+      if (removeBtn) {
+        removeBtn.addEventListener('click', function() {
+          newTeamMember.remove();
+        });
+      }
+    });
+    
+    // Event delegation for remove buttons (for dynamically added elements)
+    teamMembersContainer.addEventListener('click', function(e) {
+      if (e.target && e.target.classList.contains('remove-team-member')) {
+        e.target.closest('.team-member').remove();
+      }
+    });
+  }
+});
+            </div>
+            
+            <h3>3. Form Data Handling</h3>
+            <p>getFormData function collects team member data:</p>
+            <div class="code">
+// Handle team members data
+const teamMembers = [];
+const teamMemberElements = document.querySelectorAll('.team-member');
+teamMemberElements.forEach((member, index) => {
+  const name = member.querySelector('.team-member-name')?.value || '';
+  const title = member.querySelector('.team-member-title')?.value || '';
+  const email = member.querySelector('.team-member-email')?.value || '';
+  const phone = member.querySelector('.team-member-phone')?.value || '';
+  
+  if (name || title || email || phone) {
+    teamMembers.push({ name, title, email, phone });
+  }
+});
+
+// Add team members to data if any exist
+if (teamMembers.length > 0) {
+  data.team_members = teamMembers;
+}
+            </div>
+            
+            <p>setFormData function rebuilds team members:</p>
+            <div class="code">
+// Rebuild team members if they exist
+if (data.team_members && Array.isArray(data.team_members)) {
+  const teamMembersContainer = document.getElementById('teamMembersContainer');
+  const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+  
+  if (teamMembersContainer && addTeamMemberBtn) {
+    teamMembersContainer.innerHTML = '';
+    data.team_members.forEach(member => {
+      // Click the add button to create a new team member section
+      addTeamMemberBtn.click();
+      
+      // Get the newly created team member section
+      const newTeamMember = teamMembersContainer.lastElementChild;
+      
+      if (newTeamMember) {
+        // Set the values
+        if (member.name) {
+          const nameInput = newTeamMember.querySelector('.team-member-name');
+          if (nameInput) nameInput.value = member.name;
+        }
+        
+        if (member.title) {
+          const titleInput = newTeamMember.querySelector('.team-member-title');
+          if (titleInput) titleInput.value = member.title;
+        }
+        
+        if (member.email) {
+          const emailInput = newTeamMember.querySelector('.team-member-email');
+          if (emailInput) emailInput.value = member.email;
+        }
+        
+        if (member.phone) {
+          const phoneInput = newTeamMember.querySelector('.team-member-phone');
+          if (phoneInput) phoneInput.value = member.phone;
+        }
+      }
+    });
+  }
+}
+            </div>
+        </div>
+        
+        <div class="implementation-section">
+            <h2>✅ Verification</h2>
+            <p>The implementation has been tested and verified to work correctly:</p>
+            <ul>
+                <li><span class="success">✓</span> Team members can be added dynamically</li>
+                <li><span class="success">✓</span> Team members can be removed individually</li>
+                <li><span class="success">✓</span> Team member data is collected when form is submitted</li>
+                <li><span class="success">✓</span> Team member data is restored when loading drafts</li>
+                <li><span class="success">✓</span> Form validation works correctly with team members</li>
+            </ul>
+        </div>
+        
+        <div class="implementation-section">
+            <h2>📍 Access the Form</h2>
+            <p>You can test the functionality at: <a href="http://localhost:5050/hotel-registration.html" target="_blank">http://localhost:5050/hotel-registration.html</a></p>
+            <p>Navigate to the "2) Primary Contacts" section to see the "Add Team Member" button.</p>
+        </div>
+    </div>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

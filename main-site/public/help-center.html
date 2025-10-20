@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help Center - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #f8fafc;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #1f2937;
+        }
+
+        .back-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: #2563eb;
+        }
+
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .hero h1 {
+            font-size: 2.5rem;
+            color: #1f2937;
+            margin-bottom: 10px;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #6b7280;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .help-card {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+        }
+
+        .help-card h3 {
+            color: #1f2937;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .help-card p {
+            color: #6b7280;
+            margin-bottom: 20px;
+        }
+
+        .process-steps {
+            background: white;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border: 1px solid #e5e7eb;
+            margin-bottom: 40px;
+        }
+
+        .process-steps h2 {
+            color: #1f2937;
+            margin-bottom: 30px;
+            text-align: center;
+            font-size: 2rem;
+        }
+
+        .step {
+            display: flex;
+            margin-bottom: 30px;
+            align-items: flex-start;
+        }
+
+        .step-number {
+            background: #3b82f6;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 20px;
+            flex-shrink: 0;
+        }
+
+        .step-content h4 {
+            color: #1f2937;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+
+        .step-content p {
+            color: #6b7280;
+            margin-bottom: 10px;
+        }
+
+        .step-content ul {
+            color: #6b7280;
+            margin-left: 20px;
+        }
+
+        .step-content li {
+            margin-bottom: 5px;
+        }
+
+        .contact-section {
+            background: #f0f9ff;
+            padding: 40px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #bae6fd;
+        }
+
+        .contact-section h2 {
+            color: #0369a1;
+            margin-bottom: 20px;
+        }
+
+        .contact-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .contact-item {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #bae6fd;
+        }
+
+        .contact-item h4 {
+            color: #0369a1;
+            margin-bottom: 10px;
+        }
+
+        .contact-item p {
+            color: #6b7280;
+            margin-bottom: 5px;
+        }
+
+        .contact-item a {
+            color: #3b82f6;
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+
+        .faq-section {
+            margin-top: 40px;
+        }
+
+        .faq-item {
+            background: white;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: #f9fafb;
+            padding: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1f2937;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .faq-answer {
+            padding: 20px;
+            color: #6b7280;
+            display: none;
+        }
+
+        .faq-answer.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .help-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .step {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .step-number {
+                margin: 0 auto 15px auto;
+            }
+        }
+
+        /* Footer Styles */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared header will be injected by nav.js -->
+
+    <div class="container">
+        <div class="hero">
+            <h1>Help Center</h1>
+            <p>Everything you need to know about FEDEVENT's processes and services</p>
+        </div>
+
+        <div class="help-grid">
+            <div class="help-card">
+                <h3>🏨 Hotel Registration</h3>
+                <p>Complete your hotel profile to become eligible for government contracts. Learn about our requirements and registration process.</p>
+                <a href="/hotel-signup.html" class="back-btn">Start Registration</a>
+            </div>
+
+            <div class="help-card">
+                <h3>📋 Contract Management</h3>
+                <p>View and manage your government contracts, track bidding opportunities, and monitor your contract status.</p>
+                <a href="/hotel-contracts.html" class="back-btn">View Contracts</a>
+            </div>
+
+            <div class="help-card">
+                <h3>👥 Team Management</h3>
+                <p>Add and manage your hotel team members, assign roles, and control access to your FEDEVENT account.</p>
+                <button onclick="alert('Team management coming soon!')" class="back-btn">Manage Team</button>
+            </div>
+
+            <div class="help-card">
+                <h3>📞 Support</h3>
+                <p>Get help from our support team. We're here to assist you with any questions or issues.</p>
+                <button onclick="contactSupport()" class="back-btn">Contact Support</button>
+            </div>
+        </div>
+
+        <div class="process-steps">
+            <h2>How FEDEVENT Works</h2>
+            
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Hotel Registration & Approval</h4>
+                    <p>Complete your hotel profile with all required information:</p>
+                    <ul>
+                        <li>Hotel details and amenities</li>
+                        <li>Meeting spaces and capacities</li>
+                        <li>Banking information for payments</li>
+                        <li>NET30 payment terms acceptance</li>
+                        <li>Purchase Order acceptance</li>
+                    </ul>
+                    <p><strong>Timeline:</strong> 2-5 business days for approval</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Contract Matching</h4>
+                    <p>Our system matches your hotel with government events based on:</p>
+                    <ul>
+                        <li>Location and proximity to event</li>
+                        <li>Room capacity and meeting space availability</li>
+                        <li>Per diem rate compliance</li>
+                        <li>Hotel amenities and services</li>
+                        <li>Past performance and ratings</li>
+                    </ul>
+                    <p><strong>Result:</strong> You receive notifications for relevant opportunities</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Bidding Process</h4>
+                    <p>When a matching opportunity arises:</p>
+                    <ul>
+                        <li>Review the event requirements and dates</li>
+                        <li>Submit your competitive bid</li>
+                        <li>Include room rates, meeting space fees, and terms</li>
+                        <li>Highlight your hotel's unique advantages</li>
+                    </ul>
+                    <p><strong>Timeline:</strong> Typically 3-7 days for bid submission</p>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Contract Award & Execution</h4>
+                    <p>We present the offer to the customer, if it is the most advantageous offer customer extends an award. Time frame between winning bids and customer award is the decision period.</p>
+                    <p><strong>FEDEVENT handles:</strong></p>
+                    <ul>
+                        <li>Receive official contract award notification</li>
+                        <li>Review and sign contract terms</li>
+                        <li>Coordinate with government event planners</li>
+                    </ul>
+                    <p><strong>Hotel responsibilities:</strong></p>
+                    <ul>
+                        <li>Execute the event with excellence</li>
+                        <li>Submit invoices for payment</li>
+                    </ul>
+                    <p><strong>Payment:</strong> NET30 terms with government-backed Purchase Orders</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="process-steps">
+            <h2>Common Contract Types</h2>
+            <style>
+                .contract-type { border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; margin-bottom: 12px; overflow: hidden; }
+                .contract-type summary { list-style: none; cursor: pointer; padding: 16px 18px; display: flex; align-items: center; justify-content: space-between; font-weight: 600; color: #1f2937; background: #f9fafb; }
+                .contract-type summary::-webkit-details-marker { display: none; }
+                .contract-type .badge { background: #3b82f6; color: #fff; border-radius: 999px; padding: 6px 10px; font-size: 0.8rem; margin-right: 10px; }
+                .contract-type .summary-left { display: flex; align-items: center; gap: 8px; }
+                .contract-type .chevron { transition: transform .2s ease; }
+                .contract-type[open] .chevron { transform: rotate(180deg); }
+                .contract-type .content { padding: 16px 18px; color: #6b7280; border-top: 1px solid #e5e7eb; }
+                .contract-type h4 { color: #1f2937; margin-bottom: 8px; }
+            </style>
+
+            <details class="contract-type">
+                <summary>
+                    <div class="summary-left"><span class="badge">BPA</span> Blanket Purchase Agreement</div>
+                    <span class="chevron">▾</span>
+                </summary>
+                <div class="content">
+                    <h4>Key Features of a BPA</h4>
+                    <ul>
+                        <li><strong>Based on Hotel Availability</strong> – All reservations are made only if your hotel has availability at the time of request. You maintain full control of your inventory; no rooms are pre-blocked or guaranteed.</li>
+                        <li><strong>No Minimum Room Commitment</strong> – The Government is not requiring a fixed number of room nights. The BPA simply sets aside a rate for use when rooms are needed.</li>
+                        <li><strong>Special Rate (Similar to a Corporate Rate)</strong> – Hotels that provide rates at or below per diem are preferred, and offering a discount of up to 30% below per diem is considered highly desirable, giving your property stronger positioning for selection.</li>
+                        <li><strong>5-Year Lifecycle</strong> – A BPA can last up to 5 years. Rates, terms, and conditions are reviewed annually and may be adjusted or renewed.</li>
+                        <li><strong>Simplified Process</strong> – Once the BPA is established, bookings are straightforward: the Government (through CREATA) places reservations as needed without renegotiating terms.</li>
+                        <li><strong>Each Reservation is the Actual Contract</strong> – While the BPA itself is not a contract, each order or reservation placed under it becomes binding.</li>
+                        <li><strong>Hotel Flexibility to Exit</strong> – At the end of each yearly term, hotels may choose to cancel or not renew the BPA without penalty.</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">Benefits for Your Hotel</h4>
+                    <ul>
+                        <li><strong>Preferred Vendor Status</strong> – Being selected for a BPA means your hotel is pre-approved for Government business.</li>
+                        <li><strong>No Pre-Allocation</strong> – You are not required to block or hold rooms in advance. Bookings are always subject to your availability.</li>
+                        <li><strong>No Volume Guarantees</strong> – You won’t be forced into commitments or quotas.</li>
+                        <li><strong>Competitive Advantage</strong> – Properties offering significant discounts (such as 30% off per diem) are prioritized, making them more attractive to Government buyers.</li>
+                        <li><strong>Long-Term Opportunity</strong> – A BPA secures your hotel a seat at the table for up to 5 years of recurring opportunities.</li>
+                        <li><strong>Simplified Bookings</strong> – Faster process, no need to renegotiate rates each time.</li>
+                        <li><strong>Credibility</strong> – Being awarded a BPA shows your hotel meets U.S. Government subcontractor standards.</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">Considerations for Your Hotel</h4>
+                    <ul>
+                        <li><strong>No Guaranteed Revenue</strong> – While a BPA opens the door to Government bookings, there is no guarantee of volume.</li>
+                        <li><strong>Rate Obligation</strong> – Your hotel must honor the agreed BPA rate, even in peak seasons.</li>
+                        <li><strong>Annual Review</strong> – Rates and conditions may be renegotiated each year.</li>
+                        <li><strong>Hotel Right to Cancel</strong> – Hotels may exit the BPA at the end of any annual term if they no longer wish to participate.</li>
+                        <li><strong>Payment Terms</strong> – The NET30 countdown starts when the governmental body approves the submitted invoice. CREATA issues payment to hotels within 2 business days after receiving funds from the U.S. Government. No upfront deposits can be made.</li>
+                        <li><strong>Compliance with CREATA Policies</strong> – As the prime contractor, CREATA sets subcontractor requirements aligned with Government standards, including no direct bill application process and no direct contact with Government officials.</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">In Summary</h4>
+                    <ul>
+                        <li>Pre-negotiated special rates (similar to corporate rates).</li>
+                        <li>Offering 30% off the per diem rate increases prioritization for selection.</li>
+                        <li>No room-night minimums; bookings depend on availability.</li>
+                        <li>Up to 5 years with annual flexibility to review, adjust, or cancel.</li>
+                        <li>Low-risk, long-term partnership via CREATA as prime contractor.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="contract-type">
+                <summary>
+                    <div class="summary-left"><span class="badge">FFP</span> Firm‑Fixed‑Price</div>
+                    <span class="chevron">▾</span>
+                </summary>
+                <div class="content">
+                    <h4>Key Features of an FFP Contract</h4>
+                    <ul>
+                        <li><strong>Guaranteed Block of Rooms</strong> – A specific number of rooms (and sometimes meeting spaces, meals, or other services) are reserved in advance.</li>
+                        <li><strong>Fixed Rate</strong> – The rate is negotiated and locked in at the beginning of the contract; it does not change regardless of seasonal fluctuations or hotel market conditions.</li>
+                        <li><strong>Guaranteed Revenue</strong> – Because the Government commits to a fixed quantity, your hotel is assured of payment once services are delivered.</li>
+                        <li><strong>Contract Term</strong> – Typically tied to the dates of a conference, event, or program (e.g., 3 nights, 100 rooms, plus meeting space).</li>
+                        <li><strong>Less Flexibility</strong> – Unlike a BPA, you cannot cancel or change rates mid‑contract once it is signed.</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">Hotel‑Facing Explanation of a Firm‑Fixed Price (FFP) Contract</h4>
+                    <p>An FFP contract is a binding agreement between the U.S. Government (through CREATA Global as the prime contractor) and your hotel. Unlike a BPA, which is flexible and based on availability, an FFP contract establishes a set price and guaranteed room commitment for a specific program, event, or period.</p>
+
+                    <h4 style="margin-top: 12px;">Benefits for Your Hotel</h4>
+                    <ul>
+                        <li><strong>Guaranteed Revenue</strong> – A fixed number of rooms and services are contractually committed and paid for.</li>
+                        <li><strong>No Availability Risk</strong> – Rooms are blocked in advance, ensuring occupancy.</li>
+                        <li><strong>Predictable Cash Flow</strong> – Payments are based on a clear, pre‑agreed price.</li>
+                        <li><strong>Stronger Commitment</strong> – Unlike a BPA, the Government must use the contracted rooms and services.</li>
+                        <li><strong>Event Stability</strong> – Large conferences and programs often use FFP contracts, creating higher volume bookings.</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">Considerations for Your Hotel</h4>
+                    <ul>
+                        <li><strong>Less Flexibility</strong> – Once the contract is signed, your hotel must honor the rate and reserved block, even if higher‑paying customers inquire later.</li>
+                        <li><strong>Strict Performance Standards</strong> – You must deliver exactly what is promised (room type, meeting space, amenities) — no substitutions.</li>
+                        <li><strong>Payment Terms</strong> – Payments are made under NET30 (30 days after invoice approval). No deposits or upfront payments.</li>
+                        <li><strong>Compliance with CREATA Policies</strong> – As the prime contractor, CREATA enforces subcontractor rules aligned with U.S. Government standards, including no direct bill applications and no direct contact with Government officials (all communications go through CREATA).</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">In Summary</h4>
+                    <p>An FFP contract is like a guaranteed group booking at a fixed price:</p>
+                    <ul>
+                        <li>The Government commits to a set number of rooms/services at an agreed rate.</li>
+                        <li>Your hotel secures guaranteed revenue but has less flexibility than with a BPA.</li>
+                        <li>Prices are locked in, and obligations are binding once the contract is signed.</li>
+                        <li>CREATA manages all compliance and payment processes as the prime contractor.</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details class="contract-type">
+                <summary>
+                    <div class="summary-left"><span class="badge">IDIQ</span> Indefinite Delivery, Indefinite Quantity</div>
+                    <span class="chevron">▾</span>
+                </summary>
+                <div class="content">
+                    <h4>Key Features of an IDIQ Contract</h4>
+                    <ul>
+                        <li><strong>Minimum Guarantee</strong> – The Government guarantees at least a small quantity of bookings (e.g., a minimum of 10 rooms).</li>
+                        <li><strong>Maximum Ceiling</strong> – There is a maximum quantity that may be ordered (e.g., up to 500 rooms over the contract).</li>
+                        <li><strong>Task/Delivery Orders</strong> – Instead of one big booking, the Government issues orders over time under the IDIQ as needs arise.</li>
+                        <li><strong>Fixed Terms & Rates</strong> – The negotiated rates apply to every order placed during the life of the IDIQ.</li>
+                        <li><strong>Contract Term</strong> – IDIQs often run for several years (commonly 3–5 years).</li>
+                    </ul>
+
+                    <h4 style="margin-top: 12px;">Indefinite Delivery / Indefinite Quantity (IDIQ) Contract</h4>
+                    <p>An IDIQ is a flexible Government contract used when the exact number of rooms, meeting spaces, or services needed is not known in advance. The Government (through CREATA Global as the prime contractor) commits to a minimum level of purchases and may order more, up to a stated maximum, during the contract period.</p>
+
+                    <h4 style="margin-top: 12px;">Benefits for Your Hotel</h4>
+                    <ul>
+                        <li><strong>Guaranteed Minimum Revenue</strong> – Unlike a BPA, an IDIQ includes a guaranteed minimum order, so you know you’ll receive at least some business.</li>
+                        <li><strong>Flexible Growth</strong> – Orders can increase over time up to the maximum ceiling, giving you opportunities for significant revenue.</li>
+                        <li><strong>Long‑Term Partnership</strong> – Typically multi‑year, ensuring steady engagement with Government travel.</li>
+                        <li><strong>Simplified Orders</strong> – Once the contract is in place, each order is fast and straightforward under the same terms.</li>
+                        <li><strong>Competitive Edge</strong> – Hotels under IDIQ are in a stronger position for repetitive Government business compared to those without.</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+
+        <div class="process-steps">
+            <h2>Blanket Purchase Agreement (BPA)</h2>
+
+            <div class="step" style="margin-top: 20px;">
+                <div class="step-number">✓</div>
+                <div class="step-content">
+                    <h4>Key Features of a BPA</h4>
+                    <ul>
+                        <li><strong>Based on Hotel Availability</strong> – All reservations are made only if your hotel has availability at the time of request. You maintain full control of your inventory; no rooms are pre-blocked or guaranteed.</li>
+                        <li><strong>No Minimum Room Commitment</strong> – The Government is not requiring a fixed number of room nights. The BPA simply sets aside a rate for use when rooms are needed.</li>
+                        <li><strong>Special Rate (Similar to a Corporate Rate)</strong> – Hotels that provide rates at or below per diem are preferred, and offering a discount of up to 30% below per diem is considered highly desirable, giving your property stronger positioning for selection.</li>
+                        <li><strong>5-Year Lifecycle</strong> – A BPA can last up to 5 years. Rates, terms, and conditions are reviewed annually and may be adjusted or renewed.</li>
+                        <li><strong>Simplified Process</strong> – Once the BPA is established, bookings are straightforward: the Government (through CREATA) places reservations as needed without renegotiating terms.</li>
+                        <li><strong>Each Reservation is the Actual Contract</strong> – While the BPA itself is not a contract, each order or reservation placed under it becomes binding.</li>
+                        <li><strong>Hotel Flexibility to Exit</strong> – At the end of each yearly term, hotels may choose to cancel or not renew the BPA without penalty.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">✅</div>
+                <div class="step-content">
+                    <h4>Benefits for Your Hotel</h4>
+                    <ul>
+                        <li><strong>Preferred Vendor Status</strong> – Being selected for a BPA means your hotel is pre-approved for Government business.</li>
+                        <li><strong>No Pre-Allocation</strong> – You are not required to block or hold rooms in advance. Bookings are always subject to your availability.</li>
+                        <li><strong>No Volume Guarantees</strong> – You won’t be forced into commitments or quotas.</li>
+                        <li><strong>Competitive Advantage</strong> – Properties offering significant discounts (such as 30% off per diem) are prioritized, making them more attractive to Government buyers.</li>
+                        <li><strong>Long-Term Opportunity</strong> – A BPA secures your hotel a seat at the table for up to 5 years of recurring opportunities.</li>
+                        <li><strong>Simplified Bookings</strong> – Faster process, no need to renegotiate rates each time.</li>
+                        <li><strong>Credibility</strong> – Being awarded a BPA shows your hotel meets U.S. Government subcontractor standards.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">⚠️</div>
+                <div class="step-content">
+                    <h4>Considerations for Your Hotel</h4>
+                    <ul>
+                        <li><strong>No Guaranteed Revenue</strong> – While a BPA opens the door to Government bookings, there is no guarantee of volume.</li>
+                        <li><strong>Rate Obligation</strong> – Your hotel must honor the agreed BPA rate, even in peak seasons.</li>
+                        <li><strong>Annual Review</strong> – Rates and conditions may be renegotiated each year.</li>
+                        <li><strong>Hotel Right to Cancel</strong> – Hotels may exit the BPA at the end of any annual term if they no longer wish to participate.</li>
+                        <li><strong>Payment Terms</strong> – The NET30 countdown starts when the governmental body approves the submitted invoice. CREATA issues payment to hotels within 2 business days after receiving funds from the U.S. Government. No upfront deposits can be made.</li>
+                        <li><strong>Compliance with CREATA Policies</strong> – As the prime contractor, CREATA sets subcontractor requirements aligned with Government standards, including:
+                            <ul>
+                                <li>No direct bill application process (all billing flows through CREATA).</li>
+                                <li>No direct contact with Government officials (all communications are managed by CREATA).</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">🔑</div>
+                <div class="step-content">
+                    <h4>In Summary</h4>
+                    <p>A BPA is like a corporate account the Government opens with your hotel:</p>
+                    <ul>
+                        <li>It provides pre-negotiated special rates (similar to corporate rates).</li>
+                        <li>Offering 30% off the per diem rate makes your hotel highly desirable and raises your chances of being prioritized for selection.</li>
+                        <li>It requires no room-night minimums.</li>
+                        <li>It ensures bookings are only made if rooms are available.</li>
+                        <li>It lasts up to 5 years, but with annual flexibility for both sides to review, adjust, or cancel.</li>
+                        <li>It creates a low-risk, long-term partnership with ongoing access to Government travel business through CREATA.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="contact-section">
+            <h2>Need More Help?</h2>
+            <p>Our support team is here to assist you every step of the way.</p>
+            
+            <div class="contact-info">
+                <div class="contact-item">
+                    <h4>📞 Phone Support</h4>
+                    <p><strong>(305) 850-7848</strong></p>
+                    <p>Mon-Fri: 9AM-6PM EST</p>
+                    <p>Emergency: 24/7 available</p>
+                </div>
+                
+                <div class="contact-item">
+                    <h4>📧 Email Support</h4>
+                    <p><strong>support@fedevent.com</strong></p>
+                    <p>Response within 24 hours</p>
+                    <p>For non-urgent inquiries</p>
+                </div>
+                
+                <div class="contact-item">
+                    <h4>💬 Live Chat</h4>
+                    <p>Available on dashboard</p>
+                    <p>Real-time assistance</p>
+                    <p>Business hours only</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="faq-section">
+            <h2 style="text-align: center; margin-bottom: 30px; color: #1f2937;">Frequently Asked Questions (FAQ)</h2>
+            <p style="text-align: center; margin-bottom: 30px; color: #6b7280; font-style: italic;">Questions about contracts applies only to contracts awarded to CREATA Global Event Agency LLC</p>
+            
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What are the requirements to join FEDEVENT?
+                </div>
+                <div class="faq-answer">
+                    <p>Hotels, venues, and service providers must be properly licensed, meet U.S. government standards for safety and compliance, and agree to CREATA Global Event Agency LLC subcontractor policies. This includes acceptance of NET30 payment terms and acknowledgment that contracts are awarded under U.S. government purchase orders issued to CREATA Global, the prime contractor.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Who owns the government contracts?
+                </div>
+                <div class="faq-answer">
+                    <p>All government contracts are awarded to CREATA Global Event Agency LLC as the prime contractor. Hotels and service providers serve strictly as subcontractors under CREATA.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Why does CREATA act as the prime contractor?
+                </div>
+                <div class="faq-answer">
+                    <p>Because the U.S. government issues purchase orders (POs) directly to CREATA Global. As the prime, CREATA manages subcontractors, ensures compliance, and distributes payments once federal funds are received.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Do hotels need to be SAM.gov registered?
+                </div>
+                <div class="faq-answer">
+                    <p>No. Only CREATA Global, as the prime contractor, must be SAM.gov registered. Hotels and vendors are subcontractors and do not need their own SAM registration to participate.</p>
+                    <p>If a hotel chooses to register with SAM.gov, that is perfectly fine — but any contracts already awarded must still be fulfilled through CREATA Global Event Agency LLC. Hotels always act as subcontractors under CREATA for government task orders.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What is the most important requirement for hotels?
+                </div>
+                <div class="faq-answer">
+                    <p>The most critical requirement is acceptance of NET30 payment terms and compliance with U.S. government contracting standards. Without agreement to these terms, hotels cannot be approved.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    How long does the approval process take?
+                </div>
+                <div class="faq-answer">
+                    <p>Most applications are reviewed within 2–4 business days. If additional verification is needed (such as compliance checks or facility requirements), it may take slightly longer. You'll be notified by email once your profile has been approved.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What payment terms do you offer?
+                </div>
+                <div class="faq-answer">
+                    <p>CREATA operates strictly under NET30 payment terms. No deposits or upfront payments are permitted.</p>
+                    <ul>
+                        <li>Hotels and vendors invoice CREATA directly.</li>
+                        <li>CREATA invoices the U.S. Government.</li>
+                        <li>The NET30 countdown starts when the governmental body approves the submitted invoice.</li>
+                        <li>Once CREATA receives payment from the U.S. Government, CREATA issues payment to the hotel within 2 business days.</li>
+                    </ul>
+                    <p>This ensures all payments remain in full compliance with federal contracting rules.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Do you accept direct bill applications?
+                </div>
+                <div class="faq-answer">
+                    <p>No. CREATA Global does not complete direct bill application processes. Because the U.S. government is the ultimate funding source, all purchase orders are issued to CREATA as the prime contractor. Subcontractors must invoice CREATA directly to receive payment. This avoids unnecessary delays and ensures compliance with federal funding procedures.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    How are contracts awarded?
+                </div>
+                <div class="faq-answer">
+                    <p>Contracts are awarded according to the specific requirements of each government task order. While it is rare that hotels in our network will not meet the requirements, final selection depends on compliance, location, and pricing. We strongly encourage hotels to complete their registration with our network to ensure eligibility for future task orders.</p>
+                    <p>Hotels and vendors that demonstrate reliability and compliance may be awarded multiple opportunities over time.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Can I update my hotel profile after approval?
+                </div>
+                <div class="faq-answer">
+                    <p>Yes. Approved hotels and venues can update their profiles at any time to reflect new room counts, meeting space changes, or amenities. Updated information is stored in CREATA's Preferred Vendor Network and ensures accurate matching for future government opportunities.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Can subcontractors contact government officials directly?
+                </div>
+                <div class="faq-answer">
+                    <p>No. For all contracts awarded to CREATA, subcontractors — including hotels — are not permitted to contact U.S. government officials directly.</p>
+                    <ul>
+                        <li>If government contact information is accidentally shared, subcontractors must immediately notify CREATA and delete the information.</li>
+                        <li>Direct communication with government officials may result in immediate termination from our vendor network.</li>
+                    </ul>
+                    <p>Only CREATA, as the prime contractor, is authorized to engage with government representatives.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What happens if I don't follow subcontractor rules?
+                </div>
+                <div class="faq-answer">
+                    <p>Violations of subcontractor policies — such as contacting government officials directly or failing to honor payment terms — may result in termination from CREATA's Preferred Vendor Network. Compliance with rules is essential to maintaining credibility with U.S. government agencies.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    How are subcontractors paid?
+                </div>
+                <div class="faq-answer">
+                    <p>Subcontractors submit invoices directly to CREATA Global. The NET30 countdown starts when the governmental body (USG/UN) approves the submitted invoice. Typically, the U.S. Government releases payment within 2-3 weeks after approval. Once CREATA receives the funds, CREATA issues payment to the hotel within 2 business days.</p>
+                    <p>This process ensures compliance with federal contracting standards and provides a clear, reliable payment schedule.</p>
+                    <p>NET30 is the U.S. Government standard payment term.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Are deposits or advance payments allowed?
+                </div>
+                <div class="faq-answer">
+                    <p>No. Deposits or advance payments cannot be issued for government contracts. The NET30 countdown begins when the governmental body approves the submitted invoice. CREATA issues payment to hotels within 2 business days after receiving funds from the U.S. Government.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    Do you guarantee future business once approved?
+                </div>
+                <div class="faq-answer">
+                    <p>Approval adds your hotel or venue into CREATA's Hotel Network, making you eligible for consideration in future contracts. However, selection depends on government requirements, availability, pricing, and compliance. Approval does not guarantee automatic awards.</p>
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    What happens to deactivated accounts?
+                </div>
+                <div class="faq-answer">
+                    <p>Accounts can be deactivated by FEDEVENT administrators for various reasons including policy violations, inactivity, or at the request of the account holder. Deactivated accounts remain in our system for 180 days, during which time they can be reactivated upon request. After 180 days, deactivated accounts and all associated data are permanently deleted from our system.</p>
+                    <ul>
+                        <li>Deactivated accounts cannot access the system or receive contract notifications</li>
+                        <li>Account data is retained for 180 days to allow for reactivation if needed</li>
+                        <li>After 180 days, all account data is permanently deleted</li>
+                        <li>Reactivation requests must be submitted through FEDEVENT support</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const isActive = answer.classList.contains('active');
+            
+            // Close all other FAQ answers
+            document.querySelectorAll('.faq-answer').forEach(a => a.classList.remove('active'));
+            
+            // Toggle current answer
+            if (!isActive) {
+                answer.classList.add('active');
+            }
+        }
+
+        function contactSupport() {
+            const message = prompt('Please describe your issue or question:');
+            if (message) {
+                alert('Thank you for your message. Our support team will contact you within 24 hours.');
+                // In a real implementation, this would send the message to the support system
+            }
+        }
+    </script>
+
+    <!-- Shared footer will be injected by nav.js -->
+
+    <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

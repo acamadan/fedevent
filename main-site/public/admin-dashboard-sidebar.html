@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEDEVENT Admin Dashboard</title>
+    <link rel="stylesheet" href="site.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Sidebar -->
+        <aside class="admin-sidebar">
+            <div class="admin-sidebar-header">
+                <a href="/admin-dashboard.html" class="admin-sidebar-logo">
+                    <i class="fas fa-calendar-alt"></i>
+                    <span>FEDEVENT</span>
+                </a>
+                <button class="admin-sidebar-toggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            
+            <nav class="admin-sidebar-nav">
+                <div class="admin-nav-section">
+                    <span class="admin-nav-section-title">Main</span>
+                    <a href="/admin-dashboard.html" class="admin-nav-item active">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/admin-events.html" class="admin-nav-item">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Events</span>
+                    </a>
+                    <a href="/admin-hotels.html" class="admin-nav-item">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </a>
+                    <a href="/admin-leads.html" class="admin-nav-item">
+                        <i class="fas fa-users"></i>
+                        <span>Leads</span>
+                    </a>
+                </div>
+                
+                <div class="admin-nav-section">
+                    <span class="admin-nav-section-title">Content</span>
+                    <a href="/admin-pages.html" class="admin-nav-item">
+                        <i class="fas fa-file-alt"></i>
+                        <span>Pages</span>
+                    </a>
+                    <a href="/admin-media.html" class="admin-nav-item">
+                        <i class="fas fa-images"></i>
+                        <span>Media</span>
+                    </a>
+                    <a href="/admin-email-templates.html" class="admin-nav-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Templates</span>
+                    </a>
+                </div>
+                
+                <div class="admin-nav-section">
+                    <span class="admin-nav-section-title">Analytics</span>
+                    <a href="/admin-analytics.html" class="admin-nav-item">
+                        <i class="fas fa-chart-line"></i>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="/admin-reports.html" class="admin-nav-item">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>Reports</span>
+                    </a>
+                </div>
+                
+                <div class="admin-nav-section">
+                    <span class="admin-nav-section-title">Settings</span>
+                    <a href="/admin-settings.html" class="admin-nav-item">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="/admin-users.html" class="admin-nav-item">
+                        <i class="fas fa-user-cog"></i>
+                        <span>Users</span>
+                    </a>
+                    <a href="/admin-backup.html" class="admin-nav-item">
+                        <i class="fas fa-database"></i>
+                        <span>Backup</span>
+                    </a>
+                </div>
+            </nav>
+        </aside>
+        
+        <!-- Main Content -->
+        <main class="admin-main-content">
+            <!-- Top Bar -->
+            <header class="admin-topbar">
+                <div class="admin-topbar-left">
+                    <button class="admin-mobile-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <nav class="admin-breadcrumb">
+                        <a href="/admin-dashboard.html">Admin</a>
+                        <i class="fas fa-chevron-right"></i>
+                        <span>Dashboard</span>
+                    </nav>
+                </div>
+                
+                <div class="admin-topbar-right">
+                    <div class="user-menu">
+                        <a href="#" class="user-trigger">
+                            <div class="user-avatar">A</div>
+                            <span>Admin User</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </a>
+                        <div class="user-dropdown">
+                            <a href="/admin-profile.html">
+                                <i class="fas fa-user"></i>
+                                Profile
+                            </a>
+                            <a href="/admin-settings.html">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                            <button onclick="logout()">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            
+            <!-- Page Content -->
+            <div class="admin-content">
+                <div class="admin-page-header">
+                    <h1>Dashboard Overview</h1>
+                    <p>Welcome to your FEDEVENT admin dashboard. Manage your events, hotels, and leads from here.</p>
+                </div>
+                
+                <!-- Stats Cards -->
+                <div class="admin-stats-grid">
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>24</h3>
+                            <p>Active Events</p>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-hotel"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>156</h3>
+                            <p>Partner Hotels</p>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>1,234</h3>
+                            <p>Total Leads</p>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3>$45,678</h3>
+                            <p>Revenue</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="admin-section">
+                    <h2>Recent Activity</h2>
+                    <div class="admin-activity-list">
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>New lead registered</strong> for Federal Contracting Summit</p>
+                                <span class="activity-time">2 minutes ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-hotel"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Hotel partnership</strong> added: Marriott Downtown</p>
+                                <span class="activity-time">1 hour ago</span>
+                            </div>
+                        </div>
+                        
+                        <div class="activity-item">
+                            <div class="activity-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="activity-content">
+                                <p><strong>Email campaign</strong> sent to 500 contacts</p>
+                                <span class="activity-time">3 hours ago</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <script src="admin-sidebar.js"></script>
+    <script>
+        // Example usage of admin utilities
+        function logout() {
+            AdminUtils.confirm('Are you sure you want to logout?', function() {
+                AdminUtils.showNotification('Logged out successfully', 'success');
+                // Redirect to login page
+                setTimeout(() => {
+                    window.location.href = '/admin-login.html';
+                }, 1000);
+            });
+        }
+        
+        // Show welcome notification
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                AdminUtils.showNotification('Welcome to FEDEVENT Admin Dashboard!', 'success');
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Portal - Login | FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1f2937;
+            --primary-dark: #111827;
+            --secondary: #3b82f6;
+            --text: #374151;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+            --warning: #f59e0b;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text);
+        }
+
+        .page-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        .brand-panel {
+            flex: 1.1;
+            background: linear-gradient(135deg, #1e40af 0%, #3b82f6 55%, #0f172a 100%);
+            color: #f9fafb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 3.5rem 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .brand-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at top right, rgba(245, 158, 11, 0.25), transparent 45%);
+            opacity: 0.85;
+        }
+
+        .brand-content {
+            position: relative;
+            z-index: 1;
+            max-width: 440px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.45);
+            color: #facc15;
+            letter-spacing: 0.08em;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            margin-bottom: 1.5rem;
+        }
+
+        .brand-content h1 {
+            font-size: clamp(2rem, 2.8vw, 2.75rem);
+            font-weight: 700;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+        }
+
+        .brand-content p {
+            color: rgba(226, 232, 240, 0.85);
+            font-size: 1rem;
+            line-height: 1.7;
+        }
+
+        .brand-highlights {
+            list-style: none;
+            margin: 2rem 0 0;
+            padding: 0;
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .brand-highlights li {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            color: rgba(226, 232, 240, 0.92);
+            font-size: 0.95rem;
+        }
+
+        .brand-highlights span {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.75rem;
+            height: 1.75rem;
+            border-radius: 50%;
+            background: rgba(15, 23, 42, 0.35);
+            color: #facc15;
+            font-size: 0.85rem;
+        }
+
+        .form-panel {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4rem 3rem;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.05) 0%, rgba(15, 23, 42, 0.0) 35%);
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 18px;
+            box-shadow: 0 30px 60px -25px rgba(15, 23, 42, 0.35);
+            border: 1px solid rgba(15, 23, 42, 0.05);
+        }
+
+        .card-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .card-header h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+        }
+
+        .card-header p {
+            margin-top: 0.5rem;
+            color: var(--text-light);
+        }
+
+        .security-notice {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .security-notice h3 {
+            color: #92400e;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .security-notice p {
+            color: #92400e;
+            line-height: 1.5;
+            margin: 0;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        input[type="email"],
+        input[type="password"],
+        input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        input[type="email"]:focus,
+        input[type="password"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 0.75rem;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 0.875rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .signup-link {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+
+        .signup-link p {
+            color: var(--text-light);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .signup-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .signup-link a:hover {
+            text-decoration: underline;
+        }
+
+        .back-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .test-account {
+            background: #f0f9ff;
+            border: 1px solid #0ea5e9;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            font-size: 0.85rem;
+        }
+
+        .test-account h4 {
+            color: #0369a1;
+            margin-top: 0;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .test-account p {
+            color: #0c4a6e;
+            margin: 0.25rem 0;
+        }
+
+        @media (max-width: 1100px) {
+            .brand-panel {
+                padding: 3rem 2.5rem;
+            }
+            
+            .form-panel {
+                padding: 3.5rem 2.5rem;
+            }
+        }
+
+        @media (max-width: 960px) {
+            .page-wrapper {
+                flex-direction: column;
+            }
+            
+            .brand-panel {
+                flex: none;
+                padding: 3rem 1.75rem 2.5rem;
+                text-align: center;
+            }
+
+            .brand-content {
+                max-width: 520px;
+            }
+
+            .brand-highlights {
+                grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            }
+
+            .brand-highlights li {
+                justify-content: center;
+            }
+
+            .form-panel {
+                padding: 2.5rem 1.75rem 3.5rem;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .login-card {
+                padding: 2rem 1.5rem;
+                border-radius: 14px;
+            }
+
+            .form-panel {
+                padding: 2.25rem 1.25rem 3rem;
+            }
+
+            .brand-content h1 {
+                font-size: 2rem;
+            }
+
+            .brand-highlights {
+                gap: 0.6rem;
+            }
+
+            .brand-highlights li {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+      <nav class="container">
+        <div class="logo-menu" style="position: relative;">
+          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+          </div>
+        </div>
+        <ul class="nav-links">
+          <li id="userMenu" class="user-menu" style="display:none;">
+            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+              <span class="user-avatar" id="userInitial">U</span>
+              <span id="userNameLabel">User</span>
+              <span aria-hidden>▾</span>
+            </a>
+            <div class="user-dropdown" id="userDropdown">
+              <a href="/hotel-dashboard.html">Hotel Portal</a>
+              <a href="/hotel-profile.html">User Settings</a>
+              <button type="button" onclick="logoutUser()">Logout</button>
+            </div>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    
+    <main class="page-wrapper">
+        <section class="brand-panel">
+            <div class="brand-content">
+                <span class="brand-badge">🏛️ Government Portal</span>
+                <h1>Secure access to mission-critical event planning and hotel sourcing services.</h1>
+                <p>Your trusted partner for government event coordination, lodging solutions, and logistics support across all federal agencies.</p>
+                <ul class="brand-highlights">
+                    <li><span>✔</span> Secure UNCLASSIFIED portal access</li>
+                    <li><span>✔</span> Mission support request forms</li>
+                    <li><span>✔</span> Emergency support available 24/7</li>
+                    <li><span>✔</span> Government-qualified hotel network</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="form-panel">
+            <div class="login-card">
+                <div class="card-header">
+                    <h1>FEDEVENT</h1>
+                    <p>Government Portal</p>
+                </div>
+
+                <div class="security-notice">
+                    <h3>🔒 Security Notice</h3>
+                    <p>This portal is for <strong>UNCLASSIFIED</strong> information only. Do not upload or submit any classified, confidential, or sensitive materials.</p>
+                </div>
+
+                <div id="errorMessage" class="error-message"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="email">Government Email Address</label>
+                        <input type="email" id="email" name="email" required placeholder="firstname.lastname@agency.gov">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <div style="position: relative;">
+                            <input type="password" id="password" name="password" required style="padding-right: 50px;">
+                            <button type="button" onclick="togglePassword()" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 14px; color: #666;">👁️</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn" id="loginButton">
+                        Sign In to Government Portal
+                    </button>
+                </form>
+
+                <div class="signup-link">
+                    <p>New to FEDEVENT Government Portal?</p>
+                    <a href="/government-registration.html">Request Government Account →</a>
+                </div>
+
+                <div class="test-account">
+                    <h4>🧪 Test Account</h4>
+                    <p><strong>Email:</strong> test@fedevent.mil</p>
+                    <p><strong>Password:</strong> Atakanc1$</p>
+                </div>
+
+                <div class="back-link">
+                    <a href="/">← Back to Home</a>
+                </div>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        // Check if user is already signed in
+        document.addEventListener('DOMContentLoaded', () => {
+            const sessionId = localStorage.getItem('gov_session');
+            
+            if (sessionId) {
+                // Already signed in as government, redirect to dashboard
+                window.location.href = '/government-dashboard.html';
+                return;
+            }
+        });
+        
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitButton = document.getElementById('loginButton');
+            const errorDiv = document.getElementById('errorMessage');
+            
+            submitButton.disabled = true;
+            submitButton.textContent = 'Signing in...';
+            errorDiv.style.display = 'none';
+            
+            try {
+                const formData = new FormData(e.target);
+                let email = String(formData.get('email') || '').trim();
+                const password = formData.get('password');
+
+                // Allow admin shortcut: "admin" -> admin@fedevent.com
+                if (email.toLowerCase() === 'admin') {
+                    email = 'admin@fedevent.com';
+                }
+                
+                // Validate government email (allow admin@fedevent.com and test accounts)
+                if (!email.endsWith('.gov') && !email.endsWith('.mil') && 
+                    email !== 'admin@fedevent.com' && 
+                    !email.includes('@fedevent.com')) {
+                    throw new Error('Please use your official government email address (.gov or .mil)');
+                }
+                
+                const response = await fetch('/api/government/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.ok) {
+                    // Store session token
+                    localStorage.setItem('gov_session', data.sessionId);
+                    console.log('Session stored:', data.sessionId);
+                    
+                    // Show success message briefly
+                    errorDiv.style.display = 'none';
+                    const successDiv = document.createElement('div');
+                    successDiv.style.cssText = 'background: #d1fae5; color: #065f46; padding: 12px; border-radius: 6px; margin-bottom: 1rem;';
+                    successDiv.textContent = '✅ Login successful! Redirecting in 3 seconds...';
+                    document.getElementById('loginForm').parentNode.insertBefore(successDiv, document.getElementById('loginForm'));
+                    
+                    // Countdown
+                    let countdown = 3;
+                    const countdownInterval = setInterval(() => {
+                        countdown--;
+                        successDiv.textContent = `✅ Login successful! Redirecting in ${countdown} seconds...`;
+                        if (countdown <= 0) {
+                            clearInterval(countdownInterval);
+                        }
+                    }, 1000);
+                    
+                    // Redirect to government portal after delay
+                    setTimeout(() => {
+                        console.log('Redirecting to portal...');
+                        window.location.href = '/government-portal.html';
+                    }, 3000);
+                } else {
+                    throw new Error(data.error || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                errorDiv.textContent = error.message;
+                errorDiv.style.display = 'block';
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Sign In to Government Portal';
+            }
+        });
+        
+        // Check if already logged in
+        if (localStorage.getItem('gov_session')) {
+            window.location.href = '/government-dashboard.html';
+        }
+
+        // Toggle password visibility
+        function togglePassword() {
+            const passwordInput = document.getElementById('password');
+            const toggleButton = passwordInput.nextElementSibling;
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleButton.textContent = '🙈';
+            } else {
+                passwordInput.type = 'password';
+                toggleButton.textContent = '👁️';
+            }
+        }
+
+        function toggleUserDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('userDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLogoDropdown(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const dd = document.getElementById('logoDropdown');
+            dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function logoutUser() {
+            localStorage.removeItem('fedevent_session');
+            localStorage.removeItem('fedevent_user');
+            localStorage.removeItem('gov_session');
+            window.location.href = '/hotel-login.html';
+        }
+
+        function loadUserMenu() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const userRaw = localStorage.getItem('fedevent_user');
+                if (!sessionId || !userRaw) return;
+                const user = JSON.parse(userRaw);
+                let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+                name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+                const initial = (name || 'U').trim().charAt(0).toUpperCase();
+                document.getElementById('userNameLabel').textContent = name;
+                document.getElementById('userInitial').textContent = initial;
+                document.getElementById('userMenu').style.display = 'list-item';
+            } catch (e) { /* noop */ }
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserMenu);
+
+        document.addEventListener('click', function(evt){
+            const userDd = document.getElementById('userDropdown');
+            const logoDd = document.getElementById('logoDropdown');
+            const um = document.getElementById('userMenu');
+            const logoMenu = document.querySelector('.logo-menu');
+            
+            if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
+            if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
+        });
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

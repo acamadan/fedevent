@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Member Functionality Verification</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+        }
+        .test-section h2 {
+            margin-top: 0;
+            color: #555;
+        }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 15px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .btn-danger {
+            background: #dc3545;
+        }
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        .success {
+            color: green;
+            font-weight: bold;
+        }
+        .failure {
+            color: red;
+            font-weight: bold;
+        }
+        #output {
+            margin-top: 20px;
+            padding: 15px;
+            background: #e9ecef;
+            border-radius: 4px;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Team Member Functionality Verification</h1>
+        
+        <div class="test-section">
+            <h2>Test 1: Add Team Member Functionality</h2>
+            <p>This test verifies that team members can be added to the form.</p>
+            <button type="button" id="testAddTeamMember">Run Test</button>
+            <div id="addResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 2: Remove Team Member Functionality</h2>
+            <p>This test verifies that team members can be removed from the form.</p>
+            <button type="button" id="testRemoveTeamMember">Run Test</button>
+            <div id="removeResult"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Test 3: Data Collection</h2>
+            <p>This test verifies that team member data is collected correctly.</p>
+            <button type="button" id="testDataCollection">Run Test</button>
+            <div id="dataResult"></div>
+        </div>
+        
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // Initialize the team member functionality
+        function initTeamMemberFunctionality() {
+            // Create the necessary DOM elements for testing
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="teamMembersContainer"></div>
+                <button type="button" id="addTeamMemberBtn">+ Add Team Member</button>
+                
+                <template id="team-member-template">
+                    <div class="team-member">
+                        <button type="button" class="remove-team-member">Remove</button>
+                        <input type="text" class="team-member-name" placeholder="Name">
+                        <input type="text" class="team-member-title" placeholder="Title">
+                        <input type="email" class="team-member-email" placeholder="Email">
+                        <input type="tel" class="team-member-phone" placeholder="Phone">
+                    </div>
+                </template>
+            `);
+            
+            const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+            const teamMembersContainer = document.getElementById('teamMembersContainer');
+            const teamMemberTemplate = document.getElementById('team-member-template');
+            
+            if (addTeamMemberBtn && teamMembersContainer && teamMemberTemplate) {
+                // Add team member button click handler
+                addTeamMemberBtn.addEventListener('click', function() {
+                    // Clone the template
+                    const templateContent = teamMemberTemplate.content.cloneNode(true);
+                    
+                    // Add to container
+                    teamMembersContainer.appendChild(templateContent);
+                    
+                    // Add event listener to the remove button of the newly added team member
+                    const newTeamMember = teamMembersContainer.lastElementChild;
+                    const removeBtn = newTeamMember.querySelector('.remove-team-member');
+                    if (removeBtn) {
+                        removeBtn.addEventListener('click', function() {
+                            newTeamMember.remove();
+                        });
+                    }
+                });
+                
+                // Event delegation for remove buttons (for dynamically added elements)
+                teamMembersContainer.addEventListener('click', function(e) {
+                    if (e.target && e.target.classList.contains('remove-team-member')) {
+                        e.target.closest('.team-member').remove();
+                    }
+                });
+            }
+        }
+        
+        // Test functions
+        document.addEventListener('DOMContentLoaded', function() {
+            const testAddTeamMember = document.getElementById('testAddTeamMember');
+            const testRemoveTeamMember = document.getElementById('testRemoveTeamMember');
+            const testDataCollection = document.getElementById('testDataCollection');
+            const addResult = document.getElementById('addResult');
+            const removeResult = document.getElementById('removeResult');
+            const dataResult = document.getElementById('dataResult');
+            const output = document.getElementById('output');
+            
+            // Test 1: Add team member
+            testAddTeamMember.addEventListener('click', function() {
+                // Clear container
+                document.getElementById('teamMembersContainer').innerHTML = '';
+                
+                // Initialize functionality
+                initTeamMemberFunctionality();
+                
+                const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+                const teamMembersContainer = document.getElementById('teamMembersContainer');
+                
+                // Click the add button
+                addTeamMemberBtn.click();
+                
+                // Check if team member was added
+                const teamMembers = teamMembersContainer.querySelectorAll('.team-member');
+                if (teamMembers.length === 1) {
+                    addResult.innerHTML = '<span class="success">PASS: Team member added successfully</span>';
+                } else {
+                    addResult.innerHTML = '<span class="failure">FAIL: Team member not added</span>';
+                }
+            });
+            
+            // Test 2: Remove team member
+            testRemoveTeamMember.addEventListener('click', function() {
+                // Clear container
+                document.getElementById('teamMembersContainer').innerHTML = '';
+                
+                // Initialize functionality
+                initTeamMemberFunctionality();
+                
+                const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+                const teamMembersContainer = document.getElementById('teamMembersContainer');
+                
+                // Add a team member first
+                addTeamMemberBtn.click();
+                
+                // Click the remove button
+                const removeBtn = teamMembersContainer.querySelector('.remove-team-member');
+                if (removeBtn) {
+                    removeBtn.click();
+                }
+                
+                // Check if team member was removed
+                const teamMembers = teamMembersContainer.querySelectorAll('.team-member');
+                if (teamMembers.length === 0) {
+                    removeResult.innerHTML = '<span class="success">PASS: Team member removed successfully</span>';
+                } else {
+                    removeResult.innerHTML = '<span class="failure">FAIL: Team member not removed</span>';
+                }
+            });
+            
+            // Test 3: Data collection
+            testDataCollection.addEventListener('click', function() {
+                // Clear container
+                document.getElementById('teamMembersContainer').innerHTML = '';
+                
+                // Initialize functionality
+                initTeamMemberFunctionality();
+                
+                const addTeamMemberBtn = document.getElementById('addTeamMemberBtn');
+                const teamMembersContainer = document.getElementById('teamMembersContainer');
+                
+                // Add a team member
+                addTeamMemberBtn.click();
+                
+                // Fill in the team member data
+                const nameInput = teamMembersContainer.querySelector('.team-member-name');
+                const titleInput = teamMembersContainer.querySelector('.team-member-title');
+                const emailInput = teamMembersContainer.querySelector('.team-member-email');
+                const phoneInput = teamMembersContainer.querySelector('.team-member-phone');
+                
+                if (nameInput && titleInput && emailInput && phoneInput) {
+                    nameInput.value = 'John Doe';
+                    titleInput.value = 'Sales Manager';
+                    emailInput.value = 'john@example.com';
+                    phoneInput.value = '123-456-7890';
+                }
+                
+                // Collect team member data
+                const teamMembers = [];
+                const teamMemberElements = document.querySelectorAll('.team-member');
+                teamMemberElements.forEach((member, index) => {
+                    const name = member.querySelector('.team-member-name')?.value || '';
+                    const title = member.querySelector('.team-member-title')?.value || '';
+                    const email = member.querySelector('.team-member-email')?.value || '';
+                    const phone = member.querySelector('.team-member-phone')?.value || '';
+                    
+                    if (name || title || email || phone) {
+                        teamMembers.push({ name, title, email, phone });
+                    }
+                });
+                
+                // Check if data was collected correctly
+                if (teamMembers.length === 1 && 
+                    teamMembers[0].name === 'John Doe' && 
+                    teamMembers[0].title === 'Sales Manager' && 
+                    teamMembers[0].email === 'john@example.com' && 
+                    teamMembers[0].phone === '123-456-7890') {
+                    dataResult.innerHTML = '<span class="success">PASS: Team member data collected correctly</span>';
+                } else {
+                    dataResult.innerHTML = '<span class="failure">FAIL: Team member data not collected correctly</span>';
+                }
+            });
+            
+            // Initialize the functionality
+            initTeamMemberFunctionality();
+        });
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

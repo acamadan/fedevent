@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Places API Verification</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        header {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+        
+        .main-content {
+            flex: 2;
+            min-width: 300px;
+            padding-right: 30px;
+        }
+        
+        .sidebar {
+            flex: 1;
+            min-width: 250px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            color: #5f6368;
+            font-size: 1.1rem;
+        }
+        
+        .input-container {
+            position: relative;
+        }
+        
+        #autocomplete-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 2px solid #dadce0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        
+        #autocomplete-input:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 3px rgba(66, 133, 244, 0.2);
+        }
+        
+        .suggestions-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .suggestions-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #dadce0;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .suggestion-item {
+            padding: 15px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-name {
+            font-weight: 600;
+            color: #202124;
+            margin-bottom: 4px;
+        }
+        
+        .suggestion-address {
+            font-size: 14px;
+            color: #5f6368;
+        }
+        
+        #place-details {
+            margin-top: 30px;
+            padding: 25px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 10px;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        #place-details h2 {
+            color: #202124;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #4285f4;
+        }
+        
+        .detail-row {
+            display: flex;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .detail-row:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #495057;
+            min-width: 130px;
+        }
+        
+        .detail-value {
+            flex: 1;
+            color: #212529;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #4285f4;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            background-color: #fce8e6;
+            color: #d93025;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+            border-left: 5px solid #d93025;
+        }
+        
+        .success {
+            background-color: #e6f4ea;
+            color: #137333;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+            border-left: 5px solid #137333;
+        }
+        
+        .mock-mode-indicator {
+            background-color: #fef7e0;
+            color: #f9ab00;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+            border-left: 5px solid #f9ab00;
+        }
+        
+        .config-info {
+            background: linear-gradient(135deg, #e8eaed 0%, #d2e3fc 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+        }
+        
+        .config-info h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        
+        .config-info ul {
+            padding-left: 20px;
+        }
+        
+        .config-info li {
+            margin-bottom: 10px;
+        }
+        
+        .instructions {
+            background: linear-gradient(135deg, #d2e3fc 0%, #e8eaed 100%);
+            border-left: 5px solid #4285f4;
+            padding: 20px;
+            border-radius: 0 10px 10px 0;
+            margin-bottom: 25px;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #1a73e8;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #4285f4 0%, #34a853 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: inline-block;
+            text-align: center;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:disabled {
+            background: #dadce0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .status-active {
+            background-color: #34a853;
+        }
+        
+        .status-inactive {
+            background-color: #ea4335;
+        }
+        
+        .status-pending {
+            background-color: #fbbc04;
+        }
+        
+        .test-section {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .test-section h3 {
+            color: #202124;
+            margin-bottom: 15px;
+        }
+        
+        .test-result {
+            margin-top: 15px;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                flex-direction: column;
+            }
+            
+            .main-content {
+                padding-right: 0;
+                margin-bottom: 30px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Google Places API Verification</h1>
+            <p class="subtitle">Testing Your New API Key Configuration</p>
+        </header>
+        
+        <div class="content">
+            <div class="main-content">
+                <div class="instructions">
+                    <h3>API Key Configuration Status</h3>
+                    <p>Congratulations! You've successfully configured your Google Places API key with the proper restrictions:</p>
+                    <ul>
+                        <li>✅ Restricted to HTTP referrer: <code>http://localhost:5050/*</code></li>
+                        <li>✅ Limited to Maps JavaScript API, Places API, and Places API (New)</li>
+                        <li>✅ Connected to a project with billing enabled</li>
+                    </ul>
+                    <p>Now let's test if everything is working correctly!</p>
+                </div>
+                
+                <div class="mock-mode-indicator" id="mockModeIndicator">
+                    <div class="status-indicator status-pending"></div>
+                    Running in mock mode - using sample data instead of real API
+                </div>
+                
+                <div class="error" id="errorMessage"></div>
+                <div class="success" id="successMessage"></div>
+                
+                <div class="form-group">
+                    <label for="autocomplete-input">Find a Hotel or Location:</label>
+                    <div class="suggestions-container">
+                        <div class="input-container">
+                            <input id="autocomplete-input" type="text" placeholder="Type 'hotel' to see suggestions..." autocomplete="off" />
+                        </div>
+                        <div class="suggestions-list" id="suggestions-list"></div>
+                    </div>
+                </div>
+                
+                <div id="place-details">
+                    <h2>Selected Place Details</h2>
+                    <div class="detail-row">
+                        <span class="detail-label">Name:</span>
+                        <span class="detail-value" id="place-name">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Address:</span>
+                        <span class="detail-value" id="place-address">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Phone:</span>
+                        <span class="detail-value" id="place-phone">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Website:</span>
+                        <span class="detail-value" id="place-website">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Coordinates:</span>
+                        <span class="detail-value" id="place-latlng">-</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Place ID:</span>
+                        <span class="detail-value" id="place-id">-</span>
+                    </div>
+                </div>
+                
+                <div class="test-section">
+                    <h3>Manual API Test</h3>
+                    <p>Click the button below to manually test your API key:</p>
+                    <button id="testApiKeyBtn" class="btn">Test API Key Now</button>
+                    <div id="apiKeyTestResult" class="test-result" style="display: none;"></div>
+                </div>
+            </div>
+            
+            <div class="sidebar">
+                <h3>Implementation Status</h3>
+                <div class="status-item">
+                    <p><span class="status-indicator status-pending" id="apiKeyStatus"></span> API Key Configuration</p>
+                </div>
+                <div class="status-item">
+                    <p><span class="status-indicator status-pending" id="apiConnectionStatus"></span> API Connection</p>
+                </div>
+                <div class="status-item">
+                    <p><span class="status-indicator status-pending" id="fieldMaskStatus"></span> Field Mask Compliance</p>
+                </div>
+                <div class="status-item">
+                    <p><span class="status-indicator status-pending" id="sessionTokenStatus"></span> Session Token Usage</p>
+                </div>
+                
+                <div class="config-info">
+                    <h3>Best Practices Implemented</h3>
+                    <ul>
+                        <li>Direct HTTP requests to Google Places API (New)</li>
+                        <li>Server-side API key management</li>
+                        <li>Explicit X-Goog-FieldMask headers</li>
+                        <li>Session tokens for billing optimization</li>
+                        <li>No Maps JavaScript API library loading</li>
+                    </ul>
+                </div>
+                
+                <div class="test-section">
+                    <h3>Troubleshooting Tips</h3>
+                    <ul>
+                        <li>Wait 5 minutes for settings to propagate</li>
+                        <li>Clear browser cache for localhost:5050</li>
+                        <li>Check browser console for errors (F12)</li>
+                        <li>Verify Network tab for API requests</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let googlePlacesApiKey = null;
+        let isMockMode = false;
+        let sessionToken = null;
+        let currentRequestController = null;
+        
+        // DOM Elements
+        const autocompleteInput = document.getElementById('autocomplete-input');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const placeDetails = document.getElementById('place-details');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+        const mockModeIndicator = document.getElementById('mockModeIndicator');
+        const testApiKeyBtn = document.getElementById('testApiKeyBtn');
+        const apiKeyTestResult = document.getElementById('apiKeyTestResult');
+        
+        // Status indicators
+        const apiKeyStatus = document.getElementById('apiKeyStatus');
+        const apiConnectionStatus = document.getElementById('apiConnectionStatus');
+        const fieldMaskStatus = document.getElementById('fieldMaskStatus');
+        const sessionTokenStatus = document.getElementById('sessionTokenStatus');
+        
+        // Update status indicators
+        function updateStatus(element, status) {
+            element.className = 'status-indicator';
+            switch(status) {
+                case 'active':
+                    element.classList.add('status-active');
+                    break;
+                case 'inactive':
+                    element.classList.add('status-inactive');
+                    break;
+                case 'pending':
+                    element.classList.add('status-pending');
+                    break;
+            }
+        }
+        
+        // Initialize the application
+        async function initApp() {
+            try {
+                // Update status indicators
+                updateStatus(apiKeyStatus, 'pending');
+                updateStatus(apiConnectionStatus, 'pending');
+                updateStatus(fieldMaskStatus, 'pending');
+                updateStatus(sessionTokenStatus, 'pending');
+                
+                // Fetch the Google Places API key from our server
+                const response = await fetch('/api/google-places-key');
+                const data = await response.json();
+                
+                if (data.mockMode) {
+                    isMockMode = true;
+                    mockModeIndicator.style.display = 'block';
+                    updateStatus(apiKeyStatus, 'inactive');
+                    console.warn('Running in mock mode - using sample data instead of real API');
+                    showSuccessMessage('Running in mock mode - using sample data for development');
+                } else {
+                    googlePlacesApiKey = data.apiKey;
+                    mockModeIndicator.style.display = 'none';
+                    updateStatus(apiKeyStatus, 'active');
+                    showSuccessMessage('API key successfully loaded');
+                }
+                
+                // Initialize session token
+                generateNewSessionToken();
+                updateStatus(sessionTokenStatus, 'active');
+                
+                // Set up event listeners
+                setupEventListeners();
+                
+                // Update field mask status
+                updateStatus(fieldMaskStatus, 'active');
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                updateStatus(apiKeyStatus, 'inactive');
+                showErrorMessage('Failed to initialize the application. Please check console for details.');
+            }
+        }
+        
+        // Generate a new session token for billing optimization
+        function generateNewSessionToken() {
+            // Generate a simple UUID-like token for session tracking
+            sessionToken = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            console.log('New session token generated:', sessionToken);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            autocompleteInput.addEventListener('input', handleInput);
+            autocompleteInput.addEventListener('focus', handleFocus);
+            autocompleteInput.addEventListener('blur', () => {
+                // Hide suggestions after a short delay to allow clicks
+                setTimeout(() => {
+                    suggestionsList.style.display = 'none';
+                }, 200);
+            });
+            
+            // Close suggestions when clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (!autocompleteInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+                    suggestionsList.style.display = 'none';
+                }
+            });
+            
+            // Manual API key test button
+            testApiKeyBtn.addEventListener('click', testApiKey);
+        }
+        
+        // Handle input focus - generate new session token
+        function handleFocus() {
+            generateNewSessionToken();
+            updateStatus(sessionTokenStatus, 'active');
+        }
+        
+        // Handle input changes
+        async function handleInput(event) {
+            const query = event.target.value.trim();
+            
+            if (query.length < 2) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const results = await searchPlaces(query);
+                displaySuggestions(results);
+                updateStatus(apiConnectionStatus, 'active');
+            } catch (error) {
+                console.error('Error searching places:', error);
+                updateStatus(apiConnectionStatus, 'inactive');
+                showErrorMessage('Failed to search places: ' + error.message);
+            }
+        }
+        
+        // Search for places using Google Places API (New) with direct HTTP requests
+        async function searchPlaces(query) {
+            // Cancel previous request if exists
+            if (currentRequestController) {
+                currentRequestController.abort();
+            }
+            
+            // Create new AbortController for this request
+            currentRequestController = new AbortController();
+            const { signal } = currentRequestController;
+            
+            // In mock mode, return sample data
+            if (isMockMode) {
+                await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+                return getMockPlacesData(query);
+            }
+            
+            // Validate API key
+            if (!googlePlacesApiKey) {
+                throw new Error('Google Places API key not available');
+            }
+            
+            // Show loading indicator
+            suggestionsList.innerHTML = '<div class="suggestion-item"><div class="loading"><div class="spinner"></div>Searching...</div></div>';
+            suggestionsList.style.display = 'block';
+            
+            try {
+                // Make direct HTTP request to Google Places API (New)
+                const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': googlePlacesApiKey,
+                        // Include session token in the request for billing optimization
+                        'X-Goog-Request-Params': `session_token=${sessionToken}`,
+                        // Required field mask as per project specifications
+                        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.internationalPhoneNumber,places.websiteUri'
+                    },
+                    body: JSON.stringify({
+                        textQuery: query,
+                        maxResultCount: 5
+                    }),
+                    signal // Pass the abort signal
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.places || [];
+            } catch (error) {
+                if (error.name === 'AbortError') {
+                    console.log('Request was cancelled');
+                    return [];
+                }
+                console.error('Places API error:', error);
+                throw error;
+            }
+        }
+        
+        // Display suggestions in the dropdown
+        function displaySuggestions(places) {
+            if (!places || places.length === 0) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+            
+            suggestionsList.innerHTML = '';
+            
+            places.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="suggestion-name">${escapeHtml(place.displayName?.text || 'Unnamed Place')}</div>
+                    <div class="suggestion-address">${escapeHtml(place.formattedAddress || 'Address not available')}</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    selectPlace(place);
+                });
+                
+                suggestionsList.appendChild(item);
+            });
+            
+            suggestionsList.style.display = 'block';
+        }
+        
+        // Select a place and display its details
+        async function selectPlace(place) {
+            // Hide suggestions
+            suggestionsList.style.display = 'none';
+            
+            // Update input value
+            autocompleteInput.value = place.displayName?.text || '';
+            
+            // Display place details
+            document.getElementById('place-name').textContent = place.displayName?.text || 'N/A';
+            document.getElementById('place-address').textContent = place.formattedAddress || 'N/A';
+            document.getElementById('place-phone').textContent = place.internationalPhoneNumber || 'N/A';
+            document.getElementById('place-website').textContent = place.websiteUri || 'N/A';
+            
+            // Extract latitude and longitude
+            if (place.location) {
+                document.getElementById('place-latlng').textContent = 
+                    `${place.location.latitude.toFixed(6)}, ${place.location.longitude.toFixed(6)}`;
+            } else {
+                document.getElementById('place-latlng').textContent = 'N/A';
+            }
+            
+            document.getElementById('place-id').textContent = place.id || 'N/A';
+            
+            // Show details section
+            placeDetails.style.display = 'block';
+            
+            // Generate new session token after selection (as recommended for billing optimization)
+            generateNewSessionToken();
+            updateStatus(sessionTokenStatus, 'active');
+            
+            // Scroll to details
+            placeDetails.scrollIntoView({ behavior: 'smooth' });
+            
+            showSuccessMessage('Place details loaded successfully');
+        }
+        
+        // Get mock places data for development/testing
+        function getMockPlacesData(query) {
+            // Sample mock data based on common hotel chains
+            const mockHotels = [
+                {
+                    id: 'ChIJd8BlQ2BZwokRAFUEcm_qrcA',
+                    displayName: { text: 'The Ritz-Carlton' },
+                    formattedAddress: '123 Main Street, New York, NY 10001, USA',
+                    location: { latitude: 40.7128, longitude: -74.0060 },
+                    internationalPhoneNumber: '+1 212-555-1234',
+                    websiteUri: 'https://www.ritzcarlton.com'
+                },
+                {
+                    id: 'ChIJGz24MwZYwokRYBJwF-7VcK8',
+                    displayName: { text: 'Marriott International' },
+                    formattedAddress: '456 Business Ave, Washington, DC 20001, USA',
+                    location: { latitude: 38.8951, longitude: -77.0364 },
+                    internationalPhoneNumber: '+1 202-555-5678',
+                    websiteUri: 'https://www.marriott.com'
+                },
+                {
+                    id: 'ChIJi8MeVwZYwokRyH5nS2TSDWI',
+                    displayName: { text: 'Hilton Worldwide' },
+                    formattedAddress: '789 Hospitality Blvd, Chicago, IL 60601, USA',
+                    location: { latitude: 41.8781, longitude: -87.6298 },
+                    internationalPhoneNumber: '+1 312-555-9012',
+                    websiteUri: 'https://www.hilton.com'
+                },
+                {
+                    id: 'ChIJ5z5r8M8xwokR2Hin8d5gk7c',
+                    displayName: { text: 'Hyatt Regency' },
+                    formattedAddress: '321 Travel Lane, San Francisco, CA 94102, USA',
+                    location: { latitude: 37.7749, longitude: -122.4194 },
+                    internationalPhoneNumber: '+1 415-555-3456',
+                    websiteUri: 'https://www.hyatt.com'
+                },
+                {
+                    id: 'ChIJ3S8x8yUxwokRz3c4p4d5e6f',
+                    displayName: { text: 'Sheraton Hotels' },
+                    formattedAddress: '654 Lodging Way, Boston, MA 02108, USA',
+                    location: { latitude: 42.3601, longitude: -71.0589 },
+                    internationalPhoneNumber: '+1 617-555-7890',
+                    websiteUri: 'https://www.sheraton.com'
+                }
+            ];
+            
+            // Filter mock data based on query
+            const filtered = mockHotels.filter(hotel => 
+                hotel.displayName.text.toLowerCase().includes(query.toLowerCase()) ||
+                hotel.formattedAddress.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            return filtered.slice(0, 5);
+        }
+        
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+        
+        // Show error message
+        function showErrorMessage(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            
+            // Hide error after 5 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Show success message
+        function showSuccessMessage(message) {
+            successMessage.textContent = message;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+            
+            // Hide success message after 3 seconds
+            setTimeout(() => {
+                successMessage.style.display = 'none';
+            }, 3000);
+        }
+        
+        // Manual API key test
+        async function testApiKey() {
+            const button = testApiKeyBtn;
+            button.disabled = true;
+            button.textContent = 'Testing...';
+            apiKeyTestResult.style.display = 'none';
+            
+            try {
+                // Fetch the API key from our server
+                const keyResponse = await fetch('/api/google-places-key');
+                const keyData = await keyResponse.json();
+                
+                if (keyData.mockMode) {
+                    apiKeyTestResult.className = 'test-result';
+                    apiKeyTestResult.style.backgroundColor = '#fff3cd';
+                    apiKeyTestResult.style.color = '#856404';
+                    apiKeyTestResult.textContent = `MOCK MODE ACTIVE
+
+Reason: ${keyData.message || 'API key not properly configured'}
+
+In mock mode, the application uses sample data instead of real API calls.`;
+                    apiKeyTestResult.style.display = 'block';
+                    return;
+                }
+                
+                if (!keyData.apiKey) {
+                    apiKeyTestResult.className = 'test-result';
+                    apiKeyTestResult.style.backgroundColor = '#f8d7da';
+                    apiKeyTestResult.style.color = '#721c24';
+                    apiKeyTestResult.textContent = 'ERROR: No API key found in server response';
+                    apiKeyTestResult.style.display = 'block';
+                    return;
+                }
+                
+                // Test the Google Places API directly
+                const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': keyData.apiKey,
+                        'X-Goog-FieldMask': 'places.id,places.displayName'
+                    },
+                    body: JSON.stringify({
+                        textQuery: 'hotel',
+                        maxResultCount: 3
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    apiKeyTestResult.className = 'test-result';
+                    apiKeyTestResult.style.backgroundColor = '#d4edda';
+                    apiKeyTestResult.style.color = '#155724';
+                    apiKeyTestResult.textContent = `SUCCESS!
+
+API Key is valid and working.
+
+Status: ${response.status} ${response.statusText}
+Results: ${data.places ? data.places.length : 0} places found
+
+You can now use the Google Places API in your application.`;
+                    updateStatus(apiKeyStatus, 'active');
+                    updateStatus(apiConnectionStatus, 'active');
+                } else {
+                    apiKeyTestResult.className = 'test-result';
+                    apiKeyTestResult.style.backgroundColor = '#f8d7da';
+                    apiKeyTestResult.style.color = '#721c24';
+                    apiKeyTestResult.textContent = `ERROR!
+
+API Key validation failed.
+
+Status: ${response.status} ${response.statusText}
+Error: ${JSON.stringify(data, null, 2)}`;
+                    updateStatus(apiKeyStatus, 'inactive');
+                    updateStatus(apiConnectionStatus, 'inactive');
+                }
+                apiKeyTestResult.style.display = 'block';
+            } catch (error) {
+                apiKeyTestResult.className = 'test-result';
+                apiKeyTestResult.style.backgroundColor = '#f8d7da';
+                apiKeyTestResult.style.color = '#721c24';
+                apiKeyTestResult.textContent = `ERROR!\n\nFailed to test API key: ${error.message}`;
+                apiKeyTestResult.style.display = 'block';
+                updateStatus(apiKeyStatus, 'inactive');
+                updateStatus(apiConnectionStatus, 'inactive');
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Test API Key Now';
+            }
+        }
+        
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

@@ -1,0 +1,2895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FEDEVENT - Connect Your Hotel to Governmental Contract Opportunities</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    
+    <!-- Tailwind CSS - Production Ready -->
+    <script>
+        // Suppress Tailwind CDN production warning BEFORE loading
+        const originalWarn = console.warn;
+        console.warn = function(...args) {
+            if (args[0] && typeof args[0] === 'string' && args[0].includes('cdn.tailwindcss.com should not be used in production')) {
+                return; // Suppress this specific warning
+            }
+            originalWarn.apply(console, args);
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configure Tailwind after loading
+        if (typeof tailwind !== 'undefined') {
+            tailwind.config = {
+                theme: {
+                    extend: {}
+                }
+            }
+        }
+    </script>
+    
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'usa-red': '#B22234',
+                        'usa-blue': '#2563eb',
+                        'un-blue': '#009EDB',
+                    },
+                    fontFamily: {
+                        'sans': ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+                        'display': ['Inter', 'system-ui', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Google Places API - Async loading for better performance -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyABdwje_wVZfSJi2fcfZQkxI1WhSJnlM3M&libraries=places&loading=async&callback=initGoogleMaps" defer></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-WHNVHXGPHG"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-WHNVHXGPHG', {
+            'page_title': 'FEDEVENT Prelaunch',
+            'page_path': '/prelaunch.html'
+        });
+    </script>
+    
+    <!-- Alpine.js for interactivity -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Canvas Confetti for celebration effect -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    
+    <!-- AI Assistant Styles -->
+    <style>
+        .ai-assistant {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+            font-family: 'Inter', system-ui, sans-serif;
+            pointer-events: none;
+        }
+        
+        @media (max-width: 1200px) {
+            .ai-assistant {
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                z-index: 1000;
+            }
+        }
+        
+        .ai-assistant * {
+            pointer-events: auto;
+        }
+        
+        @media (max-width: 768px) {
+            .ai-assistant {
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+        
+        .ai-chat-window {
+            position: fixed;
+            bottom: 120px;
+            right: 40px;
+            width: 350px;
+            max-width: calc(100vw - 80px);
+            height: 500px;
+            max-height: calc(100vh - 200px);
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2);
+            border: 3px solid #2563eb;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            z-index: 1001;
+        }
+        
+        @media (max-width: 1200px) {
+            .ai-chat-window {
+                width: 320px;
+                height: 450px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .ai-chat-window {
+                width: calc(100vw - 20px);
+                height: 400px;
+                bottom: 100px;
+                right: 10px;
+                left: 10px;
+                max-width: none;
+            }
+        }
+        
+        .ai-chat-window.open {
+            transform: translateY(0);
+        }
+        
+        .ai-chat-header {
+            background: linear-gradient(135deg, #2563eb, #dc2626);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .ai-chat-title {
+            font-size: 16px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .ai-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 5px;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .ai-close-btn:hover {
+            background: rgba(255,255,255,0.2);
+        }
+        
+        .ai-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9fafb;
+        }
+        
+        .ai-message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        
+        .ai-avatar {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, #2563eb, #dc2626);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            flex-shrink: 0;
+        }
+        
+        .ai-message-content {
+            background: white;
+            padding: 12px 16px;
+            border-radius: 18px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+            line-height: 1.5;
+            max-width: 250px;
+        }
+        
+        .ai-user-message {
+            flex-direction: row-reverse;
+        }
+        
+        .ai-user-message .ai-avatar {
+            background: #6b7280;
+        }
+        
+        .ai-user-message .ai-message-content {
+            background: #2563eb;
+            color: white;
+            border: none;
+        }
+        
+        .ai-chat-input {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .ai-input-group {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        .ai-text-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        
+        .ai-text-input:focus {
+            border-color: #2563eb;
+        }
+        
+        .ai-send-btn {
+            background: linear-gradient(135deg, #2563eb, #dc2626);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .ai-send-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .ai-mic-btn, .ai-voice-btn, .ai-clear-btn {
+            background: #f3f4f6;
+            border: none;
+            border-radius: 8px;
+            padding: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 16px;
+            margin: 0 2px;
+        }
+        
+        .ai-mic-btn:hover, .ai-voice-btn:hover, .ai-clear-btn:hover {
+            background: #e5e7eb;
+            transform: scale(1.05);
+        }
+        
+        .ai-mic-btn.recording {
+            background: #ef4444;
+            color: white;
+            animation: pulse 1s infinite;
+        }
+        
+        .ai-voice-btn.enabled {
+            background: #10b981;
+            color: white;
+        }
+        
+        .ai-toggle-btn {
+            width: 176px;
+            height: 176px;
+            background: #000000;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 30px 100px rgba(37, 99, 235, 0.4), 0 0 0 0 rgba(37, 99, 235, 0.7);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Responsive sizing for D.A.N.A sphere */
+        @media (max-width: 1200px) {
+            .ai-toggle-btn {
+                width: 160px;
+                height: 160px;
+            }
+        }
+        
+        @media (max-width: 1000px) {
+            .ai-toggle-btn {
+                width: 144px;
+                height: 144px;
+            }
+        }
+        
+        @media (max-width: 800px) {
+            .ai-toggle-btn {
+                width: 128px;
+                height: 128px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .ai-toggle-btn {
+                width: 112px;
+                height: 112px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .ai-toggle-btn {
+                width: 96px;
+                height: 96px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .ai-toggle-btn {
+                width: 88px;
+                height: 88px;
+            }
+        }
+        
+        
+        .ai-toggle-btn:hover {
+            transform: scale(1.15);
+            box-shadow: 0 30px 80px rgba(37, 99, 235, 0.5), 0 0 0 0 rgba(37, 99, 235, 0.7);
+            animation: none;
+        }
+        
+        .dana-video {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            object-position: center;
+        }
+        
+        .ai-toggle-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .ai-typing-text {
+            background: #000000;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 0 30px rgba(0, 255, 0, 0.4);
+            border: 3px solid #00ff00;
+            width: 179px;
+            height: 220px;
+            text-align: left;
+            font-family: 'Courier New', monospace;
+            animation: terminalGlow 2s ease-in-out infinite alternate;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        /* Responsive sizing for terminal screen to match sphere */
+        @media (max-width: 1200px) {
+            .ai-typing-text {
+                width: 163px;
+                height: 200px;
+            }
+        }
+        
+        @media (max-width: 1000px) {
+            .ai-typing-text {
+                width: 147px;
+                height: 180px;
+            }
+        }
+        
+        @media (max-width: 800px) {
+            .ai-typing-text {
+                width: 131px;
+                height: 160px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .ai-typing-text {
+                width: 115px;
+                height: 140px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .ai-typing-text {
+                width: 99px;
+                height: 120px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .ai-typing-text {
+                width: 91px;
+                height: 110px;
+            }
+        }
+        
+        .ai-typing-text-content {
+            color: #00ff00;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.3;
+            text-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+            word-wrap: break-word;
+            white-space: pre-wrap;
+            position: absolute;
+            top: -10px;
+            left: 20px;
+            right: 20px;
+            text-align: left;
+        }
+        
+        /* Responsive font sizing for terminal text */
+        @media (max-width: 1000px) {
+            .ai-typing-text-content {
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 800px) {
+            .ai-typing-text-content {
+                font-size: 12px;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .ai-typing-text-content {
+                font-size: 11px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .ai-typing-text-content {
+                font-size: 10px;
+            }
+        }
+        
+        @media (max-width: 360px) {
+            .ai-typing-text-content {
+                font-size: 9px;
+            }
+        }
+        
+        .dana-avatar {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #1e3a8a, #dc2626);
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="danaGradient" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style="stop-color:%231e3a8a"/><stop offset="100%" style="stop-color:%23dc2626"/></linearGradient></defs><circle cx="50" cy="50" r="45" fill="url(%23danaGradient)"/><circle cx="50" cy="35" r="8" fill="white"/><circle cx="50" cy="35" r="5" fill="%2300aaff"/><path d="M35 50 Q50 40 65 50" stroke="white" stroke-width="2" fill="none"/><path d="M30 65 Q50 55 70 65" stroke="white" stroke-width="1" fill="none"/><text x="50" y="85" text-anchor="middle" fill="white" font-family="Arial" font-size="8" font-weight="bold">D.A.N.A</text></svg>');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .dana-face {
+            color: white;
+            font-size: 24px;
+            font-weight: 900;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+            letter-spacing: 2px;
+        }
+        
+        .terminal-prompt {
+            color: #00ff00;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+            font-size: 12px;
+        }
+        
+        .terminal-status {
+            color: #00ff00;
+            font-weight: bold;
+            margin: 0;
+            padding: 0;
+            line-height: 1;
+            font-size: 12px;
+        }
+        
+        .typing-line {
+            display: flex;
+            align-items: center;
+        }
+        
+        .typing-text {
+            color: #00ff00;
+        }
+        
+        .cursor {
+            background-color: #00ff00;
+            color: #000000;
+            width: 8px;
+            height: 15px;
+            display: inline-block;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+            vertical-align: baseline;
+        }
+        
+        @keyframes terminalGlow {
+            0% { 
+                box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+                border-color: #00ff00;
+            }
+            100% { 
+                box-shadow: 0 0 30px rgba(0, 255, 0, 0.6);
+                border-color: #00ff41;
+            }
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), 0 0 0 0 rgba(37, 99, 235, 0.7);
+            }
+            70% {
+                box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), 0 0 0 10px rgba(37, 99, 235, 0);
+            }
+            100% {
+                box-shadow: 0 10px 30px rgba(37, 99, 235, 0.4), 0 0 0 0 rgba(37, 99, 235, 0);
+            }
+        }
+        
+        .ai-typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: white;
+            border-radius: 18px;
+            border: 1px solid #e5e7eb;
+            max-width: 100px;
+        }
+        
+        .ai-typing-dots {
+            display: flex;
+            gap: 3px;
+        }
+        
+        .ai-typing-dot {
+            width: 6px;
+            height: 6px;
+            background: #9ca3af;
+            border-radius: 50%;
+            animation: typing 1.4s infinite;
+        }
+        
+        .ai-typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .ai-typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+        
+        .ai-quick-questions {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .ai-quick-question {
+            padding: 8px 12px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .ai-quick-question:hover {
+            background: #e5e7eb;
+            border-color: #2563eb;
+        }
+    </style>
+    
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-size: 17px;
+            line-height: 1.4705882353;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+            font-family: SF Pro Text, SF Pro Icons, Helvetica Neue, Helvetica, Arial, sans-serif;
+        }
+        
+        p {
+            font-size: 17px;
+            line-height: 1.4705882353;
+            font-weight: 400;
+            letter-spacing: -0.022em;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Inter', system-ui, sans-serif;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+        
+        /* Benefit card headers - larger and more prominent */
+        .card-hover h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            line-height: 1.2;
+        }
+        
+        .patriotic-gradient {
+            background: linear-gradient(135deg, #3C3B6E 0%, #B22234 100%);
+        }
+        
+        .usa-gradient {
+            background: linear-gradient(to right, #B22234 0%, #FFFFFF 50%, #3C3B6E 100%);
+        }
+        
+        :root {
+            --text: #0b2545;
+            --text-light: #5b6b7b;
+            --error: #dc3545;
+            --bright-blue: #2563eb;
+        }
+        
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 12px !important;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1) !important;
+            border: 2px solid #e5e7eb !important;
+            margin-top: 4px !important;
+        }
+        
+        .pac-item {
+            padding: 12px 16px !important;
+            border-bottom: 1px solid #f3f4f6 !important;
+            font-size: 14px !important;
+        }
+        
+        .pac-item:hover {
+            background-color: #f8fafc !important;
+        }
+        
+        .pac-item-selected {
+            background-color: #e3f2fd !important;
+        }
+        
+        .pac-icon {
+            display: none !important;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%);
+        }
+        
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+        
+        .card-hover:hover {
+            transform: scale(1.12) translateY(-12px);
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.25);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .slide-in {
+            animation: slideIn 1s ease-out;
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        .pulse-glow {
+            animation: pulseGlow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulseGlow {
+            0%, 100% { box-shadow: 0 0 20px rgba(60, 59, 110, 0.4); }
+            50% { box-shadow: 0 0 40px rgba(178, 34, 52, 0.4); }
+        }
+        
+        /* Smooth scroll with fixed header */
+        html {
+            scroll-padding-top: 80px;
+        }
+        
+        body {
+            padding-top: 0;
+        }
+        
+        /* Custom checkbox styling */
+        input[type="checkbox"]:checked {
+            background-color: #3C3B6E;
+            border-color: #3C3B6E;
+        }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Form focus states */
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3C3B6E;
+            box-shadow: 0 0 0 3px rgba(60, 59, 110, 0.15);
+        }
+        
+        /* Google Places Autocomplete Styling */
+        .pac-container {
+            border-radius: 12px;
+            border: 2px solid #3C3B6E;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin-top: 4px;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .pac-item {
+            padding: 12px;
+            border-top: 1px solid #e5e7eb;
+            cursor: pointer;
+        }
+        
+        .pac-item:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .pac-item-query {
+            font-size: 15px;
+            color: #1f2937;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="antialiased bg-white text-gray-900" x-data="waitlistForm()">
+
+    <!-- PLS AI Assistant - Fixed, never overlaps header -->
+    <div class="ai-assistant" x-data="plsAssistant()" x-init="setupAssistantPositioning()" style="z-index: 1000;">
+        <!-- Chat Window -->
+        <div class="ai-chat-window" x-show="isOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="transform translate-y-full" x-transition:enter-end="transform translate-y-0" x-transition:leave="transition ease-in duration-200" x-transition:leave-start="transform translate-y-0" x-transition:leave-end="transform translate-y-full">
+            <!-- Header -->
+            <div class="ai-chat-header">
+                <div class="ai-chat-title">
+                    🤖 D.A.N.A
+                </div>
+                <button class="ai-close-btn" @click="closeChat()">×</button>
+            </div>
+            
+            <!-- Messages -->
+            <div class="ai-chat-messages" x-ref="messagesContainer">
+                <div class="ai-message">
+                    <div class="ai-avatar">D.A.N.A</div>
+                    <div class="ai-message-content">
+                        Hi! I'm D.A.N.A, your Digital Assistant Network Agent for FEDEVENT prelaunch. I can help you understand government contracting opportunities, hotel eligibility requirements, and guide you through joining our waitlist. How can I assist you today?
+                    </div>
+                </div>
+                
+                <!-- Quick Questions -->
+                <div class="ai-quick-questions">
+                    <div class="ai-quick-question" @click="sendQuickQuestion('What are the hotel eligibility requirements?')">
+                        Hotel eligibility requirements?
+                    </div>
+                    <div class="ai-quick-question" @click="sendQuickQuestion('What types of government contracts are available?')">
+                        What contracts are available?
+                    </div>
+                    <div class="ai-quick-question" @click="sendQuickQuestion('How does the payment process work?')">
+                        How does payment work?
+                    </div>
+                    <div class="ai-quick-question" @click="sendQuickQuestion('What happens after I join the waitlist?')">
+                        What happens after joining?
+                    </div>
+                </div>
+                
+                <!-- Dynamic Messages -->
+                <template x-for="message in messages" :key="message.id">
+                    <div class="ai-message" :class="message.isUser ? 'ai-user-message' : ''">
+                        <div class="ai-avatar" x-text="message.isUser ? 'U' : 'D.A.N.A'"></div>
+                        <div class="ai-message-content" x-html="message.content"></div>
+                    </div>
+                </template>
+                
+                <!-- Typing Indicator -->
+                <div x-show="isTyping" class="ai-message">
+                    <div class="ai-avatar">D.A.N.A</div>
+                    <div class="ai-typing-indicator">
+                        <div class="ai-typing-dots">
+                            <div class="ai-typing-dot"></div>
+                            <div class="ai-typing-dot"></div>
+                            <div class="ai-typing-dot"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Input -->
+            <div class="ai-chat-input">
+                <div class="ai-input-group">
+                    <input 
+                        type="text" 
+                        class="ai-text-input" 
+                        placeholder="Ask D.A.N.A about FEDEVENT prelaunch..."
+                        x-model="inputMessage"
+                        @keydown.enter="sendMessage()"
+                        :disabled="isTyping"
+                    >
+                    <button class="ai-mic-btn" @click="toggleMic()" :class="{ 'recording': isRecording }" title="Voice Input">
+                        🎤
+                    </button>
+                    <button class="ai-voice-btn" @click="toggleVoice()" :class="{ 'enabled': voiceEnabled }" title="Voice Response">
+                        🔊
+                    </button>
+                    <button class="ai-clear-btn" @click="clearChat()" title="Clear Chat">
+                        🗑️
+                    </button>
+                    <button class="ai-send-btn" @click="sendMessage()" :disabled="!inputMessage.trim() || isTyping">
+                        →
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toggle Button with Typing Text -->
+        <div class="ai-toggle-container" x-show="!isOpen">
+            <!-- Typing Text -->
+            <div class="ai-typing-text">
+                <div class="ai-typing-text-content" id="dana-typing">
+                    <div class="terminal-prompt">TERMINAL D.A.N.A</div><div class="terminal-status">STATUS: ACTIVE, SOURCE: AI AGENT</div>
+                    <div class="typing-line">
+                        <span class="typing-text" id="typing-animation"></span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Toggle Button -->
+            <button class="ai-toggle-btn" @click="toggleChat(); enableDanaAudio()" @mouseenter="playDanaVideo()" @mouseleave="pauseDanaVideo()">
+                <video id="danaVideo" src="/dana.mp4" alt="DANA" class="dana-video" playsinline x-ref="danaVideo" @loadeddata="initDanaVideo()" @error="videoError()" @canplay="videoCanPlay()" @ended="pauseAtEnd()"></video>
+            </button>
+        </div>
+    </div>
+
+    <!-- Fixed Video Background -->
+    <div class="fixed top-0 left-0 w-full h-screen z-0">
+        <video autoplay muted loop playsinline class="absolute top-0 left-0 w-full h-full object-cover">
+            <source src="/FINAL US&UN FLAG.mp4" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+        
+        <!-- Dark Overlay for Better Text Readability -->
+        <div class="absolute top-0 left-0 w-full h-full bg-black bg-opacity-50"></div>
+    </div>
+
+    <!-- Hero Section -->
+    <section id="hero" class="relative z-10 overflow-hidden" style="height: 100vh; min-height: 700px; max-height: none;">
+        <!-- Flag Video Background -->
+        <div class="absolute inset-0 w-full h-full">
+            <video id="flagVideo" autoplay muted loop playsinline class="w-full h-full object-cover" poster="/FINAL%20US&UN%20FLAG.mp4?v=1">
+                <source src="/FINAL%20US&UN%20FLAG.mp4?v=1" type="video/mp4">
+            </video>
+            <!-- Overlay for better text readability -->
+            <div class="absolute inset-0 bg-black bg-opacity-30"></div>
+        </div>
+        
+        <!-- Content -->
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-center" style="padding-top: 120px; padding-bottom: 120px;">
+            
+            <!-- Headline -->
+            <div class="text-center max-w-5xl mx-auto fade-in">
+                <h1 class="mb-8 leading-tight text-white" style="font-size: 64px; line-height: 1.14286; font-weight: 700; letter-spacing: -0.02em; font-family: 'Inter', 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif; text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">
+                    Connect Your Hotel to<br>
+                    <span class="text-usa-blue" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">Governmental Contract</span> <span class="text-usa-red" style="text-shadow: 2px 2px 8px rgba(0,0,0,0.7);">Opportunities</span>
+                </h1>
+                
+                <p class="text-2xl text-white mb-6 max-w-4xl mx-auto leading-relaxed font-medium" style="font-size: 1.5rem; line-height: 1.6; text-shadow: 1px 1px 6px rgba(0,0,0,0.8);">
+                    FEDEVENT is a new platform by CREATA Global Event Agency that helps hotels access lodging and conference contracts issued by <strong>governmental agencies worldwide</strong> — with <strong>zero direct billing paperwork</strong>.
+                </p>
+                
+                <p class="text-xl text-white mb-16 max-w-3xl mx-auto" style="font-size: 1.25rem; line-height: 1.7; font-weight: 500; text-shadow: 1px 1px 6px rgba(0,0,0,0.8);">
+                    We work with <strong>governmental agencies worldwide</strong> including <strong>USG</strong> (United States Government) and <strong>UN</strong> (United Nations) to streamline contract opportunities for qualified hotel partners.
+                </p>
+                
+                <!-- CTA Button -->
+                <div class="mb-16">
+                    <a href="#waitlist" 
+                       class="inline-block patriotic-gradient text-white text-2xl font-bold px-16 py-6 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-110 pulse-glow"
+                       onclick="if(typeof gtag !== 'undefined') gtag('event', 'click', {'event_category': 'engagement', 'event_label': 'cta_hero_join_waitlist'});">
+                        Join the Waitlist →
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Decorative gradient orbs - patriotic colors -->
+        <div class="absolute top-0 left-0 w-96 h-96 bg-blue-900 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse"></div>
+        <div class="absolute bottom-0 right-0 w-96 h-96 bg-red-800 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse" style="animation-delay: 1s;"></div>
+    </section>
+
+    <!-- About the Platform Section -->
+    <section class="relative z-10 py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-5xl md:text-6xl font-bold mb-4" style="font-weight: 800; letter-spacing: -0.02em;">What Is <span class="text-usa-red">FED</span><span class="text-usa-blue">EVENT</span>? <span style="color: #6b7280; font-weight: 600; font-style: italic;">— you may ask</span></h2>
+                <p class="text-2xl mb-8" style="color: #0071e3; font-weight: 600; letter-spacing: -0.01em;">Your Trusted Partner in Government World</p>
+                <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed" style="font-size: 1.25rem; line-height: 1.6;">
+                    FEDEVENT is a private contracting network connecting hotels with federal lodging and event opportunities. As a hotel partner, you'll be pre-qualified for events hosted by <strong>U.S. Government agencies</strong> and <strong>United Nations organizations</strong> — from conferences and training events to long-term lodging agreements and diplomatic accommodations.
+                </p>
+            </div>
+            
+            <!-- 3 Quick Highlights -->
+            <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                <!-- Highlight 1 -->
+                <div class="card-hover bg-white border-2 border-usa-blue p-10 rounded-3xl text-center shadow-lg">
+                    <h3 class="text-3xl font-black mb-4 text-usa-blue">Government Contracts Simplified</h3>
+                    <p class="text-xl text-gray-700 font-medium">No SAM registration needed for hotels. We handle the compliance.</p>
+                </div>
+                
+                <!-- Highlight 2 -->
+                <div class="card-hover bg-white border-2 border-usa-red p-10 rounded-3xl text-center shadow-lg">
+                    <h3 class="text-3xl font-black mb-4 text-usa-red">Guaranteed Payments</h3>
+                    <p class="text-xl text-gray-700 font-medium">NET30 terms under federal purchase orders. Secure and reliable.</p>
+                </div>
+                
+                <!-- Highlight 3 -->
+                <div class="card-hover bg-white border-2 border-black p-10 rounded-3xl text-center shadow-lg">
+                    <h3 class="text-3xl font-black mb-4 text-gray-900">More Bookings</h3>
+                    <p class="text-xl text-gray-700 font-medium">Access to recurring governmental events nationwide.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Benefits for Hotels Section -->
+    <section class="relative z-10 py-24 bg-gray-50" x-data="{ currentSlide: 0, totalSlides: 8 }" x-init="
+        setInterval(() => { 
+            currentSlide = (currentSlide + 1) % totalSlides; 
+        }, 4000);
+    ">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20">
+                <h2 class="text-6xl md:text-7xl font-bold mb-8" style="font-weight: 800; letter-spacing: -0.02em;">Hotels & Venues — What You Gain</h2>
+                <p class="text-2xl text-gray-600" style="font-weight: 500;">Why join the FEDEVENT Preferred Hotel Network?</p>
+            </div>
+            
+            <!-- Benefits Carousel - Single Card View -->
+            <div class="relative max-w-5xl mx-auto mb-12">
+                <!-- Left Arrow -->
+                <button @click="currentSlide = (currentSlide - 1 + totalSlides) % totalSlides" 
+                        class="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-usa-blue hover:text-white text-gray-800 rounded-full p-4 shadow-xl transition-all transform hover:scale-110">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                
+                <!-- Right Arrow -->
+                <button @click="currentSlide = (currentSlide + 1) % totalSlides" 
+                        class="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-white hover:bg-usa-blue hover:text-white text-gray-800 rounded-full p-4 shadow-xl transition-all transform hover:scale-110">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                
+                <!-- Carousel Container -->
+                <div class="overflow-hidden">
+                    <div class="flex transition-transform duration-700 ease-in-out" :style="`transform: translateX(-${currentSlide * 100}%)`">
+                        
+                        <!-- Card 1 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            📈
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Consistent Group Demand</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">Predictable revenue streams for your entire portfolio. Perfect for management companies and franchise operators seeking stable occupancy across multiple properties.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 2 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            📋
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Complete Event Briefs</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">Receive full event details including verified headcounts, rooming lists, meeting and A/V specifications, dietary requirements, and a complete day-by-day schedule to help your team prepare efficiently.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 3 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            📞
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Simplified Communication</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">No more chasing multiple contacts. One dedicated coordinator handles all pre-event planning, rapid decision-making, and on-site execution—saving your team time and reducing confusion.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 4 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            ✨
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Professional Closeout & Repeat Business</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">Streamlined post-event reconciliation and complete documentation for your records. High-performing properties earn priority placement for future contracts—turning one event into ongoing revenue.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 5 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            🎯
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Expert-Guided Access to Federal Buyers</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">Leverage CREATA Global's proven track record and deep government relationships to access opportunities you couldn't reach alone—without the complexity of federal procurement regulations.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 6 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            💳
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Simplified Payment Processing</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">CREATA handles all government invoicing and payment processing through official federal systems—eliminating complex paperwork and ensuring timely NET30 payments to your property.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 7 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            ⭐
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Preferred Network Benefits</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">Early partners receive priority placement, first access to high-value contracts, exclusive training resources, and enhanced visibility to government buyers—building your competitive advantage from day one.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Card 8 -->
+                        <div class="w-full flex-shrink-0 px-4">
+                            <div class="card-hover bg-white p-14 rounded-3xl shadow-xl h-full">
+                                <div class="flex items-start">
+                                    <div class="flex-shrink-0 mr-8">
+                                        <div class="w-24 h-24 gradient-bg rounded-2xl flex items-center justify-center text-white text-5xl">
+                                            🎁
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-4xl font-bold mb-4">Early Access Advantage</h3>
+                                        <p class="text-2xl text-gray-600 leading-relaxed">Reserve your spot in the FEDEVENT network with no upfront fee. Early registrants will begin receiving upcoming opportunity notices and communications before the official launch—positioning your property ahead of the competition for federal event contracts.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                    </div>
+                </div>
+                
+                <!-- Carousel Dots -->
+                <div class="flex justify-center gap-3 mt-8">
+                    <template x-for="i in totalSlides" :key="i">
+                        <button @click="currentSlide = i - 1" 
+                                :class="currentSlide === i - 1 ? 'bg-usa-blue w-12' : 'bg-gray-300 w-3'"
+                                class="h-3 rounded-full transition-all duration-300 hover:bg-usa-red">
+                        </button>
+                    </template>
+                </div>
+            </div>
+            
+            <!-- Special Offer Banner -->
+            <div class="text-center">
+                <div class="inline-block bg-usa-blue text-white px-8 py-4 rounded-2xl shadow-lg">
+                    <p class="text-lg font-semibold">
+                        Be among the first 1,000 hotels to join and receive <span class="underline">free featured placement</span> at launch.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Lead Capture Form Section -->
+    <section id="waitlist" class="relative z-10 py-24 bg-white">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div x-show="!showSuccess" x-transition class="text-center mb-16">
+                <h2 class="text-5xl md:text-6xl font-bold mb-8">Join the Waitlist</h2>
+                <p class="text-2xl text-gray-600 mb-6">Be the first to know when FEDEVENT launches. Register your interest today.</p>
+                <div class="bg-gradient-to-r from-usa-blue to-usa-red rounded-2xl p-8 text-white shadow-2xl">
+                    <h3 class="text-3xl md:text-4xl font-bold mb-4">🚀 Exclusive Early Access Benefits</h3>
+                    <p class="text-xl md:text-2xl leading-relaxed font-medium">
+                        <strong>Register today</strong> and start receiving <span class="text-yellow-300 font-bold">high-value government contract leads</span> 
+                        as soon as they become available! Get priority access to <span class="text-yellow-300 font-bold">United States Government (USG) contracts</span> 
+                        and <span class="text-yellow-300 font-bold">United Nations (UN) diplomatic lodging opportunities</span> 
+                        before the general launch. Don't miss out on this <span class="text-yellow-300 font-bold">limited-time opportunity</span> 
+                        to secure your hotel's position in both domestic and international government contracting markets!
+                    </p>
+                </div>
+            </div>
+            
+            <!-- Success Message -->
+            <div x-show="showSuccess" x-transition class="mb-8 bg-gradient-to-br from-blue-50 to-purple-50 border-4 border-usa-blue rounded-2xl p-8 text-center shadow-2xl">
+                <div class="mb-4">
+                    <span class="text-6xl">🎉</span>
+                </div>
+                <h3 class="text-4xl md:text-5xl font-black text-usa-blue mb-4">Congratulations!</h3>
+                <h4 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">You've Joined the Waitlist</h4>
+                
+                <div x-show="userCode" class="my-6 p-6 patriotic-gradient rounded-xl shadow-lg">
+                    <p class="text-white text-sm mb-2 font-semibold uppercase tracking-wide">Your Unique User Code</p>
+                    <p x-text="userCode" class="text-white text-4xl font-black tracking-wider"></p>
+                    <p class="text-white text-xs mt-2 opacity-90">Save this code for future reference</p>
+                </div>
+                
+                <div class="bg-white rounded-xl p-8 shadow-md mb-4">
+                    <!-- FEDEVENT Logo -->
+                    <div class="text-center mb-6">
+                        <h1 class="text-4xl md:text-5xl font-black mb-2">
+                            <span class="text-usa-red">FED</span><span class="text-usa-blue">EVENT</span>
+                        </h1>
+                        <div class="w-16 h-1 bg-gradient-to-r from-usa-red to-usa-blue mx-auto rounded-full"></div>
+                    </div>
+                    
+                    <p class="text-xl md:text-2xl text-gray-700 leading-relaxed font-medium">
+                        We will contact you about upcoming opportunities and leads as soon as they become available. 
+                        Your hotel is now registered in our database and meets the <span class="font-bold text-usa-blue">FEDEVENT minimum requirements</span> 
+                        for government contract opportunities.
+                    </p>
+                </div>
+                
+                <p class="text-gray-600 font-medium">
+                    You'll be among the first to receive invitations when FEDEVENT launches in <span class="font-bold text-usa-red">2026</span>.<br>
+                    <span class="text-sm">Check your email for confirmation details.</span>
+                </p>
+            </div>
+            
+            <!-- Form -->
+            <form x-show="!showSuccess" @submit.prevent="submitForm($event)" class="bg-gray-50 p-8 md:p-12 rounded-3xl shadow-xl" id="waitlistForm" autocomplete="off">
+                
+                <!-- Property Eligibility Requirement -->
+                <div id="eligibility-section" style="background: #fef2f2; border-radius: 8px; border: 2px solid #dc2626; padding: 16px; margin: 0 0 16px 0;">
+                    <h4 style="margin: 0 0 12px 0; color: #991b1b; font-size: 1.5rem; font-weight: 700;">⚠️ Property Eligibility Requirement</h4>
+                    <div class="form-group" style="margin: 0;">
+                        <label style="margin-bottom: 8px; color: #991b1b; font-weight: 600; font-size: 1.25rem;">Is your hotel an indoor property? (Guests reach their rooms through indoor corridors) <span style="color: #dc2626;">*</span></label>
+                        <div style="display:flex; gap:16px; align-items:center;">
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 1.125rem;">
+                                <input type="radio" name="indoor_property" id="indoor_yes" value="Yes" required onchange="checkIndoorProperty()">
+                                <span>Yes</span>
+                            </label>
+                            <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size: 1.125rem;">
+                                <input type="radio" name="indoor_property" id="indoor_no" value="No" required onchange="checkIndoorProperty()">
+                                <span>No</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div id="indoor_rejection" style="display:none; margin-top:12px; padding:12px; background:#fee; border:1px solid #fcc; border-radius:4px; color:#c00; font-size: 1.125rem;">
+                        <strong>Sorry!</strong> We can only accept indoor properties at this time. Outdoor corridor properties (where guests access rooms from exterior walkways) do not meet governmental contract requirements.
+                    </div>
+                </div>
+                
+                <!-- Required Policies & Terms -->
+                <div class="form-section-after-eligibility" style="background: #e3f2fd; border-radius: 8px; border: 1px solid #2196f3; padding: 16px; margin: 0 0 24px 0;">
+                    <h4 style="margin: 0 0 12px 0; color: var(--text); font-size: 1.5rem;">Required Policies & Terms</h4>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--error); cursor: pointer; font-size: 1.125rem;">
+                            <input type="checkbox" id="net30_terms" name="accepts_net30" value="Yes" required style="margin-top: 2px;">
+                            <span>I accept NET30 payment terms <span style="color: var(--error);">*</span></span>
+                        </label>
+                        <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
+                            NET30 payment terms are mandatory. We cannot accept hotels that do not offer NET30 payment terms.
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--error); cursor: pointer; font-size: 1.125rem;">
+                            <input type="checkbox" id="no_direct_bill" name="accepts_po" value="Acceptable" required style="margin-top: 2px;">
+                            <span>I understand and accept the NO DIRECT BILL APPLICATION policy <span style="color: var(--error);">*</span></span>
+                        </label>
+                        <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
+                            We do not process direct bill applications. We have government-backed PO and need direct bill to master account, but no direct bill application approval process with the hotel.
+                        </div>
+                    </div>
+                    
+                    <div style="margin-bottom: 12px;">
+                        <label style="display: flex; align-items: flex-start; gap: 8px; font-weight: 600; color: var(--text); cursor: pointer; font-size: 1.125rem;">
+                            <input type="checkbox" name="accepts_discount" value="Yes" style="margin-top: 2px;">
+                            <span>I accept 30% off per diem rates (Optional - Higher Consideration)</span>
+                        </label>
+                        <div style="margin-left: 24px; margin-top: 4px; font-size: 1rem; color: var(--text-light);">
+                            Hotels that accept 30% off per diem rates receive higher consideration for government group events.
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Hotel Name with Google Places -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelName">
+                        Hotel Name <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="hotelName" 
+                        name="hotelName" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Start typing hotel name..."
+                        autocomplete="new-password" autocapitalize="off" autocorrect="off" spellcheck="false" data-lpignore="true"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Type your hotel name and select from suggestions</p>
+                </div>
+                
+                <!-- Hotel Address Field (visible and editable) -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelAddress">
+                        Hotel Address <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="hotelAddress" 
+                        name="hotelAddress" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Full hotel address will be auto-filled from hotel selection"
+                        autocomplete="new-password"
+                        autocapitalize="off"
+                        autocorrect="off"
+                        spellcheck="false"
+                        data-lpignore="true"
+                        data-form-type="other"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Address will be auto-filled when you select a hotel from the dropdown</p>
+                </div>
+                
+                <!-- City, State, and Zip Code (auto-filled from Google Places) -->
+                <div class="form-section-after-eligibility grid md:grid-cols-3 gap-6 mb-6">
+                    <div>
+                        <label class="block text-xl font-semibold text-gray-700 mb-3" for="city">
+                            City <span class="text-red-500">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="city" 
+                            name="city" 
+                            required
+                            class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
+                            placeholder="Auto-filled from hotel selection"
+                            autocomplete="new-password"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-xl font-semibold text-gray-700 mb-3" for="state">
+                            State/Province <span class="text-gray-400 text-xs">(if applicable)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="state" 
+                            name="state" 
+                            class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
+                            placeholder="Auto-filled (optional)"
+                            autocomplete="new-password"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
+                        >
+                    </div>
+                    <div>
+                        <label class="block text-xl font-semibold text-gray-700 mb-3" for="zipCode">
+                            Zip/Postal Code <span class="text-gray-400 text-xs">(if available)</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="zipCode" 
+                            name="zipCode" 
+                            class="w-full px-4 py-4 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-base"
+                            placeholder="Auto-filled (optional)"
+                            autocomplete="new-password"
+                            autocapitalize="off"
+                            autocorrect="off"
+                            spellcheck="false"
+                            data-lpignore="true"
+                            data-form-type="other"
+                        >
+                    </div>
+                </div>
+                
+                <!-- Country (auto-filled text, not a dropdown) -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="country">
+                        Country <span class="text-gray-400 text-xs">(auto-filled)</span>
+                    </label>
+                    <input 
+                        type="text"
+                        id="country"
+                        name="country"
+                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Auto-filled from hotel selection"
+                        autocomplete="country"
+                        readonly
+                    >
+                </div>
+                
+                <!-- Hotel Phone Number (auto-filled from Google Places) -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelPhoneDisplay">
+                        Hotel Phone Number
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="hotelPhoneDisplay" 
+                        name="hotelPhoneDisplay" 
+                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Phone number will be auto-filled from hotel selection"
+                        readonly
+                    >
+                    <input type="hidden" id="hotelPhone" name="hotelPhone">
+                    <p class="text-xs text-gray-500 mt-1">Phone number will be auto-filled when you select a hotel</p>
+                </div>
+                
+                <!-- Hotel Website (auto-filled from Google Places) -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="hotelWebsiteDisplay">
+                        Hotel Website
+                    </label>
+                    <input 
+                        type="url" 
+                        id="hotelWebsiteDisplay" 
+                        name="hotelWebsiteDisplay" 
+                        class="w-full px-6 py-5 bg-gray-100 border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="Website will be auto-filled from hotel selection"
+                        readonly
+                    >
+                    <input type="hidden" id="hotelWebsite" name="hotelWebsite">
+                    <p class="text-xs text-gray-500 mt-1">Website will be auto-filled when you select a hotel</p>
+                </div>
+                
+                <!-- Hidden fields for additional details -->
+                <input type="hidden" id="hotelPlaceId" name="hotelPlaceId">
+                
+                
+                <!-- Contact Name -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="contactName">
+                        Your Name <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="text" 
+                        id="contactName" 
+                        name="contactName" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="John Smith"
+                    >
+                </div>
+                
+                <!-- Title Dropdown -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="title">
+                        Your Title <span class="text-red-500">*</span>
+                    </label>
+                    <select 
+                        id="title" 
+                        name="title" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                    >
+                        <option value="">Select your title</option>
+                        <option value="Owner">Owner</option>
+                        <option value="General Manager">General Manager</option>
+                        <option value="Director of Sales">Director of Sales</option>
+                        <option value="Sales Manager">Sales Manager</option>
+                        <option value="Sales Coordinator">Sales Coordinator</option>
+                        <option value="Area Director of Sales">Area Director of Sales</option>
+                        <option value="Regional Director of Sales">Regional Director of Sales</option>
+                        <option value="Director of National Accounts">Director of National Accounts</option>
+                        <option value="Revenue Manager">Revenue Manager</option>
+                        <option value="Operations Manager">Operations Manager</option>
+                        <option value="Front Office Manager">Front Office Manager</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                
+                <!-- Email -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="email">
+                        Your Email Address <span class="text-red-500">*</span>
+                    </label>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        name="email" 
+                        required
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="john.smith@hotel.com"
+                    >
+                </div>
+                
+                <!-- Personal Phone -->
+                <div class="form-section-after-eligibility mb-6">
+                    <label class="block text-xl font-semibold text-gray-700 mb-3" for="phone">
+                        Your Phone Number <span class="text-gray-400 text-xs">(optional)</span>
+                    </label>
+                    <input 
+                        type="tel" 
+                        id="phone" 
+                        name="phone"
+                        class="w-full px-6 py-5 bg-white border-2 border-gray-200 rounded-xl transition-all text-lg"
+                        placeholder="(555) 123-4567"
+                    >
+                    <p class="text-xs text-gray-500 mt-1">Your personal contact number (Hotel's main number is auto-filled from Google)</p>
+                </div>
+                
+                <!-- Interests (Checkboxes) -->
+                <div class="form-section-after-eligibility mb-8">
+                    <label class="block text-base font-semibold text-gray-700 mb-3">
+                        I'm interested in: <span class="text-red-500">*</span>
+                    </label>
+                    <div class="space-y-3">
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="interests" 
+                                value="lodging"
+                                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <span class="ml-3 text-gray-700 text-base">Lodging Contracts</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="interests" 
+                                value="conference"
+                                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <span class="ml-3 text-gray-700 text-base">Conference & Meeting Space</span>
+                        </label>
+                        <label class="flex items-center cursor-pointer">
+                            <input 
+                                type="checkbox" 
+                                name="interests" 
+                                value="bpa"
+                                class="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            >
+                            <span class="ml-3 text-gray-700 text-base">Year Term Agreements (BPA)</span>
+                        </label>
+                    </div>
+                </div>
+                
+                
+                <!-- Submit Button -->
+                <div class="form-section-after-eligibility text-center">
+                    <button 
+                        type="submit"
+                        :disabled="isSubmitting"
+                        class="w-full md:w-auto patriotic-gradient text-white text-lg font-bold px-12 py-4 rounded-full shadow-lg hover:shadow-xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                        x-text="isSubmitting ? 'Submitting...' : 'Join the Waitlist →'"
+                    >
+                    </button>
+                </div>
+            </form>
+        </div>
+    </section>
+
+    <!-- Visual Section with Background -->
+    <section class="relative z-10 py-24 bg-gradient-to-br from-usa-blue via-gray-900 to-usa-red text-white overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-full h-full" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.4\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="text-center max-w-4xl mx-auto">
+                <h2 class="text-4xl md:text-5xl font-bold mb-6">Global Network</h2>
+                <p class="text-xl text-blue-100 mb-8">
+                    Join hotels worldwide connecting with governmental agency opportunities. From conference centers in major cities to lodging facilities near government installations — FEDEVENT brings worldwide governmental contracts to you.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Countdown / Launch Notice -->
+    <section class="relative z-10 py-24 bg-gray-50">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="bg-white p-12 rounded-3xl shadow-xl border-4 border-usa-blue">
+                <h2 class="text-3xl md:text-4xl font-black mb-4">Official Launch</h2>
+                <p class="text-6xl font-black mb-4"><span class="text-usa-red">2026</span></p>
+                <p class="text-xl text-gray-600">
+                    Don't miss out — join the waitlist now for priority access and exclusive launch benefits.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="relative z-10 bg-gray-900 text-white py-16 border-t-4 border-usa-red">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-2 gap-12 mb-12 max-w-4xl mx-auto">
+                <!-- Company Info -->
+                <div class="text-center md:text-left">
+                    <h3 class="text-2xl font-black mb-4">
+                        <span class="text-usa-red">FED</span><span class="text-usa-blue">EVENT</span>
+                    </h3>
+                    <p class="text-gray-400">
+                        A platform by CREATA Global Event Agency LLC
+                    </p>
+                </div>
+                
+                <!-- Contact -->
+                <div class="text-center md:text-right">
+                    <h4 class="text-lg font-semibold mb-4">Contact</h4>
+                    <p class="text-gray-400 mb-2">
+                        <a href="mailto:info@Fedevent.com" class="hover:text-white transition-colors">
+                            info@Fedevent.com
+                        </a>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 text-center">
+                <p class="text-sm text-gray-500">
+                    © 2025 FEDEVENT.com. All rights reserved.
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Google Places Autocomplete Script - Simplified Working Version -->
+    <!-- D.A.N.A Custom Agent -->
+    <script src="/dana-agent.js"></script>
+    <script src="/dana-knowledge-updater.js"></script>
+    
+    <script>
+        let placeData = {};
+        let autocomplete;
+        let isInitialized = false;
+        let suppressAddressOverwriteUntil = 0;
+        let userInteracted = false;
+        
+        // Initialize D.A.N.A Custom Agent
+        let danaAgent;
+        let knowledgeUpdater;
+        if (typeof DanaAgent !== 'undefined') {
+            danaAgent = new DanaAgent();
+            window.danaAgent = danaAgent;
+            
+            // Initialize knowledge updater
+            if (typeof DanaKnowledgeUpdater !== 'undefined') {
+                knowledgeUpdater = new DanaKnowledgeUpdater(danaAgent);
+                window.knowledgeUpdater = knowledgeUpdater;
+                console.log('📚 D.A.N.A Knowledge Updater ready!');
+            }
+            
+            console.log('🤖 D.A.N.A Custom Agent initialized successfully!');
+        } else {
+            console.warn('⚠️ D.A.N.A Agent not loaded, using fallback responses');
+        }
+        
+        // Country code mapping for international phone numbers
+        function getCountryCode(countryShort) {
+            const countryCodes = {
+                'TR': '90', 'DE': '49', 'FR': '33', 'GB': '44', 'IT': '39', 'ES': '34',
+                'NL': '31', 'BE': '32', 'CH': '41', 'AT': '43', 'SE': '46', 'NO': '47',
+                'DK': '45', 'FI': '358', 'PL': '48', 'CZ': '420', 'HU': '36', 'RO': '40',
+                'BG': '359', 'HR': '385', 'SI': '386', 'SK': '421', 'EE': '372', 'LV': '371',
+                'LT': '370', 'IE': '353', 'PT': '351', 'GR': '30', 'CY': '357', 'LU': '352',
+                'MT': '356', 'IS': '354', 'LI': '423', 'MC': '377', 'SM': '378', 'VA': '39',
+                'AD': '376', 'CA': '1', 'MX': '52', 'BR': '55', 'AR': '54', 'CL': '56',
+                'CO': '57', 'PE': '51', 'VE': '58', 'UY': '598', 'PY': '595', 'BO': '591',
+                'EC': '593', 'GY': '592', 'SR': '597', 'GF': '594', 'FK': '500', 'GS': '500',
+                'JP': '81', 'KR': '82', 'CN': '86', 'IN': '91', 'TH': '66', 'VN': '84',
+                'MY': '60', 'SG': '65', 'ID': '62', 'PH': '63', 'TW': '886', 'HK': '852',
+                'MO': '853', 'MN': '976', 'KH': '855', 'LA': '856', 'MM': '95', 'BD': '880',
+                'LK': '94', 'MV': '960', 'NP': '977', 'BT': '975', 'AF': '93', 'PK': '92',
+                'IR': '98', 'IQ': '964', 'SA': '966', 'AE': '971', 'KW': '965', 'QA': '974',
+                'BH': '973', 'OM': '968', 'YE': '967', 'JO': '962', 'LB': '961', 'SY': '963',
+                'IL': '972', 'PS': '970', 'EG': '20', 'LY': '218', 'TN': '216', 'DZ': '213',
+                'MA': '212', 'SD': '249', 'SS': '211', 'ET': '251', 'ER': '291', 'DJ': '253',
+                'SO': '252', 'KE': '254', 'UG': '256', 'TZ': '255', 'RW': '250', 'BI': '257',
+                'CD': '243', 'CG': '242', 'CF': '236', 'TD': '235', 'CM': '237', 'GQ': '240',
+                'GA': '241', 'ST': '239', 'AO': '244', 'ZM': '260', 'ZW': '263', 'BW': '267',
+                'NA': '264', 'ZA': '27', 'LS': '266', 'SZ': '268', 'MG': '261', 'MU': '230',
+                'SC': '248', 'KM': '269', 'YT': '262', 'RE': '262', 'MZ': '258', 'MW': '265',
+                'AU': '61', 'NZ': '64', 'FJ': '679', 'PG': '675', 'SB': '677', 'VU': '678',
+                'NC': '687', 'PF': '689', 'WF': '681', 'WS': '685', 'TO': '676', 'KI': '686',
+                'TV': '688', 'NR': '674', 'FM': '691', 'MH': '692', 'PW': '680', 'MP': '1',
+                'GU': '1', 'AS': '1', 'VI': '1', 'PR': '1', 'DM': '1', 'KN': '1', 'LC': '1',
+                'VC': '1', 'AG': '1', 'BB': '1', 'GD': '1', 'TT': '1', 'JM': '1', 'BS': '1',
+                'CU': '53', 'HT': '509', 'DO': '1', 'BZ': '501', 'GT': '502', 'SV': '503',
+                'HN': '504', 'NI': '505', 'CR': '506', 'PA': '507'
+            };
+            return countryCodes[countryShort] || '';
+        }
+        
+        function initAutocomplete() {
+            // Prevent multiple initializations
+            if (isInitialized) {
+                console.log('Autocomplete already initialized, skipping...');
+                return;
+            }
+            
+            console.log('Initializing Google Places Autocomplete...');
+            
+            if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+                console.error('Google Maps API not loaded');
+                return;
+            }
+            
+            const input = document.getElementById('hotelName');
+            if (!input) {
+                console.error('Hotel name input not found');
+                return;
+            }
+            
+            try {
+                // Suppress deprecation warning
+                const originalWarn = console.warn;
+                console.warn = function(...args) {
+                    if (args[0] && args[0].includes('google.maps.places.Autocomplete is not available to new customers')) {
+                        return; // Suppress this specific warning
+                    }
+                    originalWarn.apply(console, args);
+                };
+                
+                // Prevent browser autofill from interfering
+                input.setAttribute('autocomplete', 'new-password');
+                input.setAttribute('autocapitalize', 'off');
+                input.setAttribute('autocorrect', 'off');
+                input.setAttribute('spellcheck', 'false');
+                input.setAttribute('data-lpignore', 'true');
+                input.setAttribute('data-form-type', 'other');
+                
+                // Initialize autocomplete with simple configuration
+                autocomplete = new google.maps.places.Autocomplete(input, {
+                    types: ['lodging'],
+                    fields: ['name', 'formatted_address', 'address_components', 'formatted_phone_number', 'website', 'place_id', 'geometry']
+                });
+                
+                // Restore console.warn
+                console.warn = originalWarn;
+                
+                // Prevent browser autofill from overwriting the field
+                input.addEventListener('focus', function() {
+                    // Ensure autocomplete is off when user focuses
+                    this.setAttribute('autocomplete', 'new-password');
+                    this.setAttribute('autocapitalize', 'off');
+                    this.setAttribute('autocorrect', 'off');
+                    this.setAttribute('spellcheck', 'false');
+                });
+                
+                // Prevent autofill from overwriting after Google Places sets a value
+                input.addEventListener('input', function() {
+                    // If browser autofill tries to overwrite, restore Google Places value
+                    if (this.value && !this.value.includes('•')) {
+                        // This is likely browser autofill, ignore it
+                        return;
+                    }
+                });
+                
+                // Add autofill protection to city, state, zip fields
+                ['city', 'state', 'zipCode'].forEach(fieldId => {
+                    const field = document.getElementById(fieldId);
+                    if (field) {
+                        field.setAttribute('autocomplete', 'new-password');
+                        field.setAttribute('autocapitalize', 'off');
+                        field.setAttribute('autocorrect', 'off');
+                        field.setAttribute('spellcheck', 'false');
+                        field.setAttribute('data-lpignore', 'true');
+                        field.setAttribute('data-form-type', 'other');
+                        
+                        field.addEventListener('focus', function() {
+                            this.setAttribute('autocomplete', 'new-password');
+                            this.setAttribute('autocapitalize', 'off');
+                            this.setAttribute('autocorrect', 'off');
+                            this.setAttribute('spellcheck', 'false');
+                        });
+                    }
+                });
+                
+                isInitialized = true;
+                console.log('Autocomplete initialized successfully');
+                
+                // Listen for place selection
+                autocomplete.addListener('place_changed', function() {
+                    const place = autocomplete.getPlace();
+                    console.log('Place selected:', place);
+                    
+                    if (!place.geometry) {
+                        console.log('No place selected or place has no geometry');
+                        return;
+                    }
+                    
+                    // Set hotel name field to ONLY the hotel name (no address)
+                    input.value = place.name || '';
+                    
+                    // Extract address components
+                    let streetNumber = '';
+                    let route = '';
+                    let sublocality = '';
+                    let city = '';
+                    let state = '';
+                    let countryShort = '';
+                    let countryLong = '';
+                    let zipCode = '';
+                    let province = ''; // For places like Istanbul (administrative_area_level_1)
+                    
+                    if (place.address_components) {
+                        place.address_components.forEach(component => {
+                            const types = component.types;
+                            
+                            if (types.includes('street_number')) {
+                                streetNumber = component.long_name;
+                            }
+                            if (types.includes('route')) {
+                                route = component.long_name;
+                            }
+                            if (types.includes('sublocality') || types.includes('sublocality_level_1')) {
+                                sublocality = component.long_name;
+                            }
+                            if (types.includes('locality')) {
+                                city = component.long_name;
+                            }
+                            if (types.includes('administrative_area_level_1')) {
+                                state = component.short_name;
+                                province = component.long_name; // Store full province name (e.g., "Istanbul")
+                            }
+                            if (types.includes('country')) {
+                                countryShort = component.short_name;
+                                countryLong = component.long_name;
+                            }
+                            if (types.includes('postal_code')) {
+                                zipCode = component.long_name;
+                            }
+                        });
+                        
+                        // For international addresses: if city is missing but we have province/administrative_area_level_1, use that
+                        // This handles cases like Istanbul where the province IS the city
+                        // BUT don't use country name as city
+                        // Special case for Jakarta: extract "Jakarta" from "Daerah Khusus Ibukota Jakarta"
+                        if (!city && province && province !== countryLong) {
+                            if (province.includes('Jakarta')) {
+                                city = 'Jakarta';
+                            } else {
+                                city = province;
+                            }
+                        }
+                        
+                        console.log('📍 Address components extracted:', {
+                            streetNumber, route, sublocality, city, state, province, countryShort, countryLong, zipCode
+                        });
+                    }
+                    
+                    // Build street address (different format for different countries)
+                    let streetAddress = '';
+                    if (route) {
+                        // US/CA format: "Number Street Name" (e.g., "123 Main St")
+                        // International format: "Street Name No: Number" (e.g., "Cengiz Topel Cd. No: 39")
+                        if (countryShort === 'US' || countryShort === 'CA') {
+                            // US/Canada: Number first, then street name
+                            if (streetNumber) {
+                                streetAddress = streetNumber + ' ' + route;
+                            } else {
+                                streetAddress = route;
+                            }
+                        } else {
+                            // International: Handle various "No:" patterns
+                            console.log('🔍 Debug - Route:', route, 'StreetNumber:', streetNumber);
+                            
+                            // COMPREHENSIVE duplication fix - handle ALL cases
+                            console.log('🔍 FULL DEBUG - Route:', `"${route}"`, 'StreetNumber:', `"${streetNumber}"`);
+                            
+                            // Check if we have duplication (both route and street number contain "No" patterns)
+                            const routeHasNo = route.includes('No:') || route.includes('No.');
+                            const streetHasNo = streetNumber && (streetNumber.includes('No:') || streetNumber.includes('No.'));
+                            
+                            console.log('🔍 Route has No:', routeHasNo, 'Street has No:', streetHasNo);
+                            
+                            if (routeHasNo && streetHasNo) {
+                                // DUPLICATION CASE - both have "No" patterns
+                                console.log('🚨 DUPLICATION DETECTED - Both route and street have No patterns');
+                                
+                                // Clean the route - remove trailing "No:" or "No."
+                                let cleanRoute = route.replace(/\s*No[:\\.]\s*$/, '').trim();
+                                console.log('🧹 Cleaned route:', `"${cleanRoute}"`);
+                                
+                                // Clean the street number - remove leading "No:" or "No."
+                                let cleanStreetNumber = streetNumber.replace(/^No[:\\.]\s*/, '').trim();
+                                console.log('🧹 Cleaned street number:', `"${cleanStreetNumber}"`);
+                                
+                                // Combine with single "No:"
+                                streetAddress = cleanRoute + ' No: ' + cleanStreetNumber;
+                                console.log('✅ FINAL CLEANED ADDRESS:', `"${streetAddress}"`);
+                                
+                            } else if (routeHasNo && streetNumber && !streetHasNo) {
+                                // Route has "No:" but street number is clean
+                                streetAddress = route + ' ' + streetNumber;
+                                console.log('✅ Route has No, street clean:', streetAddress);
+                                
+                            } else if (!routeHasNo && streetNumber) {
+                                // Route is clean, check if street number already has "No:"
+                                if (streetNumber.includes('No:') || streetNumber.includes('No.')) {
+                                    // Street number already has "No:", just combine
+                                    streetAddress = route + ' ' + streetNumber;
+                                    console.log('✅ Route clean, street has No, combining:', streetAddress);
+                                } else {
+                                    // Street number is clean, add "No:" format
+                                    streetAddress = route + ' No: ' + streetNumber;
+                                    console.log('✅ Route clean, adding No:', streetAddress);
+                                }
+                                
+                            } else {
+                                // Use route as-is
+                                streetAddress = route;
+                                console.log('✅ Using route as-is:', streetAddress);
+                            }
+                        }
+                        if (sublocality) {
+                            streetAddress += ', ' + sublocality;
+                        }
+                    }
+                    
+                    console.log('🏠 Final street address:', streetAddress);
+                    
+                    // Only fill state field for countries with states/provinces (US, CA, AU, BR, MX, IN)
+                    const countriesWithStates = ['US', 'CA', 'AU', 'BR', 'MX', 'IN'];
+                    const stateValue = (countryShort && countriesWithStates.includes(countryShort)) ? state : '';
+                    
+                    // Fill form fields
+                    document.getElementById('hotelAddress').value = streetAddress || place.formatted_address || '';
+                    document.getElementById('city').value = city;
+                    document.getElementById('state').value = stateValue;
+                    document.getElementById('zipCode').value = zipCode;
+                    
+                    // Debug country field
+                    console.log('🌍 Country field debug:', {
+                        countryShort: countryShort,
+                        countryLong: countryLong,
+                        countryInput: document.getElementById('country'),
+                        allAddressComponents: place.address_components
+                    });
+                    
+                    if (countryShort || countryLong) {
+                        const countryInput = document.getElementById('country');
+                        if (countryInput) {
+                            const displayCountry = countryLong && countryShort ? `${countryLong} (${countryShort})` : (countryLong || countryShort);
+                            countryInput.value = displayCountry;
+                            console.log('✅ Country set to:', displayCountry);
+                        } else {
+                            console.log('❌ Country input element not found');
+                        }
+                    } else {
+                        console.log('❌ No country data available');
+                    }
+                    // Format phone number with country code for international hotels
+                    let displayPhone = place.formatted_phone_number || '';
+                    if (displayPhone && countryShort && countryShort !== 'US') {
+                        // For international hotels, show country code
+                        displayPhone = `+${getCountryCode(countryShort)} ${displayPhone}`;
+                    }
+                    
+                    document.getElementById('hotelPhone').value = place.formatted_phone_number || '';
+                    document.getElementById('hotelPhoneDisplay').value = displayPhone;
+                    document.getElementById('hotelWebsite').value = place.website || '';
+                    document.getElementById('hotelWebsiteDisplay').value = place.website || '';
+                    document.getElementById('hotelPlaceId').value = place.place_id || '';
+                    
+                    // Briefly suppress browser autofill from overriding Places data
+                    suppressAddressOverwriteUntil = Date.now() + 3000; // 3 seconds window
+
+                    // Store place data for submission
+                    placeData = {
+                        name: place.name,
+                        address: streetAddress || place.formatted_address || '',
+                        city: city,
+                        state: stateValue,
+                        zipCode: zipCode,
+                        country: countryShort || countryLong || '',
+                        phone: place.formatted_phone_number || '',
+                        website: place.website || '',
+                        placeId: place.place_id
+                    };
+                    
+                    console.log('Hotel selected:', placeData);
+                });
+                
+            } catch (error) {
+                console.error('Error initializing autocomplete:', error);
+            }
+        }
+        
+        // Check indoor property selection
+        function checkIndoorProperty() {
+            const indoorNo = document.getElementById('indoor_no');
+            const indoorYes = document.getElementById('indoor_yes');
+            const rejectionDiv = document.getElementById('indoor_rejection');
+            
+            // Get all form sections that should be hidden/shown
+            const formSectionsAfterEligibility = document.querySelectorAll('.form-section-after-eligibility');
+            
+            if (indoorNo && indoorNo.checked) {
+                // Hide all form sections after eligibility
+                formSectionsAfterEligibility.forEach(section => {
+                    section.style.display = 'none';
+                });
+                // Show rejection message
+                rejectionDiv.style.display = 'block';
+            } else if (indoorYes && indoorYes.checked) {
+                // Show all form sections after eligibility
+                formSectionsAfterEligibility.forEach(section => {
+                    section.style.display = 'block';
+                });
+                // Hide rejection message
+                rejectionDiv.style.display = 'none';
+            }
+        }
+        
+        // Check required policy acceptance
+        function checkRequiredPolicies() {
+            const net30Checkbox = document.getElementById('net30_terms');
+            const directBillCheckbox = document.getElementById('no_direct_bill');
+            
+            console.log('🔍 Policy check debug:', {
+                net30Checkbox: net30Checkbox,
+                net30Checked: net30Checkbox ? net30Checkbox.checked : 'element not found',
+                directBillCheckbox: directBillCheckbox,
+                directBillChecked: directBillCheckbox ? directBillCheckbox.checked : 'element not found'
+            });
+            
+            if (!net30Checkbox || !directBillCheckbox) {
+                console.log('❌ Policy checkboxes not found');
+                return false;
+            }
+            
+            if (!net30Checkbox.checked || !directBillCheckbox.checked) {
+                console.log('❌ Required policies not accepted, showing popup');
+                // Show policy requirement popup
+                showPolicyRequirementPopup();
+                return false;
+            }
+            console.log('✅ All required policies accepted');
+            return true;
+        }
+        
+        // Show policy requirement popup
+        function showPolicyRequirementPopup() {
+            // Create popup overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-family: 'Inter', system-ui, sans-serif;
+            `;
+            
+            // Create popup content
+            const popup = document.createElement('div');
+            popup.style.cssText = `
+                background: white;
+                border-radius: 20px;
+                padding: 40px;
+                max-width: 500px;
+                width: 90%;
+                box-shadow: 0 25px 50px rgba(0,0,0,0.3);
+                text-align: center;
+                border: 3px solid #dc2626;
+            `;
+            
+            popup.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 20px;">⚠️</div>
+                <h2 style="color: #dc2626; font-size: 24px; font-weight: 700; margin-bottom: 20px;">
+                    Required Policies Not Accepted
+                </h2>
+                <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-bottom: 30px;">
+                    We are unable to accept hotels that do not accept <strong>NET30 payment terms</strong> and the <strong>NO DIRECT BILL APPLICATION policy</strong>.
+                </p>
+                <div style="background: #f3f4f6; padding: 20px; border-radius: 12px; margin-bottom: 30px;">
+                    <p style="color: #6b7280; font-size: 14px; margin-bottom: 15px;">
+                        <strong>Need clarification?</strong>
+                    </p>
+                    <p style="color: #374151; font-size: 14px; line-height: 1.5;">
+                        • Send us an email with your questions at <strong>info@Fedevent.com</strong><br>
+                        • Ask the <strong>PLS Assistant</strong> (🤖) for answers to common questions
+                    </p>
+                </div>
+                <button onclick="closePolicyPopup()" style="
+                    background: linear-gradient(135deg, #2563eb, #dc2626);
+                    color: white;
+                    border: none;
+                    padding: 15px 30px;
+                    border-radius: 12px;
+                    font-size: 16px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: transform 0.2s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    I Understand
+                </button>
+            `;
+            
+            overlay.appendChild(popup);
+            document.body.appendChild(overlay);
+            
+            // Close on overlay click
+            overlay.addEventListener('click', function(e) {
+                if (e.target === overlay) {
+                    closePolicyPopup();
+                }
+            });
+            
+            // Store reference for closing
+            window.currentPolicyPopup = overlay;
+        }
+        
+        // Close policy popup
+        function closePolicyPopup() {
+            if (window.currentPolicyPopup) {
+                document.body.removeChild(window.currentPolicyPopup);
+                window.currentPolicyPopup = null;
+            }
+        }
+        
+        // Check if Google Maps is loaded and initialize
+        function checkAndInit() {
+            // Prevent multiple initializations
+            if (isInitialized) {
+                return;
+            }
+            
+            console.log('🔍 Checking Google Maps API...', {
+                google: typeof google !== 'undefined',
+                maps: typeof google !== 'undefined' && google.maps,
+                places: typeof google !== 'undefined' && google.maps && google.maps.places
+            });
+            
+            if (typeof google !== 'undefined' && google.maps && google.maps.places) {
+                console.log('✅ Google Maps API is ready, initializing autocomplete...');
+                initAutocomplete();
+            } else {
+                console.log('⏳ Google Maps not ready, retrying in 1 second...');
+                setTimeout(checkAndInit, 1000);
+            }
+        }
+        
+        // Suppress Google Maps referer errors
+        window.addEventListener('error', function(e) {
+            if (e.message && e.message.includes('RefererNotAllowedMapError')) {
+                e.preventDefault();
+                console.log('Google Maps API referer restriction detected - this is normal for localhost development');
+                return false;
+            }
+        });
+
+        // Enable video playback only on click interaction
+        function enableVideoPlayback() {
+            if (!userInteracted) {
+                userInteracted = true;
+                console.log('🎬 User click detected - DANA video playback now enabled');
+            }
+        }
+
+        // Listen only for click interactions to enable video playback
+        ['click', 'touchstart'].forEach(event => {
+            document.addEventListener(event, enableVideoPlayback, { once: true });
+        });
+        
+        // Also listen on the entire document body
+        document.body.addEventListener('click', enableVideoPlayback, { once: true });
+        document.body.addEventListener('touchstart', enableVideoPlayback, { once: true });
+        
+        // D.A.N.A Typing Animation with Lip Sync
+        function startDanaTyping() {
+            const message = "HEY I AM D.A.N.A\nDIGITAL ASSISTANT NETWORK AGENT\nI AM HERE TO ASSIST";
+            const typingElement = document.getElementById('typing-animation');
+            let index = 0;
+            let isTyping = true;
+            
+            // Calculate typing speed to match 7-second video
+            const videoDuration = 7080; // 7.08 seconds in milliseconds
+            const messageLength = message.length;
+            const typingDelay = videoDuration / messageLength * 0.8; // Faster typing to match lips
+            
+            function typeNextChar() {
+                if (index < message.length && isTyping) {
+                    // Add the character and cursor together, preserving line breaks
+                    let displayText = message.substring(0, index + 1).replace(/\n/g, '<br>');
+                    typingElement.innerHTML = displayText + '<span class="cursor">&nbsp;</span>';
+                    
+                    index++;
+                    setTimeout(typeNextChar, typingDelay); // Match video duration
+                } else if (index >= message.length) {
+                    // Keep the message visible with cursor, don't clear it
+                    // Just restart the typing effect after a longer pause
+                    setTimeout(() => {
+                        if (isTyping) {
+                            typingElement.innerHTML = '';
+                            index = 0;
+                            typeNextChar();
+                        }
+                    }, 3000); // 3 second pause before restart
+                }
+            }
+            
+            // Start typing
+            typeNextChar();
+        }
+        
+        // Start D.A.N.A typing when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(startDanaTyping, 1000); // Start after 1 second
+        });
+        
+        // Google Maps API callback function
+        window.initGoogleMaps = function() {
+            console.log('🎉 Google Maps API loaded via callback!');
+            checkAndInit();
+        };
+        
+        // Start checking when DOM is ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', checkAndInit);
+        } else {
+            checkAndInit();
+        }
+        
+        // Also try when window loads (only if not already initialized)
+        window.addEventListener('load', function() {
+            if (!isInitialized) {
+                console.log('🔄 Window loaded, checking Google Maps again...');
+                setTimeout(checkAndInit, 1000);
+            }
+        });
+    </script>
+
+    <!-- Form Submission Script -->
+    <script>
+        function waitlistForm() {
+            return {
+                showSuccess: false,
+                isSubmitting: false,
+                userCode: '',
+                
+                submitForm(event) {
+                    console.log('🚀 Form submission started');
+                    
+                    // Get the form element properly
+                    const form = document.getElementById('waitlistForm');
+                    if (!form) {
+                        console.error('Form not found!');
+                        return false;
+                    }
+                    const formData = new FormData(form);
+                    
+                    // Check required policies first
+                    console.log('🔍 Checking required policies...');
+                    if (!checkRequiredPolicies()) {
+                        console.log('❌ Policy check failed, stopping submission');
+                        return false; // Stop submission if policies not accepted
+                    }
+                    console.log('✅ Policy check passed, continuing submission');
+                    
+                    // Get checked interests
+                    const interests = [];
+                    document.querySelectorAll('input[name="interests"]:checked').forEach(cb => {
+                        interests.push(cb.value);
+                    });
+                    
+                    // Validate at least one interest is selected
+                    if (interests.length === 0) {
+                        alert('Please select at least one area of interest.');
+                        return;
+                    }
+                    
+                    // Set submitting state
+                    this.isSubmitting = true;
+            
+            // Get eligibility data
+            const indoorProperty = formData.get('indoor_property');
+            const acceptsNet30 = formData.get('accepts_net30');
+            const acceptsPo = formData.get('accepts_po');
+            const acceptsDiscount = formData.get('accepts_discount') || 'No';
+            
+            // Debug: Log the values
+            console.log('Eligibility check:', {
+                indoorProperty,
+                acceptsNet30,
+                acceptsPo,
+                acceptsDiscount
+            });
+            
+            // Validate eligibility
+            if (!indoorProperty || !acceptsNet30 || !acceptsPo) {
+                const missing = [];
+                if (!indoorProperty) missing.push('Indoor Property question');
+                if (!acceptsNet30) missing.push('NET30 payment terms');
+                if (!acceptsPo) missing.push('No Direct Bill Application policy');
+                
+                alert('Please answer all required Property Eligibility and Policy questions:\n\n' + missing.join('\n'));
+                this.isSubmitting = false;
+                return;
+            }
+            
+            // Get hotel details from Google Places
+            const hotelAddress = formData.get('hotelAddress') || document.getElementById('hotelAddress').value;
+            const hotelPhone = formData.get('hotelPhone') || document.getElementById('hotelPhone').value;
+            const hotelPlaceId = formData.get('hotelPlaceId') || document.getElementById('hotelPlaceId').value;
+            
+            // Build payload mapped to API expectations
+            let stateValue = formData.get('state') || '';
+            if (!stateValue) {
+                const stateEl = document.getElementById('state');
+                if (stateEl && stateEl.value) stateValue = stateEl.value;
+            }
+
+            const data = {
+                hotelName: formData.get('hotelName'),
+                hotelAddress: hotelAddress,
+                hotelPhone: hotelPhone,
+                hotelPlaceId: hotelPlaceId,
+                city: formData.get('city'),
+                state: stateValue,
+                zipCode: formData.get('zipCode') || '',
+                country: formData.get('country') || '',
+                contactName: formData.get('contactName'),
+                title: formData.get('title'),
+                email: formData.get('email'),
+                phone: formData.get('phone') || '',
+                interests: interests.join(', '),
+                // API fields
+                currentlyOperating: indoorProperty === 'Yes' ? 'yes' : 'no',
+                acceptNet30: acceptsNet30 ? 'yes' : 'no',
+                acceptDirectBill: acceptsPo ? 'yes' : 'no'
+            };
+            
+            // Submit to API
+            fetch('/api/leads', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    this.showSuccess = true;
+                    this.userCode = result.userCode || '';
+                    
+                    // 🎉 Confetti celebration!
+                    setTimeout(() => {
+                        // Fire confetti from multiple angles
+                        const duration = 99000; // 99 seconds
+                        const animationEnd = Date.now() + duration;
+                        const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 9999 };
+                        
+                        function randomInRange(min, max) {
+                            return Math.random() * (max - min) + min;
+                        }
+                        
+                        const interval = setInterval(function() {
+                            const timeLeft = animationEnd - Date.now();
+                            
+                            if (timeLeft <= 0) {
+                                return clearInterval(interval);
+                            }
+                            
+                            const particleCount = 50 * (timeLeft / duration);
+                            
+                            // Fire confetti from left
+                            confetti({
+                                ...defaults,
+                                particleCount,
+                                origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                                colors: ['#0A3161', '#B31942', '#FFFFFF', '#0071e3', '#8e44ad']
+                            });
+                            
+                            // Fire confetti from right
+                            confetti({
+                                ...defaults,
+                                particleCount,
+                                origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                                colors: ['#0A3161', '#B31942', '#FFFFFF', '#0071e3', '#8e44ad']
+                            });
+                        }, 250);
+                    }, 100);
+                    
+                    // Track successful form submission in Google Analytics
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'generate_lead', {
+                            'event_category': 'engagement',
+                            'event_label': 'hotel_waitlist_signup',
+                            'value': 1,
+                            'user_code': result.userCode
+                        });
+                        
+                        // Also track as conversion
+                        gtag('event', 'conversion', {
+                            'send_to': 'G-WHNVHXGPHG',
+                            'event_category': 'prelaunch',
+                            'event_label': 'waitlist_signup'
+                        });
+                    }
+                    
+                    form.reset();
+                    // Scroll to success message - center it in viewport
+                    setTimeout(() => {
+                        const waitlistSection = document.getElementById('waitlist');
+                        const yOffset = -100; // Offset from top
+                        const y = waitlistSection.getBoundingClientRect().top + window.pageYOffset + yOffset;
+                        window.scrollTo({ top: y, behavior: 'smooth' });
+                    }, 100);
+                } else {
+                    alert('There was an error submitting your information. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error submitting your information. Please try again.');
+            })
+            .finally(() => {
+                this.isSubmitting = false;
+            });
+                }
+            }
+        }
+    </script>
+
+    <!-- PLS AI Assistant JavaScript -->
+    <script>
+        function plsAssistant() {
+            return {
+                isOpen: false,
+                isTyping: false,
+                inputMessage: '',
+                messages: [],
+                messageId: 0,
+                userInteractions: [],
+                isRecording: false,
+                voiceEnabled: false,
+                recognition: null,
+                synthesis: null,
+                setupAssistantPositioning() {
+                    const assistantEl = this.$root; // .ai-assistant root div
+                    const heroEl = document.getElementById('hero');
+                    if (!assistantEl || !heroEl) return;
+
+                    const applyPosition = () => {
+                        const heroRect = heroEl.getBoundingClientRect();
+                        const heroHeight = heroEl.offsetHeight || window.innerHeight;
+                        const scrolled = window.scrollY || window.pageYOffset || 0;
+
+                        // When near/top of page (header visible), keep assistant pinned just below hero
+                        if (scrolled < heroHeight) {
+                            assistantEl.style.position = 'absolute';
+                            assistantEl.style.top = (heroHeight + 40) + 'px';
+                            assistantEl.style.right = '40px';
+                            assistantEl.style.bottom = '';
+                        } else {
+                            // After passing hero, stick to bottom-right
+                            assistantEl.style.position = 'fixed';
+                            assistantEl.style.bottom = '40px';
+                            assistantEl.style.right = '40px';
+                            assistantEl.style.top = '';
+                        }
+                    };
+
+                    // Initial apply and listeners
+                    this.$nextTick(() => {
+                        applyPosition();
+                        window.addEventListener('scroll', applyPosition, { passive: true });
+                        window.addEventListener('resize', applyPosition);
+                    });
+                },
+                
+                toggleChat() {
+                    this.isOpen = !this.isOpen;
+                    if (this.isOpen) {
+                        this.$nextTick(() => {
+                            this.scrollToBottom();
+                        });
+                        // Track chat opened
+                        this.trackInteraction('chat_opened', 'user_opened_ai_chat');
+                    }
+                },
+                
+                closeChat() {
+                    this.isOpen = false;
+                    this.trackInteraction('chat_closed', 'user_closed_ai_chat');
+                },
+                
+                sendMessage() {
+                    if (!this.inputMessage.trim() || this.isTyping) return;
+                    
+                    const userMessage = this.inputMessage.trim();
+                    this.inputMessage = '';
+                    
+                    // Track user question
+                    this.trackInteraction('user_question', userMessage);
+                    
+                    // Add user message
+                    this.addMessage(userMessage, true);
+                    
+                    // Show typing indicator
+                    this.isTyping = true;
+                    
+                    // Simulate AI response
+                    setTimeout(() => {
+                        this.isTyping = false;
+                        const response = this.generateResponse(userMessage);
+                        this.addMessage(response, false);
+                        
+                        // Track AI response
+                        this.trackInteraction('ai_response', response);
+                        
+                        // Speak response if voice is enabled
+                        if (this.voiceEnabled && this.synthesis) {
+                            const utterance = new SpeechSynthesisUtterance(response.replace(/<[^>]*>/g, ''));
+                            utterance.rate = 0.9;
+                            utterance.pitch = 1.1;
+                            this.synthesis.speak(utterance);
+                        }
+                    }, 1000 + Math.random() * 2000);
+                },
+                
+                sendQuickQuestion(question) {
+                    this.inputMessage = question;
+                    this.sendMessage();
+                },
+                
+                addMessage(content, isUser) {
+                    this.messages.push({
+                        id: ++this.messageId,
+                        content: content,
+                        isUser: isUser,
+                        timestamp: new Date()
+                    });
+                    
+                    this.$nextTick(() => {
+                        this.scrollToBottom();
+                    });
+                },
+                
+                scrollToBottom() {
+                    const container = this.$refs.messagesContainer;
+                    if (container) {
+                        container.scrollTop = container.scrollHeight;
+                    }
+                },
+                
+                trackInteraction(type, data) {
+                    this.userInteractions.push({
+                        type: type,
+                        data: data,
+                        timestamp: new Date(),
+                        page: 'prelaunch'
+                    });
+                    
+                    // Send to analytics
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'ai_interaction', {
+                            'event_category': 'prelaunch_ai',
+                            'event_label': type,
+                            'value': this.userInteractions.length
+                        });
+                    }
+                },
+                
+                generateResponse(userMessage) {
+                    // Use custom D.A.N.A agent for intelligent responses
+                    if (window.danaAgent) {
+                        return window.danaAgent.processMessage(userMessage, {
+                            userInteractions: this.userInteractions,
+                            isTyping: this.isTyping,
+                            voiceEnabled: this.voiceEnabled
+                        });
+                    }
+                    
+                    // Fallback to original system if agent not available
+                    const message = userMessage.toLowerCase();
+                    
+                    // Eligibility questions
+                    if (message.includes('eligibility') || message.includes('requirement') || message.includes('qualify')) {
+                        return `Hotel eligibility requirements for FEDEVENT:<br><br>
+                        <strong>🏨 Property Requirements:</strong><br>
+                        • Must be an <strong>indoor property</strong> (guests access rooms through indoor corridors)<br>
+                        • Outdoor corridor properties are <strong>not accepted</strong><br><br>
+                        <strong>💳 Payment Terms:</strong><br>
+                        • Must accept <strong>NET30 payment terms</strong><br>
+                        • No Direct Bill Application required<br><br>
+                        <strong>🏆 Bonus Qualifications:</strong><br>
+                        • Hotels accepting 30% off per diem rates get higher consideration<br>
+                        • Pre-qualification for faster contract processing<br><br>
+                        <strong>❓ Not sure if you qualify?</strong> Fill out the form below and we'll assess your eligibility!`;
+                    }
+                    
+                    // Contract types
+                    if (message.includes('contract') || message.includes('opportunity') || message.includes('available')) {
+                        return `FEDEVENT connects hotels with government contract opportunities:<br><br>
+                        <strong>🏛️ US Government Contracts:</strong><br>
+                        • Lodging for government employees<br>
+                        • Conference and training events<br>
+                        • Long-term accommodation agreements<br><br>
+                        <strong>🌍 United Nations Contracts:</strong><br>
+                        • Diplomatic lodging accommodations<br>
+                        • UN conference and meeting facilities<br>
+                        • International delegation housing<br><br>
+                        <strong>✨ Key Benefits:</strong><br>
+                        • <strong>Zero direct billing paperwork</strong><br>
+                        • <strong>NET30 payment terms</strong><br>
+                        • <strong>Pre-qualified opportunities</strong><br><br>
+                        Ready to join? Scroll down to fill out the waitlist form!`;
+                    }
+                    
+                    // Payment questions
+                    if (message.includes('payment') || message.includes('billing') || message.includes('money')) {
+                        return `Payment process is streamlined for government contracts:<br><br>
+                        <strong>💳 Payment Terms:</strong><br>
+                        • <strong>NET30 payment terms</strong> (payment within 30 days)<br>
+                        • No direct billing paperwork required<br>
+                        • We handle all government billing procedures<br><br>
+                        <strong>💰 Rate Structure:</strong><br>
+                        • Standard government per diem rates<br>
+                        • <strong>30% off per diem rates</strong> for premium consideration<br>
+                        • Transparent pricing with no hidden fees<br><br>
+                        <strong>⚡ Benefits:</strong><br>
+                        • Faster payment processing<br>
+                        • Reduced administrative burden<br>
+                        • Guaranteed payment from government agencies<br><br>
+                        <strong>💡 Tip:</strong> Accepting 30% off per diem rates gives you higher priority for contracts!`;
+                    }
+                    
+                    // After joining questions
+                    if (message.includes('after') || message.includes('join') || message.includes('next') || message.includes('happen')) {
+                        return `What happens after joining the FEDEVENT waitlist:<br><br>
+                        <strong>🚀 Immediate Benefits:</strong><br>
+                        • <strong>Confirmation email</strong> with your unique reference number<br>
+                        • <strong>Pre-qualification</strong> for government contracts<br>
+                        • <strong>Priority access</strong> to new opportunities<br><br>
+                        <strong>📧 Ongoing Process:</strong><br>
+                        • Email notifications when relevant opportunities match your hotel<br>
+                        • Simple online application process (no complex paperwork)<br>
+                        • We handle all government billing and paperwork<br>
+                        • Guaranteed NET30 payment terms<br><br>
+                        <strong>⏱️ Timeline:</strong><br>
+                        • First opportunities could arrive within weeks<br>
+                        • Depends on government needs in your area<br>
+                        • Faster if you accept 30% off per diem rates<br><br>
+                        <strong>🎯 Ready to get started?</strong> Fill out the form below!`;
+                    }
+                    
+                    // Form help
+                    if (message.includes('form') || message.includes('fill') || message.includes('submit')) {
+                        return `Here's how to fill out the FEDEVENT waitlist form:<br><br>
+                        <strong>📋 Step-by-Step Guide:</strong><br>
+                        1. <strong>Property Eligibility:</strong> Answer "Yes" if your hotel has indoor corridors<br>
+                        2. <strong>Accept Terms:</strong> Check all required policy boxes<br>
+                        3. <strong>Hotel Info:</strong> Use Google Places autocomplete for accuracy<br>
+                        4. <strong>Contact Details:</strong> Provide your information as primary contact<br>
+                        5. <strong>Select Interests:</strong> Choose what types of contracts interest you<br><br>
+                        <strong>💡 Pro Tips:</strong><br>
+                        • Use the Google Places autocomplete for accurate hotel data<br>
+                        • Accept 30% off per diem rates for higher consideration<br>
+                        • Double-check your email address for notifications<br><br>
+                        <strong>❓ Need help with a specific field?</strong> Just ask me!`;
+                    }
+                    
+                    // General help
+                    if (message.includes('help') || message.includes('how') || message.includes('what is')) {
+                        return `I'm PLS, your FEDEVENT prelaunch assistant! Here's what I can help with:<br><br>
+                        <strong>📋 Common Questions:</strong><br>
+                        • Hotel eligibility requirements<br>
+                        • Government contract opportunities<br>
+                        • Payment and billing processes<br>
+                        • How to fill out the waitlist form<br>
+                        • What happens after joining<br><br>
+                        <strong>🎯 Quick Actions:</strong><br>
+                        • Use the quick questions above for instant answers<br>
+                        • Ask me about specific form fields<br>
+                        • Get clarification on requirements<br><br>
+                        <strong>🚀 Ready to Join?</strong><br>
+                        Scroll down to fill out the waitlist form and start your government contracting journey!<br><br>
+                        <strong>💬 Need more help?</strong> Just ask me anything specific!`;
+                    }
+                    
+                    // Default response
+                    return `That's a great question! FEDEVENT is a platform that connects hotels with government contract opportunities from the US Government and United Nations.<br><br>
+                    <strong>Key benefits include:</strong><br>
+                    • Zero direct billing paperwork<br>
+                    • NET30 payment terms<br>
+                    • Access to high-value contracts<br>
+                    • Pre-qualification for faster processing<br><br>
+                    <strong>🎯 To get started:</strong><br>
+                    1. Check if your hotel qualifies (indoor property + NET30 terms)<br>
+                    2. Fill out the waitlist form below<br>
+                    3. Start receiving exclusive opportunities<br><br>
+                    Would you like to know more about eligibility requirements, contract types, or how to fill out the form?`;
+                },
+                
+                init() {
+                    // Initialize speech recognition
+                    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                        this.recognition = new SpeechRecognition();
+                        this.recognition.continuous = false;
+                        this.recognition.interimResults = false;
+                        this.recognition.lang = 'en-US';
+                        
+                        this.recognition.onresult = (event) => {
+                            const transcript = event.results[0][0].transcript;
+                            this.inputMessage = transcript;
+                            this.isRecording = false;
+                        };
+                        
+                        this.recognition.onerror = () => {
+                            this.isRecording = false;
+                        };
+                    }
+                    
+                    // Initialize speech synthesis
+                    if ('speechSynthesis' in window) {
+                        this.synthesis = window.speechSynthesis;
+                    }
+                },
+                
+                toggleMic() {
+                    if (!this.recognition) return;
+                    
+                    if (this.isRecording) {
+                        this.recognition.stop();
+                        this.isRecording = false;
+                    } else {
+                        this.recognition.start();
+                        this.isRecording = true;
+                    }
+                },
+                
+                toggleVoice() {
+                    this.voiceEnabled = !this.voiceEnabled;
+                },
+                
+                clearChat() {
+                    this.messages = [];
+                },
+                
+                initDanaVideo() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    if (video) {
+                        console.log('🎥 DANA video loaded, duration:', video.duration);
+                        // Set to last frame (smiley face)
+                        video.currentTime = video.duration - 0.1;
+                        console.log('🎥 Set to last frame at:', video.currentTime);
+                    }
+                },
+                
+                videoError() {
+                    console.log('❌ DANA video error - file might not exist or be corrupted');
+                },
+                
+                videoCanPlay() {
+                    console.log('✅ DANA video can play - ready for audio');
+                },
+                
+                enableDanaAudio() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    if (video) {
+                        console.log('🔓 Enabling DANA audio with user click...');
+                        video.muted = false;
+                        video.volume = 0.8;
+                        userInteracted = true; // Mark as clicked
+                        
+                        // If video is currently playing, restart it to enable audio
+                        if (!video.paused) {
+                            const currentTime = video.currentTime;
+                            video.currentTime = currentTime;
+                            video.play().then(() => {
+                                console.log('✅ DANA audio enabled and video restarted');
+                            }).catch(e => console.log('❌ Failed to restart video with audio:', e));
+                        }
+                    }
+                },
+                
+                playDanaAudio() {
+                    const video = this.$refs.danaVideo;
+                    if (video) {
+                        console.log('🎤 Playing DANA audio...');
+                        if (video.muted) {
+                            video.muted = false;
+                            video.volume = 0.8;
+                            video.play();
+                        }
+                    } else {
+                        console.log('❌ DANA video not found');
+                    }
+                },
+                
+                pauseDanaAudio() {
+                    const video = this.$refs.danaVideo;
+                    if (video) {
+                        console.log('Pausing DANA audio...');
+                        video.muted = true;
+                    }
+                },
+                
+                playDanaVideo() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    console.log('🎬 playDanaVideo called, video:', video, 'userInteracted:', userInteracted);
+                    if (video) {
+                        // Only play if user has clicked somewhere on the page
+                        if (!userInteracted) {
+                            console.log('😊 DANA staying frozen with smiley face - no click interaction yet');
+                            return; // Don't play, stay frozen at smiley face
+                        }
+                        
+                        console.log('🎬 Playing DANA video from start...');
+                        video.currentTime = 0;
+                        video.muted = false;
+                        video.volume = 0.8;
+                        console.log('🔊 Playing with audio (user clicked)');
+                        
+                        video.play().then(() => {
+                            console.log('✅ Video playing successfully with audio');
+                        }).catch(e => {
+                            console.log('❌ Video play error:', e);
+                            // If audio fails, try muted
+                            video.muted = true;
+                            video.play().then(() => {
+                                console.log('✅ Video playing muted due to restrictions');
+                            }).catch(e2 => console.log('❌ Muted video play also failed:', e2));
+                        });
+                    } else {
+                        console.log('❌ Video element not found');
+                    }
+                },
+                
+                pauseDanaVideo() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    console.log('⏸️ pauseDanaVideo called, video:', video);
+                    if (video) {
+                        console.log('⏸️ Pausing DANA video and returning to smiley face...');
+                        video.pause();
+                        // Return to last frame (smiley face)
+                        video.currentTime = video.duration - 0.1;
+                        console.log('✅ Video paused at:', video.currentTime);
+                    } else {
+                        console.log('❌ Video element not found');
+                    }
+                },
+                
+                pauseAtEnd() {
+                    const video = this.$refs.danaVideo || document.getElementById('danaVideo');
+                    if (video) {
+                        console.log('🏁 Video ended, staying at last frame');
+                        // Video stays at last frame (smiley face)
+                    }
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
+

@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Management - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        :root {
+            --bg: #f4f8fb;
+            --card: #fff;
+            --ink: #0b2545;
+            --muted: #5b6b7b;
+            --accent: #0a58ca;
+            --danger: #dc3545;
+            --success: #198754;
+            --ring: rgba(10, 88, 202, .25);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Arial;
+            background: var(--bg);
+            color: var(--ink);
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            margin: 0 0 1rem;
+            color: var(--ink);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin: 0 0 1rem;
+            color: var(--ink);
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            font-weight: 600;
+            font-size: .92rem;
+            display: block;
+            margin: 0 0 0.25rem;
+        }
+
+        input:not([type=file]):not([type=checkbox]):not([type=radio]) {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #d7dee6;
+            border-radius: 10px;
+            background: #fff;
+            font-size: 1rem;
+            line-height: 1.2;
+            height: 44px;
+            outline: 0;
+            transition: box-shadow .15s, border-color .15s;
+        }
+
+        input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--ring);
+        }
+
+        .btn {
+            appearance: none;
+            border: 0;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-block;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+        }
+
+        .btn-success {
+            background: var(--success);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .alert {
+            padding: 12px;
+            border-radius: 8px;
+            margin: 16px 0;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+
+        .required {
+            color: var(--danger);
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: .85rem;
+            margin-top: 2px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .team-member {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .team-member-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .team-member-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .team-member-email {
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        .team-member-status {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .team-member-actions {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .submitting {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, .85);
+            backdrop-filter: saturate(180%) blur(2px);
+            z-index: 10000;
+        }
+
+        .submitting.show {
+            display: flex;
+        }
+
+        .panel {
+            background: #fff;
+            border: 1px solid #e6ecf2;
+            border-radius: 12px;
+            padding: 14px 16px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .08);
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .loader {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 3px solid #c5d6f3;
+            border-top-color: #0a58ca;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .back-link {
+            display: inline-block;
+            margin-bottom: 1rem;
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .invite-form {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Shared header will be injected by nav.js -->
+    <div class="header">
+        <div class="header-content">
+            <div class="logo">FEDEVENT</div>
+            <div id="userMenu" class="user-menu">
+                <div class="user-info">
+                    Welcome, <span id="userInfo">User</span>
+                </div>
+                <button class="btn btn-danger" onclick="handleLogout()" style="margin-left: 1rem;">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <a href="/hotel-dashboard.html" class="back-link">← Back to Dashboard</a>
+        
+        <div class="card">
+            <h1>Team Management</h1>
+            <p>Invite new team members and manage existing ones.</p>
+        </div>
+
+        <div class="invite-form">
+            <h2>Invite Team Member</h2>
+            <form id="inviteForm">
+                <div class="grid">
+                    <div class="form-group">
+                        <label for="inviteEmail">Email Address <span class="required">*</span></label>
+                        <input type="email" id="inviteEmail" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteFirstName">First Name</label>
+                        <input type="text" id="inviteFirstName" name="firstName">
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteLastName">Last Name</label>
+                        <input type="text" id="inviteLastName" name="lastName">
+                    </div>
+                    <div class="form-group">
+                        <label for="inviteJobTitle">Job Title</label>
+                        <input type="text" id="inviteJobTitle" name="jobTitle" placeholder="e.g., Sales Manager">
+                    </div>
+                </div>
+                <button type="submit" class="btn" id="inviteBtn">Send Invitation</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Team Members</h2>
+            <div id="teamMembersList">
+                <!-- Team members will be loaded here -->
+                <div class="alert info">
+                    Loading team members...
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="submitting" id="submitting">
+        <div class="panel">
+            <div class="loader"></div>
+            <div id="submittingText">Processing...</div>
+        </div>
+    </div>
+    
+    <script>
+        // DOM elements
+        const inviteForm = document.getElementById('inviteForm');
+        const inviteBtn = document.getElementById('inviteBtn');
+        const teamMembersList = document.getElementById('teamMembersList');
+        const submitting = document.getElementById('submitting');
+        const submittingText = document.getElementById('submittingText');
+        const userInfo = document.getElementById('userInfo');
+
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('fedevent_session');
+            if (!sessionId) {
+                window.location.href = '/hotel-login.html';
+                return false;
+            }
+            return true;
+        }
+
+        // Load user data
+        async function loadUserData() {
+            try {
+                const userData = localStorage.getItem('fedevent_user');
+                if (userData) {
+                    const user = JSON.parse(userData);
+                    const name = (user.first_name && user.last_name)
+                      ? `${user.first_name} ${user.last_name}`
+                      : (user.first_name || user.username || user.email || '');
+                    userInfo.textContent = name;
+                } else {
+                    userInfo.textContent = 'User';
+                }
+            } catch (error) {
+                console.error('Error loading user data:', error);
+                userInfo.textContent = 'User';
+            }
+        }
+
+        // Handle logout
+        function handleLogout() {
+            console.log('🚪 Logout initiated');
+            
+            // Show confirmation
+            if (confirm('Are you sure you want to logout?')) {
+                // Clear all storage
+                localStorage.clear();
+                sessionStorage.clear();
+                
+                // Redirect to login
+                window.location.href = '/hotel-login.html';
+            }
+        }
+
+        // Send invitation
+        async function sendInvitation(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(inviteForm);
+            const data = Object.fromEntries(formData.entries());
+            
+            // Validate email
+            if (!data.email || !data.email.trim()) {
+                alert('Email is required');
+                return;
+            }
+            
+            // Show submitting state
+            submittingText.textContent = 'Sending invitation...';
+            submitting.classList.add('show');
+            inviteBtn.disabled = true;
+            
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch('/api/team/invite', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${sessionId}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    // Show success message
+                    alert('Invitation sent successfully!');
+                    
+                    // Reset form
+                    inviteForm.reset();
+                    
+                    // Reload team members
+                    loadTeamMembers();
+                } else {
+                    alert(result.error || 'Failed to send invitation');
+                }
+            } catch (error) {
+                console.error('Error sending invitation:', error);
+                alert('Failed to send invitation. Please try again.');
+            } finally {
+                submitting.classList.remove('show');
+                inviteBtn.disabled = false;
+            }
+        }
+
+        // Load team members
+        async function loadTeamMembers() {
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                
+                // Load team members
+                const membersResponse = await fetch('/api/hotel/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+                
+                const membersResult = await membersResponse.json();
+                
+                // Load pending invitations
+                const invitationsResponse = await fetch('/api/team/invitations', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+                
+                const invitationsResult = await invitationsResponse.json();
+                
+                if (membersResult.ok && membersResult.users) {
+                    displayTeamMembers(membersResult.users, invitationsResult.invitations || []);
+                } else {
+                    teamMembersList.innerHTML = `
+                        <div class="alert error">
+                            Failed to load team members. Please try again.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading team members:', error);
+                teamMembersList.innerHTML = `
+                    <div class="alert error">
+                        Error loading team members. Please try again.
+                    </div>
+                `;
+            }
+        }
+
+        // Display team members and invitations
+        function displayTeamMembers(users, invitations) {
+            let html = '';
+            
+            // Display pending invitations first
+            if (invitations && invitations.length > 0) {
+                html += '<h3 style="margin-top: 1rem;">Pending Invitations</h3>';
+                invitations.forEach(invite => {
+                    html += `
+                        <div class="team-member" data-invite-id="${invite.id}">
+                            <div class="team-member-header">
+                                <div>
+                                    <div class="team-member-name">${invite.first_name || invite.email}</div>
+                                    <div class="team-member-email">${invite.email}</div>
+                                </div>
+                                <span class="team-member-status status-pending">Pending</span>
+                            </div>
+                            <div class="team-member-job">${invite.job_title || 'Team Member'}</div>
+                            <div class="team-member-actions">
+                                <small>Invited: ${new Date(invite.created_at).toLocaleDateString()}</small>
+                                <button class="btn btn-danger" onclick="cancelInvitation(${invite.id})" style="margin-left: 10px;">Cancel</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            // Display team members
+            if (users && users.length > 0) {
+                html += '<h3 style="margin-top: 1rem;">Team Members</h3>';
+                users.forEach(user => {
+                    const fullName = (user.first_name && user.last_name)
+                        ? `${user.first_name} ${user.last_name}`
+                        : (user.first_name || user.username || 'Team Member');
+                    
+                    // Determine status based on last login (simplified logic)
+                    const isActive = user.last_login && new Date(user.last_login) > new Date(Date.now() - 30*24*60*60*1000); // Active if logged in within 30 days
+                    const statusClass = isActive ? 'status-active' : 'status-pending';
+                    const statusText = isActive ? 'Active' : 'Pending';
+                    
+                    html += `
+                        <div class="team-member">
+                            <div class="team-member-header">
+                                <div>
+                                    <div class="team-member-name">${fullName}</div>
+                                    <div class="team-member-email">${user.email}</div>
+                                </div>
+                                <span class="team-member-status ${statusClass}">${statusText}</span>
+                            </div>
+                            <div class="team-member-job">${user.job_title || 'Team Member'}</div>
+                            <div class="team-member-actions">
+                                <button class="btn btn-secondary" onclick="editTeamMember(${user.id})">Edit</button>
+                                <button class="btn btn-danger" onclick="removeTeamMember(${user.id})">Remove</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+            
+            if (html === '') {
+                html = `
+                    <div class="alert info">
+                        No team members or pending invitations found. Invite team members using the form above.
+                    </div>
+                `;
+            }
+            
+            teamMembersList.innerHTML = html;
+        }
+
+        // Cancel invitation
+        async function cancelInvitation(invitationId) {
+            if (!confirm('Are you sure you want to cancel this invitation?')) {
+                return;
+            }
+            
+            try {
+                const sessionId = localStorage.getItem('fedevent_session');
+                const response = await fetch(`/api/team/invitations/${invitationId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${sessionId}`
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.ok) {
+                    showMessage('Invitation cancelled successfully', 'success');
+                    // Reload team members
+                    loadTeamMembers();
+                } else {
+                    showMessage(result.error || 'Failed to cancel invitation', 'error');
+                }
+            } catch (error) {
+                console.error('Error cancelling invitation:', error);
+                showMessage('Failed to cancel invitation. Please try again.', 'error');
+            }
+        }
+
+        // Show message
+        function showMessage(text, type = 'info') {
+            // Create message container if it doesn't exist
+            let messageContainer = document.getElementById('statusMessage');
+            if (!messageContainer) {
+                messageContainer = document.createElement('div');
+                messageContainer.id = 'statusMessage';
+                messageContainer.style.marginTop = '1rem';
+                document.querySelector('.container').prepend(messageContainer);
+            }
+            
+            // Set message content and style
+            messageContainer.textContent = text;
+            messageContainer.className = `alert ${type}`;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                messageContainer.style.display = 'none';
+            }, 5000);
+        }
+
+        // Show error
+        function showError(message) {
+            showMessage(message, 'error');
+        }
+
+        // Edit team member
+        function editTeamMember(userId) {
+            alert('Edit functionality coming soon! For now, please contact support to modify team member details.');
+        }
+
+        // Remove team member
+        function removeTeamMember(userId) {
+            if (confirm('Are you sure you want to remove this team member?')) {
+                alert('Remove functionality coming soon! For now, please contact support to remove team members.');
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Team management initializing...');
+            
+            // Check authentication
+            if (!checkAuth()) {
+                return;
+            }
+            
+            // Load user data
+            loadUserData();
+            
+            // Load team members
+            loadTeamMembers();
+            
+            // Set up form submission
+            inviteForm.addEventListener('submit', sendInvitation);
+            
+            console.log('✅ Team management initialized');
+        });
+    </script>
+    
+    <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

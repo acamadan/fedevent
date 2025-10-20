@@ -450,19 +450,3 @@ process.on('SIGINT', () => {
 });
 
 // Deployment trigger - Mon Oct 13 12:46:33 EDT 2025
-
-
-process.on('SIGINT', () => {
-  console.log('\nSIGINT received, closing prelaunch server...');
-  db.close();
-  process.exit(0);
-});
-
-// Deployment trigger - Mon Oct 13 12:46:33 EDT 2025
-
-  console.log('\nSIGINT received, closing prelaunch server...');
-  db.close();
-  process.exit(0);
-});
-
-// Deployment trigger - Mon Oct 13 12:46:33 EDT 2025

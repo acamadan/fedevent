@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>Per Diem FY26 – FEDEVENT</title>
+  <link rel="stylesheet" href="/site.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+  <header>
+    <nav class="container">
+      <div class="logo-menu" style="position: relative;">
+        <a href="/" class="logo">FEDEVENT</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6" style="margin-top: 80px;">
+    <section class="bg-white rounded-2xl shadow p-5">
+      <h2 class="text-xl font-semibold mb-2">Search Summary</h2>
+      <div id="summary" class="text-base text-gray-700"></div>
+    </section>
+
+    <section class="bg-white rounded-2xl shadow p-5">
+      <h3 class="text-lg font-semibold mb-3">Fiscal Year</h3>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button class="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium">FY26 (Current Fiscal Year)</button>
+      </div>
+      <div class="text-sm text-gray-600 p-3 bg-blue-50 rounded-lg">
+        <p><strong>Federal Fiscal Year runs from October 1 to September 30</strong></p>
+        <p class="mt-2">• FY26 = October 1, 2025 through September 30, 2026</p>
+        <p>• All rates shown below are for the selected fiscal year</p>
+      </div>
+    </section>
+
+    <section id="loadingSection" class="bg-white rounded-2xl shadow p-8 text-center">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        <div class="text-lg font-medium text-gray-700">Loading FY26 Rates...</div>
+        <div id="progressText" class="text-sm text-gray-600">Starting...</div>
+      </div>
+    </section>
+
+    <section id="lodgingSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 id="lodgingTitle" class="text-xl font-semibold mb-3">Lodging Rates - FY26</h3>
+      <div id="lodgingWrap" class="overflow-x-auto"></div>
+    </section>
+
+    <section id="mieSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 class="text-xl font-semibold mb-3">M&IE Rates - FY26</h3>
+      <div class="text-sm text-gray-600 mb-3 p-3 bg-amber-50 rounded-lg">
+        <p><strong>Note:</strong> M&IE rates are constant for the entire fiscal year.</p>
+      </div>
+      <div id="mieWrap" class="overflow-x-auto"></div>
+    </section>
+  </main>
+
+  <script>
+    const FISCAL_YEAR = 2026; // FY26
+
+    function getParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        state: p.get('state') || '',
+        city: p.get('city') || '',
+        zip: p.get('zip') || ''
+      };
+    }
+
+    async function fetchPerDiem(params) {
+      const url = new URL('/api/perdiem', window.location.origin);
+      if (params.state) url.searchParams.set('state', params.state);
+      if (params.city) url.searchParams.set('city', params.city);
+      if (params.zip) url.searchParams.set('zip', params.zip);
+      if (params.year) url.searchParams.set('year', params.year);
+      if (params.month) url.searchParams.set('month', params.month);
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('API error');
+      return res.json();
+    }
+
+    async function loadRates() {
+      const q = getParams();
+      
+      if (!q.state && !q.city && !q.zip) {
+        document.getElementById('loadingSection').innerHTML = '<p class="text-center text-gray-600">Please search from <a href="/resources.html" class="text-blue-600">Resources page</a></p>';
+        return;
+      }
+
+      // Update summary
+      const summary = [];
+      if (q.state) summary.push(`State: <strong>${q.state}</strong>`);
+      if (q.city) summary.push(`City: <strong>${q.city}</strong>`);
+      if (q.zip) summary.push(`ZIP: <strong>${q.zip}</strong>`);
+      summary.push(`Fiscal Year: <strong>FY26</strong>`);
+      document.getElementById('summary').innerHTML = summary.join(' • ');
+
+      // FY26 months: Oct 2025 through Sep 2026
+      const fy26Months = [
+        { m: '10', y: 2025, label: 'Oct 2025' },
+        { m: '11', y: 2025, label: 'Nov 2025' },
+        { m: '12', y: 2025, label: 'Dec 2025' },
+        { m: '01', y: 2026, label: 'Jan 2026' },
+        { m: '02', y: 2026, label: 'Feb 2026' },
+        { m: '03', y: 2026, label: 'Mar 2026' },
+        { m: '04', y: 2026, label: 'Apr 2026' },
+        { m: '05', y: 2026, label: 'May 2026' },
+        { m: '06', y: 2026, label: 'Jun 2026' },
+        { m: '07', y: 2026, label: 'Jul 2026' },
+        { m: '08', y: 2026, label: 'Aug 2026' },
+        { m: '09', y: 2026, label: 'Sep 2026' }
+      ];
+
+      // Fetch all months
+      for (let i = 0; i < fy26Months.length; i++) {
+        document.getElementById('progressText').textContent = `Loading ${fy26Months[i].label}...`;
+        try {
+          const data = await fetchPerDiem({
+            ...q,
+            year: String(FISCAL_YEAR), // Always use 2026 for FY26
+            month: fy26Months[i].m
+          });
+          fy26Months[i].rows = data.rows || [];
+        } catch (e) {
+          console.error('Error:', e);
+          fy26Months[i].rows = [];
+        }
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      // Render lodging table
+      const locations = new Set();
+      fy26Months.forEach(m => m.rows.forEach(r => locations.add(r.location)));
+      const locs = Array.from(locations).sort();
+
+      let html = '<table class="min-w-full text-sm border-collapse"><thead><tr class="bg-gray-50"><th class="p-2 border">Location</th>';
+      fy26Months.forEach(m => html += `<th class="p-2 border">${m.label}</th>`);
+      html += '</tr></thead><tbody>';
+      
+      locs.slice(0, 6).forEach(loc => {
+        html += '<tr><td class="p-2 border font-medium">' + loc + '</td>';
+        fy26Months.forEach(m => {
+          const row = m.rows.find(r => r.location === loc);
+          const val = row ? row.lodging : 0;
+          html += `<td class="p-2 border">$${Number(val).toFixed(2)}</td>`;
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+      document.getElementById('lodgingWrap').innerHTML = html;
+
+      // Render M&IE table (simple - constant rate)
+      let mieHtml = '<table class="min-w-full text-sm border-collapse"><thead><tr class="bg-gray-50">';
+      mieHtml += '<th class="p-2 border">Location</th><th class="p-2 border">M&IE (Constant)</th></tr></thead><tbody>';
+      locs.slice(0, 6).forEach(loc => {
+        const firstMonth = fy26Months.find(m => m.rows.find(r => r.location === loc));
+        const row = firstMonth?.rows.find(r => r.location === loc);
+        const mie = row ? row.mie : 0;
+        mieHtml += `<tr><td class="p-2 border font-medium">${loc}</td><td class="p-2 border text-lg font-semibold">$${mie}</td></tr>`;
+      });
+      mieHtml += '</tbody></table>';
+      document.getElementById('mieWrap').innerHTML = mieHtml;
+
+      // Show sections
+      document.getElementById('loadingSection').classList.add('hidden');
+      document.getElementById('lodgingSection').classList.remove('hidden');
+      document.getElementById('mieSection').classList.remove('hidden');
+    }
+
+    loadRates();
+  </script>
+</body>
+</html>
+

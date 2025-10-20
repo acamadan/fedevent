@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Places API Troubleshooting Checklist</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        :root {
+            --bg: #f4f8fb;
+            --card: #fff;
+            --ink: #0b2545;
+            --muted: #5b6b7b;
+            --accent: #0a58ca;
+            --danger: #dc3545;
+            --success: #198754;
+            --warning: #ffc107;
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            margin: 0;
+            font-family: ui-sans-serif, -apple-system, Segoe UI, Roboto, Arial;
+            background: var(--bg);
+            color: var(--ink);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 24px auto;
+            padding: 0 16px;
+        }
+        
+        .card {
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 24px rgba(0, 0, 0, .06);
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+            margin: 0 0 16px;
+            color: var(--ink);
+        }
+        
+        h2 {
+            font-size: 1.5rem;
+            margin: 24px 0 16px;
+            color: var(--ink);
+            border-bottom: 2px solid #e6ecf2;
+            padding-bottom: 8px;
+        }
+        
+        h3 {
+            font-size: 1.25rem;
+            margin: 20px 0 12px;
+            color: var(--ink);
+        }
+        
+        p {
+            margin: 0 0 16px;
+        }
+        
+        ul, ol {
+            margin: 0 0 16px;
+            padding-left: 24px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-ok {
+            background-color: var(--success);
+        }
+        
+        .status-error {
+            background-color: var(--danger);
+        }
+        
+        .status-warning {
+            background-color: var(--warning);
+        }
+        
+        .status-unknown {
+            background-color: var(--muted);
+        }
+        
+        .btn {
+            appearance: none;
+            border: 0;
+            border-radius: 10px;
+            background: var(--accent);
+            color: #fff;
+            padding: 10px 16px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 8px 0;
+        }
+        
+        .btn.secondary {
+            background: #eef4ff;
+            color: var(--accent);
+        }
+        
+        .btn.success {
+            background: var(--success);
+        }
+        
+        .btn.warning {
+            background: var(--warning);
+            color: #000;
+        }
+        
+        .btn.danger {
+            background: var(--danger);
+        }
+        
+        .code-block {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            overflow-x: auto;
+            margin: 16px 0;
+        }
+        
+        .step {
+            background: #f8f9fa;
+            border-left: 4px solid var(--accent);
+            padding: 16px;
+            margin: 16px 0;
+            border-radius: 0 8px 8px 0;
+        }
+        
+        .troubleshooting-section {
+            border: 1px solid #e6ecf2;
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        
+        .troubleshooting-section h3 {
+            margin-top: 0;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 12px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 12px auto;
+                padding: 0 12px;
+            }
+            
+            .card {
+                padding: 16px;
+            }
+            
+            h1 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h1>🏨 Google Places API Troubleshooting Checklist</h1>
+            <p>This checklist helps diagnose and resolve issues with the Google Places API integration in the hotel registration form.</p>
+            
+            <div class="nav-links">
+                <a href="/hotel-registration.html" class="btn secondary">← Back to Hotel Registration</a>
+                <a href="/hotel-dashboard.html" class="btn secondary">Hotel Dashboard</a>
+                <a href="/admin-dashboard.html" class="btn secondary">Admin Dashboard</a>
+            </div>
+            
+            <h2>📋 Quick Status Check</h2>
+            <div class="step">
+                <h3>API Key Status</h3>
+                <div id="apiKeyStatus">Checking API key status...</div>
+            </div>
+            
+            <div class="step">
+                <h3>API Endpoint Access</h3>
+                <div id="apiEndpointStatus">Checking API endpoint access...</div>
+            </div>
+            
+            <div class="step">
+                <h3>Referer Header Validation</h3>
+                <div id="refererHeaderStatus">Checking referer header...</div>
+            </div>
+            
+            <h2>🔧 Detailed Troubleshooting Steps</h2>
+            
+            <div class="troubleshooting-section">
+                <h3>1. API Key Configuration</h3>
+                <p>Verify that the Google Places API key is properly configured in the <code>.env</code> file:</p>
+                
+                <div class="code-block">
+# .env file
+GOOGLE_PLACES_API_KEY=AIzaSyABdwje_wVZfSJi2fcfZQkxI1WhSJnlM3M
+                </div>
+                
+                <p><strong>Checklist:</strong></p>
+                <ul>
+                    <li><span class="status-indicator status-unknown"></span> API key exists in <code>.env</code> file</li>
+                    <li><span class="status-indicator status-unknown"></span> API key is valid (not expired or revoked)</li>
+                    <li><span class="status-indicator status-unknown"></span> API key has Places API (New) enabled</li>
+                    <li><span class="status-indicator status-unknown"></span> API key has proper billing account attached</li>
+                </ul>
+            </div>
+            
+            <div class="troubleshooting-section">
+                <h3>2. Google Cloud Console Configuration</h3>
+                <p>Ensure proper configuration in Google Cloud Console:</p>
+                
+                <p><strong>APIs & Services > Library:</strong></p>
+                <ul>
+                    <li><span class="status-indicator status-unknown"></span> Places API (New) is enabled</li>
+                    <li><span class="status-indicator status-unknown"></span> Maps JavaScript API is enabled (optional but recommended)</li>
+                </ul>
+                
+                <p><strong>APIs & Services > Credentials:</strong></p>
+                <ul>
+                    <li><span class="status-indicator status-unknown"></span> API key has HTTP referrer restrictions: <code>http://localhost:5050/*</code></li>
+                    <li><span class="status-indicator status-unknown"></span> API key has API restrictions: Places API (New) is checked</li>
+                    <li><span class="status-indicator status-unknown"></span> Billing is enabled for the project</li>
+                </ul>
+            </div>
+            
+            <div class="troubleshooting-section">
+                <h3>3. Frontend Implementation</h3>
+                <p>Verify the Google Places API implementation in the hotel registration form:</p>
+                
+                <p><strong>Checklist:</strong></p>
+                <ul>
+                    <li><span class="status-indicator status-unknown"></span> API key is loaded from <code>/api/google-places-key</code> endpoint</li>
+                    <li><span class="status-indicator status-unknown"></span> X-Goog-FieldMask header is included in requests</li>
+                    <li><span class="status-indicator status-unknown"></span> Autocomplete functionality is properly initialized</li>
+                    <li><span class="status-indicator status-unknown"></span> Address fields are correctly mapped</li>
+                </ul>
+            </div>
+            
+            <div class="troubleshooting-section">
+                <h3>4. Common Issues and Solutions</h3>
+                
+                <h4>API Key Not Valid Error</h4>
+                <p>If you're seeing "API key not valid" errors:</p>
+                <ol>
+                    <li>Verify the API key in <code>.env</code> matches the one in Google Cloud Console</li>
+                    <li>Check that the API key has the correct restrictions (HTTP referrer: <code>http://localhost:5050/*</code>)</li>
+                    <li>Ensure Places API (New) is enabled for the project</li>
+                    <li>Confirm billing is enabled for the project</li>
+                </ol>
+                
+                <h4>Referer Not in Whitelist Error</h4>
+                <p>If you're seeing "RefererNotAllowedMapError" or similar:</p>
+                <ol>
+                    <li>In Google Cloud Console, go to APIs & Services > Credentials</li>
+                    <li>Edit your API key</li>
+                    <li>Under "Application restrictions", select "HTTP referrers (websites)"</li>
+                    <li>Add <code>http://localhost:5050/*</code> to the referrer list</li>
+                    <li>Save changes</li>
+                </ol>
+                
+                <h4>No Results in Autocomplete</h4>
+                <p>If autocomplete is not showing results:</p>
+                <ol>
+                    <li>Check browser console for JavaScript errors</li>
+                    <li>Verify the API key is being loaded correctly</li>
+                    <li>Ensure the X-Goog-FieldMask header includes required fields</li>
+                    <li>Check that the autocomplete event listeners are properly attached</li>
+                </ol>
+            </div>
+            
+            <h2>🧪 Testing Tools</h2>
+            
+            <div class="step">
+                <h3>API Key Test</h3>
+                <p>Test if the API key is working correctly:</p>
+                <button id="testApiKeyBtn" class="btn">Test API Key</button>
+                <div id="apiKeyTestResult" class="code-block" style="display: none;"></div>
+            </div>
+            
+            <div class="step">
+                <h3>Places API Test</h3>
+                <p>Test the Places API with a sample request:</p>
+                <button id="testPlacesApiBtn" class="btn">Test Places API</button>
+                <div id="placesApiTestResult" class="code-block" style="display: none;"></div>
+            </div>
+            
+            <h2>📞 Support</h2>
+            <p>If you're still experiencing issues after following this checklist:</p>
+            <ul>
+                <li>Contact the development team with detailed error messages</li>
+                <li>Provide browser console logs</li>
+                <li>Include steps to reproduce the issue</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Function to test API key
+        async function testApiKey() {
+            const resultDiv = document.getElementById('apiKeyTestResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Testing API key...';
+            
+            try {
+                const response = await fetch('/api/google-places-key');
+                const data = await response.json();
+                
+                if (data.apiKey) {
+                    resultDiv.innerHTML = `<span style="color: green;">✅ API key loaded successfully</span><br><br>` +
+                        `<strong>Key prefix:</strong> ${data.apiKey.substring(0, 12)}...<br>` +
+                        `<strong>Mock mode:</strong> ${data.mockMode ? 'Yes' : 'No'}`;
+                } else {
+                    resultDiv.innerHTML = `<span style="color: red;">❌ Failed to load API key</span><br><br>` +
+                        `<strong>Error:</strong> ${data.error || 'Unknown error'}`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span style="color: red;">❌ Error testing API key</span><br><br>` +
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        // Function to test Places API
+        async function testPlacesApi() {
+            const resultDiv = document.getElementById('placesApiTestResult');
+            resultDiv.style.display = 'block';
+            resultDiv.textContent = 'Testing Places API...';
+            
+            try {
+                // First get the API key
+                const keyResponse = await fetch('/api/google-places-key');
+                const keyData = await keyResponse.json();
+                
+                if (!keyData.apiKey) {
+                    resultDiv.innerHTML = `<span style="color: red;">❌ API key not available</span><br><br>` +
+                        `<strong>Error:</strong> ${keyData.error || 'No API key found'}`;
+                    return;
+                }
+                
+                // Test the Places API with a simple query
+                const placesResponse = await fetch('https://places.googleapis.com/v1/places:searchText', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': keyData.apiKey,
+                        'X-Goog-FieldMask': 'places.id,places.displayName'
+                    },
+                    body: JSON.stringify({
+                        textQuery: 'hotel',
+                        maxResultCount: 1
+                    })
+                });
+                
+                const responseText = await placesResponse.text();
+                
+                if (placesResponse.ok) {
+                    resultDiv.innerHTML = `<span style="color: green;">✅ Places API request successful</span><br><br>` +
+                        `<strong>Status:</strong> ${placesResponse.status}<br>` +
+                        `<strong>Response preview:</strong><br>` +
+                        `<pre>${responseText.substring(0, 200)}${responseText.length > 200 ? '...' : ''}</pre>`;
+                } else {
+                    resultDiv.innerHTML = `<span style="color: red;">❌ Places API request failed</span><br><br>` +
+                        `<strong>Status:</strong> ${placesResponse.status}<br>` +
+                        `<strong>Error:</strong><br>` +
+                        `<pre>${responseText}</pre>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<span style="color: red;">❌ Error testing Places API</span><br><br>` +
+                    `<strong>Error:</strong> ${error.message}`;
+            }
+        }
+        
+        // Function to check API key status
+        async function checkApiKeyStatus() {
+            const statusDiv = document.getElementById('apiKeyStatus');
+            
+            try {
+                const response = await fetch('/api/google-places-key');
+                const data = await response.json();
+                
+                if (data.apiKey) {
+                    statusDiv.innerHTML = `<span class="status-indicator status-ok"></span> ` +
+                        `<span style="color: green;">API key is configured and valid</span>`;
+                } else if (data.mockMode) {
+                    statusDiv.innerHTML = `<span class="status-indicator status-warning"></span> ` +
+                        `<span style="color: orange;">Development mode - using mock data</span>`;
+                } else {
+                    statusDiv.innerHTML = `<span class="status-indicator status-error"></span> ` +
+                        `<span style="color: red;">API key is not configured or invalid</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status-indicator status-error"></span> ` +
+                    `<span style="color: red;">Error checking API key: ${error.message}</span>`;
+            }
+        }
+        
+        // Function to check API endpoint access
+        async function checkApiEndpointStatus() {
+            const statusDiv = document.getElementById('apiEndpointStatus');
+            
+            try {
+                const response = await fetch('/api/google-places-key');
+                
+                if (response.ok) {
+                    statusDiv.innerHTML = `<span class="status-indicator status-ok"></span> ` +
+                        `<span style="color: green;">API endpoint is accessible</span>`;
+                } else {
+                    statusDiv.innerHTML = `<span class="status-indicator status-error"></span> ` +
+                        `<span style="color: red;">API endpoint is not accessible (Status: ${response.status})</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status-indicator status-error"></span> ` +
+                    `<span style="color: red;">Error accessing API endpoint: ${error.message}</span>`;
+            }
+        }
+        
+        // Function to check referer header
+        async function checkRefererHeader() {
+            const statusDiv = document.getElementById('refererHeaderStatus');
+            
+            // This is a basic check - in reality, the server would need to verify the referer
+            const referer = document.referrer;
+            const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (isLocalhost) {
+                statusDiv.innerHTML = `<span class="status-indicator status-ok"></span> ` +
+                    `<span style="color: green;">Running on localhost - referer restrictions should be configured for http://localhost:5050/*</span>`;
+            } else {
+                statusDiv.innerHTML = `<span class="status-indicator status-warning"></span> ` +
+                    `<span style="color: orange;">Check that your domain is added to the API key's HTTP referrer restrictions in Google Cloud Console</span>`;
+            }
+        }
+        
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set up button event listeners
+            document.getElementById('testApiKeyBtn').addEventListener('click', testApiKey);
+            document.getElementById('testPlacesApiBtn').addEventListener('click', testPlacesApi);
+            
+            // Run initial checks
+            checkApiKeyStatus();
+            checkApiEndpointStatus();
+            checkRefererHeader();
+        });
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

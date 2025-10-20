@@ -1,0 +1,1732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contract Management - FEDEVENT Admin</title>
+    <link rel="stylesheet" href="site.css?v=5">
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --error: #dc2626;
+            --success: #16a34a;
+            --border: #e5e7eb;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary);
+        }
+        
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-info {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .logout-btn {
+            background: var(--error);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text);
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 1rem 2rem;
+            background: var(--primary);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1.1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .btn:hover {
+            background: var(--primary-dark);
+        }
+        
+        .btn-secondary {
+            background: var(--secondary);
+        }
+        
+        .btn-secondary:hover {
+            background: #d97706;
+        }
+        
+        .btn-success {
+            background: var(--success);
+        }
+        
+        .btn-success:hover {
+            background: #15803d;
+        }
+        
+        .contracts-table {
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: visible;
+        }
+        
+        .table-header {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg);
+        }
+        
+        .table-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            text-align: left;
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        input[type="checkbox"] {
+            transform: scale(1.3);
+            cursor: pointer;
+        }
+        
+        th {
+            background: var(--bg);
+            font-weight: 600;
+            color: var(--text);
+        }
+        
+        tr:hover {
+            background: var(--bg);
+        }
+        
+        .contract-title {
+            font-weight: 600;
+            color: var(--primary);
+            cursor: pointer;
+        }
+        
+        .contract-title:hover {
+            text-decoration: underline;
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .status-awarded {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+        
+        .status-closed {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        
+        .status-low {
+            background: #f0fdf4;
+            color: #166534;
+        }
+        
+        .status-medium {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-high {
+            background: #fef2f2;
+            color: #dc2626;
+        }
+        
+        .status-critical {
+            background: #fef2f2;
+            color: #dc2626;
+            font-weight: 700;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: var(--white);
+            margin: 2% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .bids-table {
+            margin-top: 2rem;
+        }
+        
+        .bid-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .bid-info {
+            flex: 1;
+        }
+        
+        .bid-hotel {
+            font-weight: 600;
+        }
+        
+        .bid-rates {
+            color: var(--text-light);
+            font-size: 0.875rem;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-light);
+        }
+        
+        .error {
+            background: #fef2f2;
+            color: var(--error);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+        
+        .success {
+            background: #f0fdf4;
+            color: var(--success);
+            padding: 1rem;
+            border-radius: 4px;
+            margin: 1rem 0;
+        }
+
+        .info-banner {
+            background: #eef2ff;
+            border: 1px solid #c7d2fe;
+            color: #312e81;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+            margin: 1.5rem 0 2rem;
+            line-height: 1.4;
+        }
+
+        .info-banner strong {
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-layout">
+        <!-- Main Content Area (Sidebar + Content) -->
+        <div class="admin-content-wrapper">
+            <!-- Sidebar -->
+            <aside class="admin-sidebar">
+                <div class="admin-sidebar-header">
+                    <a href="/admin-dashboard.html" class="admin-sidebar-logo">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></span>
+                    </a>
+                    <button onclick="toggleSidebar()" class="admin-sidebar-toggle" title="Toggle Menu">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+                <nav class="admin-sidebar-nav">
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Dashboard">
+                        <i class="fas fa-tachometer-alt"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Hotels">
+                        <i class="fas fa-hotel"></i>
+                        <span>Hotels</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Email Contacts">
+                        <i class="fas fa-envelope"></i>
+                        <span>Email Contacts</span>
+                    </a>
+                    <a href="/admin-dashboard.html" class="admin-nav-item" title="Waitlist">
+                        <i class="fas fa-users"></i>
+                        <span>Waitlist</span>
+                    </a>
+                    <a href="/admin-contracts.html" class="admin-nav-item active" title="Contracts">
+                        <i class="fas fa-file-contract"></i>
+                        <span>Contracts</span>
+                    </a>
+                    <a href="/sam-search-admin.html" class="admin-nav-item" title="SAM Search">
+                        <i class="fas fa-search"></i>
+                        <span>SAM Search</span>
+                    </a>
+                    <a href="/admin-settings.html" class="admin-nav-item" title="Settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </a>
+                    <a href="#" class="admin-nav-item" onclick="logout()" title="Logout">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </a>
+                </nav>
+            </aside>
+            
+            <!-- Main Content -->
+            <main class="admin-main-content">
+                <div class="admin-content">
+                    <!-- Hidden userInfo element for JavaScript compatibility -->
+                    <div id="userInfo" style="display: none;">Loading...</div>
+                    
+                    <!-- Page Header -->
+                    <div class="admin-page-header">
+                        <div class="page-header-content">
+                            <h1 class="page-title">Contract Management</h1>
+                            <div class="page-actions">
+                                <button class="btn btn-primary" onclick="showCreateContractModal()">
+                                    <i class="fas fa-plus"></i> Create New Contract
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Info Banner -->
+                    <div class="admin-info-banner">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Reminder:</strong> Launch new live auctions from the <a href="/admin-dashboard.html" class="admin-link">Create Live Auction</a> button on the admin dashboard. This contracts page is for maintaining supporting documents and access before hotels enter the bidding room.
+                    </div>
+
+                    <!-- Contracts Table -->
+                    <div class="admin-section">
+                        <div class="section-header">
+                            <h2 class="section-title">Active Contracts</h2>
+                        </div>
+                        
+                        <div class="contracts-table">
+                            <div class="table-header">
+                                <h2 class="table-title">Active Contracts</h2>
+                            </div>
+                            
+                            <div id="tableContent">
+                                <div class="loading">Loading contracts...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+    
+    <!-- Create Contract Modal -->
+    <div id="createContractModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Create Contract From SOW</h3>
+                <button class="close-btn" onclick="closeModal('createContractModal')">&times;</button>
+            </div>
+            <form id="createContractForm">
+                <div class="form-group">
+                    <label for="sow_file">Upload SOW File (PDF/DOC/TXT)</label>
+                    <input type="file" id="sow_file" accept=".pdf,.doc,.docx,.txt">
+                    <div style="color: var(--text-light); font-size: 0.875rem; margin-top: 0.25rem;">Original stored in admin folder. Hotel sees redacted + summary files.</div>
+                </div>
+                <div class="form-group">
+                    <button type="button" class="btn btn-success" id="createFromSowBtn">Create Contract From SOW</button>
+                    <div id="autofillMsg" style="margin-top:.5rem;"></div>
+                </div>
+                <div style="display: flex; gap: 1rem;">
+                    <button type="button" class="btn" onclick="closeModal('createContractModal')" style="background: #6b7280;">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Contract Details Modal -->
+    <div id="contractDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="contractDetailsTitle">Contract Details</h3>
+                <button class="close-btn" onclick="closeModal('contractDetailsModal')">&times;</button>
+            </div>
+            <div id="contractDetailsContent">
+                <!-- Content will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Contract Modal -->
+    <div id="editContractModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Edit Contract</h3>
+                <button class="close-btn" onclick="closeModal('editContractModal')">&times;</button>
+            </div>
+            <form id="editContractForm">
+                <input type="hidden" id="editContractId">
+                <div class="form-group">
+                    <label for="editTitle">Title *</label>
+                    <input type="text" id="editTitle" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editDescription">Description</label>
+                    <textarea id="editDescription"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editLocationCity">City</label>
+                        <input type="text" id="editLocationCity">
+                    </div>
+                    <div class="form-group">
+                        <label for="editLocationState">State</label>
+                        <input type="text" id="editLocationState">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="editLocationCountry">Country</label>
+                    <input type="text" id="editLocationCountry">
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editStartDate">Start Date</label>
+                        <input type="date" id="editStartDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="editEndDate">End Date</label>
+                        <input type="date" id="editEndDate">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editRoomCount">Room Count *</label>
+                        <input type="number" id="editRoomCount" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editPerDiemRate">Per Diem Rate *</label>
+                        <input type="number" id="editPerDiemRate" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBidStrategy">Bid Strategy</label>
+                        <select id="editBidStrategy">
+                            <option value="FIRM_FIXED">Firm Fixed – Lowest bid wins</option>
+                            <option value="BPA">BPA – Primary + 2-4 bench partners</option>
+                            <option value="IDIQ">IDIQ – Task order bench</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editTargetMin">Target Min Hotels</label>
+                        <input type="number" id="editTargetMin" min="0" placeholder="e.g. 3">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editTargetMax">Target Max Hotels</label>
+                        <input type="number" id="editTargetMax" min="0" placeholder="e.g. 5">
+                    </div>
+                    <div class="form-group">
+                        <label style="visibility:hidden;">Guidance</label>
+                        <div style="font-size:0.85rem; color: var(--text-light);">Use min/max to enforce BPA or IDIQ benches.</div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editRequirements">Requirements</label>
+                    <textarea id="editRequirements"></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editBiddingDeadline">Bidding Deadline</label>
+                        <input type="date" id="editBiddingDeadline">
+                    </div>
+                    <div class="form-group">
+                        <label for="editDecisionDate">Decision Date</label>
+                        <input type="date" id="editDecisionDate">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editVisibility">Visibility</label>
+                        <select id="editVisibility">
+                            <option value="PUBLIC">Public</option>
+                            <option value="PRIVATE">Private</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus">
+                            <option value="active">Active</option>
+                            <option value="awarded">Awarded</option>
+                            <option value="closed">Closed</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <button type="button" class="btn" onclick="updateContract()">Update Contract</button>
+                    <button type="button" class="btn" style="background: #6b7280;" onclick="closeModal('editContractModal')">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+
+
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+        let allContracts = [];
+        let allDirectives = [];
+        
+        // Check authentication
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            document.getElementById('userInfo').textContent = `${user.first_name} ${user.last_name}`;
+            return true;
+        }
+        
+        // API call helper
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('sessionId');
+            
+            // Only set Content-Type header if there's a body
+            const headers = {
+                'Authorization': `Bearer ${sessionId}`,
+                ...options.headers
+            };
+            
+            // Add Content-Type header only if there's a body and it's not already set
+            if (options.body && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+            
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers
+            });
+            
+            const result = await response.json();
+            
+            if (!result.ok && response.status === 401) {
+                localStorage.removeItem('sessionId');
+                localStorage.removeItem('user');
+                window.location.href = '/admin-login.html';
+                return null;
+            }
+            
+            return result;
+        }
+        
+        // Load contracts
+        async function loadContracts() {
+            try {
+                const result = await apiCall('/api/admin/contracts');
+                
+                if (result && result.ok) {
+                    allContracts = result.contracts;
+                    renderContractsTable();
+                } else {
+                    document.getElementById('tableContent').innerHTML = 
+                        '<div class="error">Failed to load contracts</div>';
+                }
+            } catch (error) {
+                console.error('Load contracts error:', error);
+                document.getElementById('tableContent').innerHTML = 
+                    '<div class="error">Failed to load contracts</div>';
+            }
+        }
+
+        // Search solicitation
+        async function searchSolicitation() {
+            const rawInput = document.getElementById('solicitationNumber').value.trim();
+            const resultsDiv = document.getElementById('solicitationResults');
+            
+            if (!rawInput) {
+                resultsDiv.innerHTML = '<div class="error">Please enter a Notice ID or Solicitation Number</div>';
+                return;
+            }
+
+            resultsDiv.innerHTML = '<div class="loading">Searching solicitation...</div>';
+
+            // Robust input handling:
+            // - Extract 32-hex anywhere in the string (works for full SAM URLs)
+            // - Otherwise, treat remaining token as a solicitation number
+            const hexMatch = rawInput.match(/[a-fA-F0-9]{32}/);
+            const isHexId = !!hexMatch;
+            const noticeId = isHexId ? hexMatch[0].toLowerCase() : '';
+            const solToken = isHexId ? '' : (rawInput.match(/[A-Za-z0-9][A-Za-z0-9-]{4,}/)?.[0] || rawInput);
+            const solicitationNumber = solToken.toUpperCase();
+
+            try {
+                if (isHexId) {
+                    const result = await apiCall(`/api/admin/solicitation/${noticeId}`);
+                    if (result && result.ok) {
+                        displaySolicitationData(result.solicitation);
+                    } else {
+                        const detail = (result && (result.detail || result.error)) ? `<div style=\"margin-top:.5rem;color:#6b7280;font-size:.9rem;\">${result.detail || result.error}</div>` : '';
+                        resultsDiv.innerHTML = `<div class=\"error\">Notice lookup failed.${detail}</div>`;
+                    }
+                    return;
+                }
+
+                // Solicitation number path: query our backend proxy using a valid 1-year window
+                const today = new Date();
+                const yearAgo = new Date();
+                yearAgo.setFullYear(today.getFullYear() - 1);
+                const fmt = (d) => `${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}/${d.getFullYear()}`;
+                const postedFrom = fmt(yearAgo);
+                const postedTo = fmt(today);
+
+                const resp = await fetch(`/api/opps?${new URLSearchParams({ solicitationNumber, postedFrom, postedTo, limit: '1' })}`);
+                let data;
+                try {
+                    data = await resp.json();
+                } catch (_) {
+                    const txt = await resp.text();
+                    data = JSON.parse(txt);
+                }
+
+                if (!resp.ok) {
+                    const detail = data && (data.body || data.error || data.details);
+                    resultsDiv.innerHTML = `<div class=\"error\">Solicitation search failed.${detail ? `<div style='margin-top:.5rem;color:#6b7280;font-size:.9rem;'>${detail}</div>`:''}</div>`;
+                    return;
+                }
+
+                const opp = (data.results && data.results[0]) || (data.opportunitiesData && data.opportunitiesData[0]) || null;
+                if (!opp) {
+                    resultsDiv.innerHTML = '<div class="error">No solicitation found for that number.</div>';
+                    return;
+                }
+
+                const solicitation = {
+                    solicitation_number: opp.solicitationNumber || solicitationNumber,
+                    title: opp.title || 'Untitled',
+                    agency: opp.fullParentPathName || opp.department || 'Unknown Agency',
+                    office: '',
+                    location: '',
+                    naics_code: opp.naicsCode || '',
+                    response_deadline: opp.responseDeadLine || opp.reponseDeadLine || opp.responseDeadline || null,
+                    set_aside: opp.setAside || '',
+                    description: opp.description || 'View full details on SAM.gov',
+                    requirements: ''
+                };
+
+                displaySolicitationData(solicitation);
+            } catch (error) {
+                console.error('Solicitation search error:', error);
+                resultsDiv.innerHTML = '<div class="error">Failed to search solicitation</div>';
+            }
+        }
+
+        // Display solicitation data
+        function displaySolicitationData(solicitation) {
+            const resultsDiv = document.getElementById('solicitationResults');
+            
+            const solicitationHTML = `
+                <div style="background: #f0fdf4; border: 1px solid #16a34a; border-radius: 8px; padding: 1.5rem;">
+                    <h4 style="color: #166534; margin-bottom: 1rem;">Solicitation Found</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem;">
+                        <div>
+                            <strong>Solicitation Number:</strong><br>
+                            <span style="color: var(--primary); font-weight: 600;">${solicitation.solicitation_number || 'N/A'}</span>
+                        </div>
+                        <div>
+                            <strong>Title:</strong><br>
+                            ${solicitation.title || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Agency:</strong><br>
+                            ${solicitation.agency || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Office:</strong><br>
+                            ${solicitation.office || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Location:</strong><br>
+                            ${solicitation.location || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>NAICS Code:</strong><br>
+                            ${solicitation.naics_code || 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Response Deadline:</strong><br>
+                            ${solicitation.response_deadline ? formatDate(solicitation.response_deadline) : 'N/A'}
+                        </div>
+                        <div>
+                            <strong>Set Aside:</strong><br>
+                            ${solicitation.set_aside || 'N/A'}
+                        </div>
+                    </div>
+                    
+                    ${solicitation.description ? `
+                        <div style="margin-top: 1rem;">
+                            <strong>Description:</strong><br>
+                            <div style="background: var(--white); padding: 1rem; border-radius: 4px; margin-top: 0.5rem; border: 1px solid var(--border);">
+                                ${solicitation.description}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    ${solicitation.requirements ? `
+                        <div style="margin-top: 1rem;">
+                            <strong>Requirements:</strong><br>
+                            <div style="background: var(--white); padding: 1rem; border-radius: 4px; margin-top: 0.5rem; border: 1px solid var(--border);">
+                                ${solicitation.requirements}
+                            </div>
+                        </div>
+                    ` : ''}
+                    
+                    <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                        <button class="btn btn-success" onclick="createContractFromSolicitation('${solicitation.solicitation_number}')">
+                            Create Contract from Solicitation
+                        </button>
+                        <button class="btn btn-secondary" onclick="clearSolicitationSearch()">
+                            Clear
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            resultsDiv.innerHTML = solicitationHTML;
+        }
+
+        // Create contract from solicitation
+        async function createContractFromSolicitation(solicitationNumber) {
+            try {
+                const result = await apiCall(`/api/admin/solicitation/${solicitationNumber}/create-contract`, {
+                    method: 'POST'
+                });
+                
+                if (result && result.ok) {
+                    alert('Contract created successfully from solicitation!');
+                    loadContracts(); // Refresh contracts table
+                    clearSolicitationSearch();
+                } else {
+                    alert('Failed to create contract: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Create contract from solicitation error:', error);
+                alert('Failed to create contract from solicitation');
+            }
+        }
+
+        // Clear solicitation search
+        function clearSolicitationSearch() {
+            document.getElementById('solicitationNumber').value = '';
+            document.getElementById('solicitationResults').innerHTML = '';
+        }
+
+        // Load directives
+        async function loadDirectives() {
+            try {
+                const result = await apiCall('/api/admin/directives');
+                
+                if (result && result.ok) {
+                    allDirectives = result.directives || [];
+                    renderDirectivesTable();
+                } else {
+                    document.getElementById('directivesTableContent').innerHTML = 
+                        '<div class="error">Failed to load directives</div>';
+                }
+            } catch (error) {
+                console.error('Load directives error:', error);
+                document.getElementById('directivesTableContent').innerHTML = 
+                    '<div class="error">Failed to load directives</div>';
+            }
+        }
+        
+        // Render directives table
+        function renderDirectivesTable() {
+            const tableContent = document.getElementById('directivesTableContent');
+            
+            if (allDirectives.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No directives found. Create your first directive above.</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Directive Name</th>
+                            <th>Type</th>
+                            <th>Priority</th>
+                            <th>Effective Date</th>
+                            <th>Auto-Apply</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allDirectives.map(directive => `
+                            <tr>
+                                <td>
+                                    <div style="font-weight: 600; color: var(--primary); cursor: pointer;" onclick="showDirectiveDetails(${directive.id})">
+                                        ${directive.name}
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">
+                                        ${directive.description ? directive.description.substring(0, 100) + '...' : 'No description'}
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="text-transform: capitalize; background: #e0e7ff; color: #3730a3; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem;">
+                                        ${directive.type}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-${directive.priority}">${directive.priority}</span>
+                                </td>
+                                <td>${directive.effective_date}</td>
+                                <td>
+                                    <span style="color: ${directive.auto_apply ? 'var(--success)' : 'var(--text-light)'};">
+                                        ${directive.auto_apply ? 'Yes' : 'No'}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="status-badge status-${directive.status || 'active'}">${directive.status || 'active'}</span>
+                                </td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;" onclick="applyDirectiveToContracts(${directive.id})">
+                                        Apply to Contracts
+                                    </button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableContent.innerHTML = tableHTML;
+        }
+
+        // Render contracts table
+        function renderContractsTable() {
+            const tableContent = document.getElementById('tableContent');
+            
+            if (allContracts.length === 0) {
+                tableContent.innerHTML = '<div class="loading">No contracts found</div>';
+                return;
+            }
+            
+            const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>Contract Title</th>
+                            <th>Location</th>
+                            <th>Duration</th>
+                            <th>Rooms</th>
+                            <th>Summary</th>
+                            <th>Hotels Notified</th>
+                            <th>Bids</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${allContracts.map(contract => `
+                            <tr>
+                                <td><input type=\"checkbox\" class=\"rowSelect\" data-id=\"${contract.id}\"></td>
+                                <td>
+                                    <div class=\"contract-title\" onclick=\"openContractPage(${contract.id})\">
+                                        ${contract.title}
+                                    </div>
+                                </td>
+                                <td>${[contract.location_city, contract.location_state].filter(Boolean).join(', ')}</td>
+                                <td>${formatShortDate(contract.start_date)} to ${formatShortDate(contract.end_date)}</td>
+                                <td>${contract.room_count}</td>
+                                <td>
+                                    <button class="btn btn-secondary" style="padding: .25rem .5rem; font-size: .75rem;" onclick="showContractSummary(${contract.id})">View</button>
+                                </td>
+                                <td>${contract.notified_hotels}</td>
+                                <td>${contract.bidding_hotels}</td>
+                                <td><span class="status-badge status-${contract.status}">${contract.status}</span></td>
+                                <td>
+                                    <div class="actions" style="position:relative; display:inline-block;">
+                                      <button class="btn" style="padding:.4rem .6rem; font-size:.85rem;" onclick="toggleActions(event, ${contract.id})">Actions ▾</button>
+                                      <div id="menu-${contract.id}" class="action-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:0.25rem; background:#fff; border:1px solid #e5e7eb; border-radius:8px; box-shadow:0 8px 16px rgba(0,0,0,.08); z-index:999; min-width:160px;">
+                                        <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;" onclick="showEditContract(${contract.id})">Edit</button>
+                                        <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:none; border:0; cursor:pointer;" onclick="cancelContract(${contract.id})">Cancel</button>
+                                        <button style="display:block; width:100%; text-align:left; padding:.5rem 1rem; background:#fee2e2; border:0; cursor:pointer;" onclick="deleteContract(${contract.id})">Delete</button>
+                                      </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+            
+            tableContent.innerHTML = tableHTML;
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) {
+                selectAll.addEventListener('change', (e) => {
+                    document.querySelectorAll('.rowSelect').forEach(cb => { cb.checked = e.target.checked; });
+                });
+            }
+        }
+        
+        // Show create contract modal
+        function showCreateContractModal() {
+            document.getElementById('createContractModal').style.display = 'block';
+        }
+
+        function openContractPage(id) {
+            window.location.href = `/admin-contract-details.html?id=${id}`;
+        }
+
+        function getSelectedContractIds() {
+            return Array.from(document.querySelectorAll('.rowSelect:checked')).map(cb => Number(cb.getAttribute('data-id')));
+        }
+
+        async function deleteSelectedContracts() {
+            const ids = getSelectedContractIds();
+            if (!ids.length) { alert('Select at least one contract.'); return; }
+            if (!confirm(`Delete ${ids.length} selected contract(s)? This cannot be undone.`)) return;
+            for (const id of ids) {
+                await apiCall(`/api/admin/contracts/${id}`, { method: 'DELETE' });
+            }
+            loadContracts();
+        }
+
+        function editSelectedContract() {
+            const ids = getSelectedContractIds();
+            if (ids.length !== 1) { alert('Select exactly one contract to edit.'); return; }
+            openContractPage(ids[0]);
+        }
+
+        // (Removed) Create directive UI and handlers
+        
+        // Show contract details
+        async function showContractDetails(contractId) {
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}`);
+                
+                if (result && result.ok) {
+                    const { contract, bids, notifications } = result;
+                    
+                    document.getElementById('contractDetailsTitle').textContent = contract.title;
+                    
+                    const content = `
+                        <div class="form-group">
+                            <h4>Contract Information</h4>
+                            <p><strong>Description:</strong> ${contract.description || 'N/A'}</p>
+                            <p><strong>Location:</strong> ${[contract.location_city, contract.location_state, contract.location_country].filter(Boolean).join(', ')}</p>
+                            <p><strong>Duration:</strong> ${contract.start_date} to ${contract.end_date}</p>
+                            <p><strong>Rooms:</strong> ${contract.room_count}</p>
+                            <p><strong>Per Diem Rate:</strong> $${contract.per_diem_rate}</p>
+                            <p><strong>Max Contracted Rate:</strong> $${contract.max_contracted_rate} (30% off)</p>
+                            <p><strong>Max Self-Pay Rate:</strong> $${contract.max_self_pay_rate} (10% off)</p>
+                            <p><strong>Status:</strong> <span class="status-badge status-${contract.status}">${contract.status}</span></p>
+                        </div>
+                        
+                        <div class="bids-table">
+                            <h4>Current Bids (${bids.length})</h4>
+                            ${bids.length > 0 ? bids.map(bid => `
+                                <div class="bid-row">
+                                    <div class="bid-info">
+                                        <div class="bid-hotel">${bid.hotel_name}</div>
+                                        <div class="bid-rates">
+                                            Contracted: $${bid.contracted_rate}/night | 
+                                            Self-Pay: $${bid.self_pay_rate}/night
+                                        </div>
+                                        ${bid.additional_notes ? `<div style="font-size: 0.875rem; color: var(--text-light); margin-top: 0.25rem;">${bid.additional_notes}</div>` : ''}
+                                    </div>
+                                    ${contract.status === 'active' ? `
+                                        <button class="btn btn-success" style="padding: 0.5rem 1rem;" onclick="awardContract(${contract.id}, ${bid.hotel_id})">
+                                            Award Contract
+                                        </button>
+                                    ` : ''}
+                                </div>
+                            `).join('') : '<p>No bids submitted yet.</p>'}
+                        </div>
+                        
+                        <div style="margin-top: 2rem;">
+                            <h4>Hotel Notifications (${notifications.length})</h4>
+                            ${notifications.map(notif => `
+                                <div style="padding: 0.5rem; border-bottom: 1px solid var(--border);">
+                                    <strong>${notif.hotel_name}</strong> - 
+                                    ${notif.response ? `Response: ${notif.response}` : 'No response yet'} 
+                                    (${notif.email_sent_at ? 'Sent: ' + formatDate(notif.email_sent_at) : 'Not sent'})
+                                </div>
+                            `).join('')}
+                        </div>
+                    `;
+                    
+                    document.getElementById('contractDetailsContent').innerHTML = content;
+                    document.getElementById('contractDetailsModal').style.display = 'block';
+                } else {
+                    alert('Failed to load contract details');
+                }
+            } catch (error) {
+                console.error('Contract details error:', error);
+                alert('Failed to load contract details');
+            }
+        }
+
+        // Show summary (SOW summary + table) in details modal
+        async function showContractSummary(contractId) {
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}`);
+                if (result && result.ok) {
+                    const { contract } = result;
+                    const desc = contract.description || '';
+                    const content = `
+                        <div class="form-group">
+                            <h4>Summary</h4>
+                            <div style="white-space: pre-wrap;">${desc}</div>
+                        </div>
+                    `;
+                    document.getElementById('contractDetailsTitle').textContent = contract.title + ' — Summary';
+                    document.getElementById('contractDetailsContent').innerHTML = content;
+                    document.getElementById('contractDetailsModal').style.display = 'block';
+                } else {
+                    alert('Failed to load contract summary');
+                }
+            } catch (e) {
+                console.error('show summary error', e);
+                alert('Failed to load contract summary');
+            }
+        }
+        
+        function toggleActions(e, id) {
+            e.stopPropagation();
+            // Hide all other menus first
+            document.querySelectorAll('.action-menu').forEach(m => {
+                if (m.id !== `menu-${id})`) {
+                    m.style.display = 'none';
+                }
+            });
+            
+            // Toggle the clicked menu
+            const menu = document.getElementById(`menu-${id}`);
+            if (menu) {
+                const isCurrentlyVisible = menu.style.display === 'block';
+                menu.style.display = isCurrentlyVisible ? 'none' : 'block';
+                
+                // Add click outside listener if menu is now visible
+                if (!isCurrentlyVisible) {
+                    const closeMenu = (event) => {
+                        if (!menu.contains(event.target) && event.target.closest('.actions') !== menu.closest('.actions')) {
+                            menu.style.display = 'none';
+                            document.removeEventListener('click', closeMenu);
+                        }
+                    };
+                    document.addEventListener('click', closeMenu);
+                }
+            }
+        }
+
+        async function deleteContract(id) {
+            if (!confirm('Delete this contract? This cannot be undone.')) return;
+            
+            try {
+                console.log('Attempting to delete contract with ID:', id);
+                const result = await apiCall(`/api/admin/contracts/${id}`, { method: 'DELETE' });
+                console.log('Delete contract result:', result);
+                
+                if (result && result.ok) {
+                    alert('Contract deleted successfully!');
+                    loadContracts(); // Refresh the table
+                } else {
+                    const errorMessage = result ? (result.message || result.error || 'Unknown error') : 'No response from server';
+                    alert('Failed to delete contract: ' + errorMessage);
+                }
+            } catch (error) {
+                console.error('Delete contract error:', error);
+                alert('Failed to delete contract: ' + error.message);
+            }
+        }
+
+        async function cancelContract(id) {
+            const body = { status: 'closed' };
+            await apiCall(`/api/admin/contracts/${id}`, { method: 'PUT', body: JSON.stringify(body) });
+            loadContracts();
+        }
+
+        // Show edit contract modal
+        async function showEditContract(contractId) {
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}`);
+                
+                if (result && result.ok) {
+                    const { contract } = result;
+                    
+                    // Populate form fields
+                    document.getElementById('editContractId').value = contract.id;
+                    document.getElementById('editTitle').value = contract.title || '';
+                    document.getElementById('editDescription').value = contract.description || '';
+                    document.getElementById('editLocationCity').value = contract.location_city || '';
+                    document.getElementById('editLocationState').value = contract.location_state || '';
+                    document.getElementById('editLocationCountry').value = contract.location_country || '';
+                    document.getElementById('editStartDate').value = contract.start_date || '';
+                    document.getElementById('editEndDate').value = contract.end_date || '';
+                    document.getElementById('editRoomCount').value = contract.room_count || '';
+                    document.getElementById('editPerDiemRate').value = contract.per_diem_rate || '';
+                    document.getElementById('editBidStrategy').value = (contract.bid_strategy || 'FIRM_FIXED').toUpperCase();
+                    document.getElementById('editTargetMin').value = contract.target_bid_min != null ? contract.target_bid_min : '';
+                    document.getElementById('editTargetMax').value = contract.target_bid_max != null ? contract.target_bid_max : '';
+                    document.getElementById('editRequirements').value = contract.requirements || '';
+                    document.getElementById('editBiddingDeadline').value = contract.bidding_deadline || '';
+                    document.getElementById('editDecisionDate').value = contract.decision_date || '';
+                    document.getElementById('editVisibility').value = contract.visibility || 'PUBLIC';
+                    document.getElementById('editStatus').value = contract.status || 'active';
+                    
+                    // Show modal
+                    document.getElementById('editContractModal').style.display = 'block';
+                } else {
+                    alert('Failed to load contract details');
+                }
+            } catch (error) {
+                console.error('Edit contract error:', error);
+                alert('Failed to load contract details');
+            }
+        }
+
+        // Update contract
+        async function updateContract() {
+            try {
+                const contractId = document.getElementById('editContractId').value;
+                
+                // Get form values
+                const contractData = {
+                    title: document.getElementById('editTitle').value,
+                    description: document.getElementById('editDescription').value,
+                    location_city: document.getElementById('editLocationCity').value,
+                    location_state: document.getElementById('editLocationState').value,
+                    location_country: document.getElementById('editLocationCountry').value,
+                    start_date: document.getElementById('editStartDate').value,
+                    end_date: document.getElementById('editEndDate').value,
+                    room_count: parseInt(document.getElementById('editRoomCount').value),
+                    per_diem_rate: parseFloat(document.getElementById('editPerDiemRate').value),
+                    requirements: document.getElementById('editRequirements').value,
+                    bidding_deadline: document.getElementById('editBiddingDeadline').value,
+                    decision_date: document.getElementById('editDecisionDate').value,
+                    visibility: document.getElementById('editVisibility').value,
+                    status: document.getElementById('editStatus').value,
+                    bid_strategy: document.getElementById('editBidStrategy').value,
+                    target_bid_min: document.getElementById('editTargetMin').value,
+                    target_bid_max: document.getElementById('editTargetMax').value
+                };
+
+                if (contractData.target_bid_min === '') contractData.target_bid_min = null;
+                if (contractData.target_bid_min !== null) {
+                    contractData.target_bid_min = parseInt(contractData.target_bid_min, 10);
+                    if (Number.isNaN(contractData.target_bid_min)) contractData.target_bid_min = null;
+                }
+                if (contractData.target_bid_max === '') contractData.target_bid_max = null;
+                if (contractData.target_bid_max !== null) {
+                    contractData.target_bid_max = parseInt(contractData.target_bid_max, 10);
+                    if (Number.isNaN(contractData.target_bid_max)) contractData.target_bid_max = null;
+                }
+
+                if (contractData.target_bid_min !== null && contractData.target_bid_max !== null && contractData.target_bid_min > contractData.target_bid_max) {
+                    alert('Target minimum hotels cannot exceed the target maximum.');
+                    return;
+                }
+                
+                // Validate required fields
+                if (!contractData.title || !contractData.room_count || !contractData.per_diem_rate) {
+                    alert('Please fill in all required fields');
+                    return;
+                }
+                
+                const result = await apiCall(`/api/admin/contracts/${contractId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify(contractData)
+                });
+                
+                if (result && result.ok) {
+                    alert('Contract updated successfully!');
+                    closeModal('editContractModal');
+                    loadContracts(); // Refresh the table
+                } else {
+                    alert('Failed to update contract: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Update contract error:', error);
+                alert('Failed to update contract');
+            }
+        }
+
+        // Award contract
+        async function awardContract(contractId, hotelId) {
+            if (!confirm('Are you sure you want to award this contract?')) {
+                return;
+            }
+            
+            try {
+                const result = await apiCall(`/api/admin/contracts/${contractId}/award`, {
+                    method: 'POST',
+                    body: JSON.stringify({ hotel_id: hotelId })
+                });
+                
+                if (result && result.ok) {
+                    alert('Contract awarded successfully!');
+                    closeModal('contractDetailsModal');
+                    loadContracts(); // Refresh the table
+                } else {
+                    alert('Failed to award contract: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Award contract error:', error);
+                alert('Failed to award contract');
+            }
+        }
+        
+        // Show directive details
+        async function showDirectiveDetails(directiveId) {
+            const directive = allDirectives.find(d => d.id === directiveId);
+            if (!directive) return;
+
+            const content = `
+                <div class="form-group">
+                    <h4>Directive Information</h4>
+                    <p><strong>Name:</strong> ${directive.name}</p>
+                    <p><strong>Type:</strong> ${directive.type}</p>
+                    <p><strong>Priority:</strong> <span class="status-badge status-${directive.priority}">${directive.priority}</span></p>
+                    <p><strong>Effective Date:</strong> ${directive.effective_date}</p>
+                    <p><strong>Auto-Apply:</strong> ${directive.auto_apply ? 'Yes' : 'No'}</p>
+                    <p><strong>Status:</strong> <span class="status-badge status-${directive.status || 'active'}">${directive.status || 'active'}</span></p>
+                </div>
+                
+                <div class="form-group">
+                    <h4>Description</h4>
+                    <p>${directive.description || 'No description provided'}</p>
+                </div>
+                
+                <div class="form-group">
+                    <h4>Specific Requirements</h4>
+                    <p>${directive.requirements || 'No specific requirements listed'}</p>
+                </div>
+                
+                ${directive.applicable_locations ? `
+                    <div class="form-group">
+                        <h4>Applicable Locations</h4>
+                        <p>${directive.applicable_locations}</p>
+                    </div>
+                ` : ''}
+                
+                ${directive.penalties ? `
+                    <div class="form-group">
+                        <h4>Non-Compliance Penalties</h4>
+                        <p>${directive.penalties}</p>
+                    </div>
+                ` : ''}
+                
+                <div style="margin-top: 2rem;">
+                    <button class="btn btn-secondary" onclick="applyDirectiveToContracts(${directive.id})">
+                        Apply to All Contracts
+                    </button>
+                </div>
+            `;
+            
+            document.getElementById('contractDetailsTitle').textContent = directive.name;
+            document.getElementById('contractDetailsContent').innerHTML = content;
+            document.getElementById('contractDetailsModal').style.display = 'block';
+        }
+
+        // Apply directive to contracts
+        async function applyDirectiveToContracts(directiveId) {
+            const directive = allDirectives.find(d => d.id === directiveId);
+            if (!directive) return;
+
+            const applicableContracts = allContracts.filter(contract => 
+                contract.status === 'active' && 
+                new Date(contract.start_date) >= new Date(directive.effective_date)
+            );
+
+            if (applicableContracts.length === 0) {
+                alert('No active contracts found that are eligible for this directive.');
+                return;
+            }
+
+            if (!confirm(`Apply "${directive.name}" directive to ${applicableContracts.length} active contract(s)?`)) {
+                return;
+            }
+
+            try {
+                const result = await apiCall(`/api/admin/directives/${directiveId}/apply`, {
+                    method: 'POST',
+                    body: JSON.stringify({ 
+                        contract_ids: applicableContracts.map(c => c.id)
+                    })
+                });
+                
+                if (result && result.ok) {
+                    alert(`Directive applied to ${result.applied_count} contract(s) successfully!`);
+                    loadContracts(); // Refresh contracts
+                } else {
+                    alert('Failed to apply directive: ' + (result.error || 'Unknown error'));
+                }
+            } catch (error) {
+                console.error('Apply directive error:', error);
+                alert('Failed to apply directive');
+            }
+        }
+
+        // (Removed) Directive form submission handler
+
+        // Removed standard create-contract form flow; using only Create From SOW
+
+        // Autofill flow removed; only Create From SOW is supported
+
+        // Create contract directly from SOW
+        document.getElementById('createFromSowBtn').addEventListener('click', async () => {
+            const fileInput = document.getElementById('sow_file');
+            const msg = document.getElementById('autofillMsg');
+            msg.innerHTML = '';
+            if (!fileInput || !fileInput.files || !fileInput.files[0]) {
+                msg.innerHTML = '<div class="error">Please select a SOW file first.</div>';
+                return;
+            }
+            try {
+                const fd = new FormData();
+                fd.append('file', fileInput.files[0]);
+                const sessionId = localStorage.getItem('sessionId');
+                const resp = await fetch('/api/admin/contracts/create-from-sow', { method:'POST', headers:{ 'Authorization': `Bearer ${sessionId}` }, body: fd });
+                const data = await resp.json();
+                if (!data.ok) { msg.innerHTML = `<div class=\"error\">${data.error||'Create from SOW failed'}</div>`; return; }
+                msg.innerHTML = '<div class="success">Contract draft created! Please review and update details before publishing.</div>';
+                setTimeout(() => {
+                    closeModal('createContractModal');
+                    loadContracts();
+                }, 1500);
+            } catch (e) {
+                console.error('create-from-sow error', e);
+                msg.innerHTML = '<div class="error">Create from SOW failed.</div>';
+            }
+        });
+        
+        // Close modal
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'createContractModal') {
+                const form = document.getElementById('createContractForm');
+                if (form) form.reset();
+                const msg = document.getElementById('createContractMessage');
+                if (msg) msg.innerHTML = '';
+            } else if (modalId === 'createDirectiveModal') {
+                const form = document.getElementById('createDirectiveForm');
+                if (form) form.reset();
+                const msg = document.getElementById('createDirectiveMessage');
+                if (msg) msg.innerHTML = '';
+            } else if (modalId === 'editContractModal') {
+                const form = document.getElementById('editContractForm');
+                if (form) form.reset();
+            }
+        }
+        
+        // Format date
+        function formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+        function formatShortDate(dateString) {
+            if (!dateString) return '-';
+            const d = new Date(dateString);
+            const dd = String(d.getDate()).padStart(2,'0');
+            const mmm = d.toLocaleString('en-US', { month: 'short' }).toUpperCase();
+            const yy = String(d.getFullYear()).slice(-2);
+            return `${dd}/${mmm}/${yy}`;
+        }
+        
+        // Logout
+        async function logout() {
+            try {
+                await apiCall('/api/auth/logout', { method: 'POST' });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Initialize
+        if (checkAuth()) {
+            loadContracts();
+        }
+        
+        // Close modal on outside click
+        window.onclick = function(event) {
+            const modals = ['createContractModal', 'contractDetailsModal', 'createDirectiveModal'];
+            modals.forEach(modalId => {
+                const modal = document.getElementById(modalId);
+                if (event.target === modal) {
+                    closeModal(modalId);
+                }
+            });
+        }
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+
+    
+    <!-- Include CSS and Font Awesome for icons -->
+    <link rel="stylesheet" href="site.css?v=5">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- Include sidebar JavaScript -->
+    <script src="admin-sidebar.js"></script>
+    
+    <!-- Authentication and User Management -->
+    <script>
+        // currentUser is already declared globally, just use it
+        
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+            
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+            
+            currentUser = user;
+            const userInfoElement = document.getElementById('userInfo');
+            if (userInfoElement) {
+                userInfoElement.textContent = `${user.first_name} ${user.last_name}`;
+            }
+            return true;
+        }
+        
+        function logout() {
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+        
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+    
+    <!-- DANA AI Assistant -->
+    <script src="/chat.js"></script>
+</body>
+</html>

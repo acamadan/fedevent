@@ -1,0 +1,753 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Per Diem – Full Year Results</title>
+  <link rel="stylesheet" href="/site.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gray-50 text-gray-900">
+
+  <header>
+    <nav class="container">
+      <div class="logo-menu" style="position: relative;">
+        <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">FEDEVENT <span style="font-size: 0.7em;">▾</span></a>
+        <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+          <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+          <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+          <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+          <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+          <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+          <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+        </div>
+      </div>
+      <ul class="nav-links">
+        <li id="userMenu" class="user-menu" style="display:none;">
+          <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+            <span class="user-avatar" id="userInitial">U</span>
+            <span id="userNameLabel">User</span>
+            <span aria-hidden>▾</span>
+          </a>
+          <div class="user-dropdown" id="userDropdown">
+            <a href="/hotel-dashboard.html">Hotel Portal</a>
+            <a href="/user-profile.html">User Settings</a>
+            <button type="button" onclick="logoutUser()">Logout</button>
+          </div>
+        </li>
+      </ul>
+    </nav>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 py-6 space-y-6" style="margin-top: 80px;">
+    <section class="bg-white rounded-2xl shadow p-5">
+      <h2 class="text-xl font-semibold mb-2">Search Summary</h2>
+      <div id="summary" class="text-base text-gray-700"></div>
+    </section>
+
+    <!-- Fiscal Year Selection -->
+    <section class="bg-white rounded-2xl shadow p-5">
+      <h3 class="text-lg font-semibold mb-3">Fiscal Year</h3>
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button id="currentFYBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-medium"></button>
+      </div>
+      <div class="text-sm text-gray-600 p-3 bg-blue-50 rounded-lg">
+        <p><strong>Federal Fiscal Year runs from October 1 to September 30</strong></p>
+        <p class="mt-2">• FY26 = October 1, 2025 through September 30, 2026</p>
+        <p>• All rates shown below are for the selected fiscal year</p>
+      </div>
+    </section>
+
+    <!-- Loading Indicator -->
+    <section id="loadingSection" class="bg-white rounded-2xl shadow p-8 text-center">
+      <div class="flex flex-col items-center space-y-4">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+        <div class="text-lg font-medium text-gray-700">Loading Rates...</div>
+        <div class="text-sm text-gray-500">Please wait while we process your request</div>
+        <div class="w-full bg-gray-200 rounded-full h-2 max-w-md">
+          <div id="progressBar" class="bg-black h-2 rounded-full transition-all duration-300 ease-out" style="width: 0%"></div>
+        </div>
+        <div id="progressText" class="text-xs text-gray-600">Starting...</div>
+      </div>
+    </section>
+
+    <section id="lodgingSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 id="lodgingTitle" class="text-xl font-semibold mb-3">Lodging Rates</h3>
+      <div id="lodgingWrap" class="overflow-x-auto"></div>
+      <div id="lodgingPagination" class="mt-4 flex justify-center"></div>
+    </section>
+
+    <section id="mieSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 id="mieTitle" class="text-xl font-semibold mb-3">Meals & Incidental Expenses (M&IE)</h3>
+      <div class="text-sm text-gray-600 mb-3 p-3 bg-amber-50 rounded-lg">
+        <p><strong>Note:</strong> M&IE rates are constant for the entire fiscal year and do not vary by month.</p>
+      </div>
+      <div id="mieWrap" class="overflow-x-auto"></div>
+      <div id="miePagination" class="mt-4 flex justify-center"></div>
+    </section>
+
+    <!-- M&IE Breakdown Section -->
+    <section id="mieBreakdownSection" class="bg-white rounded-2xl shadow p-5 hidden">
+      <h3 class="text-xl font-semibold mb-3">M&IE Breakdown</h3>
+      <div class="text-sm text-gray-600 mb-4 p-4 bg-blue-50 rounded-lg">
+        <p><strong>Important:</strong> M&IE rates are constant throughout the entire fiscal year and do not vary by month.</p>
+        <p class="mt-2"><strong>M&IE (Meals and Incidental Expenses) includes:</strong></p>
+        <ul class="list-disc pl-5 mt-2">
+          <li>Breakfast, Lunch, and Dinner allowances</li>
+          <li>Incidental expenses (tips and fees for services)</li>
+          <li>First/Last day rate is 75% of the total M&IE</li>
+        </ul>
+      </div>
+      <div id="mieBreakdownWrap" class="overflow-x-auto"></div>
+    </section>
+  </main>
+
+  <script>
+    // Get current fiscal year based on today's date
+    function getCurrentFiscalYear() {
+      const now = new Date();
+      const month = now.getMonth() + 1; // 1-12
+      const year = now.getFullYear();
+      
+      // Federal fiscal year starts October 1st
+      // Show the fiscal year we're currently in or about to enter
+      if (month >= 10) {
+        // Oct, Nov, Dec → next calendar year is the FY
+        return year + 1;
+      } else if (month === 9) {
+        // September → show upcoming FY (starts Oct 1)
+        return year + 1;
+      } else {
+        // Jan-Aug → current calendar year is the FY
+        return year;
+      }
+    }
+
+    // Check URL for year parameter, otherwise default to FY26
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentFY = urlParams.get('year') ? parseInt(urlParams.get('year')) : 2026; // Default to FY26
+
+    // Set button text
+    document.getElementById('currentFYBtn').textContent = `FY${String(currentFY).slice(-2)} (Current Fiscal Year)`;
+
+    // Add event listener to fiscal year button
+    document.getElementById('currentFYBtn').addEventListener('click', () => {
+      loadPerDiemDataByFY(currentFY);
+    });
+
+    function getParams() {
+      const p = new URLSearchParams(window.location.search);
+      return {
+        state: p.get('state') || '',
+        city: p.get('city') || '',
+        zip: p.get('zip') || '',
+        year: p.get('year') || String(currentFY)
+      };
+    }
+
+    async function fetchPerDiemOnce(params) {
+      const url = new URL('/api/perdiem', window.location.origin);
+      if (params.state) url.searchParams.set('state', params.state);
+      if (params.city) url.searchParams.set('city', params.city);
+      if (params.zip) url.searchParams.set('zip', params.zip);
+      if (params.year) url.searchParams.set('year', params.year);
+      if (params.month) url.searchParams.set('month', params.month);
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error('API error');
+      return res.json();
+    }
+
+    function monthLabel(m) {
+      const i = parseInt(m, 10) - 1;
+      return new Date(2000, i, 1).toLocaleString(undefined, { month: 'short' });
+    }
+
+    // Convert fiscal year to month/year array for API calls
+    // FY26 = Oct 2025 through Sep 2026
+    function getFiscalYearMonths(fiscalYear) {
+      const fy = parseInt(fiscalYear);
+      const months = [];
+      
+      // Oct, Nov, Dec of previous calendar year (FY starts)
+      for (let m = 10; m <= 12; m++) {
+        months.push({
+          month: String(m).padStart(2, '0'),
+          year: fy - 1,
+          label: new Date(2000, m - 1, 1).toLocaleString(undefined, { month: 'short' })
+        });
+      }
+      
+      // Jan through Sep of fiscal year calendar year (FY ends)
+      for (let m = 1; m <= 9; m++) {
+        months.push({
+          month: String(m).padStart(2, '0'),
+          year: fy,
+          label: new Date(2000, m - 1, 1).toLocaleString(undefined, { month: 'short' })
+        });
+      }
+      
+      return months;
+    }
+
+    function renderTable(monthDataArray, fiscalYear, valueField, mountId, paginationId) {
+      // monthDataArray is array of {month, year, label, rows}
+      // Collect all unique locations across months
+      const locationSet = new Set();
+      monthDataArray.forEach(md => (md.rows||[]).forEach(r => locationSet.add(r.location || '—')));
+      const allLocations = Array.from(locationSet).sort((a,b)=>a.localeCompare(b));
+      
+      const itemsPerPage = 6;
+      const totalPages = Math.ceil(allLocations.length / itemsPerPage);
+      
+      // Get current page from URL or default to 1
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentPage = parseInt(urlParams.get('page') || '1');
+      
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const locations = allLocations.slice(startIndex, endIndex);
+
+      let html = '';
+      if (allLocations.length > itemsPerPage) {
+        html += '<div class="mb-3 text-sm text-gray-600">';
+        html += `Showing ${startIndex + 1}-${Math.min(endIndex, allLocations.length)} of ${allLocations.length} locations`;
+        html += '</div>';
+      }
+      
+      const fyShort = String(fiscalYear).slice(-2);
+      
+      html += '<table class="min-w-full text-sm md:text-base border-collapse">';
+      html += '<thead><tr class="bg-gray-50">';
+      html += '<th class="text-left p-2 border">Location</th>';
+      monthDataArray.forEach(md => { 
+        html += `<th class="text-left p-2 border">${md.label} ${md.year}</th>`; 
+      });
+      html += '</tr></thead><tbody>';
+      locations.forEach(loc => {
+        html += '<tr>';
+        html += `<td class="p-2 border font-medium">${loc}</td>`;
+        monthDataArray.forEach(md => {
+          const row = (md.rows || []).find(r => (r.location || '—') === loc) || null;
+          const val = row ? Number(row[valueField] || 0) : '';
+          // Format rates with proper decimal places
+          if (val !== '') {
+            html += `<td class="p-2 border">$${Number(val).toFixed(2)}</td>`;
+          } else {
+            html += `<td class="p-2 border">—</td>`;
+          }
+        });
+        html += '</tr>';
+      });
+      html += '</tbody></table>';
+
+      document.getElementById(mountId).innerHTML = html;
+      
+      // Render pagination if needed
+      if (totalPages > 1) {
+        let paginationHtml = '<div class="flex items-center space-x-2">';
+        
+        // Previous button
+        if (currentPage > 1) {
+          const prevUrl = new URL(window.location);
+          prevUrl.searchParams.set('page', currentPage - 1);
+          paginationHtml += `<a href="${prevUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">← Previous</a>`;
+        }
+        
+        // Page numbers
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        
+        if (startPage > 1) {
+          const firstUrl = new URL(window.location);
+          firstUrl.searchParams.set('page', '1');
+          paginationHtml += `<a href="${firstUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">1</a>`;
+          if (startPage > 2) {
+            paginationHtml += '<span class="px-2 text-gray-500">...</span>';
+          }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          if (i === currentPage) {
+            paginationHtml += `<span class="px-3 py-2 rounded-lg bg-black text-white font-semibold">${i}</span>`;
+          } else {
+            const pageUrl = new URL(window.location);
+            pageUrl.searchParams.set('page', i);
+            paginationHtml += `<a href="${pageUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">${i}</a>`;
+          }
+        }
+        
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            paginationHtml += '<span class="px-2 text-gray-500">...</span>';
+          }
+          const lastUrl = new URL(window.location);
+          lastUrl.searchParams.set('page', totalPages);
+          paginationHtml += `<a href="${lastUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">${totalPages}</a>`;
+        }
+        
+        // Next button
+        if (currentPage < totalPages) {
+          const nextUrl = new URL(window.location);
+          nextUrl.searchParams.set('page', currentPage + 1);
+          paginationHtml += `<a href="${nextUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">Next →</a>`;
+        }
+        
+        paginationHtml += '</div>';
+        document.getElementById(paginationId).innerHTML = paginationHtml;
+      } else {
+        document.getElementById(paginationId).innerHTML = '';
+      }
+    }
+
+    // Render simple M&IE table (no monthly columns since rates are constant)
+    function renderSimpleMieTable(monthDataArray, mountId, paginationId) {
+      // monthDataArray is array of {month, year, label, rows}
+      // Collect all unique locations and their M&IE rates
+      const locationMap = new Map();
+      
+      monthDataArray.forEach(md => {
+        (md.rows || []).forEach(r => {
+          const loc = r.location || '—';
+          if (!locationMap.has(loc)) {
+            locationMap.set(loc, r.mie || 0);
+          }
+        });
+      });
+      
+      const allLocations = Array.from(locationMap.keys()).sort((a,b)=>a.localeCompare(b));
+      
+      const itemsPerPage = 10;
+      const totalPages = Math.ceil(allLocations.length / itemsPerPage);
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const currentPage = parseInt(urlParams.get('miepage') || '1');
+      
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const locations = allLocations.slice(startIndex, endIndex);
+      
+      let html = '';
+      if (allLocations.length > itemsPerPage) {
+        html += '<div class="mb-3 text-sm text-gray-600">';
+        html += `Showing ${startIndex + 1}-${Math.min(endIndex, allLocations.length)} of ${allLocations.length} locations`;
+        html += '</div>';
+      }
+      
+      html += '<table class="min-w-full text-sm md:text-base border-collapse">';
+      html += '<thead><tr class="bg-gray-50">';
+      html += '<th class="text-left p-2 border">Location</th>';
+      html += '<th class="text-left p-2 border">M&IE Rate (Constant for Fiscal Year)</th>';
+      html += '</tr></thead><tbody>';
+      
+      locations.forEach(loc => {
+        const mieRate = locationMap.get(loc) || 0;
+        html += '<tr>';
+        html += `<td class="p-2 border font-medium">${loc}</td>`;
+        html += `<td class="p-2 border text-lg font-semibold">$${mieRate.toFixed(0)}</td>`;
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      
+      document.getElementById(mountId).innerHTML = html;
+      
+      // Render pagination if needed
+      if (totalPages > 1) {
+        let paginationHtml = '<div class="flex items-center space-x-2">';
+        
+        if (currentPage > 1) {
+          const prevUrl = new URL(window.location);
+          prevUrl.searchParams.set('miepage', currentPage - 1);
+          paginationHtml += `<a href="${prevUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">← Previous</a>`;
+        }
+        
+        const startPage = Math.max(1, currentPage - 2);
+        const endPage = Math.min(totalPages, currentPage + 2);
+        
+        if (startPage > 1) {
+          const firstUrl = new URL(window.location);
+          firstUrl.searchParams.set('miepage', '1');
+          paginationHtml += `<a href="${firstUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">1</a>`;
+          if (startPage > 2) {
+            paginationHtml += '<span class="px-2 text-gray-500">...</span>';
+          }
+        }
+        
+        for (let i = startPage; i <= endPage; i++) {
+          if (i === currentPage) {
+            paginationHtml += `<span class="px-3 py-2 rounded-lg bg-black text-white font-semibold">${i}</span>`;
+          } else {
+            const pageUrl = new URL(window.location);
+            pageUrl.searchParams.set('miepage', i);
+            paginationHtml += `<a href="${pageUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">${i}</a>`;
+          }
+        }
+        
+        if (endPage < totalPages) {
+          if (endPage < totalPages - 1) {
+            paginationHtml += '<span class="px-2 text-gray-500">...</span>';
+          }
+          const lastUrl = new URL(window.location);
+          lastUrl.searchParams.set('miepage', totalPages);
+          paginationHtml += `<a href="${lastUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">${totalPages}</a>`;
+        }
+        
+        if (currentPage < totalPages) {
+          const nextUrl = new URL(window.location);
+          nextUrl.searchParams.set('miepage', currentPage + 1);
+          paginationHtml += `<a href="${nextUrl.toString()}" class="px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700">Next →</a>`;
+        }
+        
+        paginationHtml += '</div>';
+        document.getElementById(paginationId).innerHTML = paginationHtml;
+      } else {
+        document.getElementById(paginationId).innerHTML = '';
+      }
+    }
+
+    // Render M&IE breakdown table with detailed information
+    // M&IE rates are constant throughout the fiscal year (no monthly variation)
+    function renderMieBreakdown(monthDataArray) {
+      // monthDataArray is array of {month, year, label, rows}
+      // Collect all unique locations and their M&IE rates (should be constant across months)
+      const locationMap = new Map();
+      
+      monthDataArray.forEach(md => {
+        (md.rows || []).forEach(r => {
+          const loc = r.location || '—';
+          if (!locationMap.has(loc)) {
+            locationMap.set(loc, r.mie || 0);
+          }
+        });
+      });
+      
+      const allLocations = Array.from(locationMap.keys()).sort((a,b)=>a.localeCompare(b));
+      
+      if (allLocations.length === 0) {
+        document.getElementById('mieBreakdownSection').classList.add('hidden');
+        return;
+      }
+      
+      let html = '<table class="min-w-full text-sm md:text-base border-collapse">';
+      html += '<thead><tr class="bg-gray-50">';
+      html += '<th class="text-left p-2 border">Location</th>';
+      html += '<th class="text-left p-2 border">M&IE Total</th>';
+      html += '<th class="text-left p-2 border">Breakfast (15%)</th>';
+      html += '<th class="text-left p-2 border">Lunch (30%)</th>';
+      html += '<th class="text-left p-2 border">Dinner (35%)</th>';
+      html += '<th class="text-left p-2 border">Incidentals (20%)</th>';
+      html += '<th class="text-left p-2 border">First/Last Day (75%)</th>';
+      html += '</tr></thead><tbody>';
+      
+      allLocations.forEach(loc => {
+        const mieTotalRate = locationMap.get(loc) || 0;
+        
+        // Calculate GSA standard breakdown percentages
+        const breakfast = Math.round(mieTotalRate * 0.15);
+        const lunch = Math.round(mieTotalRate * 0.30);
+        const dinner = Math.round(mieTotalRate * 0.35);
+        const incidental = Math.round(mieTotalRate * 0.20);
+        const firstLastDay = Math.round(mieTotalRate * 0.75);
+        
+        html += '<tr>';
+        html += `<td class="p-2 border font-medium">${loc}</td>`;
+        html += `<td class="p-2 border font-semibold">$${mieTotalRate.toFixed(0)}</td>`;
+        html += `<td class="p-2 border">$${breakfast}</td>`;
+        html += `<td class="p-2 border">$${lunch}</td>`;
+        html += `<td class="p-2 border">$${dinner}</td>`;
+        html += `<td class="p-2 border">$${incidental}</td>`;
+        html += `<td class="p-2 border">$${firstLastDay}</td>`;
+        html += '</tr>';
+      });
+      
+      html += '</tbody></table>';
+      
+      // Add explanatory notes based on GSA guidelines
+      html += `
+        <div class="mt-4 p-4 bg-gray-50 rounded-lg text-sm">
+          <h4 class="font-semibold mb-2">M&IE Breakdown Guidelines (per GSA):</h4>
+          <ul class="list-disc pl-5 space-y-1">
+            <li><strong>M&IE Total:</strong> The complete daily allowance, which remains constant throughout the fiscal year</li>
+            <li><strong>Meal Allocations:</strong> Breakfast 15%, Lunch 30%, Dinner 35% of total M&IE</li>
+            <li><strong>Incidentals (20%):</strong> Tips and fees for services (e.g., hotel staff, transportation)</li>
+            <li><strong>First/Last Travel Day:</strong> 75% of the full M&IE rate</li>
+            <li><strong>Note:</strong> Unlike lodging rates which may vary monthly, M&IE rates stay the same for the entire fiscal year</li>
+          </ul>
+        </div>
+      `;
+      
+      document.getElementById('mieBreakdownWrap').innerHTML = html;
+      document.getElementById('mieBreakdownSection').classList.remove('hidden');
+    }
+
+    // Loading state management
+    function updateProgress(month, total, message) {
+      const progress = (month / total) * 100;
+      document.getElementById('progressBar').style.width = `${progress}%`;
+      document.getElementById('progressText').textContent = message;
+    }
+
+    function hideLoading() {
+      document.getElementById('loadingSection').classList.add('hidden');
+      document.getElementById('lodgingSection').classList.remove('hidden');
+      document.getElementById('mieSection').classList.remove('hidden');
+    }
+
+    function showLoading() {
+      document.getElementById('loadingSection').classList.remove('hidden');
+      document.getElementById('lodgingSection').classList.add('hidden');
+      document.getElementById('mieSection').classList.add('hidden');
+      document.getElementById('mieBreakdownSection').classList.add('hidden');
+    }
+
+    // Function to load per diem data for a specific FISCAL YEAR
+    async function loadPerDiemDataByFY(fiscalYear) {
+      showLoading();
+      
+      const q = getParams();
+      const fyShort = String(fiscalYear).slice(-2);
+      
+      // Update summary with selected fiscal year
+      const summary = [];
+      if (q.state) summary.push(`State: <span class="font-semibold">${q.state}</span>`);
+      if (q.city) summary.push(`City: <span class="font-semibold">${q.city}</span>`);
+      if (q.zip) summary.push(`ZIP: <span class="font-semibold">${q.zip}</span>`);
+      summary.push(`Fiscal Year: <span class="font-semibold">FY${fyShort}</span>`);
+      document.getElementById('summary').innerHTML = summary.join(' • ');
+
+      // Get the 12 months of the fiscal year (Oct year-1 through Sep year)
+      const fiscalMonths = getFiscalYearMonths(fiscalYear);
+      
+      updateProgress(0, 12, 'Initializing...');
+
+      // Fetch data for each month in the fiscal year
+      // IMPORTANT: GSA API uses FISCAL YEAR for all months, not calendar year
+      for (let i = 0; i < fiscalMonths.length; i++) {
+        const { month, year } = fiscalMonths[i];
+        
+        try {
+          updateProgress(i + 1, 12, `Loading ${fiscalMonths[i].label} ${year}...`);
+          const data = await fetchPerDiemOnce({ 
+            state: q.state, 
+            city: q.city, 
+            zip: q.zip, 
+            year: String(fiscalYear), // Use FISCAL YEAR, not calendar year!
+            month: month 
+          });
+          const rows = Array.isArray(data?.rows) ? data.rows : (data ? [data] : []);
+          fiscalMonths[i].rows = rows;
+          
+          console.log(`✅ Loaded ${fiscalMonths[i].label} ${year}:`, rows.length, 'locations');
+          
+          // Add small delay for better UX
+          await new Promise(resolve => setTimeout(resolve, 50));
+        } catch (e) {
+          console.error(`❌ Error loading ${fiscalMonths[i].label} ${year}:`, e);
+          updateProgress(i + 1, 12, `Loading rates...`);
+          fiscalMonths[i].rows = [];
+        }
+      }
+
+      updateProgress(12, 12, 'Finalizing...');
+      
+      // Small delay to show completion
+      await new Promise(resolve => setTimeout(resolve, 500));
+
+      // Set section titles based on search parameters
+      let locationName = 'Selected Location';
+      if (q.city) {
+        locationName = `${q.city}${q.state ? `, ${q.state}` : ''}`;
+      } else if (q.zip) {
+        locationName = `ZIP ${q.zip}`;
+      } else if (q.state) {
+        locationName = q.state;
+      }
+      
+      document.getElementById('lodgingTitle').textContent = `Lodging Rates for ${locationName} - FY${fyShort}`;
+      document.getElementById('mieTitle').textContent = `M&IE Rates for ${locationName} - FY${fyShort}`;
+      
+      // Render tables with fiscal year data
+      renderTable(fiscalMonths, fiscalYear, 'lodging', 'lodgingWrap', 'lodgingPagination');
+      renderSimpleMieTable(fiscalMonths, 'mieWrap', 'miePagination');
+      
+      // Render M&IE breakdown
+      renderMieBreakdown(fiscalMonths);
+      
+      hideLoading();
+    }
+
+    // Initialize with current fiscal year data
+    (async function init(){
+      const q = getParams();
+      
+      // Only load if we have required parameters (state, city, or zip)
+      if (!q.state && !q.city && !q.zip) {
+        document.getElementById('loadingSection').classList.add('hidden');
+        document.getElementById('resultCard').innerHTML = `
+          <div class="p-8 text-center">
+            <h3 class="text-xl font-semibold mb-4">No Search Parameters</h3>
+            <p class="text-gray-600 mb-4">Please search for a location from the <a href="/resources.html" class="text-blue-600 hover:underline">Resources page</a>.</p>
+          </div>
+        `;
+        document.getElementById('resultCard').classList.remove('hidden');
+        return;
+      }
+      
+      // Load data for the current fiscal year
+      try {
+        await loadPerDiemDataByFY(currentFY);
+      } catch (e) {
+        console.error('Failed to load per diem data:', e);
+        document.getElementById('loadingSection').classList.add('hidden');
+        document.getElementById('resultCard').innerHTML = `
+          <div class="p-8 text-center">
+            <h3 class="text-xl font-semibold mb-4 text-red-600">Error Loading Data</h3>
+            <p class="text-gray-600">${e.message || 'Failed to fetch per diem rates'}</p>
+            <a href="/resources.html" class="inline-block mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Try Again</a>
+          </div>
+        `;
+        document.getElementById('resultCard').classList.remove('hidden');
+      }
+    })();
+  </script>
+  <script>
+    function toggleUserDropdown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dd = document.getElementById('userDropdown');
+      if (dd) dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+    }
+    function toggleLogoDropdown(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dd = document.getElementById('logoDropdown');
+      if (dd) dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+    }
+    function logoutUser() {
+      localStorage.removeItem('fedevent_session');
+      localStorage.removeItem('fedevent_user');
+      window.location.href = '/hotel-login.html';
+    }
+    function loadUserMenu() {
+      try {
+        const sessionId = localStorage.getItem('fedevent_session');
+        const userRaw = localStorage.getItem('fedevent_user');
+        if (!sessionId || !userRaw) return;
+        const user = JSON.parse(userRaw);
+        let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+        name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+        const initial = (name || 'U').trim().charAt(0).toUpperCase();
+        const label = document.getElementById('userNameLabel');
+        const avatar = document.getElementById('userInitial');
+        const menu = document.getElementById('userMenu');
+        if (label) label.textContent = name;
+        if (avatar) avatar.textContent = initial;
+        if (menu) menu.style.display = 'list-item';
+      } catch (e) {}
+    }
+    document.addEventListener('DOMContentLoaded', loadUserMenu);
+    document.addEventListener('click', function(evt){
+      const userDd = document.getElementById('userDropdown');
+      const logoDd = document.getElementById('logoDropdown');
+      const um = document.getElementById('userMenu');
+      const logoMenu = document.querySelector('.logo-menu');
+      if (userDd && um && !um.contains(evt.target)) userDd.style.display = 'none';
+      if (logoDd && logoMenu && !logoMenu.contains(evt.target)) logoDd.style.display = 'none';
+    });
+  </script>
+  <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

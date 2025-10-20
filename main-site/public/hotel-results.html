@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Search Results - FEDEVENT</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        .results-container {
+            display: flex;
+            gap: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .sidebar {
+            width: 300px;
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 1.5rem;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+        
+        .sidebar h3 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+            font-size: 1.125rem;
+        }
+        
+        .filter-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .filter-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input,
+        .filter-group select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 0.875rem;
+        }
+        
+        .filter-group input:focus,
+        .filter-group select:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        .radius-input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .radius-input-group input {
+            flex: 1;
+        }
+        
+        .radius-input-group select {
+            flex: 0 0 auto;
+            min-width: 80px;
+        }
+        
+        .results-main {
+            flex: 1;
+        }
+        
+        .search-summary {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .search-summary h2 {
+            margin: 0 0 1rem 0;
+            color: #1f2937;
+        }
+        
+        .search-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .hotels-grid {
+            display: grid;
+            gap: 1.5rem;
+        }
+        
+        .hotel-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e5e7eb;
+            transition: all 0.2s ease;
+        }
+        
+        .hotel-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        .hotel-header {
+            display: flex;
+            justify-content: between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+        
+        .hotel-name {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1f2937;
+            margin: 0 0 0.5rem 0;
+        }
+        
+        .hotel-location {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .hotel-distance {
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            display: inline-block;
+        }
+        
+        .hotel-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        
+        .detail-label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .detail-value {
+            font-weight: 500;
+            color: #1f2937;
+        }
+        
+        .hotel-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+        
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #374151;
+            padding: 0.75rem 1.5rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-secondary:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .no-results h3 {
+            margin: 0 0 1rem 0;
+            color: #374151;
+        }
+        
+        @media (max-width: 768px) {
+            .results-container {
+                flex-direction: column;
+                padding: 1rem;
+            }
+            
+            .sidebar {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="results-container">
+        <!-- Sidebar Filters -->
+        <div class="sidebar">
+            <h3>Refine Search</h3>
+            
+            <div class="filter-group">
+                <label for="radiusFilter">Search Radius</label>
+                <div class="radius-input-group">
+                    <input type="number" id="radiusFilter" placeholder="25" min="1" max="500" step="1">
+                    <select id="radiusUnitFilter">
+                        <option value="miles">Miles</option>
+                        <option value="km">Kilometers</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="filter-group">
+                <label for="hotelKeywords">Hotel Name/Brand</label>
+                <input type="text" id="hotelKeywords" placeholder="Marriott, Hilton, Holiday Inn...">
+            </div>
+            
+            <div class="filter-group">
+                <label for="amenitiesFilter">Amenities</label>
+                <select id="amenitiesFilter">
+                    <option value="">Any Amenities</option>
+                    <option value="meeting_space">Meeting Space</option>
+                    <option value="parking">Parking</option>
+                    <option value="airport_shuttle">Airport Shuttle</option>
+                    <option value="fitness_center">Fitness Center</option>
+                    <option value="pool">Pool</option>
+                    <option value="restaurant">Restaurant</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="governmentFilter">Government Qualified</label>
+                <select id="governmentFilter">
+                    <option value="">Any</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="net30Filter">NET30 Terms</label>
+                <select id="net30Filter">
+                    <option value="">Any</option>
+                    <option value="true">Yes</option>
+                    <option value="false">No</option>
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="sortBy">Sort By</label>
+                <select id="sortBy">
+                    <option value="distance">Distance</option>
+                    <option value="name">Name</option>
+                    <option value="rating">Rating</option>
+                </select>
+            </div>
+            
+            <button id="applyFilters" class="btn-primary" style="width: 100%; margin-top: 1rem;">
+                Apply Filters
+            </button>
+        </div>
+        
+        <!-- Main Results -->
+        <div class="results-main">
+            <div class="search-summary">
+                <h2>Hotel Search Results</h2>
+                <div class="search-details" id="searchDetails">
+                    <!-- Search details will be populated here -->
+                </div>
+            </div>
+            
+            <div id="resultsContainer">
+                <div class="loading">Loading hotels...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allHotels = [];
+        let filteredHotels = [];
+        
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const searchParams = {
+            location: urlParams.get('location') || '',
+            startDate: urlParams.get('startDate') || '',
+            endDate: urlParams.get('endDate') || '',
+            roomCount: urlParams.get('roomCount') || '',
+            attendeeCount: urlParams.get('attendeeCount') || '',
+            lat: urlParams.get('lat') || '',
+            lng: urlParams.get('lng') || '',
+            radius_miles: urlParams.get('radius_miles') || '',
+            radius_km: urlParams.get('radius_km') || ''
+        };
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Populate search details
+            updateSearchDetails();
+            
+            // Set initial filter values from URL
+            if (searchParams.radius_miles) {
+                document.getElementById('radiusFilter').value = searchParams.radius_miles;
+                document.getElementById('radiusUnitFilter').value = 'miles';
+            } else if (searchParams.radius_km) {
+                document.getElementById('radiusFilter').value = searchParams.radius_km;
+                document.getElementById('radiusUnitFilter').value = 'km';
+            }
+            
+            // Load hotels
+            loadHotels();
+            
+            // Setup filter event listeners
+            setupFilterListeners();
+        });
+        
+        function updateSearchDetails() {
+            const details = document.getElementById('searchDetails');
+            const detailsHtml = [];
+            
+            if (searchParams.location) {
+                detailsHtml.push(`<div><strong>Location:</strong> ${searchParams.location}</div>`);
+            }
+            if (searchParams.startDate) {
+                detailsHtml.push(`<div><strong>Check-in:</strong> ${searchParams.startDate}</div>`);
+            }
+            if (searchParams.endDate) {
+                detailsHtml.push(`<div><strong>Check-out:</strong> ${searchParams.endDate}</div>`);
+            }
+            if (searchParams.roomCount) {
+                detailsHtml.push(`<div><strong>Rooms:</strong> ${searchParams.roomCount}</div>`);
+            }
+            if (searchParams.attendeeCount) {
+                detailsHtml.push(`<div><strong>Attendees:</strong> ${searchParams.attendeeCount}</div>`);
+            }
+            if (searchParams.radius_miles) {
+                detailsHtml.push(`<div><strong>Radius:</strong> ${searchParams.radius_miles} miles</div>`);
+            } else if (searchParams.radius_km) {
+                detailsHtml.push(`<div><strong>Radius:</strong> ${searchParams.radius_km} km</div>`);
+            }
+            
+            details.innerHTML = detailsHtml.join('');
+        }
+        
+        function loadHotels() {
+            const queryParams = new URLSearchParams();
+            
+            // Add all search parameters
+            Object.keys(searchParams).forEach(key => {
+                if (searchParams[key]) {
+                    queryParams.append(key, searchParams[key]);
+                }
+            });
+            
+            // Add center coordinates for radius search
+            if (searchParams.lat && searchParams.lng) {
+                queryParams.append('center_lat', searchParams.lat);
+                queryParams.append('center_lng', searchParams.lng);
+                queryParams.append('center_address', searchParams.location);
+            }
+            
+            fetch(`/api/hotels/search?${queryParams.toString()}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        allHotels = data.hotels || [];
+                        filteredHotels = [...allHotels];
+                        renderHotels();
+                    } else {
+                        showNoResults();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading hotels:', error);
+                    showNoResults();
+                });
+        }
+        
+        function renderHotels() {
+            const container = document.getElementById('resultsContainer');
+            
+            if (filteredHotels.length === 0) {
+                showNoResults();
+                return;
+            }
+            
+            const hotelsHtml = filteredHotels.map(hotel => `
+                <div class="hotel-card">
+                    <div class="hotel-header">
+                        <div>
+                            <h3 class="hotel-name">${hotel.name || 'Hotel Name'}</h3>
+                            <div class="hotel-location">
+                                ${hotel.city || ''}${hotel.state ? ', ' + hotel.state : ''}${hotel.country ? ', ' + hotel.country : ''}
+                            </div>
+                            ${hotel.distance_miles ? `<span class="hotel-distance">${hotel.distance_miles.toFixed(1)} miles away</span>` : ''}
+                        </div>
+                    </div>
+                    
+                    <div class="hotel-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Rooms</div>
+                            <div class="detail-value">${hotel.total_rooms || 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Meeting Space</div>
+                            <div class="detail-value">${hotel.meeting_space_sqft ? hotel.meeting_space_sqft + ' sq ft' : 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Max Capacity</div>
+                            <div class="detail-value">${hotel.largest_room_capacity || 'N/A'}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Government Qualified</div>
+                            <div class="detail-value">${hotel.government_qualified ? 'Yes' : 'No'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hotel-actions">
+                        <a href="mailto:${hotel.email || ''}" class="btn-primary">Contact Hotel</a>
+                        <a href="${hotel.website || '#'}" class="btn-secondary" target="_blank">View Website</a>
+                    </div>
+                </div>
+            `).join('');
+            
+            container.innerHTML = `
+                <div class="hotels-grid">
+                    ${hotelsHtml}
+                </div>
+            `;
+        }
+        
+        function showNoResults() {
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `
+                <div class="no-results">
+                    <h3>No hotels found</h3>
+                    <p>Try adjusting your search criteria or expanding your search radius.</p>
+                </div>
+            `;
+        }
+        
+        function setupFilterListeners() {
+            const applyBtn = document.getElementById('applyFilters');
+            applyBtn.addEventListener('click', applyFilters);
+            
+            // Auto-apply filters on change
+            const filterInputs = ['radiusFilter', 'hotelKeywords', 'amenitiesFilter', 'governmentFilter', 'net30Filter', 'sortBy'];
+            filterInputs.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', applyFilters);
+                }
+            });
+        }
+        
+        function applyFilters() {
+            const radius = document.getElementById('radiusFilter').value;
+            const radiusUnit = document.getElementById('radiusUnitFilter').value;
+            const keywords = document.getElementById('hotelKeywords').value.toLowerCase();
+            const amenities = document.getElementById('amenitiesFilter').value;
+            const government = document.getElementById('governmentFilter').value;
+            const net30 = document.getElementById('net30Filter').value;
+            const sortBy = document.getElementById('sortBy').value;
+            
+            // Filter hotels
+            filteredHotels = allHotels.filter(hotel => {
+                // Keywords filter
+                const matchesKeywords = !keywords || 
+                    (hotel.name || '').toLowerCase().includes(keywords) ||
+                    (hotel.tags || '').toLowerCase().includes(keywords);
+                
+                // Amenities filter (simplified - would need proper amenities data)
+                const matchesAmenities = !amenities || true; // Placeholder
+                
+                // Government qualification filter
+                const matchesGovernment = !government || 
+                    (government === 'true' ? hotel.government_qualified : !hotel.government_qualified);
+                
+                // NET30 terms filter
+                const matchesNet30 = !net30 || 
+                    (net30 === 'true' ? hotel.net30_terms : !hotel.net30_terms);
+                
+                return matchesKeywords && matchesAmenities && matchesGovernment && matchesNet30;
+            });
+            
+            // Sort results
+            if (sortBy === 'distance' && filteredHotels[0]?.distance_miles) {
+                filteredHotels.sort((a, b) => (a.distance_miles || 0) - (b.distance_miles || 0));
+            } else if (sortBy === 'name') {
+                filteredHotels.sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+            } else if (sortBy === 'rating') {
+                filteredHotels.sort((a, b) => (b.partnership_score || 0) - (a.partnership_score || 0));
+            }
+            
+            renderHotels();
+        }
+    </script>
+</body>
+</html>

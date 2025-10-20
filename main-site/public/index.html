@@ -1,0 +1,2305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><span style="color: #dc2626;">FED</span><span style="color: #1e40af;">EVENT</span> - Global Government Event Planning & Logistics Solutions</title>
+    <meta name="description" content="Professional event planning services for government agencies worldwide, including UN departments and international organizations. Connect with qualified hotels and venues for your next government event.">
+    <link rel="stylesheet" href="/site.css">
+    
+    <!-- Google Places API - Commented out until valid API key is provided -->
+    <!-- Google Places API - Replace YOUR_API_KEY with your actual Google Maps API key -->
+    <!-- <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&loading=async" async defer></script> -->
+    
+    <!-- Google Analytics 4 (GA4) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-XXXXXXXXXX', {
+            // Enhanced ecommerce and event tracking
+            send_page_view: true,
+            custom_map: {
+                'custom_parameter_1': 'fedevent_website'
+            }
+        });
+        
+        // Custom event tracking functions
+        function trackNavigationClick(section) {
+            gtag('event', 'navigation_click', {
+                'event_category': 'Website Navigation',
+                'event_label': section,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackButtonClick(buttonName) {
+            gtag('event', 'button_click', {
+                'event_category': 'Website Interaction',
+                'event_label': buttonName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackFormSubmission(formName) {
+            gtag('event', 'form_submission', {
+                'event_category': 'Website Forms',
+                'event_label': formName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackVideoInteraction(action) {
+            gtag('event', 'video_interaction', {
+                'event_category': 'Media Engagement',
+                'event_label': action,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+        
+        function trackPageView(pageName) {
+            gtag('event', 'page_view', {
+                'event_category': 'Page Views',
+                'event_label': pageName,
+                'custom_parameter_1': 'fedevent_website'
+            });
+        }
+    </script>
+    
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --secondary: #f59e0b;
+            --text: #1f2937;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            margin-right: 0; /* Remove fixed margin */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header */
+        header {
+            background: var(--white);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        /* Sidebar Navigation */
+        .sidebar-nav {
+            position: fixed;
+            top: 0;
+            right: -280px; /* Hidden by default */
+            width: 280px;
+            height: 100vh;
+            background: var(--white);
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1001;
+            padding: 2rem 0;
+            overflow-y: auto;
+            transition: right 0.3s ease;
+        }
+        
+        .sidebar-nav.show {
+            right: 0; /* Show sidebar */
+        }
+        
+        .sidebar-nav .nav-links {
+            display: flex;
+            flex-direction: column;
+            list-style: none;
+            gap: 0;
+            padding: 0 1.5rem;
+        }
+        
+        .sidebar-nav .nav-links li {
+            margin: 0;
+        }
+        
+        .sidebar-nav .nav-links a {
+            display: block;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-nav .nav-links a:hover {
+            background: var(--bg);
+            color: var(--primary);
+            transform: translateX(-5px);
+        }
+        
+        /* Adjust main content for sidebar */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: var(--text);
+            background: var(--bg);
+            margin-right: 0; /* Remove fixed margin */
+            transition: margin-right 0.3s ease;
+        }
+        
+        /* Overlay for sidebar */
+        .sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        /* Flag waving animation */
+        @keyframes flagWave {
+            0%, 100% {
+                transform: scaleX(1) skewY(0deg);
+                filter: brightness(1);
+            }
+            25% {
+                transform: scaleX(0.98) skewY(0.5deg);
+                filter: brightness(1.05);
+            }
+            50% {
+                transform: scaleX(1.02) skewY(0deg);
+                filter: brightness(0.95);
+            }
+            75% {
+                transform: scaleX(0.99) skewY(-0.5deg);
+                filter: brightness(1.03);
+            }
+        }
+        
+        nav {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            padding: 1rem 0;
+            gap: 24px;
+        }
+        
+        .logo {
+            font-size: 1.75rem;
+            font-weight: bold;
+            color: var(--primary);
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+        }
+        
+        .logo:hover {
+            color: var(--primary-dark);
+        }
+        
+        /* Dropdown Menu Styles */
+        .nav-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: var(--white);
+            min-width: 300px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            z-index: 1001;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            padding: 1rem 0;
+            margin-top: 0.5rem;
+        }
+        
+        .nav-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+        
+        .nav-dropdown-section {
+            padding: 0.5rem 0;
+        }
+        
+        .nav-dropdown-section:not(:last-child) {
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .nav-dropdown-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0.5rem 1.5rem;
+            margin-bottom: 0.25rem;
+        }
+        
+        .nav-dropdown-link {
+            display: block;
+            padding: 0.75rem 1.5rem;
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-dropdown-link:hover {
+            background: var(--bg);
+            color: var(--primary);
+            padding-left: 2rem;
+        }
+        
+        .nav-dropdown-link.emergency {
+            color: #dc2626;
+        }
+        
+        .nav-dropdown-link.emergency:hover {
+            background: #fef2f2;
+            color: #b91c1c;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+            gap: 1.25rem;
+            margin-left: 16px;
+        }
+        
+        /* User menu */
+        .user-menu { position: relative; }
+        .user-trigger { display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; color: var(--text); text-decoration:none; }
+        .user-avatar { width:28px; height:28px; border-radius:50%; background:#e5e7eb; display:grid; place-items:center; font-size:0.85rem; color:#374151; }
+        .user-dropdown { position:absolute; right:0; top: calc(100% + 8px); background:#fff; border:1px solid #e5e7eb; box-shadow:0 8px 24px rgba(0,0,0,.08); border-radius:10px; min-width:200px; padding:6px; display:none; z-index:1002; }
+        .user-dropdown a, .user-dropdown button { display:block; width:100%; text-align:left; padding:10px 12px; border-radius:8px; background:transparent; border:0; font:inherit; color:#111827; cursor:pointer; text-decoration:none; }
+        .user-dropdown a:hover, .user-dropdown button:hover { background:#f3f4f6; }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .cta-button {
+            background: var(--primary);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        /* Hero Section */
+        .hero {
+            background: var(--white);
+            color: var(--text);
+            padding: 10rem 0 8rem;
+            text-align: center;
+            border-bottom: 1px solid #e5e7eb;
+            position: relative;
+            overflow: hidden;
+            min-height: 600px;
+        }
+        
+        /* Video Flag Background */
+        .flag-video-wrap { 
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        
+        #flagVideo { 
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+            filter: brightness(1.4) contrast(1.2) saturate(1.2) sharpness(1.1);
+            transition: opacity 0.3s ease, filter 0.3s ease;
+            transform: none;
+        }
+        
+        /* Parallax effect - no hover, just scroll interaction */
+        
+        /* Content overlay for better readability */
+        .hero .container {
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(1px);
+            border-radius: 16px;
+            padding: 3rem 2rem;
+            margin: 2rem auto;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+            color: var(--text);
+        }
+        
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .hero-description {
+            font-size: 1.3rem;
+            margin-bottom: 2.5rem;
+            opacity: 0.95;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.5;
+            color: var(--text);
+        }
+
+        .btn.secondary {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn.secondary:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn.emergency {
+            background: #dc2626;
+            color: white;
+            border: 2px solid #dc2626;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn.emergency:hover {
+            background: #b91c1c;
+            border-color: #b91c1c;
+        }
+
+
+        /* New Sections Styling */
+        .who-we-serve {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .audience-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .audience-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .audience-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .mission-vision {
+            padding: 4rem 0;
+            background: var(--bg);
+        }
+
+        .mission-vision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .mission-card, .vision-card {
+            background: var(--white);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .mission-card h2, .vision-card h2 {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+        }
+
+        .mission-text, .vision-text {
+            font-size: 1.125rem;
+            line-height: 1.6;
+            color: var(--text);
+            font-weight: 500;
+        }
+
+        .what-this-means {
+            margin-top: 2rem;
+        }
+
+        .means-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .means-card {
+            background: var(--white);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .means-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .capabilities {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .capabilities-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .capability-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .capability-card h3 {
+            color: var(--primary);
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .value-props-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 3rem;
+            margin-top: 2rem;
+        }
+
+        .value-prop-section {
+            background: var(--bg);
+            padding: 2.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .value-prop-section h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.375rem;
+            font-weight: 600;
+        }
+
+        .value-list {
+            list-style: none;
+            margin-bottom: 2rem;
+        }
+
+        .value-list li {
+            margin-bottom: 1rem;
+            padding-left: 1rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .value-list li::before {
+            content: '•';
+            color: var(--primary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .process-steps {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .process-step {
+            text-align: center;
+            padding: 2rem;
+            background: var(--bg);
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .step-number {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .process-step h3 {
+            color: var(--text);
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .av-capabilities {
+            padding: 4rem 0;
+            background: var(--bg);
+        }
+
+        .av-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .av-category {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .av-category h3 {
+            color: var(--primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .av-category ul {
+            list-style: none;
+        }
+
+        .av-category li {
+            margin-bottom: 0.75rem;
+            padding-left: 1rem;
+            position: relative;
+            line-height: 1.5;
+        }
+
+        .av-category li::before {
+            content: '→';
+            color: var(--secondary);
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        /* SLA Card Section */
+        .sla-section {
+            padding: 2rem 0;
+            background: var(--bg);
+        }
+
+        .sla-card {
+            background: var(--white);
+            border-radius: 16px;
+            border: 2px solid var(--primary);
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .sla-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .sla-scope {
+            background: #f8fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            border-left: 4px solid var(--secondary);
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        .sla-times {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .sla-time {
+            background: var(--bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .sla-time.emergency {
+            border-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .sla-time h4 {
+            color: var(--primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .sla-time.emergency h4 {
+            color: #dc2626;
+        }
+
+        .sla-disclaimer {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .sla-disclaimer p {
+            margin: 0;
+            color: #92400e;
+        }
+
+        /* Core Capabilities Section */
+        .core-capabilities {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .capability-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+            text-align: center;
+        }
+
+        /* Contracting Delivery Section */
+        .contracting-delivery {
+            padding: 4rem 0;
+            background: var(--bg);
+        }
+
+        .delivery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .delivery-step {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .delivery-step h3 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Emergency & Surge Section */
+        .emergency-surge {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .emergency-intro {
+            text-align: center;
+            margin: 2rem 0 3rem;
+        }
+
+        .emergency-title {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .emergency-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .emergency-item {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .emergency-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .emergency-item h3 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* How We Work Section */
+        .how-we-work {
+            padding: 4rem 0;
+            background: var(--bg);
+        }
+
+        .workflow-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .workflow-step {
+            background: var(--white);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .workflow-number {
+            width: 50px;
+            height: 50px;
+            background: var(--primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-weight: 700;
+            font-size: 1.25rem;
+        }
+
+        .workflow-step h3 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Differentiators Section */
+        .differentiators {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .differentiators-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .differentiator-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .differentiator-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .differentiator-card h3 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        /* Badges Section */
+        .badges-section {
+            padding: 4rem 0;
+            background: var(--bg);
+        }
+
+        .badges-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+
+        /* Why Work With Us Section */
+        .why-work-with-us {
+            padding: 4rem 0;
+            background: var(--white);
+        }
+
+        .why-intro {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .intro-title {
+            color: var(--primary);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .intro-description {
+            font-size: 1.25rem;
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        .aggressive-truth {
+            margin-bottom: 4rem;
+        }
+
+        .truth-title {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .truth-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .truth-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .truth-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .truth-card h4 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .offerings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 3rem;
+            margin-bottom: 4rem;
+        }
+
+        .offering-section {
+            background: var(--bg);
+            padding: 2.5rem;
+            border-radius: 16px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .offering-title {
+            color: var(--primary);
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .offering-list {
+            margin-bottom: 2rem;
+        }
+
+        .offering-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 1.5rem;
+            padding: 1rem;
+            background: var(--white);
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .offering-icon {
+            font-size: 1.5rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .offering-content h4 {
+            color: var(--primary);
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .offering-content p {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .professional-benefits {
+            margin-bottom: 4rem;
+        }
+
+        .benefits-title {
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .benefit-card {
+            background: var(--bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            text-align: center;
+        }
+
+        .benefit-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .benefit-card h4 {
+            color: var(--primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-card p {
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        .success-metrics {
+            background: var(--primary);
+            padding: 3rem 2rem;
+            border-radius: 16px;
+            color: white;
+        }
+
+        .metrics-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 2rem;
+        }
+
+        .metric-item {
+            text-align: center;
+        }
+
+        .metric-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .metric-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Footer Styles */
+        footer {
+            background: var(--text);
+            color: white;
+            padding: 3rem 0 1rem;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .audience-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .mission-vision-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .capabilities-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .value-props-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .process-steps {
+                grid-template-columns: 1fr;
+            }
+            
+            .av-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sla-times {
+                grid-template-columns: 1fr;
+            }
+            
+            .delivery-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .emergency-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .workflow-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .differentiators-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .badges-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body class="home-page">
+    <header>
+      <nav class="container">
+        <div class="logo-menu" style="position: relative;">
+          <a href="javascript:void(0)" class="logo" onclick="toggleLogoDropdown(event)">
+            <span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span> 
+            <span style="font-size: 0.7em;">▾</span>
+          </a>
+          <div class="logo-dropdown" id="logoDropdown" style="position: absolute; top: 100%; left: 0; background: white; border: 1px solid #e5e7eb; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); min-width: 200px; display: none; z-index: 1000;">
+            <a href="/" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Home</a>
+            <a href="/hotel-signup.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Registration</a>
+            <a href="/hotel-login.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Hotel Portal</a>
+            <a href="/government-portal.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Government Portal</a>
+            <a href="/resources.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151; border-bottom: 1px solid #f3f4f6;">Resources</a>
+            <a href="/about.html" style="display: block; padding: 12px 16px; text-decoration: none; color: #374151;">About</a>
+          </div>
+        </div>
+        <ul class="nav-links">
+          <li id="userMenu" class="user-menu" style="display:none;">
+            <a class="user-trigger" href="javascript:void(0)" onclick="toggleUserDropdown(event)">
+              <span class="user-avatar" id="userInitial">U</span>
+              <span id="userNameLabel">User</span>
+              <span aria-hidden>▾</span>
+            </a>
+            <div class="user-dropdown" id="userDropdown">
+              <a href="/hotel-dashboard.html">Hotel Portal</a>
+              <a href="/user-profile.html">User Settings</a>
+              <button type="button" onclick="logoutUser()">Logout</button>
+            </div>
+          </li>
+          <li class="admin-access-link">
+            <a href="/admin-login.html" class="cta-button" style="background:#111827;color:#fff;padding:0.5rem 1rem;border-radius:8px;text-decoration:none;font-weight:600;">🔐 Admin Access</a>
+          </li>
+        </ul>
+      </nav>
+    </header>
+    
+    <!-- Removed sidebar overlay and sidebar nav for consistent header across pages -->
+
+    <main>
+      <section class="hero">
+        <!-- Flag Video Background -->
+        <div class="flag-video-wrap">
+          <video id="flagVideo" autoplay muted loop playsinline>
+            <source src="/flag-1200x400.mp4" type="video/mp4">
+            <img src="/flag-1200x400.jpg" alt="US Flag" style="width: 100%; height: 100%; object-fit: cover;">
+          </video>
+        </div>
+        
+        <div class="container">
+          <h1 class="title">Aligning mission objectives with industry capabilities — no task is beyond reach</h1>
+          <p class="hero-description">The trusted bridge between government agencies and qualified venues. We streamline event planning, lodging coordination, and logistics support to deliver reliable results for both sides.</p>
+          <div class="actions" style="position: relative; z-index: 2;">
+            <a class="btn primary" href="/contact.html" onclick="trackButtonClick('Mission Support Form')">Mission Support Form</a>
+            <a class="btn emergency" href="/contact.html?emergency=true" onclick="trackButtonClick('Emergency Support Form')">Emergency Support Form</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- Hotel Search Section -->
+      <section class="hotel-search-section">
+        <div class="container">
+          <div class="search-header">
+            <h2>Find Your Perfect Venue</h2>
+            <p>Search our comprehensive database of qualified hotels and venues</p>
+          </div>
+          
+          <form id="hotelSearchForm" class="hotel-search-form">
+            <div class="search-row-single">
+              <div class="search-field location-field">
+                <label for="searchLocation">Location</label>
+                <input type="text" id="searchLocation" name="location" placeholder="Search location..." autocomplete="off">
+                <button type="button" id="mapButton" class="map-btn" title="Select on Map">
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M10 2C6.686 2 4 4.686 4 8c0 5.25 6 10 6 10s6-4.75 6-10c0-3.314-2.686-6-6-6zm0 8c-1.105 0-2-.895-2-2s.895-2 2-2 2 .895 2 2-.895 2-2 2z" fill="currentColor"/>
+                  </svg>
+                </button>
+                <div id="locationSuggestions" class="suggestions-dropdown"></div>
+              </div>
+              
+              <div class="search-field date-field">
+                <label for="eventStartDate">Start Date</label>
+                <input type="text" id="eventStartDate" name="startDate" placeholder="DD/MMM/YYYY" pattern="\d{2}/[A-Za-z]{3}/\d{4}" required>
+              </div>
+              
+              <div class="search-field date-field">
+                <label for="eventEndDate">End Date</label>
+                <input type="text" id="eventEndDate" name="endDate" placeholder="DD/MMM/YYYY" pattern="\d{2}/[A-Za-z]{3}/\d{4}" required>
+              </div>
+              
+              <div class="search-field rooms-field">
+                <label for="roomCount">Rooms</label>
+                <input type="number" id="roomCount" name="roomCount" placeholder="Rooms" min="1" max="999" required>
+              </div>
+              
+              <div class="search-field attendees-field">
+                <label for="attendeeCount">Attendees</label>
+                <input type="number" id="attendeeCount" name="attendeeCount" placeholder="Attendees" min="1" max="9999" required>
+              </div>
+              
+              <div class="search-field search-btn-field">
+                <button type="submit" class="search-btn">
+                  <span>Search</span>
+                  <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
+                    <path d="M9 9m0 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M13.5 13.5L18 18" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <!-- Radius Search Options -->
+            <div class="radius-search-options" id="radiusSearchOptions" style="display: none;">
+              <div class="search-row-single">
+                <div class="search-field radius-field">
+                  <label for="radiusMiles">Search Radius</label>
+                  <div class="radius-input-group">
+                    <input type="number" id="radiusMiles" name="radiusMiles" placeholder="25" min="1" max="500" step="1">
+                    <select id="radiusUnit" name="radiusUnit">
+                      <option value="miles">Miles</option>
+                      <option value="km">Kilometers</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Toggle Radius Search -->
+            <div class="radius-search-toggle">
+              <button type="button" id="toggleRadiusSearch" class="toggle-radius-btn">
+                <span id="radiusToggleText">Add Radius Search</span>
+                <svg width="16" height="16" viewBox="0 0 20 20" fill="none" id="radiusToggleIcon">
+                  <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Map Modal -->
+      <div id="mapModal" class="map-modal" style="display: none;">
+        <div class="map-modal-content">
+          <div class="map-modal-header">
+            <h3>Select Location on Map</h3>
+            <button onclick="closeMapPopup()" class="map-close-btn">&times;</button>
+          </div>
+          <div id="map" class="map-container"></div>
+          <div class="map-modal-footer">
+            <button onclick="closeMapPopup()" class="map-confirm-btn">Confirm Location</button>
+          </div>
+        </div>
+      </div>
+
+        <section id="core-capabilities" class="core-capabilities">
+            <div class="container">
+                <h2 class="section-title">Core Capabilities (Government)</h2>
+                <div class="capabilities-grid">
+                    <div class="capability-card">
+                        <div class="capability-icon">🏨</div>
+                        <h3>Lodging & Extended Stay</h3>
+                        <p>Room blocks, suites/kitchenettes, laundry access, late arrivals, surge accommodation.</p>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">🎬</div>
+                        <h3>Meetings & AV Production</h3>
+                        <p>Venue shortlists, layouts, projection/LED, PA & mics, stage lighting, recording, hybrid/streaming.</p>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">🚗</div>
+                        <h3>Ground Transportation</h3>
+                        <p>Airport arrivals, daily shuttle plans, ADA vehicles, routing/manifests, curb & staging management.</p>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">🍽️</div>
+                        <h3>Catering & F&B</h3>
+                        <p>Boxed/hot/cold programs, labeled dietary service (Halal/Kosher/VEG/GF), service timing aligned to agenda.</p>
+                    </div>
+                    <div class="capability-card">
+                        <div class="capability-icon">🎛️</div>
+                        <h3>On-Site Logistics</h3>
+                        <p>Central run-of-show, check-in desk, signage/wayfinding, comms plan, issue log, daily syncs with POCs.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="contracting-delivery" class="contracting-delivery">
+            <div class="container">
+                <h2 class="section-title">Contracting-Focused Delivery</h2>
+                
+                <div class="delivery-grid">
+                    <div class="delivery-step">
+                        <div class="step-number">1</div>
+                        <h3>Requirements Intake (SOW/PoP)</h3>
+                        <p>Structured questionnaire capturing dates, locations, headcount, space/AV, transport, dietary/access, reporting cadence.</p>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">2</div>
+                        <h3>Market Research & Vetting</h3>
+                        <p>Venue/partner options screened for capacity, proximity, access, and risk; notes suitable for decision memos.</p>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">3</div>
+                        <h3>Technical & Cost Comparison (Matrix)</h3>
+                        <p>Side-by-side trade-offs to support down-select and award documentation.</p>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">4</div>
+                        <h3>Execution & Oversight</h3>
+                        <p>Single-threaded coordinator; hotel, AV, transport, and catering aligned to one run-of-show.</p>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">5</div>
+                        <h3>Quality & Acceptance</h3>
+                        <p>Checklist-driven QA, issue-to-resolution tracking, acceptance confirmation, and artifacts for file.</p>
+                    </div>
+                    <div class="delivery-step">
+                        <div class="step-number">6</div>
+                        <h3>Closeout & AAR</h3>
+                        <p>Reconciliations, attendance/media delivery, and after-action notes to inform future requirements.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="emergency-surge" class="emergency-surge">
+            <div class="container">
+                <h2 class="section-title">Emergency & Surge Response</h2>
+                
+                <div class="emergency-intro">
+                    <h3 class="emergency-title">When plans change at 1700, the show still starts at 0900.</h3>
+                </div>
+
+                <div class="emergency-grid">
+                    <div class="emergency-item">
+                        <div class="emergency-icon">⚡</div>
+                        <h3>Rapid Intake → Initial Action Brief</h3>
+                        <p>(comms-only SLA above)</p>
+                    </div>
+                    <div class="emergency-item">
+                        <div class="emergency-icon">🔄</div>
+                        <h3>Continuity Planning</h3>
+                        <p>Alternates identified early (venues/vehicles/AV crews); contingency triggers documented.</p>
+                    </div>
+                    <div class="emergency-item">
+                        <div class="emergency-icon">🎯</div>
+                        <h3>Stabilization On Site</h3>
+                        <p>Named lead, comms tree, issue log; field-ready catering with labeled dietary service.</p>
+                    </div>
+                    <div class="emergency-item">
+                        <div class="emergency-icon">🎛️</div>
+                        <h3>Operational Controls</h3>
+                        <p>Traffic/weather monitoring, reroutes, spare equipment, and timed load-ins.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="how-we-work" class="how-we-work">
+            <div class="container">
+                <h2 class="section-title">How We Work (Procurement-Friendly Flow)</h2>
+                
+                <div class="workflow-grid">
+                    <div class="workflow-step">
+                        <div class="workflow-number">1</div>
+                        <h3>Define Requirements</h3>
+                        <p>Align to SOW, PoP, and constraints.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">2</div>
+                        <h3>Market Research</h3>
+                        <p>Vetted options with risk notes.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">3</div>
+                        <h3>Compare & Down-Select</h3>
+                        <p>Technical/cost matrix; decision support.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">4</div>
+                        <h3>Execution Plan</h3>
+                        <p>Integrated run-of-show across hotel/AV/transport/catering.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">5</div>
+                        <h3>Delivery & Reporting</h3>
+                        <p>Daily status to government POCs; change control.</p>
+                    </div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">6</div>
+                        <h3>Closeout & Records</h3>
+                        <p>Reconciliations, deliverables, and AAR.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="differentiators" class="differentiators">
+            <div class="container">
+                <h2 class="section-title">Differentiators</h2>
+                
+                <div class="differentiators-grid">
+                    <div class="differentiator-card">
+                        <div class="differentiator-icon">⚡</div>
+                        <h3>Speed to Direction</h3>
+                        <p>You get actionable next steps fast—no drift.</p>
+                    </div>
+                    <div class="differentiator-card">
+                        <div class="differentiator-icon">📞</div>
+                        <h3>Single-Threaded Comms</h3>
+                        <p>One coordinator, clear ownership, predictable cadence.</p>
+                    </div>
+                    <div class="differentiator-card">
+                        <div class="differentiator-icon">🎯</div>
+                        <h3>Discipline & Detail</h3>
+                        <p>Manifests, cue sheets, labeled dietary service, timed staging.</p>
+                    </div>
+                    <div class="differentiator-card">
+                        <div class="differentiator-icon">🛡️</div>
+                        <h3>Risk & Continuity</h3>
+                        <p>Alternates and contingency pathways identified early.</p>
+                    </div>
+                    <div class="differentiator-card">
+                        <div class="differentiator-icon">🌍</div>
+                        <h3>Global Reach</h3>
+                        <p>Reliable delivery across CONUS & OCONUS.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="av-capabilities" class="av-capabilities">
+            <div class="container">
+                <h2 class="section-title">AV Capability Details</h2>
+                <div class="av-grid">
+                    <div class="av-category">
+                        <h3>Visual Production</h3>
+                        <ul>
+                            <li>Projection or LED wall, confidence monitors</li>
+                            <li>Multi-camera capture/switching</li>
+                            <li>Stage lighting, timers/cue lights</li>
+                        </ul>
+                    </div>
+                    <div class="av-category">
+                        <h3>Audio Systems</h3>
+                        <ul>
+                            <li>Wired/wireless mics (handheld, lav, podium)</li>
+                            <li>Distributed audio for breakouts</li>
+                            <li>Comms headsets</li>
+                        </ul>
+                    </div>
+                    <div class="av-category">
+                        <h3>Hybrid/Virtual</h3>
+                        <ul>
+                            <li>Livestreaming, remote speaker integration</li>
+                            <li>Slide capture</li>
+                            <li>Recording with post-event file delivery</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="old-services" style="display: none;">
+            <div class="container">
+                <h2 class="section-title">Our Services</h2>
+                <div class="services-grid">
+                    <div class="service-card">
+                        <div class="service-icon">🏨</div>
+                        <h3>Hotel Registration</h3>
+                        <p>Qualified hotels can register to receive government event bookings with NET30 payment terms and PO acceptance.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">📋</div>
+                        <h3>Event Planning</h3>
+                        <p>Professional event planning services for U.S. Government agencies and departments.</p>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🤝</div>
+                        <h3>Venue Matching</h3>
+                        <p>Connect government agencies with the perfect venues for their events and meetings.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="why-fedevent" class="why-fedevent">
+            <div class="container">
+                <h2 class="section-title">Our Approach</h2>
+                
+                <div class="why-intro">
+                    <h3 class="intro-title">We don't shop; we solve.</h3>
+                    <p class="intro-description">FedEvent unifies short-long term lodging, meeting/AV, ground transport, catering, and on-site logistics under one disciplined plan—built for government timelines and real-world constraints.</p>
+                        </div>
+
+                <div class="aggressive-truth">
+                    <h3 class="truth-title">The Aggressive Truth (Our Edge)</h3>
+                    <div class="truth-grid">
+                        <div class="truth-card">
+                            <div class="truth-icon">🎯</div>
+                            <h4>We remove uncertainty.</h4>
+                            <p>Holds set, backups ready, vendors aligned.</p>
+                    </div>
+                        <div class="truth-card">
+                            <div class="truth-icon">⏰</div>
+                            <h4>We control the clock.</h4>
+                            <p>Partners operate to our run-of-show—no drift, no scramble.</p>
+                        </div>
+                        <div class="truth-card">
+                            <div class="truth-icon">🔍</div>
+                            <h4>We sweat the details.</h4>
+                            <p>Manifests, cue sheets, labeled meals, mic checks by segment.</p>
+                    </div>
+                        </div>
+                    </div>
+
+                <div class="offerings-grid">
+                    <div class="offering-section">
+                        <h3 class="offering-title">Government — What We Have To Offer</h3>
+                        <div class="offering-list">
+                            <div class="offering-item">
+                                <div class="offering-icon">⚡</div>
+                                <div class="offering-content">
+                                    <h4>Speed to Options</h4>
+                                    <p>Side-by-side venue comparisons fast, aligned to your SOW.</p>
+                        </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">🎬</div>
+                                <div class="offering-content">
+                                    <h4>One Run-of-Show</h4>
+                                    <p>Hotel ops, AV, transport, and catering synchronized with a named on-site lead.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">✅</div>
+                                <div class="offering-content">
+                                    <h4>Compliance by Design</h4>
+                                    <p>Accessibility, labeled dietary service, disciplined documentation.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">🎛️</div>
+                                <div class="offering-content">
+                                    <h4>Operational Control</h4>
+                                    <p>Manifests, cue sheets, staging plans, and daily status to your POCs.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">🏨</div>
+                                <div class="offering-content">
+                                    <h4>Extended-Stay Ready</h4>
+                                    <p>Suites/kitchenettes, laundry access, late arrivals, surge capacity.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/contact.html" class="cta-button primary" onclick="trackButtonClick('Mission Support Form - Bottom')">Mission Support Form</a>
+                    </div>
+
+                    <div class="offering-section">
+                        <h3 class="offering-title">Hotels & Venues — What You Gain</h3>
+                        <div class="offering-list">
+                            <div class="offering-item">
+                                <div class="offering-icon">📈</div>
+                                <div class="offering-content">
+                                    <h4>Consistent Group Demand</h4>
+                                    <p>Trainings, conferences, extended stays—organized and predictable.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">📋</div>
+                                <div class="offering-content">
+                                    <h4>Complete Briefs</h4>
+                                    <p>Headcounts, rooming lists, meeting/AV specs, dietary notes, day-by-day schedule.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">📞</div>
+                                <div class="offering-content">
+                                    <h4>Single Decision Channel</h4>
+                                    <p>Pre-con alignment, rapid answers, one coordinator on site.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">🎯</div>
+                                <div class="offering-content">
+                                    <h4>Operational Discipline</h4>
+                                    <p>Timed load-ins, labeled F&B, mic checks by segment, clean turnovers.</p>
+                                </div>
+                            </div>
+                            <div class="offering-item">
+                                <div class="offering-icon">✨</div>
+                                <div class="offering-content">
+                                    <h4>Clean Closeout</h4>
+                                    <p>Reconciliations, documentation, and repeat business for high-performers.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <a href="/hotel-signup.html" class="cta-button primary" onclick="trackButtonClick('Join Our Hotel Network - Bottom')">Join Our Hotel Network</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+
+        <section id="badges" class="badges-section">
+            <div class="container">
+                <h2 class="section-title">Our Capabilities</h2>
+                <div class="badges-grid">
+                    <div class="badge">CONUS & OCONUS</div>
+                    <div class="badge">24/7/365 Communications SLA</div>
+                    <div class="badge">AV/Hybrid Production</div>
+                    <div class="badge">Extended-Stay Capable</div>
+                    <div class="badge">Single-Threaded Coordinator</div>
+                    <div class="badge">QA & Acceptance Support</div>
+                    <div class="badge">Meetings Organizations</div>
+                    <div class="badge">Logistical Support</div>
+                </div>
+            </div>
+        </section>
+
+
+        <section class="cta-section">
+            <div class="container">
+                <h2>Ready to Get Started?</h2>
+                <p>One request, complete solution—lodging, meeting rooms, transport, catering, and daily run-of-show.</p>
+                <div class="cta-buttons">
+                    <a href="/contact.html" class="btn-primary" onclick="trackButtonClick('Mission Support Form - Footer')">Mission Support Form</a>
+                    <a href="/hotel-signup.html" class="btn-primary" onclick="trackButtonClick('Join Our Hotel Network - Footer')">Join Our Hotel Network</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+        <footer id="contact">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></h3>
+                    <p>Professional event planning services for government agencies worldwide, including UN departments and international organizations.</p>
+                </div>
+                <div class="footer-section">
+                    <h3>Services</h3>
+                    <a href="/hotel-signup.html">Hotel Sourcing</a>
+                    <a href="/contact.html">Event Planning</a>
+                    <a href="/government-portal.html">Venue Matching</a>
+                    <a href="/support-ticket.html">Support Ticket</a>
+                </div>
+                <div class="footer-section footer-contact">
+                    <h3>Contact</h3>
+                    <p>Email: info@fedevent.com</p>
+                    <p>Phone: (305) 850-7848</p>
+                    <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                        🔐 Admin Access
+                    </a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+                <p>&copy; 2025 <span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span>. All rights reserved.</p>
+                <p style="margin-top: 10px; font-size: 0.9rem;">
+                    <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                        🔐 Admin Sign In
+                    </a>
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <style>
+        /* Footer Styles */
+        footer {
+            background: var(--text, #1f2937);
+            color: white;
+            padding: 3rem 0 1rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h3 {
+            margin-bottom: 1rem;
+            color: var(--secondary, #f59e0b);
+        }
+
+        .footer-section a {
+            display: block;
+            color: #d1d5db;
+            text-decoration: none;
+            margin-bottom: 0.5rem;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover {
+            color: var(--secondary, #f59e0b);
+        }
+
+        .footer-contact {
+            text-align: right;
+        }
+
+        .footer-bottom {
+            border-top: 1px solid #374151;
+            padding-top: 2rem;
+            text-align: center;
+            color: #9ca3af;
+        }
+
+        /* Responsive Footer */
+        @media (max-width: 768px) {
+            .footer-content {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .footer-contact {
+                text-align: left;
+            }
+        }
+    </style>
+
+    <script>
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                }
+            });
+        });
+
+        // Parallax Flag Video Controls
+        document.addEventListener('DOMContentLoaded', function() {
+            // Clean header/user menus are handled by nav.js
+        });
+        
+        // Navigation Dropdown and Sidebar Functionality
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const dropdown = document.getElementById('navDropdown');
+            
+            // Close dropdown if open
+            dropdown.classList.remove('show');
+            
+            // Toggle sidebar
+            sidebar.classList.toggle('show');
+            overlay.classList.toggle('show');
+        }
+        
+        function closeSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+        
+        function toggleNavDropdown() {
+            const dropdown = document.getElementById('navDropdown');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            
+            // Close sidebar if open
+            sidebar.classList.remove('show');
+            overlay.classList.remove('show');
+            
+            // Toggle dropdown
+            dropdown.classList.toggle('show');
+        }
+        
+        // Close sidebar and dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('navDropdown');
+            const userDd = document.getElementById('userDropdown');
+            const logoDd = document.getElementById('logoDropdown');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebarOverlay');
+            const logo = document.querySelector('.logo');
+            const logoMenu = document.querySelector('.logo-menu');
+            
+            if (logo && !logo.contains(event.target) && sidebar && !sidebar.contains(event.target)) {
+                dropdown.classList.remove('show');
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+            
+            if (logoMenu && !logoMenu.contains(event.target)) {
+                if (logoDd) logoDd.style.display = 'none';
+            }
+            
+            const userMenu = document.getElementById('userMenu');
+            if (userMenu && !userMenu.contains(event.target)) {
+                if (userDd) userDd.style.display = 'none';
+            }
+        });
+        
+        // Close sidebar and dropdown on escape key
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const dropdown = document.getElementById('navDropdown');
+                const sidebar = document.getElementById('sidebar');
+                const overlay = document.getElementById('sidebarOverlay');
+                
+                dropdown.classList.remove('show');
+                sidebar.classList.remove('show');
+                overlay.classList.remove('show');
+            }
+        });
+
+        // User menu handling
+        function loadUserMenu() {
+          try {
+            const sessionId = localStorage.getItem('fedevent_session');
+            const userRaw = localStorage.getItem('fedevent_user');
+            if (!sessionId || !userRaw) return;
+            const user = JSON.parse(userRaw);
+            let name = user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.first_name || user.username || user.email || 'User');
+            // Remove "Hotel" and "User" from the name display
+            name = name.replace(/\b(Hotel|User)\b/gi, '').trim();
+            const initial = (name || 'U').trim().charAt(0).toUpperCase();
+            document.getElementById('userNameLabel').textContent = name;
+            document.getElementById('userInitial').textContent = initial;
+            document.getElementById('userMenu').style.display = 'list-item';
+          } catch (e) { /* noop */ }
+        }
+
+        function toggleUserDropdown(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dd = document.getElementById('userDropdown');
+          dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function toggleLogoDropdown(e) {
+          e.preventDefault();
+          e.stopPropagation();
+          const dd = document.getElementById('logoDropdown');
+          dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function logoutUser() {
+          localStorage.removeItem('fedevent_session');
+          localStorage.removeItem('fedevent_user');
+          window.location.href = '/hotel-login.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', loadUserMenu);
+    </script>
+    <script src="/chat.js"></script>
+    <script src="/nav.js"></script>
+    <script src="/footer.js"></script>
+    
+    <script>
+      let autocomplete;
+      let map;
+      let marker;
+      
+      // Initialize Google Places Autocomplete for hotel search
+      function initAutocomplete() {
+        const locationInput = document.getElementById('searchLocation');
+        
+        if (!locationInput) {
+          console.warn('Location input not found');
+          return;
+        }
+        
+        // Check if Google Maps API is available
+        if (typeof google === 'undefined' || !google.maps || !google.maps.places) {
+          console.warn('Google Maps API not loaded, falling back to simple suggestions');
+          initLocationSuggestions();
+          return;
+        }
+        
+        try {
+          // Create autocomplete with specific place types for hotels and cities
+          const autocomplete = new google.maps.places.Autocomplete(locationInput, {
+            types: ['establishment', 'geocode'], // Include hotels and addresses
+            componentRestrictions: { country: 'us' }, // Restrict to US
+            fields: ['place_id', 'geometry', 'name', 'formatted_address', 'types']
+          });
+          
+          // Handle place selection
+          autocomplete.addListener('place_changed', function() {
+            const place = autocomplete.getPlace();
+            
+            if (!place.geometry || !place.geometry.location) {
+              console.warn('No details available for input: ' + place.name);
+              return;
+            }
+            
+            // Store the selected place data for database search
+            locationInput.dataset.placeId = place.place_id;
+            locationInput.dataset.lat = place.geometry.location.lat();
+            locationInput.dataset.lng = place.geometry.location.lng();
+            locationInput.dataset.formattedAddress = place.formatted_address;
+            
+            console.log('Place selected for hotel search:', {
+              name: place.name,
+              address: place.formatted_address,
+              placeId: place.place_id,
+              lat: place.geometry.location.lat(),
+              lng: place.geometry.location.lng(),
+              types: place.types
+            });
+          });
+          
+          console.log('Google Places Autocomplete initialized successfully for hotel search');
+          
+        } catch (error) {
+          console.error('Error initializing Google Places Autocomplete:', error);
+          initLocationSuggestions(); // Fallback to simple suggestions
+        }
+      }
+      
+      // Fallback location suggestions without Google Places API
+      function initLocationSuggestions() {
+        const locationInput = document.getElementById('searchLocation');
+        const suggestionsDropdown = document.getElementById('locationSuggestions');
+        
+        // Common US cities for suggestions
+        const commonLocations = [
+          'Washington, DC',
+          'New York, NY',
+          'Los Angeles, CA',
+          'Chicago, IL',
+          'Houston, TX',
+          'Phoenix, AZ',
+          'Philadelphia, PA',
+          'San Antonio, TX',
+          'San Diego, CA',
+          'Dallas, TX',
+          'San Jose, CA',
+          'Austin, TX',
+          'Jacksonville, FL',
+          'Fort Worth, TX',
+          'Columbus, OH',
+          'Charlotte, NC',
+          'San Francisco, CA',
+          'Indianapolis, IN',
+          'Seattle, WA',
+          'Denver, CO',
+          'Boston, MA',
+          'El Paso, TX',
+          'Detroit, MI',
+          'Nashville, TN',
+          'Portland, OR',
+          'Las Vegas, NV',
+          'Memphis, TN',
+          'Louisville, KY',
+          'Baltimore, MD',
+          'Milwaukee, WI'
+        ];
+        
+        locationInput.addEventListener('input', function() {
+          const query = this.value.toLowerCase();
+          if (query.length < 2) {
+            suggestionsDropdown.style.display = 'none';
+            return;
+          }
+          
+          const matches = commonLocations.filter(location => 
+            location.toLowerCase().includes(query)
+          ).slice(0, 5);
+          
+          if (matches.length > 0) {
+            suggestionsDropdown.innerHTML = matches.map(location => 
+              `<div class="suggestion-item" data-location="${location}">${location}</div>`
+            ).join('');
+            suggestionsDropdown.style.display = 'block';
+          } else {
+            suggestionsDropdown.style.display = 'none';
+          }
+        });
+        
+        // Handle suggestion clicks
+        suggestionsDropdown.addEventListener('click', function(e) {
+          if (e.target.classList.contains('suggestion-item')) {
+            locationInput.value = e.target.dataset.location;
+            suggestionsDropdown.style.display = 'none';
+          }
+        });
+        
+        // Hide suggestions when clicking outside
+        document.addEventListener('click', function(e) {
+          if (!locationInput.contains(e.target) && !suggestionsDropdown.contains(e.target)) {
+            suggestionsDropdown.style.display = 'none';
+          }
+        });
+      }
+      
+      // Map popup functionality - Simple location picker without Google Maps
+      function openMapPopup() {
+        const mapModal = document.getElementById('mapModal');
+        mapModal.style.display = 'block';
+        
+        // Create a simple location picker interface
+        const mapElement = document.getElementById('map');
+        mapElement.innerHTML = `
+          <div style="padding: 2rem; text-align: center; height: 100%; display: flex; flex-direction: column; justify-content: center;">
+            <h3 style="margin-bottom: 1.5rem; color: #1e293b;">Select a Location</h3>
+            <p style="margin-bottom: 2rem; color: #64748b;">Choose from popular US cities:</p>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; max-height: 300px; overflow-y: auto;">
+              <button class="location-option" data-location="Washington, DC">Washington, DC</button>
+              <button class="location-option" data-location="New York, NY">New York, NY</button>
+              <button class="location-option" data-location="Los Angeles, CA">Los Angeles, CA</button>
+              <button class="location-option" data-location="Chicago, IL">Chicago, IL</button>
+              <button class="location-option" data-location="Houston, TX">Houston, TX</button>
+              <button class="location-option" data-location="Phoenix, AZ">Phoenix, AZ</button>
+              <button class="location-option" data-location="Philadelphia, PA">Philadelphia, PA</button>
+              <button class="location-option" data-location="San Antonio, TX">San Antonio, TX</button>
+              <button class="location-option" data-location="San Diego, CA">San Diego, CA</button>
+              <button class="location-option" data-location="Dallas, TX">Dallas, TX</button>
+              <button class="location-option" data-location="San Jose, CA">San Jose, CA</button>
+              <button class="location-option" data-location="Austin, TX">Austin, TX</button>
+              <button class="location-option" data-location="Jacksonville, FL">Jacksonville, FL</button>
+              <button class="location-option" data-location="Fort Worth, TX">Fort Worth, TX</button>
+              <button class="location-option" data-location="Columbus, OH">Columbus, OH</button>
+              <button class="location-option" data-location="Charlotte, NC">Charlotte, NC</button>
+              <button class="location-option" data-location="San Francisco, CA">San Francisco, CA</button>
+              <button class="location-option" data-location="Indianapolis, IN">Indianapolis, IN</button>
+              <button class="location-option" data-location="Seattle, WA">Seattle, WA</button>
+              <button class="location-option" data-location="Denver, CO">Denver, CO</button>
+              <button class="location-option" data-location="Boston, MA">Boston, MA</button>
+              <button class="location-option" data-location="Detroit, MI">Detroit, MI</button>
+              <button class="location-option" data-location="Nashville, TN">Nashville, TN</button>
+              <button class="location-option" data-location="Portland, OR">Portland, OR</button>
+              <button class="location-option" data-location="Las Vegas, NV">Las Vegas, NV</button>
+              <button class="location-option" data-location="Memphis, TN">Memphis, TN</button>
+              <button class="location-option" data-location="Louisville, KY">Louisville, KY</button>
+              <button class="location-option" data-location="Baltimore, MD">Baltimore, MD</button>
+              <button class="location-option" data-location="Milwaukee, WI">Milwaukee, WI</button>
+            </div>
+          </div>
+        `;
+        
+        // Add click handlers for location options
+        mapElement.querySelectorAll('.location-option').forEach(button => {
+          button.addEventListener('click', function() {
+            const location = this.dataset.location;
+            document.getElementById('searchLocation').value = location;
+            closeMapPopup();
+          });
+        });
+      }
+      
+      function closeMapPopup() {
+        document.getElementById('mapModal').style.display = 'none';
+      }
+      
+      // Date formatting helper
+      function formatDateInput(input) {
+        input.addEventListener('input', function(e) {
+          let value = e.target.value.replace(/\D/g, '');
+          if (value.length >= 2) {
+            value = value.substring(0, 2) + '/' + value.substring(2);
+          }
+          if (value.length >= 6) {
+            const day = value.substring(0, 2);
+            const month = value.substring(3, 5);
+            const year = value.substring(6, 10);
+            
+            const monthNames = ['JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN', 
+                              'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'];
+            const monthIndex = parseInt(month) - 1;
+            
+            if (monthIndex >= 0 && monthIndex < 12) {
+              value = day + '/' + monthNames[monthIndex] + '/' + year;
+            }
+          }
+          e.target.value = value;
+        });
+      }
+      
+      // Initialize everything
+      document.addEventListener('DOMContentLoaded', function() {
+        formatDateInput(document.getElementById('eventStartDate'));
+        formatDateInput(document.getElementById('eventEndDate'));
+        
+        // Initialize Google Places autocomplete for hotel search
+        initAutocomplete();
+        
+        // Map button event listener
+        document.getElementById('mapButton').addEventListener('click', openMapPopup);
+        
+        // Radius search toggle
+        const toggleBtn = document.getElementById('toggleRadiusSearch');
+        const radiusOptions = document.getElementById('radiusSearchOptions');
+        const toggleText = document.getElementById('radiusToggleText');
+        const toggleIcon = document.getElementById('radiusToggleIcon');
+        
+        if (toggleBtn && radiusOptions) {
+          toggleBtn.addEventListener('click', function() {
+            const isVisible = radiusOptions.style.display !== 'none';
+            if (isVisible) {
+              radiusOptions.style.display = 'none';
+              toggleText.textContent = 'Add Radius Search';
+              toggleIcon.style.transform = 'rotate(0deg)';
+            } else {
+              radiusOptions.style.display = 'block';
+              toggleText.textContent = 'Remove Radius Search';
+              toggleIcon.style.transform = 'rotate(180deg)';
+            }
+          });
+        }
+      });
+      
+      // Hotel Search Form Handler
+      document.getElementById('hotelSearchForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const locationInput = document.getElementById('searchLocation');
+        const searchParams = new URLSearchParams();
+        
+        // Collect form data
+        const location = formData.get('location');
+        const placeId = locationInput.dataset.placeId || '';
+        const lat = locationInput.dataset.lat || '';
+        const lng = locationInput.dataset.lng || '';
+        
+        // Get radius search parameters
+        const radiusMiles = document.getElementById('radiusMiles').value;
+        const radiusUnit = document.getElementById('radiusUnit').value;
+        
+        searchParams.append('location', location);
+        searchParams.append('startDate', formData.get('startDate'));
+        searchParams.append('endDate', formData.get('endDate'));
+        searchParams.append('roomCount', formData.get('roomCount'));
+        searchParams.append('attendeeCount', formData.get('attendeeCount'));
+        searchParams.append('placeId', placeId);
+        searchParams.append('lat', lat);
+        searchParams.append('lng', lng);
+        
+        // Add radius search parameters to URL
+        if (radiusMiles) {
+          if (radiusUnit === 'miles') {
+            searchParams.append('radius_miles', radiusMiles);
+          } else {
+            searchParams.append('radius_km', radiusMiles);
+          }
+        }
+        
+        // Redirect to results page with search parameters
+        window.location.href = `/hotel-results.html?${searchParams.toString()}`;
+      });
+    </script>
+</body>
+</html>

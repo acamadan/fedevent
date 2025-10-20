@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Google Places API (New) - Best Practices Implementation</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        #autocomplete-input {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        #autocomplete-input:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        .suggestions-container {
+            position: relative;
+            width: 100%;
+        }
+        
+        .suggestions-list {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-top: none;
+            border-radius: 0 0 4px 4px;
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .suggestion-item {
+            padding: 12px;
+            cursor: pointer;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .suggestion-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .suggestion-item:last-child {
+            border-bottom: none;
+        }
+        
+        .suggestion-name {
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .suggestion-address {
+            font-size: 14px;
+            color: #666;
+            margin-top: 4px;
+        }
+        
+        #place-details {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        #place-details h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        
+        .detail-row {
+            margin-bottom: 10px;
+        }
+        
+        .detail-label {
+            font-weight: bold;
+            display: inline-block;
+            width: 150px;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
+        .error {
+            color: #d9534f;
+            background-color: #fdf7f7;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .mock-mode-indicator {
+            background-color: #fff3cd;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+            text-align: center;
+            display: none;
+        }
+        
+        .config-info {
+            background-color: #e9f7ef;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 20px;
+        }
+        
+        .config-info h3 {
+            margin-top: 0;
+        }
+        
+        .config-info ul {
+            margin-bottom: 0;
+        }
+        
+        .instructions {
+            background-color: #d1ecf1;
+            border-color: #bee5eb;
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Google Places API (New) - Best Practices Implementation</h1>
+        
+        <div class="instructions">
+            <h3>Configuration Instructions</h3>
+            <ol>
+                <li>Enable "Maps JavaScript API" and "Places API (New)" in Google Cloud Console</li>
+                <li>Set API key restrictions to HTTP referrers: http://localhost:5050/*</li>
+                <li>Restrict API key to only "Maps JavaScript API" and "Places API (New)"</li>
+                <li>Ensure billing is enabled for your FEDEVENT project</li>
+            </ol>
+        </div>
+        
+        <div class="mock-mode-indicator" id="mockModeIndicator">
+            Running in mock mode - using sample data instead of real API
+        </div>
+        
+        <div class="error" id="errorMessage"></div>
+        
+        <div class="form-group">
+            <label for="autocomplete-input">Find Hotel or Location:</label>
+            <div class="suggestions-container">
+                <input id="autocomplete-input" type="text" placeholder="Start typing a hotel or place name..." autocomplete="off" />
+                <div class="suggestions-list" id="suggestions-list"></div>
+            </div>
+        </div>
+        
+        <div id="place-details">
+            <h3>Selected Place Details:</h3>
+            <div class="detail-row">
+                <span class="detail-label">Name:</span>
+                <span id="place-name"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Address:</span>
+                <span id="place-address"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Phone:</span>
+                <span id="place-phone"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Website:</span>
+                <span id="place-website"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Lat/Lng:</span>
+                <span id="place-latlng"></span>
+            </div>
+            <div class="detail-row">
+                <span class="detail-label">Place ID:</span>
+                <span id="place-id"></span>
+            </div>
+        </div>
+        
+        <div class="config-info">
+            <h3>Implementation Notes</h3>
+            <ul>
+                <li>This implementation uses the <strong>new Google Places API with direct HTTP requests</strong></li>
+                <li>API key is securely managed on the server and served through <code>/api/google-places-key</code></li>
+                <li>All requests include explicit <code>X-Goog-FieldMask</code> header for required fields</li>
+                <li>Session tokens are implemented for billing optimization</li>
+                <li>No Google Maps JavaScript API library is loaded (more efficient)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // Global variables
+        let googlePlacesApiKey = null;
+        let isMockMode = false;
+        let sessionToken = null;
+        
+        // DOM Elements
+        const autocompleteInput = document.getElementById('autocomplete-input');
+        const suggestionsList = document.getElementById('suggestions-list');
+        const placeDetails = document.getElementById('place-details');
+        const errorMessage = document.getElementById('errorMessage');
+        const mockModeIndicator = document.getElementById('mockModeIndicator');
+        
+        // Initialize the application
+        async function initApp() {
+            try {
+                // Fetch the Google Places API key from our server
+                const response = await fetch('/api/google-places-key');
+                const data = await response.json();
+                
+                if (data.mockMode) {
+                    isMockMode = true;
+                    mockModeIndicator.style.display = 'block';
+                    console.warn('Running in mock mode - using sample data instead of real API');
+                } else {
+                    googlePlacesApiKey = data.apiKey;
+                    mockModeIndicator.style.display = 'none';
+                }
+                
+                // Initialize session token
+                generateNewSessionToken();
+                
+                // Set up event listeners
+                setupEventListeners();
+            } catch (error) {
+                console.error('Error initializing app:', error);
+                showErrorMessage('Failed to initialize the application. Please try again.');
+            }
+        }
+        
+        // Generate a new session token for billing optimization
+        function generateNewSessionToken() {
+            // Generate a simple UUID-like token for session tracking
+            sessionToken = 'session_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            console.log('New session token generated:', sessionToken);
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            autocompleteInput.addEventListener('input', handleInput);
+            autocompleteInput.addEventListener('focus', handleFocus);
+            autocompleteInput.addEventListener('blur', () => {
+                // Hide suggestions after a short delay to allow clicks
+                setTimeout(() => {
+                    suggestionsList.style.display = 'none';
+                }, 200);
+            });
+            
+            // Close suggestions when clicking elsewhere
+            document.addEventListener('click', (e) => {
+                if (!autocompleteInput.contains(e.target) && !suggestionsList.contains(e.target)) {
+                    suggestionsList.style.display = 'none';
+                }
+            });
+        }
+        
+        // Handle input focus - generate new session token
+        function handleFocus() {
+            generateNewSessionToken();
+        }
+        
+        // Handle input changes
+        async function handleInput(event) {
+            const query = event.target.value.trim();
+            
+            if (query.length < 3) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+            
+            try {
+                const results = await searchPlaces(query);
+                displaySuggestions(results);
+            } catch (error) {
+                console.error('Error searching places:', error);
+                showErrorMessage('Failed to search places. Please try again.');
+            }
+        }
+        
+        // Search for places using Google Places API (New) with direct HTTP requests
+        async function searchPlaces(query) {
+            // In mock mode, return sample data
+            if (isMockMode) {
+                await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+                return getMockPlacesData(query);
+            }
+            
+            // Validate API key
+            if (!googlePlacesApiKey) {
+                throw new Error('Google Places API key not available');
+            }
+            
+            // Show loading indicator
+            suggestionsList.innerHTML = '<div class="suggestion-item"><div class="loading">Searching...</div></div>';
+            suggestionsList.style.display = 'block';
+            
+            try {
+                // Make direct HTTP request to Google Places API (New)
+                // This is more efficient than loading the entire Maps JavaScript API
+                const response = await fetch(`https://places.googleapis.com/v1/places:searchText`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Goog-Api-Key': googlePlacesApiKey,
+                        // Include session token in the request for billing optimization
+                        'X-Goog-Request-Params': `session_token=${sessionToken}`,
+                        // Required field mask as per project specifications
+                        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.internationalPhoneNumber,places.websiteUri,places.addressComponents,places.nationalPhoneNumber'
+                    },
+                    body: JSON.stringify({
+                        textQuery: query,
+                        maxResultCount: 5
+                    })
+                });
+                
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`API Error: ${errorData.error?.message || response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return data.places || [];
+            } catch (error) {
+                console.error('Places API error:', error);
+                throw error;
+            }
+        }
+        
+        // Display suggestions in the dropdown
+        function displaySuggestions(places) {
+            if (!places || places.length === 0) {
+                suggestionsList.style.display = 'none';
+                return;
+            }
+            
+            suggestionsList.innerHTML = '';
+            
+            places.forEach(place => {
+                const item = document.createElement('div');
+                item.className = 'suggestion-item';
+                item.innerHTML = `
+                    <div class="suggestion-name">${escapeHtml(place.displayName?.text || 'Unnamed Place')}</div>
+                    <div class="suggestion-address">${escapeHtml(place.formattedAddress || 'Address not available')}</div>
+                `;
+                
+                item.addEventListener('click', () => {
+                    selectPlace(place);
+                });
+                
+                suggestionsList.appendChild(item);
+            });
+            
+            suggestionsList.style.display = 'block';
+        }
+        
+        // Select a place and display its details
+        async function selectPlace(place) {
+            // Hide suggestions
+            suggestionsList.style.display = 'none';
+            
+            // Update input value
+            autocompleteInput.value = place.displayName?.text || '';
+            
+            // Display place details
+            document.getElementById('place-name').textContent = place.displayName?.text || 'N/A';
+            document.getElementById('place-address').textContent = place.formattedAddress || 'N/A';
+            document.getElementById('place-phone').textContent = place.internationalPhoneNumber || 'N/A';
+            document.getElementById('place-website').textContent = place.websiteUri || 'N/A';
+            
+            // Extract latitude and longitude
+            if (place.location) {
+                document.getElementById('place-latlng').textContent = 
+                    `${place.location.latitude}, ${place.location.longitude}`;
+            } else {
+                document.getElementById('place-latlng').textContent = 'N/A';
+            }
+            
+            document.getElementById('place-id').textContent = place.id || 'N/A';
+            
+            // Show details section
+            placeDetails.style.display = 'block';
+            
+            // Generate new session token after selection (as recommended for billing optimization)
+            generateNewSessionToken();
+            
+            // Scroll to details
+            placeDetails.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Get mock places data for development/testing
+        function getMockPlacesData(query) {
+            // Sample mock data based on common hotel chains
+            const mockHotels = [
+                {
+                    id: 'ChIJd8BlQ2BZwokRAFUEcm_qrcA',
+                    displayName: { text: 'The Ritz-Carlton' },
+                    formattedAddress: '123 Main Street, New York, NY 10001, USA',
+                    location: { latitude: 40.7128, longitude: -74.0060 },
+                    internationalPhoneNumber: '+1 212-555-1234',
+                    websiteUri: 'https://www.ritzcarlton.com',
+                    nationalPhoneNumber: '(212) 555-1234'
+                },
+                {
+                    id: 'ChIJGz24MwZYwokRYBJwF-7VcK8',
+                    displayName: { text: 'Marriott International' },
+                    formattedAddress: '456 Business Ave, Washington, DC 20001, USA',
+                    location: { latitude: 38.8951, longitude: -77.0364 },
+                    internationalPhoneNumber: '+1 202-555-5678',
+                    websiteUri: 'https://www.marriott.com',
+                    nationalPhoneNumber: '(202) 555-5678'
+                },
+                {
+                    id: 'ChIJi8MeVwZYwokRyH5nS2TSDWI',
+                    displayName: { text: 'Hilton Worldwide' },
+                    formattedAddress: '789 Hospitality Blvd, Chicago, IL 60601, USA',
+                    location: { latitude: 41.8781, longitude: -87.6298 },
+                    internationalPhoneNumber: '+1 312-555-9012',
+                    websiteUri: 'https://www.hilton.com',
+                    nationalPhoneNumber: '(312) 555-9012'
+                }
+            ];
+            
+            // Filter mock data based on query
+            const filtered = mockHotels.filter(hotel => 
+                hotel.displayName.text.toLowerCase().includes(query.toLowerCase()) ||
+                hotel.formattedAddress.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            return filtered.slice(0, 5);
+        }
+        
+        // Utility function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+        
+        // Show error message
+        function showErrorMessage(message) {
+            errorMessage.textContent = message;
+            errorMessage.style.display = 'block';
+            
+            // Hide error after 5 seconds
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 5000);
+        }
+        
+        // Initialize the app when the page loads
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>FEDEVENT</h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+                <a href="/admin-login.html" style="color: #d1d5db; text-decoration: none; margin-top: 10px; display: inline-block; padding: 5px 10px; border: 1px solid #374151; border-radius: 4px; font-size: 0.9rem;">
+                    🔐 Admin Access
+                </a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 FEDEVENT. All rights reserved.</p>
+            <p style="margin-top: 10px; font-size: 0.9rem;">
+                <a href="/admin-login.html" style="color: #9ca3af; text-decoration: none; border-bottom: 1px dotted #9ca3af;">
+                    🔐 Admin Sign In
+                </a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+</body>
+</html>

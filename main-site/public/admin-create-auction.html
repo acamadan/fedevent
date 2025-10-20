@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Live Auction - FEDEVENT Admin</title>
+    <link rel="stylesheet" href="/site.css">
+    <style>
+        :root {
+            --primary: #1e40af;
+            --primary-dark: #1e3a8a;
+            --accent: #dc2626;
+            --text: #111827;
+            --text-light: #6b7280;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --border: #e5e7eb;
+            --error: #dc2626;
+            --success: #15803d;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .header {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .nav-links a {
+            color: var(--text-light);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .nav-links a.active {
+            color: var(--primary);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .info-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-card h2 {
+            margin: 0 0 0.75rem;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        form {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        .form-row {
+            display: grid;
+            gap: 1.25rem;
+        }
+
+        @media (min-width: 720px) {
+            .form-row.two-column {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        input[type="date"],
+        input[type="datetime-local"],
+        textarea,
+        input[type="file"] {
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            font-size: 1rem;
+            font-family: inherit;
+        }
+
+        input:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.15);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .clin-section {
+            border-top: 1px solid var(--border);
+            padding-top: 1.25rem;
+        }
+
+        .clin-list {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .clin-card {
+            background: #f9fafb;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+        }
+
+        .clin-card h4 {
+            margin: 0 0 0.5rem;
+            color: var(--primary);
+            font-size: 1rem;
+        }
+
+        .button-row {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem 1.75rem;
+            border-radius: 999px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+        }
+
+        .btn-secondary {
+            background: #6b7280;
+            color: var(--white);
+        }
+
+        .message {
+            min-height: 1.25rem;
+            font-size: 0.95rem;
+        }
+
+        .message.error {
+            color: var(--error);
+        }
+
+        .message.success {
+            color: var(--success);
+        }
+
+        .muted {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">FEDEVENT Admin</div>
+            <nav class="nav-links">
+                <a href="/admin-dashboard.html">Dashboard</a>
+                <a href="/admin-contracts.html">Contracts</a>
+                <a href="/admin-create-auction.html" class="active">Create Auction</a>
+            </nav>
+            <div class="user-menu">
+                <span id="userInfo" style="color: var(--text-light); font-size: 0.9rem;">Loading...</span>
+                <button class="btn btn-secondary" style="padding: 0.5rem 1.25rem;" onclick="logout()">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h1 class="page-title">Create Live Auction</h1>
+            <a href="/admin-dashboard.html" class="btn btn-secondary">⬅ Back to Dashboard</a>
+        </div>
+
+        <section class="info-card">
+            <h2>How this works</h2>
+            <p style="margin: 0; color: var(--text-light);">
+                Upload the Statement of Work or manually enter the requirements below. Once saved, the auction will
+                be available for hotels to review in the bidding room. You can always return to this auction to add
+                CLIN-level details or adjust the bidding window.
+            </p>
+        </section>
+
+        <form id="auctionForm">
+            <div class="form-row">
+                <div>
+                    <label for="title">Auction Title *</label>
+                    <input type="text" id="title" name="title" placeholder="e.g., FEMA Surge Housing – Miami" required>
+                </div>
+                <div>
+                    <label for="description">Short Description</label>
+                    <textarea id="description" name="description" rows="3" placeholder="One or two sentences summarizing this opportunity."></textarea>
+                </div>
+            </div>
+
+            <div class="form-row two-column">
+                <div>
+                    <label for="location_city">City</label>
+                    <input type="text" id="location_city" name="location_city" placeholder="e.g., Miami">
+                </div>
+                <div>
+                    <label for="location_state">State</label>
+                    <input type="text" id="location_state" name="location_state" placeholder="e.g., FL">
+                </div>
+            </div>
+
+            <div class="form-row two-column">
+                <div>
+                    <label for="start_date">Event Start</label>
+                    <input type="date" id="start_date" name="start_date">
+                </div>
+                <div>
+                    <label for="end_date">Event End</label>
+                    <input type="date" id="end_date" name="end_date">
+                </div>
+            </div>
+
+            <div class="form-row two-column">
+                <div>
+                    <label for="bidding_start">Bidding Opens *</label>
+                    <input type="datetime-local" id="bidding_start" name="bidding_start" required>
+                </div>
+                <div>
+                    <label for="bidding_end">Bidding Closes *</label>
+                    <input type="datetime-local" id="bidding_end" name="bidding_end" required>
+                </div>
+            </div>
+
+            <div class="form-row two-column">
+                <div>
+                    <label for="base_rate">Base Rate (USD)</label>
+                    <input type="number" id="base_rate" name="base_rate" min="0" step="0.01" placeholder="e.g., 150.00">
+                </div>
+                <div>
+                    <label for="room_count">Room Count</label>
+                    <input type="number" id="room_count" name="room_count" min="0" step="1" placeholder="e.g., 120">
+                </div>
+            </div>
+
+            <div>
+                <label for="requirements">Hotel-Facing Requirements</label>
+                <textarea id="requirements" name="requirements" rows="4" placeholder="Share the obligations or travel corridors that hotels must review before bidding."></textarea>
+            </div>
+
+            <div>
+                <label for="requirement_summary">Internal Notes / Summary</label>
+                <textarea id="requirement_summary" name="requirement_summary" rows="3" placeholder="Optional scratchpad for the sourcing team. Not visible to hotels."></textarea>
+            </div>
+
+            <div>
+                <label for="sow">Statement of Work (optional)</label>
+                <input type="file" id="sow" name="sow" accept=".pdf,.doc,.docx,.txt">
+                <p style="margin-top:0.5rem; font-size:0.85rem; color:var(--text-light);">
+                    Upload the latest SOW or work statement. We will store it securely and use it to pre-fill requirements once CLIN extraction is enabled.
+                </p>
+            </div>
+
+            <div id="clinSection" class="clin-section" style="display:none;">
+                <label>Extracted Requirements</label>
+                <p class="muted" id="clinHelper">Review each requirement. You can adjust the CLIN number and description before publishing.</p>
+                <div id="clinList" class="clin-list"></div>
+            </div>
+
+            <div id="formMessage" class="message"></div>
+
+            <div class="button-row">
+                <button type="submit" class="btn btn-primary" id="submitBtn">Create Live Auction</button>
+                <a href="/admin-dashboard.html" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </main>
+
+    <script>
+        const API_BASE = '';
+        let currentUser = null;
+        let currentClins = [];
+        let requirementsEditedManually = false;
+
+        function checkAuth() {
+            const sessionId = localStorage.getItem('sessionId');
+            const user = JSON.parse(localStorage.getItem('user') || 'null');
+
+            if (!sessionId || !user || user.role !== 'admin') {
+                window.location.href = '/admin-login.html';
+                return false;
+            }
+
+            currentUser = user;
+            const userInfo = document.getElementById('userInfo');
+            if (userInfo) {
+                userInfo.textContent = `${user.first_name} ${user.last_name}`;
+            }
+            return true;
+        }
+
+        async function apiCall(endpoint, options = {}) {
+            const sessionId = localStorage.getItem('sessionId');
+            const headers = {
+                'Authorization': `Bearer ${sessionId}`,
+                ...options.headers
+            };
+
+            if (options.body && !(options.body instanceof FormData) && !headers['Content-Type']) {
+                headers['Content-Type'] = 'application/json';
+            }
+
+            const response = await fetch(`${API_BASE}${endpoint}`, {
+                ...options,
+                headers
+            });
+
+            const result = await response.json();
+
+            if (!result.ok && response.status === 401) {
+                localStorage.removeItem('sessionId');
+                localStorage.removeItem('user');
+                window.location.href = '/admin-login.html';
+                return null;
+            }
+
+            return result;
+        }
+
+        function logout() {
+            localStorage.removeItem('sessionId');
+            localStorage.removeItem('user');
+            window.location.href = '/admin-login.html';
+        }
+
+        function toLocalInputValue(date) {
+            if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+            const pad = (n) => n.toString().padStart(2, '0');
+            return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+        }
+
+        function prefillDefaults() {
+            const openInput = document.getElementById('bidding_start');
+            const closeInput = document.getElementById('bidding_end');
+
+            if (openInput && !openInput.value) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() + 30);
+                openInput.value = toLocalInputValue(now);
+            }
+
+            if (closeInput && !closeInput.value) {
+                const close = new Date();
+                close.setHours(close.getHours() + 24);
+                closeInput.value = toLocalInputValue(close);
+            }
+
+            renderClins();
+        }
+
+        function showMessage(text, type = '') {
+            const el = document.getElementById('formMessage');
+            if (!el) return;
+            el.textContent = text || '';
+            el.className = `message ${type}`.trim();
+        }
+
+        function escapeHtml(str = '') {
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderClins() {
+            const section = document.getElementById('clinSection');
+            const list = document.getElementById('clinList');
+            if (!section || !list) return;
+
+            if (!currentClins.length) {
+                section.style.display = 'none';
+                list.innerHTML = '';
+                return;
+            }
+
+            section.style.display = 'block';
+            list.innerHTML = currentClins.map((clin, index) => {
+                const requirementLabel = `Requirement ${String(index + 1).padStart(4, '0')}`;
+                return `
+                    <div class="clin-card" data-index="${index}">
+                        <h4>${requirementLabel}</h4>
+                        <label>CLIN Number</label>
+                        <input type="text" data-field="clin_number" value="${escapeHtml(clin.clin_number || '')}" maxlength="32">
+                        <label>Short Label</label>
+                        <input type="text" data-field="title" value="${escapeHtml(clin.title || '')}" maxlength="200">
+                        <label>Detailed Description</label>
+                        <textarea data-field="description" rows="3">${escapeHtml(clin.description || '')}</textarea>
+                    </div>
+                `;
+            }).join('');
+
+            list.querySelectorAll('input, textarea').forEach(element => {
+                element.addEventListener('input', event => {
+                    const card = event.currentTarget.closest('.clin-card');
+                    if (!card) return;
+                    const index = Number(card.dataset.index);
+                    const field = event.currentTarget.dataset.field;
+                    if (!currentClins[index] || !field) return;
+                    currentClins[index][field] = event.currentTarget.value;
+                });
+            });
+        }
+
+        async function handleSowChange(event) {
+            const file = event.target.files && event.target.files[0];
+            if (!file) {
+                currentClins = [];
+                renderClins();
+                return;
+            }
+
+            const sessionId = localStorage.getItem('sessionId');
+            if (!sessionId) {
+                showMessage('Your session has expired. Please log in again.', 'error');
+                return;
+            }
+
+            showMessage('Analyzing SOW...', '');
+
+            const fd = new FormData();
+            fd.append('sow', file);
+
+            try {
+                const response = await fetch('/api/admin/auctions/parse-sow', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${sessionId}` },
+                    body: fd
+                });
+
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (parseError) {
+                    console.error('Failed to parse SOW response', parseError);
+                }
+
+                if (response.ok && result?.ok) {
+                    requirementsEditedManually = false;
+                    const requirementsField = document.getElementById('requirements');
+                    if (requirementsField && (!requirementsEditedManually || !requirementsField.value.trim()) && result.requirements) {
+                        requirementsField.value = result.requirements;
+                    }
+
+                    const summaryField = document.getElementById('requirement_summary');
+                    if (summaryField && !summaryField.value && result.summary) {
+                        summaryField.value = result.summary;
+                    }
+
+                    currentClins = Array.isArray(result.clins) ? result.clins.map((clin, index) => ({
+                        clin_number: (clin?.clin_number || `000${index + 1}`).toString().slice(0, 32),
+                        title: (clin?.title || '').toString().slice(0, 200),
+                        description: (clin?.description || '').toString()
+                    })) : [];
+
+                    renderClins();
+
+                    const baseMessage = currentClins.length
+                        ? `Extracted ${currentClins.length} CLIN requirement${currentClins.length === 1 ? '' : 's'}.`
+                        : 'No CLIN line items were detected. You can add requirements manually.';
+                    const warningSuffix = Array.isArray(result.warnings) && result.warnings.length
+                        ? ` Warnings: ${result.warnings.join(' ')}`
+                        : '';
+                    showMessage(`${baseMessage}${warningSuffix}`, currentClins.length ? 'success' : '');
+                } else {
+                    const errorMsg = result?.error || 'Unable to extract SOW details.';
+                    currentClins = [];
+                    renderClins();
+                    showMessage(errorMsg, 'error');
+                }
+            } catch (error) {
+                console.error('SOW parsing error', error);
+                currentClins = [];
+                renderClins();
+                showMessage('Failed to analyze SOW. Please review the document manually.', 'error');
+            }
+        }
+
+        async function handleSubmit(event) {
+            event.preventDefault();
+
+            const form = event.target;
+            const submitBtn = document.getElementById('submitBtn');
+
+            showMessage('', '');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Creating...';
+            }
+
+            try {
+                const sessionId = localStorage.getItem('sessionId');
+                if (!sessionId) {
+                    showMessage('Your session has expired. Please log in again.', 'error');
+                    return;
+                }
+
+                const formData = new FormData(form);
+
+                const bidStart = formData.get('bidding_start');
+                if (bidStart) {
+                    const parsed = new Date(bidStart);
+                    if (!Number.isNaN(parsed.getTime())) {
+                        formData.set('bidding_start', parsed.toISOString());
+                    }
+                }
+
+                const bidEnd = formData.get('bidding_end');
+                if (bidEnd) {
+                    const parsed = new Date(bidEnd);
+                    if (!Number.isNaN(parsed.getTime())) {
+                        formData.set('bidding_end', parsed.toISOString());
+                    }
+                }
+
+                if (currentClins.length) {
+                    const sanitized = currentClins.map((clin, index) => ({
+                        clin_number: (clin.clin_number || '').trim(),
+                        title: (clin.title || '').trim(),
+                        description: (clin.description || '').trim(),
+                        display_order: index
+                    }));
+                    formData.set('clin_data', JSON.stringify(sanitized));
+                } else {
+                    formData.delete('clin_data');
+                }
+
+                const response = await fetch('/api/admin/auctions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${sessionId}` },
+                    body: formData
+                });
+
+                let result = null;
+                try {
+                    result = await response.json();
+                } catch (err) {
+                    console.error('Failed to parse auction response', err);
+                }
+
+                if (response.ok && result?.ok) {
+                    showMessage('Live auction created successfully.', 'success');
+                    form.reset();
+                    currentClins = [];
+                    requirementsEditedManually = false;
+                    prefillDefaults();
+                    renderClins();
+                } else {
+                    const error = result?.error || 'Failed to create live auction';
+                    showMessage(error, 'error');
+                }
+            } catch (error) {
+                console.error('Create auction error', error);
+                showMessage('Unexpected error creating auction. Please try again.', 'error');
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = 'Create Live Auction';
+                }
+            }
+        }
+
+        if (checkAuth()) {
+            prefillDefaults();
+            const form = document.getElementById('auctionForm');
+            if (form) {
+                form.addEventListener('submit', handleSubmit);
+            }
+
+            const sowInput = document.getElementById('sow');
+            if (sowInput) {
+                sowInput.addEventListener('change', handleSowChange);
+            }
+
+            const requirementsField = document.getElementById('requirements');
+            if (requirementsField) {
+                requirementsField.addEventListener('input', () => {
+                    requirementsEditedManually = true;
+                });
+            }
+        }
+    </script>
+</body>
+</html>

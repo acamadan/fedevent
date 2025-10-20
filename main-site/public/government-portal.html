@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Government Portal | FEDEVENT</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f3f4f6;
+            min-height: 100vh;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            color: #2d3748;
+            font-size: 2rem;
+            font-weight: 700;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-details {
+            text-align: right;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #2d3748;
+        }
+        
+        .user-role {
+            font-size: 0.9rem;
+            color: #718096;
+        }
+        
+        .logout-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: #c53030;
+            transform: translateY(-1px);
+        }
+        
+        .welcome-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .welcome-card h2 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.8rem;
+        }
+        
+        .welcome-card p {
+            color: #718096;
+            font-size: 1.1rem;
+        }
+        
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            border: 2px solid transparent;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+            border-color: #667eea;
+        }
+        
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+        
+        .feature-card h3 {
+            color: #2d3748;
+            margin-bottom: 10px;
+            font-size: 1.3rem;
+        }
+        
+        .feature-card p {
+            color: #718096;
+            line-height: 1.6;
+        }
+        
+        .status-bar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .status-success {
+            color: #38a169;
+            font-weight: 600;
+        }
+        
+        .status-error {
+            color: #e53e3e;
+            font-weight: 600;
+        }
+        
+        .loading {
+            color: #667eea;
+            font-weight: 600;
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+                text-align: center;
+            }
+            
+            .user-details {
+                text-align: center;
+            }
+            
+            .features-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>🏛️ Government Portal</h1>
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-name" id="userName">Loading...</div>
+                    <div class="user-role" id="userRole">Government Official</div>
+                </div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <h2>Welcome to <span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></h2>
+            <p>Your gateway to government-qualified hotels and mission support services</p>
+        </div>
+
+        <!-- Status Bar -->
+        <div class="status-bar">
+            <div id="statusMessage" class="loading">🔍 Checking authentication...</div>
+        </div>
+
+        <!-- Features Grid -->
+        <div class="features-grid">
+            <a href="/government-hotel-search.html" class="feature-card">
+                <span class="feature-icon">🔍</span>
+                <h3>Search Hotels</h3>
+                <p>Find government-qualified hotels and submit mission support requests for your travel needs.</p>
+            </a>
+            
+            <a href="#" class="feature-card" onclick="showComingSoon('Mission Reports')">
+                <span class="feature-icon">📊</span>
+                <h3>Mission Reports</h3>
+                <p>Access detailed reports and analytics for your completed missions and bookings.</p>
+            </a>
+            
+            <a href="/contact.html" class="feature-card">
+                <span class="feature-icon">📋</span>
+                <h3>Mission Support Form</h3>
+                <p>Request complete event planning and logistics support for your mission requirements.</p>
+            </a>
+            
+            <a href="/contact.html?emergency=true" class="feature-card">
+                <span class="feature-icon">🚨</span>
+                <h3>Emergency Support Form</h3>
+                <p>Urgent support requests - we will respond immediately with expedited solutions.</p>
+            </a>
+            
+            <a href="/government-user-settings.html" class="feature-card">
+                <span class="feature-icon">⚙️</span>
+                <h3>User Settings</h3>
+                <p>Manage your account information and preferences.</p>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuthentication();
+        });
+
+        async function checkAuthentication() {
+            const sessionToken = localStorage.getItem('gov_session');
+            const statusEl = document.getElementById('statusMessage');
+            
+            if (!sessionToken) {
+                statusEl.innerHTML = '<span class="status-error">❌ No session found. Redirecting to login...</span>';
+                setTimeout(() => {
+                    window.location.href = '/government-login.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                statusEl.innerHTML = '<span class="loading">🔍 Verifying session...</span>';
+                
+                const response = await fetch('/api/government/me', {
+                    headers: {
+                        'Authorization': `Bearer ${sessionToken}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    const user = data.user;
+                    
+                    // Update user info
+                    document.getElementById('userName').textContent = `${user.first_name} ${user.last_name}`;
+                    document.getElementById('userRole').textContent = user.agency || 'Government Official';
+                    
+                    // Show success status
+                    statusEl.innerHTML = '<span class="status-success">✅ Successfully authenticated</span>';
+                    
+                    // Hide status after 3 seconds
+                    setTimeout(() => {
+                        statusEl.style.display = 'none';
+                    }, 3000);
+                    
+                } else {
+                    throw new Error('Authentication failed');
+                }
+                
+            } catch (error) {
+                console.error('Authentication error:', error);
+                statusEl.innerHTML = '<span class="status-error">❌ Authentication failed. Redirecting to login...</span>';
+                
+                // Clear invalid session
+                localStorage.removeItem('gov_session');
+                
+                setTimeout(() => {
+                    window.location.href = '/government-login.html';
+                }, 2000);
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('gov_session');
+            window.location.href = '/government-login.html';
+        }
+
+        function showComingSoon(feature) {
+            alert(`${feature} is coming soon! This feature is currently under development.`);
+        }
+    </script>
+    <script src="/footer.js"></script>
+<footer id="contact">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3><span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span></h3>
+                <p>Professional event planning services for U.S. Government agencies.</p>
+            </div>
+            <div class="footer-section">
+                <h3>Services</h3>
+                <a href="/hotel-signup.html">Hotel Sourcing</a>
+                <a href="/contact.html">Event Planning</a>
+                <a href="/government-portal.html">Venue Matching</a>
+                <a href="/support-ticket.html">Support Ticket</a>
+            </div>
+            <div class="footer-section footer-contact">
+                <h3>Contact</h3>
+                <p>Email: info@fedevent.com</p>
+                <p>Phone: (305) 850-7848</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>fedevent.com is a service of CREATA Global Event Agency LLC</p>
+            <p>&copy; 2025 <span style="color: #dc2626; font-weight: bold;">FED</span><span style="color: #2563eb; font-weight: bold;">EVENT</span>. All rights reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<style>
+    /* Footer Styles */
+    footer {
+        background: var(--text, #1f2937);
+        color: white;
+        padding: 3rem 0 1rem;
+        margin-top: auto;
+    }
+
+    .footer-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .footer-section h3 {
+        margin-bottom: 1rem;
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-section a {
+        display: block;
+        color: #d1d5db;
+        text-decoration: none;
+        margin-bottom: 0.5rem;
+        transition: color 0.2s;
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary, #f59e0b);
+    }
+
+    .footer-contact {
+        text-align: right;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid #374151;
+        padding-top: 2rem;
+        text-align: center;
+        color: #9ca3af;
+    }
+
+    /* Responsive Footer */
+    @media (max-width: 768px) {
+        .footer-content {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+        
+        .footer-contact {
+            text-align: left;
+        }
+    }
+</style>
+
+<!-- DANA AI Assistant -->
+<script src="/chat.js"></script>
+</body>
+</html>
