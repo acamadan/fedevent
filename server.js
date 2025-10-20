@@ -542,15 +542,15 @@ if (process.env.MAINTENANCE === '1' || process.env.MAINTENANCE === 'true') {
   });
 }
 
-// Root serves the main site (index.html)
-// Prelaunch page is accessible at /prelaunch or /prelaunch.html
+// Root serves the prelaunch site (prelaunch.html)
+// Main site is accessible at /main or /index.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'prelaunch.html'));
 });
 
-// Prelaunch shortcut (also accessible at /prelaunch.html via static files)
-app.get('/prelaunch', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'prelaunch.html'));
+// Main site shortcut (accessible at /main)
+app.get('/main', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Serve static files from public directory with no cache
