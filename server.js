@@ -542,15 +542,15 @@ if (process.env.MAINTENANCE === '1' || process.env.MAINTENANCE === 'true') {
   });
 }
 
-// Root serves the prelaunch site (prelaunch.html)
-// Main site is accessible at /main or /index.html
+// Root serves the main site (index.html)
+// Prelaunch page is accessible at /prelaunch or /prelaunch.html
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'prelaunch.html'));
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Main site shortcut (accessible at /main)
-app.get('/main', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// Prelaunch shortcut (also accessible at /prelaunch.html via static files)
+app.get('/prelaunch', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'prelaunch.html'));
 });
 
 // Serve static files from public directory with no cache
@@ -4577,9 +4577,9 @@ function generatePrelaunchInvitationEmail({ hotelName, contactName, unsubscribeT
                 <td style="padding: 40px;">
                   <p style="color: #1f2937; font-size: 18px; font-weight: 600; margin: 0 0 20px 0;">Dear ${contactName || 'Hotel Partner'},</p>
                   
-                    <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
+                  <p style="color: #374151; font-size: 16px; line-height: 1.6; margin: 0 0 20px 0;">
                       We're excited to invite you to join <strong>FEDEVENT</strong> – our revolutionary platform that connects hotels with government agencies worldwide, including UN departments and international organizations. Whether you're a valued partner from our previous work together at <strong>CREATA Global Event Agency LLC</strong> or joining us through a referral, you're about to discover an incredible global opportunity.
-                    </p>
+                  </p>
                   
                   <div style="background: linear-gradient(135deg, #eff6ff 0%, #f5f3ff 100%); border-left: 4px solid #1e40af; padding: 20px; margin: 30px 0; border-radius: 8px;">
                     <h2 style="color: #1e40af; font-size: 20px; font-weight: 700; margin: 0 0 15px 0;">🎯 Why FEDEVENT?</h2>
