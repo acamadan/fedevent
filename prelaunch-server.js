@@ -119,6 +119,8 @@ async function sendMail({ to, subject, html, replyTo, from }) {
 // ---------- PRELAUNCH API ENDPOINT ----------
 app.post('/api/leads', async (req, res) => {
   try {
+    console.log('📥 Received request body:', JSON.stringify(req.body, null, 2));
+    
     const {
       hotelName, hotelAddress, hotelPhone, hotelPlaceId,
       city, state, contactName, title, email, phone, interests,
