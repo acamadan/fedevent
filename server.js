@@ -1131,7 +1131,7 @@ for (const p of staticPages) {
 }
 // ---------- Data dir & DB path ----------
 const isRender = !!process.env.RENDER;
-const DATA_DIR = process.env.DATA_DIR || (isRender ? '/app/data' : path.join(process.cwd(), 'data'));
+const DATA_DIR = process.env.DATA_DIR || (isRender ? '/tmp/data' : path.join(process.cwd(), 'data'));
 const DB_PATH  = process.env.DB_PATH  || path.join(DATA_DIR, 'creata.db');
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
