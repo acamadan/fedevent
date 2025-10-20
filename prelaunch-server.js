@@ -25,6 +25,13 @@ app.use(express.static('public'));
 
 // Database connection
 const DB_PATH = path.join(__dirname, 'data', 'creata.db');
+
+// Ensure data directory exists
+import fs from 'fs';
+if (!fs.existsSync(path.join(__dirname, 'data'))) {
+  fs.mkdirSync(path.join(__dirname, 'data'), { recursive: true });
+}
+
 const db = new Database(DB_PATH);
 
 // Ensure hotel_leads table exists with all fields
@@ -437,6 +444,22 @@ process.on('SIGTERM', () => {
 });
 
 process.on('SIGINT', () => {
+  console.log('\nSIGINT received, closing prelaunch server...');
+  db.close();
+  process.exit(0);
+});
+
+// Deployment trigger - Mon Oct 13 12:46:33 EDT 2025
+
+
+process.on('SIGINT', () => {
+  console.log('\nSIGINT received, closing prelaunch server...');
+  db.close();
+  process.exit(0);
+});
+
+// Deployment trigger - Mon Oct 13 12:46:33 EDT 2025
+
   console.log('\nSIGINT received, closing prelaunch server...');
   db.close();
   process.exit(0);
